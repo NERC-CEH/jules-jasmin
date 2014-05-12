@@ -1,0 +1,9 @@
+[COWS]
+http://localhost:5000/
+
+[WMS]
+http://labs.metacarta.com/wms/vmap0
+http://ndg3beta.badc.rl.ac.uk/cows/demo_hadcm3/wms
+
+[WCS]
+http://motherlode.ucar.edu:8080/thredds/wcs/fmrc/NCEP/NAM/CONUS_40km/conduit/NCEP-NAM-CONUS_40km-conduit_best.ncd

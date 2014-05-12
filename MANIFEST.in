@@ -1,0 +1,2 @@
+recursive-include ecomaps/public *
+recursive-include ecomaps/templates *

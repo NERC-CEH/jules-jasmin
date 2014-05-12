@@ -1,0 +1,51 @@
+<?python
+ def et2string(x):
+     #use this to strip namespaces for children within text elements
+     cb=x.tag.find('}')
+     if cb!=-1:
+     	x.tag=x.tag[cb+1:]
+     txt=(x.text or '')
+     s='<%s>%s'%(x.tag,txt)
+     # recurse through tree, if necessary
+     for a in x:
+         s+=et2string(a)
+     s+='</%s>%s'%(x.tag,(x.tail or ''))
+     return s
+     ?>
+ <html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/"
+	py:strip="">
+	<script src="$app_globals.server/js/toggleDiv.js"></script>
+    <span py:def="Text(elem)" py:strip="">
+        <!--! Note that we have to expect the possibility of xhtml in these elements and we won't
+        want the parent attributes, or the namespaces -->
+        <span py:if="elem is not None" py:strip="">
+	        <span py:if="hasattr(elem, 'text')" py:strip="">
+		        ${elem.text.strip()}
+	        </span>
+	        <!--! output any child elements  -->
+		    <span py:with="s = ''" py:strip="">
+	    	    <?python
+    		    for a in elem:
+    		    	s+=et2string(a)
+        		?>
+	        	<span py:if="s" py:strip="">
+			        ${Markup(s).strip()}
+			    </span>
+			</span>
+        </span>
+    </span>
+
+        
+    <!--! hyperlinked image -->
+    <span py:def="linkimage(linkref,imageref,alttext)">
+        <a href="$linkref"><image src="$imageref" alt="$alttext" title="$alttext"/></a>
+    </span>
+    
+    <!--! Help Icons -->
+    <span py:def="helpIcon(value)">
+        <span>
+            <a href="javascript:;" title="Toggle help" onclick="toggleDiv(1,'$value','shown','hidden','div'); return false;">
+            <img src="$app_globals.helpIcon" alt="Toggle help" class="helpicon"/></a>
+        </span>
+    </span>
+</html>

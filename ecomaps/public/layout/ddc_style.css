@@ -1,0 +1,455 @@
+/***********************************************/
+/* DDC-layout.css                              */
+/* Default format for the IPCC DDC web site    */
+/* Matt Livermore (31/05/2004)                 */
+/***********************************************/ 
+
+/***********************************************/ 
+/* HTML tag styles                             */
+/***********************************************/ 
+
+/* General Content Formatting                  */
+
+body {
+	color: #333333;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-style: normal;
+}
+
+p {
+	padding: 0px 10px 0px 10px;
+}
+
+a {
+	color: #4f96ff;
+	text-decoration: none;
+}
+
+a:link {
+	color: #4f96ff;
+	text-decoration: none;
+}
+
+a:visited {
+	color: #4f96ff;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #4f96ff;
+	text-decoration: underline;
+}
+
+h1 {
+  font-family: Verdana,Arial,sans-serif;
+  font-size: 140%;
+  color: #4f96ff;
+	margin: 0px;
+  padding: 5px;
+	border: 1px solid #4f96ff;
+}
+
+h2 {
+  font-family: Arial,sans-serif;
+  font-size: 110%;
+  color: #006699;
+  margin: 0px;
+  padding: 0px;
+}
+
+h3 {
+	font-size: 100%;
+	margin: 0px; 
+	padding: 0px 0px 0px 0px;
+}
+
+h4 {
+	font-size: 90%;
+	margin: 0px; 
+	padding: 0px 0px 0px 0px;
+}
+
+/***********************************************/
+/* Layout Div Properties                       */
+/***********************************************/
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #ffffff;
+}	 
+	 
+.odd-table-column { background-color: #ccffcc }
+.even-table-column { background-color: #ccccff }
+
+/* Left-hand Column Layout */
+#lh-col {
+	position: absolute;
+	top: 115px;
+	left: 0;
+	width: 138px;
+	z-index: 3;
+	color: #333333;
+	background: #ffffff;
+	border-left: 1px solid #4242ff;
+}
+
+	/* #navigation layout */
+	#navbar {
+		width: 139px;
+		height: 214px;
+		padding: 0px 0px 0px 0px;
+		background: #4242ff;
+		font-size: 90%;
+		z-index: 1;
+	}
+
+		/* CoolJSMenu formatting */
+		.clsCMOn {
+			color: #4f96ff;
+			font-size : 12px;
+			text-decoration : none;
+			padding: 2px 6px;
+		}
+	
+		.clsCMOver {
+			color: #ffffff;
+			font-size : 12px;
+			text-decoration : underline;
+            background: #4f96ff;
+			padding: 2px 6px;
+		}
+
+	/* #relatedinks styles */
+	#relatedlinks {
+		position: relative;
+		width: 128px;
+		height: 391px;
+		margin: 0px;
+		padding: 0px 0px 10px 10px;
+		background-color: #E5E5E5;
+		border: 1px solid #999999;
+	}
+	
+	#relatedlinks h3 {
+		border: 1px solid #000000;
+		padding: 0px 5px 0px 5px;
+		margin: 6px 4px 0px -4px;
+	}
+	
+	#relatedlinks a:link,
+	#relatedlinks a:visited {
+		display: block; 
+	}
+
+	#relatedlinks ul a:link, #navBar ul a:visited {display: block;}
+	#relatedlinks ul {
+		list-style: none; 
+		margin: 0; 
+		padding: 0px 0px 2px 0px;
+	}
+	
+	/* hack to fix IE/Win's broken rendering of block-level anchors in lists */
+	#relatedlinks li {
+		padding: 0px 0px 2px 0px;
+		border-bottom: 1px solid #ffffff;
+	}
+	
+	/* fix for browsers that don't need the hack */
+	html>body #relatedlinks li {border-bottom: none;}
+
+
+/* Right-hand Column Layout */
+#rh-col {
+	position: absolute;
+	top: 115px;
+	right: 0;
+	width: 141px;
+	z-index: 2;
+	color: #333333;
+	background: #ffffff;
+}
+
+	/* #search box layout */
+	#search {
+		width: 140px;
+		height: 110px;
+		padding: 2px 0px 2px 2px;
+		font-size: 90%;
+		color: #ffffff;
+		border: 1px solid #000000;
+		background-color: #999999;
+	}
+
+		#search form {
+			margin: 0px;
+			padding: 0px;
+		}
+		
+		#search label {
+			display: block;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		#search a {
+			color: #ffffff;
+			text-decoration: none;
+		}
+		
+		#search a:link {
+			color: #ffffff;
+			text-decoration: none;
+		}
+		
+		#search a:visited {
+			color: #ffffff;
+			text-decoration: none;
+		}
+		
+		#search a:hover {
+			color: #ffffff;
+			text-decoration: underline;
+		}
+
+	/* #latestnews box layout */
+	#latestnews {
+		width: 134px;
+		height: 477px;
+		padding: 5px 0px 0px 5px;
+		font-size: 100%;
+		color: #000000;
+		background-color: #e5e5e5;
+		border: 1px solid #999999;
+	}
+		
+		#latestnews p {
+			padding: 0px 2px 0px 2px;
+			font-size: 90%;
+		}
+		
+		#latestnews h3 {
+		border: 1px solid #000000;
+		padding: 0px 5px 0px 5px;
+		margin: 2px 4px 0px 0px;
+		}
+
+	/* #addinfo box layout */
+	#addinfo {
+		width: 134px;
+		height: 477px;
+		padding: 5px 0px 0px 5px;
+		font-size: 100%;
+		color: #000000;
+		background-color: #e5e5e5;
+		border: 1px solid #999999;
+	}
+		
+		#addinfo p {
+			padding: 0px 2px 0px 2px;
+			font-size: 90%;
+		}
+		
+		#addinfo h3 {
+		border: 1px solid #000000;
+		padding: 0px 5px 0px 5px;
+		margin: 2px 4px 0px 0px;
+		}
+
+		#addinfo a:link,
+		#addinfo a:visited {
+			display: block; 
+		}
+	
+		#addinfo ul a:link, #navBar ul a:visited {display: block;}
+		#addinfo ul {
+			list-style: none; 
+			margin: 0; 
+			padding: 0px 0px 2px 0px;
+		}
+		
+		/* hack to fix IE/Win's broken rendering of block-level anchors in lists */
+		#addinfo li {
+			padding: 0px 0px 2px 0px;
+			border-bottom: 1px solid #ffffff;
+		}
+		
+		/* fix for browsers that don't need the hack */
+		html>body #addinfo li {border-bottom: none;}
+		
+/* Centre Column Layout */
+/* #c-block (content box) layout */
+#c-block {
+	height: 90%;
+	width: 100%;
+	z-index: 1;
+	background: #ffffff;
+}
+	
+#c-col {
+		height: 615px;
+		margin: 0 141px 0px 141px;
+		overflow: auto;
+		position: relative;
+		background: #ffffff;
+		z-index: 2;
+		border-top: solid #4242ff 1px;
+		/*border-left: solid #4242ff 1px;
+		border-right: solid #4242ff 1px;
+		border-bottom: solid #4242ff 1px;*/
+	}
+	
+#c-col li {
+		margin: 0px 0px 0px 0px;
+		padding: 0px 10px 10px 0px;
+	}
+		
+#pagetitle {
+		margin: 0 141px 0 141px;
+		padding: 5px 5px 0px 5px;
+		margin: 0px 0px 0px 0px;
+		}
+		
+#breadcrumb1 {
+		margin: 0 141px 0 141px;
+		padding: 0px;
+		font-size: 80%;
+		margin: 2px 5px 2px 5px;
+		border-top: 1px solid #d3e5fa;
+		border-bottom: 1px solid #d3e5fa;
+		}
+		
+#breadcrumb1 a {
+			color: #4f96ff;
+			text-decoration: none;
+			padding: 0px 5px 0px 5px;
+			}
+			
+#breadcrumb1 a:link {
+				color: #4f96ff;
+				text-decoration: none;
+			}
+			
+#breadcrumb1 a:visited {
+				color: #4f96ff;
+				text-decoration: none;
+			}
+			
+#breadcrumb1 a:hover {
+			color: #4f96ff;
+			text-decoration: underline;
+			}
+
+#breadcrumb2 {
+		margin: 0 141px 0 141px;
+		padding: 0px;
+		font-size: 80%;
+		margin: 2px 5px 2px 5px;
+		border-top: 1px solid #d3e5fa;
+		border-bottom: 1px solid #d3e5fa;
+		}
+		
+#breadcrumb2 a {
+			color: #4f96ff;
+			text-decoration: none;
+			padding: 0px 5px 0px 5px;
+			}
+			
+#breadcrumb2 a:link {
+				color: #4f96ff;
+				text-decoration: none;
+			}
+			
+#breadcrumb2 a:visited {
+				color: #4f96ff;
+				text-decoration: none;
+			}
+			
+#breadcrumb2 a:hover {
+			color: #4f96ff;
+			text-decoration: underline;
+			}
+
+/* Header Column Layout */
+#qhdr {
+	height: 118px; 
+	width: 100%; 
+	z-index: 4;
+	background: #4242ff;
+	margin: 0;
+	color: #ffffff;
+}
+
+#hdr {
+	height: 115px; 
+	width: 100%; 
+	z-index: 4;
+	background: #4242ff;
+	margin: 0;
+	color: #ffffff;
+}
+
+#hdr a {
+	color: #ffffff;
+	text-decoration: none;
+	padding: 0px 5px 0px 5px;
+	}
+	
+#hdr a:link {
+		color: #ffffff;
+		text-decoration: none;
+	}
+	
+#hdr a:visited {
+		color: #ffffff;
+		text-decoration: none;
+	}
+	
+#hdr a:hover {
+	color: #ffffff;
+	text-decoration: underline;
+	}
+
+/* Footer Layout */
+/* Modifications to footer formatting
+	position: absolute;
+	top: 850px; */
+	
+#ftr {
+	position: relative;
+	bottom: 0px;
+	width: 100%;
+	height: 40px;
+	margin: 0px;
+	border: 1px solid;
+	border-color: #000000;
+	
+}
+
+#ftr p {
+		margin: 0px 0px 0px 0px;
+		padding: 0px 0px 0px 0px;
+		color: #ffffff;
+	}
+
+SPAN.bl { position: absolute; top: 100%; left: 0px; z-index: 10;}
+SPAN.br { position: absolute; top: 100%; right: 0px; z-index: 10;}
+
+
+table.check {
+       border: solid;
+       cellspacing: 2px;
+       border-color: blue;
+       background-color: white;
+       padding: 5px;
+       rules: rows;
+             }
+
+
+.odd-ctable-column { background-color: #ccffcc; border: solid; border-color: #99aa99; padding: 5px; }
+.even-ctable-column { background-color: #ccccff; border: solid; border-color: #99aa99; padding: 5px; }
+
+td.checkCol { text-align: center; border: 5px; }
+
+tr.checkRow { margin: 15px; }

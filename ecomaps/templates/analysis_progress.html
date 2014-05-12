@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="layout.html" />
+<head>
+    <title>Please wait</title>
+
+    <script type="text/javascript" language="JavaScript" src="/js/analysis_progress.js"></script>
+</head>
+<body>
+    <div class="hero-unit">
+        <h1><img src="/layout/images/spinner.gif" /> Please wait</h1>
+
+        <p class="lead">
+
+             Analysis in progress
+        </p>
+        <p>
+            <form method="POST" action="${url(controller='analysis', action='delete')}">
+                <input type="hidden" id="analysis_id" name="analysis_id" value='${c.analysis_id}' />
+                <button type="submit" class="btn btn-danger">
+                    Cancel Analysis
+                </button>
+            </form>
+        </p>
+    </div>
+    <div class="row">
+        <div class="span6">
+            <h4>More info:</h4>
+            <ul id="progress">
+                <li><i class="icon-tasks"></i>Checking progress...</li>
+            </ul>
+
+
+        </div>
+        <div class="span6">
+            <div class="alert alert-block alert-warning">
+                <h4>Be aware!</h4>
+                <p>
+                    This is some health warning text
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script py:if="c.analysis_id" type="text/javascript" language="JavaScript">
+        $(function () {
+
+            ECOMAPS.ANALYSIS.getProgress(${c.analysis_id});
+
+        });
+    </script>
+</body>
+</html>

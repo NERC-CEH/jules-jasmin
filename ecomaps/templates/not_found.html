@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="layout.html" />
+<head>
+    <title>Not found</title>
+</head>
+<body>
+    <div class="hero-unit">
+    <h1>Not found</h1>
+    <p>The
+        <span py:choose="">
+            <span py:when="c.object_type">${c.object_type}</span>
+            <span py:otherwise="">item</span>
+        </span>
+
+        you're looking for can't be found in EcoMaps.</p>
+    </div>
+</body>
+</html>

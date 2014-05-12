@@ -1,0 +1,163 @@
+<html>
+
+<head>
+
+    <script src="../js/splitTimeSelect.js"></script>
+    <script src="../js/splitAxisConfig.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/wmsc.js"></script>
+    <script src="../js/capabilities.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+
+        var splitAxisXML1 = '\
+<?xml version="1.0"?>\n\
+<SplitAxisConfig>\n\
+    <Axis name="time">\n\
+    <AxisValues>\n\
+        <AxisValue>1998-01-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-02-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-03-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-04-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-05-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-06-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-07-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-08-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-09-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-10-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-11-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-12-15T00:00:00.0</AxisValue>\n\
+    </AxisValues>\n\
+    <SelectLists>\n\
+        <SelectList label="Climatology, 1998-2007" indexFactor="1">\n\
+            <Option>January</Option>\n\
+            <Option>February</Option>\n\
+            <Option>March</Option>\n\
+            <Option>April</Option>\n\
+            <Option>May</Option>\n\
+            <Option>June</Option>\n\
+            <Option>July</Option>\n\
+            <Option>August</Option>\n\
+            <Option>September</Option>\n\
+            <Option>October</Option>\n\
+            <Option>November</Option>\n\
+            <Option>December</Option>\n\
+        </SelectList>\n\
+    </SelectLists>\n\
+    </Axis>\n\
+</SplitAxisConfig>';
+
+        var splitAxisXML2 = '\
+<SplitAxisConfig>\n\
+    <Axis name="time">\n\
+    <AxisValues>\n\
+        <AxisValue>1998-01-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-02-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-03-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-04-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-05-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-06-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-07-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-08-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-09-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-10-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-11-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1998-12-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-01-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-02-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-03-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-04-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-05-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-06-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-07-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-08-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-09-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-10-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-11-15T00:00:00.0</AxisValue>\n\
+        <AxisValue>1999-12-15T00:00:00.0</AxisValue>\n\
+      </AxisValues>\n\
+      <SelectLists>\n\
+        <SelectList label="Year" indexFactor="12">\n\
+          <Option>1998</Option>\n\
+          <Option>1999</Option>\n\
+        </SelectList>\n\
+        <SelectList label="Month" indexFactor="1">\n\
+          <Option>January</Option>\n\
+          <Option>February</Option>\n\
+          <Option>March</Option>\n\
+          <Option>April</Option>\n\
+          <Option>May</Option>\n\
+          <Option>June</Option>\n\
+          <Option>July</Option>\n\
+          <Option>August</Option>\n\
+          <Option>September</Option>\n\
+          <Option>October</Option>\n\
+          <Option>November</Option>\n\
+          <Option>December</Option>\n\
+        </SelectList>\n\
+    </SelectLists>\n\
+    </Axis>\n\
+</SplitAxisConfig>';
+
+
+        function init() {
+    
+            console.log("started at" +new Date());
+
+            document.getElementById('split_axis_xml').value = splitAxisXML2;
+
+            var parser=new DOMParser();
+            var xmlDoc=parser.parseFromString(splitAxisXML2, "text/xml");
+
+            var builder = new SplitAxisConfigBuilder(xmlDoc.firstChild);
+
+            var config = builder.buildConfig();
+
+            var mapping = config.getAxisMapping('time');
+            var s = " Axis Values:\n";
+
+            for (var i = 0; i < mapping.axisValues.length; i++) {
+                s += "    " + mapping.axisValues[i] + "\n";
+            }
+
+            s += "Select Lists:\n"
+            for (var i = 0; i < mapping.selectLists.length; i++) {
+                s += "\n";
+                s += "    indexFactor: " + mapping.selectLists[i].indexFactor + "\n";
+                s += "    label: " + mapping.selectLists[i].label + "\n";
+                s += "    values:\n";
+                for (var j = 0; j < mapping.selectLists[i].values.length; j++) {
+                    s += "        " + mapping.selectLists[i].values[j] + "\n";
+                }
+            }                
+            
+            document.getElementById('split_axis_config').value = s;
+
+            time1 = new SplitTimeSelect('time_container', 'time', mapping, "Time:")
+            time1.build();
+            
+            console.log("Finished.");
+        }
+    
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+
+    SplitAxisXML:<br />
+        <textarea id="split_axis_xml" rows="20" cols="120" >...</textarea>
+    <br />
+    
+    SplitAxisConfig:<br />
+        <textarea id="split_axis_config" rows="20" cols="120" >...</textarea>
+    <br />
+    
+    <div id="time_container"></div>
+    
+    <input type="button" value="Show time" onClick="alert(document.getElementById('time').value);"></input>    
+    
+</body>
+
+</html>

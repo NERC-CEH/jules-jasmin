@@ -1,0 +1,38 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      lang="en">
+
+  <head>
+    <link rel="stylesheet" type="text/css" href="../resources/ext/css/ext-all.css"/>
+    <script type="text/javascript" src="../js/ext/adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../js/ext/ext-all-debug-w-comments.js"></script>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>WMS Data Viewer Error</title>
+
+    <script type="text/javascript">
+      // Path to the blank image must point to a valid location on your server
+      Ext.BLANK_IMAGE_URL = '../resources/ext/images/default/s.gif';
+
+      Ext.onReady(function() {
+          new Ext.Window({
+              title: 'Error',
+              width: 350,
+              height: 100,
+              closable: false,
+              style: 'text-align: center',
+              padding: '10px 3px 2px 3px',
+              html: '${c.message}',
+              buttons: [{
+                  text: 'Close',
+                  handler: function() {window.close()}
+              }]
+          }).show();
+      });
+    </script>
+
+  </head>
+
+  <body></body>
+</html>

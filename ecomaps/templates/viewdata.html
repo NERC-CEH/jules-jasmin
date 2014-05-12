@@ -1,0 +1,412 @@
+<!-- Do NOT put any DOCTYPE here unless you want problems in IEs. -->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      lang="en">
+
+<?python
+    from pylons import config
+    custom_css_file = config.get('custom_css_file', None)
+    login_url = config.get('login_url', None)
+?>
+<head>
+  <!-- The following line defines content type and utf-8 as character set. -->
+  <!-- If you want your application to work flawlessly with various local -->
+  <!-- characters, just make ALL strings, on the page, json and database utf-8. -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+  <!-- Ext relies on its default css so include it here. -->
+  <!-- This must come BEFORE javascript includes! -->
+  <link rel="stylesheet" type="text/css" href="../resources/ext/css/ext-all.css"/>
+
+  <!-- Include here your own css files if you have them. -->
+  <link rel="stylesheet" type="text/css" href="../layout/viewdata.css"/>
+  <link rel="stylesheet" type="text/css" href="../resources/extux/css/tab-scroller-menu.css"/>
+  <link py:if="custom_css_file" rel="stylesheet" type="text/css" href="${custom_css_file}"/>
+  <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+  <link href="/layout/ecomaps.css" rel="stylesheet" media="screen" />
+
+  <script src="http://code.jquery.com/jquery.js"></script>
+  <script type="text/javascript" src="/layout/bootstrap/js/bootstrap.js"></script>
+
+  <!-- First of javascript includes must be an adapter... -->
+  <script type="text/javascript" src="../js/ext/adapter/ext/ext-base.js"></script>
+
+  <!-- ...then you need the Ext itself, either debug (ext-all-debug-w-comments.js) or production version (ext-all.js). -->
+  <script type="text/javascript" src="../js/ext/ext-all.js"></script>
+
+  <!-- Include here your extended classes if you have some. -->
+
+  <!-- Include here you application javascript file if you have it. -->
+  <script type="text/javascript" src="../resources/extux/js/CheckColumn.js"></script>
+  <script type="text/javascript" src="../resources/extux/js/GridDragAndDropWithCellSelectionModel.js"></script>
+  <script type="text/javascript" src="../resources/extux/js/GridDragDropRowOrder.js"></script>
+  <script type="text/javascript" src="../resources/extux/js/tdgi.borderLayout.js"></script>
+  <script type="text/javascript" src="../resources/extux/js/TabScrollerMenu.js"></script>
+  <script type="text/javascript" src="../resources/extux/js/DatasetTreeNodeUI.js"></script>
+  <script type="text/javascript" src="../js/prototype.js"></script>
+  <script type="text/javascript" src="../js/json2.js"></script>
+  <script type="text/javascript" src="../js/OpenLayers.js"></script>
+  <script type="text/javascript" src="../js/openlayers-x.js"></script>
+  <script type="text/javascript" src="../js/wmsc.js"></script>
+  <script type="text/javascript" src="../js/OpenLayers-TileImageOnerrorFix.js"></script>
+  <script type="text/javascript" src="../js/utils.js"></script>
+  <script type="text/javascript" src="../js/ajaxRetriever.js"></script>
+  <script type="text/javascript" src="../js/displayOptionsRetriever.js"></script>
+  <script type="text/javascript" src="../js/mapControl.js"></script>
+  <script type="text/javascript" src="../js/LoadingPanel.js"></script>
+  <script type="text/javascript" src="../js/LoadErrors.js"></script>
+  <script type="text/javascript" src="../js/layerDefaultSetter.js"></script>
+  <script type="text/javascript" src="../js/boundsControl.js"></script>
+  <script type="text/javascript" src="../js/viewdataLayerData.js"></script>
+  <script type="text/javascript" src="../js/viewdataAbout.js"></script>
+  <script type="text/javascript" src="../js/viewdataBoundingBoxControls.js"></script>
+  <script type="text/javascript" src="../js/viewdataDimensionControls.js"></script>
+  <script type="text/javascript" src="../js/viewdataExportControls.js"></script>
+  <script type="text/javascript" src="../js/viewdataFeatureInfoManager.js"></script>
+  <script type="text/javascript" src="../js/viewdataFigureControls.js"></script>
+  <script type="text/javascript" src="../js/viewdataHelp.js"></script>
+  <script type="text/javascript" src="../js/viewdataLegendManager.js"></script>
+  <script type="text/javascript" src="../js/viewdataLayerControls.js"></script>
+  <script type="text/javascript" src="../js/viewdataLogin.js"></script>
+  <script type="text/javascript" src="../js/viewdataMapManager.js"></script>
+  <script type="text/javascript" src="../js/viewdataSelectorConfiguration.js"></script>
+  <script type="text/javascript" src="../js/viewdataStyleControls.js"></script>
+
+
+  <!-- Set a title for the page (id is not necessary). -->
+  <title id="page-title">WMS Data Viewer</title>
+
+  <!-- You can have onReady function here or in your application file. -->
+  <!-- If you have it in your application file delete the whole -->
+  <!-- following script tag as we must have only one onReady. -->
+  <script type="text/javascript">
+
+    // Path to the blank image must point to a valid location on your server
+    Ext.BLANK_IMAGE_URL = '../resources/ext/images/default/s.gif';
+
+    Ext.onReady(function() {
+
+        // NOTE:This is an example showing simple state management. During development,
+        // it is generally best to disable state management as dynamically-generated ids
+        // can change across page loads, leading to unpredictable results.  The developer
+        // should ensure that stable state ids are set for stateful components in real apps.
+        Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+
+        Ext.QuickTips.init();
+        Ext.apply(Ext.QuickTips.getQuickTip(), {
+            showDelay: 500,      // default
+            hideDelay: 0,        // default is 200
+            dismissDelay: 30000  // default is 5000
+        });
+
+        var MAX_LAYERS = 9; // 8 + 1 outline layer
+        var initialStatus = ${h.jsonParseIfNotEmpty(c.initialStatus)};
+        var userInterfaceConfig = initialStatus.ViewDataUserInterfaceConfig;
+        var customText = initialStatus.CustomTextOptions;
+
+        var aboutHtml = Ext.util.Format.htmlDecode(Ext.util.Format.htmlDecode(customText.abouttext));
+        var bannerHtml = Ext.util.Format.htmlDecode(Ext.util.Format.htmlDecode(initialStatus.BannerOptions.html));
+        var logoHtml = Ext.util.Format.htmlDecode(Ext.util.Format.htmlDecode(initialStatus.LogoOptions.html));
+
+        var isUserInterfaceFeatureEnabled = function(feature) {
+            return (userInterfaceConfig == null || userInterfaceConfig[feature] == null
+                    || userInterfaceConfig[feature].show == null || userInterfaceConfig[feature].show === 'true');
+        };
+
+        var initialBounds = new OpenLayers.Bounds(-180,-90,180,90);
+
+        // Create event manager.
+        var allEvents = [];
+        allEvents = allEvents.concat(['DRAW_LAYERS', 'LAYER_ADDED', 'LAYER_REMOVED', 'LAYER_ORDER_CHANGED', 'LAYER_SELECTED',
+                                      'REDRAW_LAYERS', 'LAYER_LIST_REORDERED', 'TEXT_SELECTION_CHANGED',
+                                      'clearSelection', 'MAP_SELECTION_CHANGED', 'SELECTED_LAYER_CHANGED',
+                                      'LEGEND_LAYER_CHANGED', 'LEGEND_LAYER_INVALID', 'LAYER_DISPLAY_CHANGED',
+                                      'LAYER_DIMENSION_CHANGED', 'LAYER_PROPERTY_CHANGED', 'LAYER_STYLE_CHANGED',
+                                      'LAYER_STYLES_SET', 'SET_FEATURE_INFO_CONFIG', 'FEATURE_INFO']);
+        var eventsManager =  new OpenLayers.Events(null, null, allEvents);
+
+        // Handler for data load errors
+        var viewdataLogin = new ViewdataLogin('${login_url}', '${login_url}');
+        var loadErrors = new OpenLayers.Control.LoadErrors({eventsManager: eventsManager, loginDialog: viewdataLogin});
+
+        // Common cache of data for layers.
+        viewdataLayerData = new ViewdataLayerData();
+
+        // Create the layer controls.
+        viewdataLayerControls = new ViewdataLayerControls(eventsManager, MAX_LAYERS, viewdataLogin);
+        viewdataLayerControls.createControls(['ll:outline']);
+
+        // Create the map manager.
+        viewdataMapManager = new ViewdataMapManager(eventsManager, 'map-placeholder', loadErrors);
+
+        // Create the legend manager.
+        viewdataLegendManager = new ViewdataLegendManager(eventsManager);
+
+        viewdataFeatureInfoManager = new ViewdataFeatureInfoManager(eventsManager);
+
+        if (isUserInterfaceFeatureEnabled('boundingbox')) {
+            viewdataBoundingBoxControls = new ViewdataBoundingBoxControls(eventsManager);
+            viewdataBoundingBoxControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('dimensions')) {
+            viewdataDimensionControls = new ViewdataDimensionControls(eventsManager);
+            viewdataDimensionControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('style')) {
+            viewdataStyleControls = new ViewdataStyleControls(eventsManager, initialStatus);
+            viewdataStyleControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('export_animation')) {
+            initialStatus.AnimationOptions.title = 'Movie'
+            initialStatus.AnimationOptions.headingAnimation = 'Animation'
+            viewdataAnimationControls = new ViewdataExportControls(eventsManager, initialBounds, initialStatus.AnimationOptions,
+                                                                   'animation',
+                                                                   ['AVI_MJPEG', 'FLV', 'MOV', 'MPEG2', 'KML', 'SVSX', 'WMS'],
+                                                                   'AVI_MJPEG');
+            viewdataAnimationControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('figure')) {
+            viewdataFigureControls = new ViewdataFigureControls(eventsManager, initialBounds, initialStatus.FigureOptions);
+            viewdataFigureControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('data')) {
+            initialStatus.DataOptions.title = 'Data'
+            initialStatus.DataOptions.headingAnimation = 'Variable Range'
+            viewdataDataControls = new ViewdataExportControls(eventsManager, initialBounds, initialStatus.DataOptions,
+                                                             'data', ['WCS'], 'WCS');
+            viewdataDataControls.createControls();
+        }
+
+        if (isUserInterfaceFeatureEnabled('about')) {
+            viewdataAbout = new ViewdataAbout();
+        }
+
+        viewdataAbout.createPage(aboutHtml);
+
+        // Contruct west region with controls.
+
+        var controlTabItems = [];
+
+        controlTabItems.push(viewdataLayerControls.datasetTree);
+        if (isUserInterfaceFeatureEnabled('boundingbox')) {
+            controlTabItems.push({
+                title: 'Bounding Box',
+                id: 'vd-bounding-box-tab',
+                layout: 'fit',
+                tabTip: 'Set and clear bounding box',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataBoundingBoxControls.boundingBoxForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('dimensions')) {
+            controlTabItems.push({
+                title: 'Dimensions',
+                id: 'vd-dimensions-tab',
+                layout: 'fit',
+                tabTip: 'Additional dimensions',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataDimensionControls.dimensionsForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('style')) {
+            controlTabItems.push({
+                title: 'Style',
+                id: 'vd-style-tab',
+                layout: 'fit',
+                tabTip: 'Select style',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataStyleControls.styleForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('figure')) {
+            controlTabItems.push({
+                title: 'Figure',
+                id: 'vd-figure-tab',
+                layout: 'fit',
+                tabTip: 'Create figure',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataFigureControls.figureForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('export_animation')) {
+            controlTabItems.push({
+                title: 'Movie',
+                id: 'vd-animation-tab',
+                layout: 'fit',
+                tabTip: 'Create movie or other export',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataAnimationControls.exportForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('data')) {
+            controlTabItems.push({
+                title: 'Data',
+                id: 'vd-data-tab',
+                layout: 'fit',
+                tabTip: 'Download data using Web Coverage Service',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataDataControls.exportForm]
+            });
+        }
+        if (isUserInterfaceFeatureEnabled('about')) {
+            controlTabItems.push({
+                title: 'About',
+                id: 'vd-about-tab',
+                layout: 'fit',
+                tabTip: 'About the application',
+                style: 'padding: 4px 4px 4px 4px',
+                items: [viewdataAbout.aboutPage]
+            });
+        }
+
+        var scrollerMenu = new Ext.ux.TabScrollerMenu({
+            maxText: 25,
+            pageSize: 20
+        });
+
+        var controlPanelItems = [];
+        // Control tabs
+        controlPanelItems.push({
+            region: 'north',
+            split: true,
+            id: 'vd-control-tabpanel',
+            xtype: 'tabpanel',
+            activeTab: 0,
+            deferredRender: false,
+            enableTabScroll: true,
+            // resizeTabs: true,
+            // minTabWidth: 75,
+            height: 400,
+            minHeight: 85,
+            items: controlTabItems,
+            layoutOnTabChange: true,
+            defaults: {
+                hideMode: 'offsets'
+            },
+            plugins: [scrollerMenu]
+        });
+        // Layer list
+        controlPanelItems.push({
+            region: 'center',
+            id: 'vd-layers-region',
+            title: 'Layers',
+            layout: 'border',
+            items: [{
+                id: 'vd-help-layers-text',
+                region: 'north',
+                html: '',
+                hidden: true,
+                border: false,
+                cls: 'vd-help-panel-no-margin'
+            },
+                    viewdataLayerControls.layerList
+                   ],
+            border: false,
+            tools: [{
+                id: 'help',
+                handler: function(event, toolEl, panel, toolConfig) {
+                    ViewdataHelp.toggleHelpById('vd-help-layers', 'vd-layers-region');
+                }
+            }]
+        });
+        // Logo
+        if (isUserInterfaceFeatureEnabled('logo_region')) {
+            controlPanelItems.push({
+                region: 'south',
+                id: 'vd-logo-region',
+                layout: 'fit',
+                height: parseInt(initialStatus.LogoOptions.height),
+                collapsible: true,
+                collapseMode: 'mini',
+                bodyStyle: initialStatus.LogoOptions.style,
+                html: logoHtml
+            });
+        }
+        
+        // Contruct centre region with banner and map.
+
+        var centreRegionItems = [];
+        
+        // Banner
+        if (isUserInterfaceFeatureEnabled('banner_region')) {
+            centreRegionItems.push({
+                id: 'vd-banner-region',
+                region: 'north',
+                layout: 'fit',
+                title: customText.maptitle,
+                header: false,
+                collapsedTitle: '<div class="x-panel-header-collapsed x-unselectable">' + customText.maptitle + '</div>',
+                height: parseInt(initialStatus.BannerOptions.height),
+                collapsible: false,
+                floatable: false,
+                bodyStyle: initialStatus.BannerOptions.style,
+                html: bannerHtml
+            });
+        }
+
+        // Map
+        var mapPanel = new Ext.Panel({
+            id: 'vd-map-panel',
+            html: '<div id="map-placeholder" style="width:100%;height:100%"></div>'
+        });
+        centreRegionItems.push({
+            id: 'vd-map-region',
+            region: 'center',
+            border: false,
+            layout: 'fit',
+            items: mapPanel,
+            listeners: {
+                afterlayout: viewdataMapManager.onAfterLayout.bindAsEventListener(viewdataMapManager)
+            }
+        });
+
+        // Set up the page layout.
+        var viewport = new Ext.Viewport({
+            layout: 'border',
+            items: [{
+                region: 'west',
+                id: 'vd-control-panel',
+                title: '',
+                split: true,
+                width: 300,
+                minSize: 50,
+                collapsible: true,
+                floatable: false,
+                // collapseMode: 'mini',
+                margins: '5 0 5 5',
+                cmargins: '5 5 5 5',
+                layout: 'border',
+                items: controlPanelItems
+            },{
+                region: 'center',
+                id: 'vd-centre-region',
+                layout: 'tdgi_border',
+                margins: '5 5 5 0',
+                // border: false,
+                items: centreRegionItems
+            }]
+        });
+
+        viewdataMapManager.createControls(initialStatus, initialBounds);
+        viewdataMapManager.addOutlineLayer(initialStatus);
+
+        viewdataLegendManager.createControls(viewport.el);
+//        viewdataLegendManager.createControls(mapPanel.body);
+        viewdataFeatureInfoManager.createControls(mapPanel.body);
+
+        var boundsControl  = new WMSC.BoundsControl(viewdataBoundingBoxControls.boundingBoxForm.id, initialBounds, eventsManager, null);
+    });
+  </script>
+
+</head>
+
+<!-- You can leave the body empty in many cases, or you write your content in it. -->
+<body></body>
+
+</html>

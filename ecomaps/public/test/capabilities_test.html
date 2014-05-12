@@ -1,0 +1,172 @@
+<html>
+
+<head>
+
+
+<script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>
+
+    <script src="../js/wmsc.js"></script>
+    <script src="../js/capabilities.js"></script>
+    <script src="../js/prototype.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+
+    function init() {
+
+		WMSC.log("started at" +new Date());
+
+        document.getElementById('response').value = "...";
+        document.getElementById('capabilities').value = "...";
+        document.getElementById('test').value = "...";
+        
+		
+//        var params = {REQUEST: 'GetWebMapContext',
+//                      ENDPOINT: 'http://localhost:5000/clim_10/wms'};
+//
+//      
+//        new Ajax.Request('', 
+//            {parameters: params,
+//             method: "get",
+//             onSuccess: onRetrieveWMContext,
+//             onException : function(resp, e) {   alert("Exception:" + e); },
+//            });
+
+
+        var params = {REQUEST: 'GetWebMapCapabilities',
+                ENDPOINT: 'http://ice.badc.rl.ac.uk:5000/clim_10/wms'};
+                
+        var req = new Ajax.Request('http://ice.badc.rl.ac.uk:5005/wmsviz', 
+           {parameters: params,
+            method: "get",
+            onSuccess: onRetrieveWMCapabilities,
+            onException : function(resp, e) {   alert("Exception:" + e); }
+           });
+
+        WMSC.log("Finished.");
+        
+	}
+
+    function onRetrieveWMContext(xhr) {
+        
+        var wmc = new WMSC.WebMapContext(xhr.responseXML.documentElement);
+    }
+
+    function onRetrieveWMCapabilities(xhr) {
+        WMSC.log("xhr = " + xhr);
+        var respElt = document.getElementById('response');
+        respElt.value = "xhr.responseText = " + xhr.responseText + 
+                        "\n\nxhr.responseXML = " + xhr.responseXML ;
+        
+        var wmc = new WMSC.Capabilities(xhr.responseXML.documentElement);
+
+        writeCapabilities(wmc);
+
+        testParse(xhr.responseXML.documentElement);
+        
+    }
+
+    function writeCapabilities(wmc) {
+        var s = "";
+        
+        s += "Title = " + wmc.getTitle() +"\n";
+        s += "Root layer = " + wmc.getRootLayer() + "\n";
+        s += "Requests = " + wmc.getAllRequests() + "\n";
+        s += "num sub layers = " + wmc.getSubLayers().length + "\n";
+
+        for (i=0;i<wmc.getRootLayer().getSubLayers().length;i++) {
+            var layer = wmc.getSubLayers()[i];
+            s += " sublayer #" + i +" name = "+ layer.getName() + " endpoint = " + layer.getEndpoint() + "\n";
+            s += " displayOptions = " + layer.getDisplayOptionsURL() + "\n"
+            
+            var j;
+            for (j=0;j<layer.getStyles().length; j++) {
+                var style = layer.getStyles()[j];
+                
+                s += "    style name=" + style.name + " title=" + style.title + "\n";
+                
+            }            
+        }
+        
+        document.getElementById('capabilities').value = s;
+    }
+
+    function testParse (respDoc) {
+        var i, j;
+        var s = "";
+
+        s += "respDoc.tagName = " + respDoc.tagName+"\n";
+
+        for (j = 0; j < respDoc.attributes.length; j++) {
+            var att = respDoc.attributes[j];
+            s += "-> att = " + att + " att.name = " + att.name  + " att.value = " + att.value + "\n";
+        }
+
+        // won't work in IE
+        try {
+            s += "respDoc.attributes['version'].value = " + respDoc.attributes['version'].value+"\n";
+            s += "respDoc.attributes.version.value = " + respDoc.attributes.version.value+"\n";
+        }
+        catch (e) {
+            s += e.message + "\n";
+        }
+        
+        s += "respDoc.attributes[2].value = " + respDoc.attributes[2].value+"\n";
+        s += "respDoc.getAttribute('version') = " + respDoc.getAttribute('version')+"\n";
+        
+        for (i=0; i<respDoc.childNodes.length; i++) {
+            var c = respDoc.childNodes[i];
+            s += "c.nodeType = " + c.nodeType + " c.tagName = " + c.tagName + "\n";
+
+            for (var j = 0; j < c.childNodes.length; j++) {
+                var gc = c.childNodes[j];
+                s += "gc.nodeType = " + gc.nodeType + " gc.tagName = " + gc.tagName + " getText = " + getText(gc) + "\n";
+                s += "gc.innerText = " + gc.innerText + " gc.textContent = " + gc.textContent + " gc.nodeValue = " + gc.nodeValue + " gc.innerHTML = " + gc.innerHTML + "\n";
+                s += "gc.text = " + gc.text + "\n";
+                if (j > 4) {
+                    break;
+                }
+            }
+        }
+
+        
+        document.getElementById('test').value = s;
+    }
+
+    function getText (node) {
+        
+        if (node.textContent) {
+            return node.textContent;
+        } 
+        else if (node.innerText) {
+            return node.innerText;
+        }
+        else if (node.nodeValue) {
+            return node.innerText;
+        }        
+        else if (node.innerHTML) {
+            return node.innerHTML;
+        }
+        else {
+            return "";
+        }
+    }
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+    Capabilities:<br />
+    <textarea id="capabilities" name="capabilities" rows="20" cols="120" >...</textarea>
+    <br />
+    Response:<br />
+    <textarea id="response" name="response" rows="20" cols="120" >...</textarea>
+    <br />
+    
+    Test:<br />
+    <textarea id="test" name="test" rows="20" cols="120" >...</textarea>
+    <br />
+</body>
+
+</html>

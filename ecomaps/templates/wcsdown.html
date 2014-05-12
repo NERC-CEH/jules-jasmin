@@ -1,0 +1,259 @@
+<html xmlns:py="http://genshi.edgewall.org/" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude">    
+
+<py:def function="makeInput(name, label=None, inputHTML='')">
+    <?python
+        # This function makes a div, label + input html structure for a single input item
+    
+        labelAtts = {'for':name, 'id':name+'_label'}
+        divAtts = {'id':name+'_container'}
+
+        if label == None:
+            label = name
+    ?>
+    <div class="input_item" py:attrs="divAtts">
+        <label py:attrs="labelAtts">${label}</label>
+        ${inputHTML}
+    </div>
+</py:def>
+
+<py:def function="makeSelectInput(name, selected_value, options, label=None, default=None, **atts)">
+    <?python
+        inputHTML = h.html_tags.select(name, selected_value, options,  **atts)
+    ?>
+    ${makeInput(name, label, inputHTML)}
+</py:def>
+
+<py:def function="makeCheckboxInput(name, label=None, default=None, **atts)">
+    <?python
+        inputHTML = h.html_tags.checkbox(name, **atts)
+    ?>
+    ${makeInput(name, label, inputHTML)}
+</py:def>
+
+
+<head>
+
+
+<!-- YUI imports for autocomplete -->
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/fonts/fonts.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/button/assets/skins/sam/button.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/autocomplete/assets/skins/sam/autocomplete.css" />
+
+<!-- <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/yahoo-dom-event/yahoo-dom-event.js"></script> -->
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/yahoo/yahoo.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/event/event.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dom/dom.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/animation/animation.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/element/element.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/button/button.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/datasource/datasource.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/autocomplete/autocomplete.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/event/event.js"></script>
+
+<!--script type="text/javascript" src="$app_globals.server/js/yui/build/datasource/datasource.js"></script-->
+<!-- End of autocomplete imports -->
+
+<script type="text/javascript" src="${h.getOpenLayersImportPath()}"></script>
+<script type="text/javascript" src="$app_globals.server/js/openlayers-x.js"></script>
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/layout/wcdown.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/layout/yui_autocomplete.css" />
+
+
+<script src="$app_globals.server/js/wmsc.js"></script>
+<script src="$app_globals.server/js/boundingBoxMapSelect.js"></script>
+<script src="$app_globals.server/js/boundsControl.js"></script>
+<script src="$app_globals.server/js/json2.js"></script>
+<script src="$app_globals.server/js/splitSelect.js"></script>
+<script src="$app_globals.server/js/utils.js"></script>
+<script src="$app_globals.server/js/endpoint.js"></script>
+
+<script type="text/javascript">
+
+var downloadAction ="$app_globals.server/wcsdown/download";
+var refreshAction = "$app_globals.server/wcsdown";
+
+var timedata = ${h.jsonParseIfNotEmpty(c.timedata)};
+var defaultEndpoints = ${h.jsonParseIfNotEmpty(c.defaultWCSEndpoints)};
+
+function init() {
+
+
+    var bgImagePath = '$app_globals.server/layout/images/clear.gif';
+    
+    var baseLayerData = ${h.jsonParseIfNotEmpty(c.baseLayerJSON)};
+
+    var epUrls = [];
+
+    for (var i = 0; i &lt; defaultEndpoints.length; i ++) {
+        epUrls.push(defaultEndpoints[i].url);
+    }
+    
+    // build endpoint autocomplete
+    Utils.makeCombobox("endpoint", "endpoint_toggle", "endpoint_options", epUrls, onEndpointChange);
+    
+    <py:if test="c.selected_layer != None">
+
+        if (timedata !== null) {
+            var startTime = new SplitSelect('time_container', 'time', timedata, 'Start Time:');
+            startTime.build();
+        
+            var endTime = new SplitSelect('time_end_container', 'time_end', timedata, 'End Time:');
+            endTime.build();
+            
+            setSingleTime('${c.singleTimePoint}' == 'true');
+        }
+        
+        var bboxSelect = new BoundingBoxMapSelect('map', 'bounds_control_container', baseLayerData, 'bbox_hidden_input', null, bgImagePath, null);
+    </py:if>
+
+    
+}
+
+function cleanup() {
+    
+}
+
+function onDownloadClick() {
+    var form = document.getElementById('download_form');
+    form.action = downloadAction;
+    form.target = '_blank';
+    form.submit();
+}
+
+function onRefreshClick() {
+    refresh();
+}
+
+function onEndpointChange() {
+    WMSC.log("Endpoint changed");
+    selectLayerValue("");
+    refresh();
+}
+
+function selectLayerValue(value){
+    
+    var layerSelect = document.getElementById('layer');
+    
+    for (var i=0; i&lt;layerSelect.length; i++) {
+        if (layerSelect.options[i].text == value) {
+            layerSelect.options[i].selected = true;
+            break;
+        }
+    }
+}
+
+function onLayerChange() {
+    refresh();
+}
+
+function setSingleTime(value) {
+    var timeEndContainer = document.getElementById('time_end_container');
+    var singleTimeCB = document.getElementById('single_time');
+    var startTimeLabel = document.getElementById('time_label');
+    
+    if (value) {
+        timeEndContainer.style.display = "none";
+        startTimeLabel.innerHTML = "Time :"
+    }
+    else {
+        timeEndContainer.style.display = "block";
+        startTimeLabel.innerHTML = "Start Time :"
+    }
+    
+    singleTimeCB.checked = value
+}
+
+function refresh() {
+    var form = document.getElementById('download_form');
+    form.action = refreshAction;
+    form.target = '';
+    form.submit();
+}
+
+</script>
+
+</head>
+
+<body onload="init()" onunload="cleanup()" class="yui-skin-sam">
+        
+    <span>
+        <py:replace value="c.message">Message placeholder</py:replace>
+    </span>
+    
+    
+    
+    <div id="page_content">
+    
+        <h1 id="page_title">WCS Download</h1>
+    
+        <div id="download_form_container">
+            <form id="download_form" method="get" > 
+                   
+                <div id="data_container">
+                    <h4>Data Selection</h4>
+                    
+                    
+                    <div py:def="autocompleteMarkup" id='endpoint_autocomplete' style='display:inline;'>
+                        ${h.html_tags.text('endpoint', id='endpoint', value=c.endpoint)}
+                        <span id="endpoint_toggle"></span>
+                        <div id="endpoint_options"></div>
+                    </div>
+                    
+                    ${makeInput('endpoint','Endpoint :', autocompleteMarkup())}
+                    
+                    ${makeSelectInput('layer', c.selected_layer, c.layer_options, label='Layer :', onChange='onLayerChange();')}
+                    
+                    <py:if test="c.selected_layer != None">
+                    
+                        ${makeSelectInput('format', c.selected_format, c.format_options, label='Format :')}
+                        ${makeSelectInput('crs', c.selected_crs, c.crs_options, label='CRS :')}
+
+                    </py:if>
+                
+                </div>
+                
+                <py:if test="c.selected_layer != None">
+                
+                    <div id="bounding_container">
+                    
+                        <h4>Bounding Box</h4>    
+                        <div id="bounds_control_container"></div>
+                        
+                        <div id="map_container">
+                            <div id='map'></div>
+                        </div>    
+
+                        ${h.html_tags.hidden(name='bbox', id='bbox_hidden_input', value=c.selected_bbox)}
+    
+                    </div>
+    
+                    <div id="dimensions_container">
+                        <h4>Dimensions</h4>
+                        
+                        ${makeCheckboxInput('single_time', label='Single Time Point :', value='true', onClick="setSingleTime(this.checked);")}
+                        
+                        <div id="time_container" class="input_item"> </div>
+                        <div id="time_end_container" class="input_item"> </div>
+                    </div>
+                    
+                </py:if>
+                
+                
+                <div id="form_control_buttons">
+                    <input type="button" value="Download" onClick="onDownloadClick();"></input>
+                
+                    <input type="button" value="Refresh" onClick="onRefreshClick();"></input>
+                    
+                    <br class="clear" />
+                </div>
+        
+            </form>
+        </div>
+    </div>   
+
+</body>
+</html>

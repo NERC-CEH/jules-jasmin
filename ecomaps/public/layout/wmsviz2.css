@@ -1,0 +1,438 @@
+div, span, h1, h2, h3, h4 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+} 
+
+
+
+
+/* style for the tabs */
+
+/*
+
+#tabs_container > ul.yui-nav {
+    list-style: none;
+    padding:0;
+    margin:0;
+}
+
+#tabs_container > ul.yui-nav > li {
+    display: inline;
+    border: solid;
+    border-width: 1px 1px 0 1px;
+    margin: 0 0.5em 0 0;
+}
+
+
+#tabs_container > ul.yui-nav > li > a {
+    padding: 0 1em;
+    text-decoration: none;
+    background: #eee;
+    padding: 0 2em;
+    color: #00c;
+}
+
+#tabs_container > div.yui-content{
+    height:100%;
+    border: 1px solid black;
+}
+
+#tabs_container > ul.yui-nav > li.selected {
+    padding-bottom: 1px; 
+    background: white;
+}
+
+*/
+
+/** The Dimensions tab **/
+
+/* the lat-lon selection table*/
+#WMSC_sel table {
+    width:250px;
+}
+
+#WMSC_sel td {
+  font-weight: bold;
+  text-align: center;
+}
+
+#WMSC_sel INPUT {
+  font-size: 12px;
+  margin: 1px;
+}
+
+.centered {
+  text-align:center;
+}
+
+#layer_info_container {
+  background-color:	LightSkyBlue;
+}
+
+#layerLeaves {
+  padding-top:30px; //comment
+}
+/*
+
+.yui-skin-sam .yui-layout {
+    background-color:white; // the background behind the panels
+}
+.yui-skin-sam .yui-layout .yui-layout-unit div.yui-layout-bd {
+    background-color:white; // the background of the panels
+}
+*/
+
+/*** the map ***/
+div#map {
+  /* if you change the width make sure the javascript code in wmsviz is also changed */
+  width: 840px;
+  /* This should always be set to 1/2 the width */
+  height: 420px;
+  background-color: white;
+  margin: 0px;
+  border: 1px solid #222277;
+  
+}
+
+div#mapBox {
+  margin-bottom: 0em;
+}
+
+.olControlLoadingPanel {
+    background-image:url(./images/loading.gif);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+DIV#legend {
+  width: 640px;
+  height:120px;
+  margin: 5px;
+}
+
+#map_table_container {
+  width: 100%;
+  height:100%;
+}
+
+/*** drag and drop ***/
+
+div.workarea 
+{ 
+    padding:10px; 
+}
+
+ul.draglist { 
+    position: relative;
+    width: 150px; 
+    height:172px;
+    background: #f7f7f7;
+    border: 1px solid gray;
+    list-style: none;
+    margin:0;
+    padding:0;
+}
+
+ul.draglist li {
+    margin: 1px;
+    cursor: move;
+    zoom: 1;
+    font-size:12px;
+}
+
+ul.draglist li.list {
+    background-color: #D1E6EC;
+    border:1px solid #7EA6B2;
+}
+
+ul.draglist li.selected {
+    background-color:LightSkyBlue  ;
+    border: 1px solid black;
+}
+
+#layer_list_container {
+}
+
+#layer_list_controls {
+    text-align:center;
+    padding-bottom:10px;
+}
+
+#layer_list_controls > div{
+    padding-bottom:5px;
+}
+
+#layer_info_container {
+    float:left;
+    border: 1px solid black;
+}
+
+#layer_info {
+    padding:10px;
+}
+
+#layer_info_title {
+    margin-left: 20px;
+}
+
+/*** ddc vis ***/
+
+
+DIV#visBody {
+  margin: 4px;
+  width: auto;
+}
+
+DIV#visBody>TABLE {
+  width: 100%;
+}
+
+DIV.optDiv {
+  /*color: #444488; */
+  padding: 4px;
+  border: #222277 solid 1px;
+  background-color: #ddddee;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+DIV.wcsDiv {
+  /*color: #444488; */
+  padding: 4px;
+  border: #222277 solid 1px;
+  background-color: #ddddee;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+DIV.hiddenDiv 
+{
+    display:none;
+    visibility:visible;
+}
+DIV.optDiv INPUT {
+  font-size: 12px;
+  margin: 1px;
+}
+DIV.optDiv TD {
+  font-weight: bold;
+}
+
+DIV.activeOptionArea {
+  margin-right: 8px;
+}
+DIV.inactiveOptionArea {
+  display: none;
+}
+
+TD.tabInfo { 
+             width: 40%;
+             vertical-align: top;
+}   
+
+
+/*** controls ***/
+
+#layer_column {
+
+}
+
+#properties_column {
+
+}
+
+#layer_info_column {
+
+}
+
+table.controlTable {
+    border-collapse: collapse;
+    border: 1px solid #222277;
+}
+td.controlPanel {
+    padding: 6px;
+    vertical-align:top;
+}
+tr.controlHeadings th {
+    background-color: #ddddee;
+    border: 1px solid #222277;
+
+    font-size: 12px;
+}
+div.controlContent {
+    vertical-align: top;
+    font-size: 12px;
+}
+
+
+/* Make leafLayer anchors look like YUI tree nodes. */
+A.WMSC_leafLayer {
+    color: #4F96FF;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+A.WMSC_selectedField {
+  color: blue;
+  //background-color: lightgray;
+  font-weight: bold;
+  cursor: pointer;               
+  font-size: 12px;
+}
+
+.ygtvcontent {
+cursor:pointer;
+}
+
+UL.WMSC_treeNotes {
+  margin-left: 0px;
+  padding-left: 16px;
+}
+
+UL.WMSC_treeNotes DIV {
+  margin-left: 12px;
+}
+
+/* YUI styling */
+
+/* Make the tables fill the space */
+.ygtvtable {
+    width:100%;
+}
+.ygtvrow table {
+    width:100%;
+}
+
+/* 
+    need to set the margin-left to 0 as the tree node labels are
+    contained in <table> elements which have 100% width, so setting
+    an extra margin is causing them to take up more than a whole line. 
+*/
+.ygtvlabel {
+    font-size: 12px;
+    margin: 0px;
+}
+.ygtvlabel:hover {
+    margin: 0px;
+}
+
+
+
+TABLE.WMSC_colourbarAnnotations {
+  width: 100%;
+}
+
+TABLE.WMSC_colourbarAnnotations TD {
+  width: 33%;
+}
+
+TD.WMSC_colourbarMin {
+  text-align: left;
+}
+
+TD.WMSC_colourbarMax {
+  text-align: right;
+}
+
+TD.WMSC_colourbarMid {
+  text-align: center;
+}
+
+DIV.WMSC_legendTitle {
+  font-weight: bold;
+  text-align: center;
+}
+
+
+// layout control layout
+
+body {
+    margin:0;
+    padding:0;
+}
+
+#center_content {
+    overflow:auto;
+    background-color:white;
+}
+
+#center_content > table {
+    width:100%;
+}
+
+#bottom1 {
+    margin-top:5px;
+}
+
+#bottom_left {
+    width:40%;
+    float:left;
+    border-right:1px solid gray;
+    margin-right:2px;
+}
+
+#bottom_left_content {
+    margin-right:5px;
+    background-color:white;
+}
+
+#bottom_middle {
+    width:20%;
+    float:left;
+    border-right:1px solid gray;
+    margin-right:2px;
+}
+
+#bottom_middle_content {
+    overflow:auto;
+    height:100%;
+    margin-right:5px;
+    background-color:white;
+}
+
+#bottom_right {
+    width:38%;
+    float:left;
+}
+
+#bottom_right_content {
+    overflow:auto;
+    height:100%;
+    background-color:white;
+}
+
+.tab_section{
+    overflow:auto;
+    height:100%;
+}
+
+#map {
+height:320px;
+width:640px;
+border:1px solid black;
+}
+
+
+#layer_properties div form {
+    margin-bottom:2px;
+}
+
+.layerInfoItem > label,
+.displayOptionItem > label,
+.layerDimItem > label {
+    width:35%;
+    line-height:25px;
+    display:inline-block;
+}
+
+/* add a slight indent to the subselect labels */
+div.subselect_input {
+    margin-left:10px;
+}
+
+div.subselect_input > label {
+    display:inline-block;
+    margin-right:5px;
+}
+

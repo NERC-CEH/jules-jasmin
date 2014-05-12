@@ -1,0 +1,74 @@
+<html xmlns:py="http://genshi.edgewall.org/" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude">    
+<xi:include href="utils.html" />
+<head>
+
+
+<script src="$app_globals.server/js/OpenLayers.js" ></script>
+
+<script type="text/javascript" src="$app_globals.server/js/yui/utilities/utilities.js" ></script>
+<script type="text/javascript" src="$app_globals.server/js/yui/dragdrop/dragdrop.js" ></script>
+
+<script src="$app_globals.server/js/dragAndDrop.js"></script>
+
+<script src="$app_globals.server/js/layerList.js"></script>
+
+
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/drag_drop_style.css"/>
+
+<script type="text/javascript">
+
+var layerList = null;
+
+function init() {
+    layerList= new LayerList('layer_list');
+}
+
+var ind = 1;
+function add() {
+
+	
+    var visLayer = new OpenLayers.Layer.WMS("DDC-Vis layer",
+            "http://localhost:5000/clim_10/wms",
+            {format: 'image/png', version: '1.3.0', CRS: 'CRS:84',
+            layers: 'tmp',
+            styles:'contour',
+            cmap:'bone',
+            time:'1905-01-15T00:00:00.0'});
+
+    visLayer.id = 'layer_id_' + ind
+    layerList._addLayer(visLayer);
+    ind = ind + 1;
+}
+
+function clearSelection() {
+    layerList._unselectAll();
+}
+
+function remove() {
+    layerList._removeSelectedItem();
+}
+
+function get() {
+    layer = layerList.getSelectedLayer();
+    alert(layer.name + " " + layer.id);
+}
+
+</script>
+
+</head>
+
+<body onload="init()">
+    layer list:
+	<div class="workarea">
+	    <ul class="draglist" id="layer_list">
+	    </ul>
+	</div>
+	<br />
+	<input type="button" value="add" onClick="add();" />
+	<input type="button" value="clear" onClick="clearSelection();" />
+	<input type="button" value="remove" onClick="remove();" />
+	<input type="button" value="get" onClick="get();" />
+</body>
+</html>

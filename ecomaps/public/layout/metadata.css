@@ -1,0 +1,23 @@
+DIV.metadata {PADDING-LEFT: 20px;}
+.title {FONT-WEIGHT:bold; FONT-SIZE:140%; FONT-STYLE: italic; }
+.keywords {COLOR: Blue; FONT-SIZE:120%; FONT-WEIGHT:bold;}
+.metaentry {COLOR: Black}
+.abstract {MARGIN-LEFT: 50px; MARGIN-RIGHT:50px; MARGIN-TOP:10px; MARGIN-BOTTOM:10px; font-style:italic; font-size:100%; border:thin solid black; padding: 3px}
+
+.key {BACKGROUND-IMAGE: url(keySm.gif); BACKGROUND-POSITION: right top;BACKGROUND-REPEAT: no-repeat}
+.lineHiLite {BORDER-TOP: #ddd 1px solid; BACKGROUND: #f4f4f4; MARGIN: 10px 0px 0px 0px;}
+.lineHead {FONT-WEIGHT: bold; FONT-SIZE: 120%; BACKGROUND-COLOR: #f2f2f2;
+        PADDING-RIGHT: 3px; PADDING-LEFT: 3px; PADDING-BOTTOM: 3px; COLOR: #666666; 
+        PADDING-TOP: 3px; BORDER-BOTTOM: #666666 1px solid;}
+.lineHead A:link {COLOR: #ff6600; TEXT-DECORATION: none}
+.lineHead A:visited {COLOR: #ff6600; TEXT-DECORATION: none}
+.line  {COLOR: #666666; padding: 3px; FONT-SIZE:120%; border-bottom: 1px #ccc; FONT-WEIGHT:bold; }
+.line A:hover {COLOR: #336699; TEXT-DECORATION: none}
+.line A:active {COLOR: #336699; TEXT-DECORATION: none}
+.lineHiLite {PADDING-RIGHT: 3px; PADDING-LEFT: 3px; PADDING-BOTTOM: 3px; COLOR: #666666; 
+             PADDING-TOP: 3px; BORDER-BOTTOM: #cccccc 1px solid; BACKGROUND-COLOR: #f2f2f2;}
+.headingO {FONT-WEIGHT: bold; COLOR: #ff6600; FONT-FAMILY: Arial, Verdana, serif, sans-serif}
+    
+    
+
+

@@ -1,0 +1,40 @@
+/***********************************************/
+/* drag_drop_style.css                         */
+/* Stylesheet to format drag and drop control  */
+/* C Byrom 11/03/08			                   */
+/***********************************************/ 
+
+div.workarea 
+{ 
+	padding:10px; 
+	/* float:left */ 
+}
+
+ul.draglist { 
+    position: relative;
+    width: 150px; 
+    height:172px;
+    background: #f7f7f7;
+    border: 1px solid gray;
+    list-style: none;
+    margin:0;
+    padding:0;
+}
+
+ul.draglist li {
+    margin: 1px;
+    cursor: move;
+    zoom: 1;
+    font-size:12px;
+}
+
+ul.draglist li.list {
+    background-color: #D1E6EC;
+    border:1px solid #7EA6B2;
+}
+
+ul.draglist li.selected {
+    background-color:LightSkyBlue  ;
+    border: 1px solid black;
+}
+

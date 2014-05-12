@@ -1,0 +1,12 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:xi="http://www.w3.org/2001/XInclude"
+     xmlns:py="http://genshi.edgewall.org/"
+     class="control-group time-selector"
+     data-columnid="${c.identifier}">
+
+    <label for="${c.identifier}" class="control-label">${c.dataset_name} (${c.column_name}) time point: </label>
+
+    <select name="time_${c.identifier}" id="${c.identifier}" class="controls">
+        <option py:for="index, time_point in enumerate(c.time_points)" value="${index}">${time_point.strftime('%d-%b-%Y')}</option>
+    </select>
+</div>

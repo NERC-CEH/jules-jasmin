@@ -1,0 +1,215 @@
+<html xmlns:py="http://genshi.edgewall.org/" 
+      xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:xi="http://www.w3.org/2001/XInclude">	
+<xi:include href="utils.html" />
+<head>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ddc_style.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ddc_vis.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ndg2.css"/>
+<!-- <script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> -->
+
+
+<!-- BEGIN: Yahoo Interface Library -->
+<link type="text/css" rel="stylesheet"
+	href="$app_globals.server/js/yui/treeview/assets/skins/sam/treeview.css"/> 
+	 
+<!-- Dependency source files -->  
+<script src = "$app_globals.server/js/yui/yahoo/yahoo-min.js" ></script> 
+<script src = "$app_globals.server/js/yui/event/event-min.js" ></script> 
+  
+<!-- TreeView source file -->  
+<script src = "$app_globals.server/js/yui/treeview/treeview-min.js" ></script> 
+
+<!-- TreeView Menu Style -->
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui/treeview/assets/treeview-menu.css"/> 
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui/fonts/fonts-min.css?_yuiversion=2.5.0" />
+<script type="text/javascript" src="$app_globals.server/js/yui/utilities/utilities.js?_yuiversion=2.5.0"></script>
+
+<script type="text/javascript" src="$app_globals.server/js/yui/yahoo-dom-event/yahoo-dom-event.js" ></script> 
+<script type="text/javascript" src="$app_globals.server/js/yui/dragdrop/dragdrop-min.js" ></script>
+<script type="text/javascript" src="$app_globals.server/js/toggleDiv.js" ></script>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/drag_drop_style.css"/>
+<script src = "$app_globals.server/js/dragAndDrop.js" ></script> 
+
+<!-- END: Yahoo Interface Library -->
+
+<!-- BEGIN: WMSC library -->
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/control.css"/>
+
+<script src="$app_globals.server/js/wmsc.js"></script>
+<script src="$app_globals.server/js/prototype.js"></script>
+<!--script src="http://www.openlayers.org/api/2.4/OpenLayers.js"></script-->
+<script src="$app_globals.server/js/OpenLayers.js" />
+<script src="$app_globals.server/js/openlayers-x.js"/>
+<script src="$app_globals.server/js/dimensionControl.js"/>
+<script src="$app_globals.server/js/mapControl.js"/>
+<script src="$app_globals.server/js/layerControl.js"></script>
+<script src="$app_globals.server/js/capabilities.js"></script>
+<script src="$app_globals.server/js/wcs.js"></script>
+<!-- END: WMSC library -->
+
+<script type="text/javascript">
+
+// Hook into application for debugging.    
+var app = null;
+var control = null;
+
+<?python
+from pylons import session 
+?>	
+	
+function init() 
+{
+    var coordControl = new WMSC.DimControl('dims');
+    var layerControl = new WMSC.VisAppLayers('layerTree', 'layerLeaves', coordControl);	
+	<for py:for="i in session['viewItems']" class="dataset" py:strip="True">
+    	<span py:if="i.wmcURL" py:strip="True">
+	    	layerControl.addWebMapContext("${i.wmcURL}");
+	    </span>
+    </for> 
+    app = new WMSC.VisApp('map', 10, 640, true);
+    app.addDimensionControl(coordControl);
+    app.addLayerControl(layerControl);  
+	if (document.getElementById('wcsdownload') == null) {
+		createDownloadButton(wcsdownloadDiv);	
+		}	
+}
+
+function cleanup() 
+{
+    app.destroy();
+}
+	
+<!--! Help Icons -->
+<span py:def="helpIcon(value, elementType = 'div')">
+       <span>
+          <a href="javascript:;" title="Toggle help" onclick="toggleDiv(1,'$value','shown','hidden','$elementType'); return false;">
+          <img src="$app_globals.helpIcon" alt="Toggle help" class="helpicon"/></a>
+       </span>
+</span>
+	
+
+</script>
+
+<!--<replace py:replace="pagehead()"/> -->
+</head>
+
+<body onload="init()" onunload="cleanup()">
+	<div id="entirepage">
+    <!--<div py:replace="header()"/>  -->
+	<!-- <div py:replace="PageTabs('View')"/> -->
+    <!-- <div py:replace="searchOneLine()"/> -->
+
+<div id="visBody">
+<table>
+  <tr>
+    <td align="center">
+    	<div id="mapBox">
+			<div id="map"></div>
+			<div id="legend"></div>
+		</div>
+    </td>
+    <td valign="top">
+      <div class="optDiv">
+        <b>Selection Description</b>
+		<div id="description">
+		  Complete your selection below to view  <span py:replace="helpIcon('coord_help', 'div')"/> 
+		</div>
+      </div>
+		
+		<div id="coord_help" class="hidden">
+      	<div class="helptxt">
+				Specifying coordinate dimensions will select a region on the map; 
+				when this is appropriately sized, the map will automatically zoom to this region.<br/>
+				'Reset selection' will return the map to its full, global size.<br/>
+				Some map layers have additional dimensions, e.g. 'time'; 
+				if these are available, they will also be displayed in this panel for selection.<br/>
+				NB, the dimensions displayed are those relating to the selected dataset 
+				in the left hand tree view - however they will also be applied, where appropriate, to all selected map layers.
+        </div>
+      </div>	
+		
+      <div class="optDiv">
+        <b>Domain</b>
+			<div id="dims"></div>
+      </div>
+	<div class="wcsDiv">
+        <b>Download Data for this Selection</b>
+			<div id="wcsdownloadDiv"></div>
+      </div>
+    <div class="hiddenDiv">
+	<form id="figureForm">
+	  <b>Plot type</b><br/>
+	  <input type="radio" name="figType" value="colour" checked="1"/>Colour<br/>
+	  <input type="radio" name="figType" value="bw"/>B/W Contour<br/>
+	  <b>Format</b><br/>
+	  <select name="figFormat">
+	    <option value="image/png" name="figFormat" selected="1"> PNG </option>
+	    <option value="image/jpeg" name="figFormat"> JPEG </option>
+	    <option value="application/postscript" name="figFormat"> EPS </option>
+	    <option value="image/svg+xml" name="figFormat"> SVG </option>
+	  </select>
+	  <input type="button" value="Make Figure" 
+	  	onclick="app.makeFigure(this.parentNode.figType, this.parentNode.figFormat)"/>
+	</form>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<table class="controlTable">
+<tr class="controlHeadings">
+<th>Dataset  <span py:replace="helpIcon('dataset_help')"/> 
+</th> 
+<th>Layer <span py:replace="helpIcon('layer_help')"/></th>  
+</tr>
+<tr>
+<td>
+	<div id="dataset_help" class="hidden">
+      	<div class="helptxt">
+        		Select a dataset to expand it and make its map layers visible; these can then be selected to add to the 'Layer'
+        		panel for visualisation.<br/>  
+        		Remove datasets from the display by clicking their <img src="$app_globals.server/js/img/close.gif" /> icon.
+        </div>
+    </div>
+</td>
+<td>
+	<div id="layer_help" class="hidden">
+      	<div class="helptxt">
+      		When multiple map layers are selected, the displayed map is constructed by sequentially adding the layers from the bottom of the list
+      		to the top.<br/>
+      		NB, if the topmost layer has legend data available then this will be displayed under the completed map.<br/>
+      		Remove layers from the displayed map by clicking their <img src="$app_globals.server/js/img/close.gif" /> icon.
+        </div>
+    </div>
+</td>
+</tr>
+<tr>
+<td class="controlPanel"><div class="controlContent" id="layerTree">
+	Please wait while datasets load</div>
+</td>
+<td class="controlPanel">
+	<div class="controlContent" id="layerLeaves">
+		<div id="layerMessage" class="layerMessage">
+            <span py:if="'viewItems' not in session" py:strip="True">
+            	Please select a dataset to view - from the 'Selections' tab.
+            </span>
+            <span py:if="'viewItems' in session" py:strip="True">
+				Expand a dataset and select a layer to view
+			</span>
+		</div>
+		<div class="workarea">
+			<ul class="draglist" id="layerlist">
+			</ul>
+		</div>
+	</div>
+</td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>

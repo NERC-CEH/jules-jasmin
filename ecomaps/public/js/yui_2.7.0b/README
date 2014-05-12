@@ -1,0 +1,6 @@
+The files in this folder are taken from the 2.7.0b version of the YUI library.
+
+Available at: http://yuilibrary.com/downloads/yui2/yui_2.7.0b.zip
+
+Only the files under the 'build' directory have been included, the other 
+documentation, tests and example files have been ignored.

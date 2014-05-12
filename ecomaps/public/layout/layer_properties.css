@@ -1,0 +1,45 @@
+/*
+   Style for the layer properties panel content.
+*/
+#layer_properties div form {
+	margin-bottom:2px;
+}
+
+#layer_info_container {
+}
+
+
+.layerInfoItem, .displayOptionItem, .layerDimItem{
+	
+}
+
+.layerInfoItem > label,
+.displayOptionItem > label,
+.layerDimItem > label {
+	width:35%;
+	line-height:25px;
+	display:inline-block;
+}
+
+#layer_dimensions_container {
+	height:auto;
+}
+
+/* add a slight indent to the subselect labels */
+div.subselect_input {
+    margin-left:10px;
+}
+
+div.subselect_input > label {
+    display:inline-block;
+    margin-right:5px;
+}
+
+
+.layerInfoItem span {
+	
+}
+
+.layerInfoItem select {
+	
+}
