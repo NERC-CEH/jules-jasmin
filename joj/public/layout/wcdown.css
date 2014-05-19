@@ -1,0 +1,84 @@
+h4, h1, body {
+	margin:0;
+	padding:0;
+}
+
+.clear {
+	clear:both;
+	height:0px;
+}
+
+#page_title {
+	margin-left:150px;
+}
+
+
+#download_form_container {
+	padding:10px;
+    width:780px;
+}
+
+
+#download_form {
+	margin-bottom:0px;
+	padding:20px;
+	background-color:#E1ECC1;
+	border: 1px solid black;
+}
+
+.input_item {
+	height: 2.2em;
+	line-height:2.2em;
+}
+
+.input_item > label {
+    width:120px;
+    display:inline-block;
+    text-align:right;
+}
+
+.input_item > * {
+    vertical-align:middle;
+}
+
+
+#map_container {
+	padding:10px;
+    float:left;
+}
+
+#bounds_control_container {
+	float:left;
+	width:200px;
+}
+
+#bbox_sel_bounds_container {
+	padding-top:40px;
+	padding-right:20px;
+	padding-bottom:10px;
+}
+
+#WMSC_clear {
+	margin-left:40px;
+	margin-top:20px;
+}
+
+#form_control_buttons{
+	padding-top:30px;
+	padding-right:25px;
+}
+
+#form_control_buttons > input{
+    float:right;
+    margin-left:10px;
+}
+
+#map {
+	width:500px;
+	height:250px;
+	border: 1px solid black;
+}
+
+#dimensions_container {
+    clear:both;
+}

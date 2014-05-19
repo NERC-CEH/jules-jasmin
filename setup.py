@@ -6,29 +6,29 @@ except ImportError:
     from setuptools import setup, find_packages
 
 setup(
-    name='ecomaps',
-    version="1.7.0", 
+    name='joj',
+    version="1.0.0",
     #description='',
-    #author='',
+    #author='',l
     #author_email='',
     #url='',
-    install_requires=["Pylons==1.0", "genshi"],
+    install_requires=["Pylons==1.0.1", "genshi", "SQLAlchemy", "repoze.who", "mysql-connector-python", "numpy", "NetCDF4", "pydap", "coards"],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
-    package_data={'ecomaps['i18n/*/LC_MESSAGES/*.mo']},
+    package_data={'jules-jasmin' : ['i18n/*/LC_MESSAGES/*.mo']},
     #message_extractors = {'cowsclient': [
     #        ('**.py', 'python', None),
     #        ('templates/**.mako', 'mako', None),
     #        ('public/**', 'ignore', None)]},
     entry_points="""
     [paste.app_factory]
-    main = ecomaps.config.middleware:make_app
+    main = joj.config.middleware:make_app
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
 
     [console_scripts]
-    load_endpoints = ecomaps.scripts.load_endpoints:main
+    load_endpoints = joj.scripts.load_endpoints:main
     """,
 )

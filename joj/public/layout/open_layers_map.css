@@ -1,0 +1,26 @@
+div#map {
+  /* if you change the width make sure the javascript code in wmsviz is also changed */
+  width: 640px;
+  /* This should always be set to 1/2 the width */
+  height: 320px;
+  background-color: white;
+  margin: 0px;
+  border: 1px solid #222277;
+  
+}
+
+div#mapBox {
+  margin-bottom: 0em;
+}
+
+.olControlLoadingPanel {
+    background-image:url(./images/loading7.gif);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+DIV#legend {
+  width: 640px;
+  height:120px;
+  margin: 1px;
+}

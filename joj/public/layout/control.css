@@ -1,0 +1,133 @@
+/*
+   Style for the WMS client control panel.
+*/
+
+#datasets_column {
+    width:40%;
+}
+
+#layer_column {
+    width:20%;
+}
+
+#properties_column {
+    width:40%;
+}
+
+table.controlTable {
+    border-collapse: collapse;
+}
+td.controlPanel {
+    border: 1px solid #222277;
+    padding: 6px;
+    vertical-align:top;
+}
+tr.controlHeadings th {
+    background-color: #ddddee;
+    border: 1px solid #222277;
+
+    font-size: 12px;
+}
+div.controlContent {
+    vertical-align: top;
+    height: 250px;
+    overflow: auto;
+    font-size: 12px;
+}
+
+DIV.WMSC_domain {
+  padding: 4px;
+  text-align: center;
+  margin-bottom: 2px;
+}
+DIV.WMSC_domain INPUT {
+  font-size: 12px;
+  margin: 1px;
+}
+DIV.WMSC_domain TD {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Make leafLayer anchors look like YUI tree nodes. */
+A.WMSC_leafLayer {
+    color: #4F96FF;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.WMSC_selectedField {
+  color: blue;
+  font-weight: bold;
+  cursor: pointer;               
+  font-size: 12px;
+}
+
+.ygtvcontent {
+cursor:pointer;
+}
+
+UL.WMSC_treeNotes {
+  margin-left: 0px;
+  padding-left: 16px;
+}
+
+UL.WMSC_treeNotes DIV {
+  margin-left: 12px;
+}
+
+/* YUI styling */
+
+/* Make the tables fill the space */
+.ygtvtable {
+	width:100%;
+}
+.ygtvrow table {
+    width:100%;
+}
+
+
+.ygtvfocus {
+	background-color:transparent;
+}
+
+/* 
+    need to set the margin-left to 0 as the tree node labels are
+    contained in <table> elements which have 100% width, so setting
+    an extra margin is causing them to take up more than a whole line. 
+*/
+.ygtvlabel {
+    font-size: 12px;
+    margin: 0px;
+}
+.ygtvlabel:hover {
+    margin: 0px;
+}
+
+
+
+TABLE.WMSC_colourbarAnnotations {
+  width: 100%;
+}
+
+TABLE.WMSC_colourbarAnnotations TD {
+  width: 33%;
+}
+
+TD.WMSC_colourbarMin {
+  text-align: left;
+}
+
+TD.WMSC_colourbarMax {
+  text-align: right;
+}
+
+TD.WMSC_colourbarMid {
+  text-align: center;
+}
+
+DIV.WMSC_legendTitle {
+  font-weight: bold;
+  text-align: center;
+}
+

@@ -1,0 +1,91 @@
+/* CSS styles for the login page */
+html
+{
+    font-family: Helvetica, Arial, "Nimbus Sans L", sans-serif;
+    font-size: 95%;
+}
+
+html {
+    background: url(images/3750.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    width:100%;
+}
+
+body
+{
+    height: 100%;
+    margin: 0;
+    min-width: 768px;
+    background: none;
+}
+
+#logo
+{
+    height: 200px;
+    background-repeat: no-repeat;
+    background-position: center top;
+}
+
+#banner
+{
+    background: #FFF;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+    position: absolute;
+    top: 15px;
+    height: 150px;
+    width: 100%;
+}
+
+#login-form
+{
+    background: #FFFFFF;
+    margin-left: 150px;
+    opacity: 0.9;
+    padding: 20px;
+}
+
+h1
+{
+    color: #FFF;
+    background: #00A3CC;
+    padding: 0.5em;
+}
+
+.content-body
+{
+    margin-left: 150px;
+    background: #BDD1D6;
+}
+
+.error-message
+{
+    color: #FF471F;
+    font-weight: bold;
+    padding: 0.5em;
+    border-left: solid 3px #FF471F;
+}
+
+span.error-message
+{
+    float: right;
+}
+
+div#footer
+{
+    background: #FFF;
+    text-align: left;
+    padding: 1em;
+    font-size: 80%;
+}
+
+div#footer div
+{
+    margin-bottom: 0.5em;
+}
+
+
+

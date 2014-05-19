@@ -1,0 +1,23 @@
+/* for the endpoint autocomplete box */
+
+    /* custom styles for inline instances */
+    .yui-skin-sam .yui-ac-input { position:static;width:20em; vertical-align:middle;}
+    .yui-skin-sam .yui-ac-container { width:20em;left:0px;}
+    
+    /* needed for stacked instances for ie &amp; sf z-index bug of absolute inside relative els */
+    /* Id's taken form the example, left here to be changed when needed */
+    #breakfast_autocomplete { z-index:9001; }
+    #lunch_autocomplete { z-index:9000; }
+    
+    /* buttons */
+    .yui-ac .yui-button {vertical-align:middle;}
+    .yui-ac .yui-button button {background: url(./images/arrow-rt.png) center center no-repeat }
+    .yui-ac .open .yui-button button {background: url(./images/arrow-dn.png) center center no-repeat}
+
+
+/* add scrolling to the endpoint options dropdown */
+#endpoint_autocomplete .yui-ac-content{
+    max-height:15em;
+    overflow:auto;
+    overflow-x:hidden;
+}
