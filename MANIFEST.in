@@ -1,2 +1,2 @@
-recursive-include ecomaps/public *
-recursive-include ecomaps/templates *
+recursive-include joj/public *
+recursive-include joj/templates *

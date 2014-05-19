@@ -1,16 +1,16 @@
-This file is for you to describe the ecomaps application. Typically
+This file is for you to describe the joj application. Typically
 you would include information such as the information below:
 
 Installation and Setup
 ======================
 
-Install ``ecomaps`` using easy_install::
+Install ``joj`` using easy_install::
 
-    easy_install ecomaps
+    easy_install joj
 
 Make a config file as follows::
 
-    paster make-config ecomaps config.ini
+    paster make-config joj config.ini
 
 Tweak the config file as appropriate and then setup the application::
 
