@@ -3,6 +3,8 @@ from sqlalchemy import engine_from_config, Column, Integer, String, ForeignKey, 
 from sqlalchemy.orm import relationship
 from joj.model.meta import Session, Base
 from contextlib import contextmanager
+from model_run import ModelRun
+from model_file import ModelFile
 
 __author__ = 'Phil Jenkins (Tessella)'
 
