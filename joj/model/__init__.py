@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from model_run import ModelRun
 from model_file import ModelFile
 
-__author__ = 'Phil Jenkins (Tessella)'
 
 def initialise_session(config, manual_connection_string=None):
     """Sets up our database engine and session

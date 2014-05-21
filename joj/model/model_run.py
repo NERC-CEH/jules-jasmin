@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, Enum, SmallInteger, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey
 from sqlalchemy.orm import relation, backref
 from joj.model.meta import Base
 from joj.utils import constants
@@ -14,7 +14,7 @@ class ModelRun(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     date_submitted = Column(DateTime)
     date_started = Column(DateTime)
-    time_elapsed = Column(BigInteger)
+    time_elapsed_secs = Column(BigInteger)
     status = Column(SmallInteger)
     code_version = Column(SmallInteger)
     files = relation("ModelFile", backref=backref('model_files', order_by=id))
