@@ -1,12 +1,12 @@
+#header
+
 import datetime
 import os
 import pylons.test
 from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, Analysis, User, AnalysisCoverageDataset, \
-    AnalysisCoverageDatasetColumn, Model
+    AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
 from joj.model.meta import Base, Session
-
-__author__ = 'Phil Jenkins (Tessella)'
 
 
 def _get_result_image():
@@ -127,6 +127,38 @@ def setup_app(command, conf, vars):
         # ds2.name = 'Example Point dataset'
 
         session.add(ds2)
+
+        level = UserLevel()
+        level.name = 'Beginner'
+        session.add(level)
+
+        statuses = [ModelRunStatus('Finished'), ModelRunStatus('Pending'), ModelRunStatus('Running')]
+        map(session.add, statuses)
+
+        code_version = CodeVersion()
+        code_version.name = 'Jules v3.4.1'
+        code_version.url_base = 'http://www.jchmr.org/jules/documentation/user_guide/vn3.4/'
+        session.add(code_version)
+
+        timesteps_namelist_file = NamelistFile()
+        timesteps_namelist_file.filename = 'timesteps.nml'
+        session.add(timesteps_namelist_file)
+
+        timesteps_namelist = Namelist()
+        timesteps_namelist.name = 'JULES_TIME'
+        timesteps_namelist.namelist_file = timesteps_namelist_file
+        session.add(timesteps_namelist)
+
+        parameter = Parameter()
+        parameter.default_value = 'None'
+        parameter.name = 'timestep_len'
+        parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
+        parameter.type = 'integer'
+        parameter.user_level = level
+        parameter.code_versions = [code_version]
+        parameter.namelist = timesteps_namelist
+
+        session.add(parameter)
 
 
 

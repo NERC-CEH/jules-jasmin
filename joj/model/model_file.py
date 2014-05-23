@@ -1,3 +1,5 @@
+# Header
+
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from joj.model.meta import Base
 from joj.utils import constants

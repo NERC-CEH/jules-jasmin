@@ -3,9 +3,19 @@ from sqlalchemy import engine_from_config, Column, Integer, String, ForeignKey, 
 from sqlalchemy.orm import relationship
 from joj.model.meta import Session, Base
 from contextlib import contextmanager
-from model_run import ModelRun
-from model_file import ModelFile
+#import all the database models in so they can be built
 
+from model_file import ModelFile
+from model_run import ModelRun
+from code_version import CodeVersion
+
+from namelist_file import NamelistFile
+from namelist import Namelist
+from parameter import Parameter
+from parameter_value import ParameterValue
+from user import User
+from user_level import UserLevel
+from model_run_status import ModelRunStatus
 
 def initialise_session(config, manual_connection_string=None):
     """Sets up our database engine and session
@@ -39,24 +49,6 @@ def session_scope(session_class=Session):
 
 
 ## Model definitions below ##
-
-class User(Base):
-    """A user of the Ecomaps system"""
-
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50))
-    email = Column(String(255))
-    name = Column(String(50))
-    access_level = Column(String(10))
-    first_name = Column(String(50))
-    last_name = Column(String(50))
-
-    def __repr__(self):
-        """String representation of the user"""
-
-        return "<User(username=%s, name=%s)>" % (self.username, self.name)
 
 class DatasetType(Base):
     """Used to distinguish between the different types of map dataset we're dealing with"""

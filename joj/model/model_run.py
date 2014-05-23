@@ -1,5 +1,7 @@
+# Header
+
 from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey
-from sqlalchemy.orm import relation, backref
+from sqlalchemy.orm import relationship, backref
 from joj.model.meta import Base
 from joj.utils import constants
 
@@ -15,9 +17,13 @@ class ModelRun(Base):
     date_submitted = Column(DateTime)
     date_started = Column(DateTime)
     time_elapsed_secs = Column(BigInteger)
-    status = Column(SmallInteger)
-    code_version = Column(SmallInteger)
-    files = relation("ModelFile", backref=backref('model_files', order_by=id))
+    status_id = Column(SmallInteger, ForeignKey('model_run_statuses.id'))
+    code_version_id = Column(SmallInteger, ForeignKey('code_versions.id'))
+
+    code_version = relationship("CodeVersion", backref=backref('model_runs', order_by=id))
+    files = relationship("ModelFile", backref=backref('model_files', order_by=id))
+    parameter_values = relationship("ParameterValue", backref=backref('model_run', order_by=id))
+    status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id))
 
     def __repr__(self):
         """ String representation of the model run """
