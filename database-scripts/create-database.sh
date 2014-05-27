@@ -4,6 +4,7 @@ BTICK='`'
 EXPECTED_ARGS=3
 E_BADARGS=65
 MYSQL=`which mysql`
+MYSQL="/opt/mysql/bin/mysql"
 
 Q1="CREATE DATABASE IF NOT EXISTS ${BTICK}$1${BTICK};"
 Q2="GRANT ALL ON ${BTICK}$1${BTICK}.* TO '$2'@'localhost' IDENTIFIED BY '$3';"

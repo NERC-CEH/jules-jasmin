@@ -1,7 +1,7 @@
 from mock import MagicMock, ANY
 from joj.model import Analysis
 from ecomjoj.ices.tests.base import BaseTest
-from joj.joj..analysis import AnalysisService
+from joj.analysis import AnalysisService
 from joj.model import Dataset
 import os
 

@@ -265,22 +265,24 @@ class CrowdClient(object):
             #self.opener_installed = True
 
         try:
+          #TODO fix login
+          if False:
             # We're finally ready to make the request...
 
-            #f = urllib2.urlopen(request)
+            f = urllib2.urlopen(request)
 
             # 204 is officially "No Content", so we won't have
             # any JSON to load! This is expected for 'DELETE'
             # operations for example
-            #if f.code != 204:
-            #    response = f.read()
+            if f.code != 204:
+                response = f.read()
 
-            #   response_object = simplejson.loads(response) if response else None
+                response_object = simplejson.loads(response) if response else None
 
-            #    f.close()
-            # else:
-            #    response_object = None
-
+                f.close()
+            else:
+                response_object = None
+          else:
             response_object = {
                 'name': 'johhol',
                 'token': 'atoken',
