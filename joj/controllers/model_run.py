@@ -4,6 +4,7 @@ import logging
 from pylons.controllers.util import redirect
 import formencode
 from pylons.decorators import jsonify
+from webhelpers.html.tags import Option
 
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, response, render, session, abort
@@ -38,6 +39,8 @@ class ModelRunController(BaseController):
         """
 
         c.all_models = self._model_run_service.get_model_being_created(self.current_user)
+        versions = self._model_run_service.get_code_versions()
+        c.code_versions = [Option(version.id, version.name) for version in versions]
 
         return render('model_run/create.html')
 

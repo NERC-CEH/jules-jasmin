@@ -1,6 +1,7 @@
 # header
 
 from joj.services.general import DatabaseService
+from joj.model import CodeVersion
 
 
 class ModelRunService(DatabaseService):
@@ -32,3 +33,14 @@ class ModelRunService(DatabaseService):
         a model run model that the user will submit
         """
         pass
+
+    def get_code_versions(self):
+        """
+        Get the list of code versions the user can select from
+
+        Returns:
+        list of code versions
+        """
+
+        with self.readonly_scope() as session:
+            return session.query(CodeVersion).all()

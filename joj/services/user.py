@@ -33,7 +33,7 @@ class UserService(DatabaseService):
             user.last_name = last_name
 
             session.add(user)
-        return user
+            return user
 
     def get_user_by_username(self, username):
         """Gets a single user by their username

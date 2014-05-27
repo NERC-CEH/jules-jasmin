@@ -23,3 +23,7 @@ class TestModelRunController(TestController):
             url(controller='model_run', action='create'),
             extra_environ={'REMOTE_USER': str(user.username)})
         assert_that(response.normal_body, contains_string("Create Model Run"))
+        assert_that(response.normal_body, contains_string("Name"))
+        assert_that(response.normal_body, contains_string("Code Version"))
+        assert_that(response.normal_body, contains_string("Jules v3.4.1"))
+        assert_that(response.normal_body, contains_string("Next"))

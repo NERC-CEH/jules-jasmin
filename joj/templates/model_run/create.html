@@ -25,13 +25,18 @@
     <form class="form-horizontal" method="POST" action="${url(controller='analysis', action='create')}">
 
         <div class="control-group">
-            <label for="analysis_name" class="control-label">Name of Analysis:</label>
-            ${h.html_tags.text('analysis_name', class_='controls')}
+            <label for="name" class="control-label">Name:</label>
+            ${h.html_tags.text('name', class_='controls')}
+        </div>
+
+        <div class="control-group">
+            <label for="code_version" class="control-label">Code:</label>
+            ${h.html_tags.select('code_version', '', c.code_versions, class_='controls')}
         </div>
 
 
         <div class="controls">
-            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Run" />
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
         </div>
     </form>
 
