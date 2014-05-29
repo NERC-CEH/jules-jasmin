@@ -1,6 +1,10 @@
 # header
+import logging
+from sqlalchemy.orm.exc import NoResultFound
+from joj.services.general import DatabaseService, ServiceException
+from joj.model import ModelRun
 
-from joj.services.general import DatabaseService
+log = logging.getLogger(__name__)
 
 
 class ModelRunService(DatabaseService):
@@ -17,8 +21,14 @@ class ModelRunService(DatabaseService):
         returns:
         a list of model runs the user can see
         """
-
-        return []
+        with self.readonly_scope() as session:
+            try:
+                return session.query(ModelRun).filter(ModelRun.user_id == user.id).all()
+            except NoResultFound as e:
+                return []
+            except Exception as ex:
+                # A general error has occurred - pass this up
+                raise ServiceException(ex)
 
     def get_model_being_created(self, user):
         """

@@ -3,8 +3,6 @@ from joj.model import User
 from joj.services.tests.base import BaseTest
 from joj.services.user import UserService
 
-__author__ = 'Phil Jenkins (Tessella)'
-
 
 class UserServiceTest(BaseTest):
 
@@ -15,17 +13,20 @@ class UserServiceTest(BaseTest):
         # will do that for us
 
         sample_user = User()
-        sample_user.username = 'test'
+        sample_user.username = 'testuser'
         sample_user.name = 'Test User'
         sample_user.email = 'testuser@test.com'
         sample_user.access_level = 'External'
+        sample_user.first_name = "first_name"
+        sample_user.last_name = "last_name"
 
         self._mock_session.add = MagicMock()
         self._mock_session.commit = MagicMock()
 
         user_service = UserService(self._mock_session)
         user_service.create(sample_user.username,
-                            sample_user.name,
+                            sample_user.first_name,
+                            sample_user.last_name,
                             sample_user.email,
                             sample_user.access_level)
 

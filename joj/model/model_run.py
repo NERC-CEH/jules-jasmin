@@ -21,7 +21,7 @@ class ModelRun(Base):
     code_version_id = Column(SmallInteger, ForeignKey('code_versions.id'))
 
     code_version = relationship("CodeVersion", backref=backref('model_runs', order_by=id))
-    files = relationship("ModelFile", backref=backref('model_files', order_by=id))
+    datasets = relationship("Dataset", backref=backref('model_run', order_by=id), lazy="joined")
     parameter_values = relationship("ParameterValue", backref=backref('model_run', order_by=id))
     status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id))
 
