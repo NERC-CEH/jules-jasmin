@@ -13,7 +13,8 @@ setup(
     #author_email='',
     #url='',
     install_requires=[
-        "Pylons==1.0.1",
+        "WebOb<=1.31"
+        "pylons",
         "genshi",
         "SQLAlchemy",
         "repoze.who",
@@ -22,8 +23,11 @@ setup(
         "NetCDF4",
         "pydap",
         "coards",
+        "FormEncode",
         "PyHamcrest",
-        "Mock"],
+        "Mock",
+        'webhelpers'],
+    setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',

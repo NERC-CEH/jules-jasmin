@@ -19,7 +19,7 @@ def _get_result_image():
 
 
 def setup_app(command, conf, vars):
-    """Place any commands to setup ecomaps here - currently creating db tables"""
+    """Place any commands to setup joj here - currently creating db tables"""
 
     # Don't reload the app if it was loaded under the testing environment
     if not pylons.test.pylonsapp:
@@ -132,12 +132,19 @@ def setup_app(command, conf, vars):
         level.name = 'Beginner'
         session.add(level)
 
-        statuses = [ModelRunStatus('Finished'), ModelRunStatus('Pending'), ModelRunStatus('Running')]
+        statuses = [ModelRunStatus('Finished'), ModelRunStatus('Pending'), ModelRunStatus('Running'), ModelRunStatus('Defining')]
         map(session.add, statuses)
 
+        default_code_version = CodeVersion()
+        default_code_version.name = conf.local_conf['default_code_version']
+        default_code_version.url_base = 'http://www.jchmr.org/jules/documentation/user_guide/vn3.4/'
+        default_code_version.is_default = True
+        session.add(default_code_version)
+
         code_version = CodeVersion()
-        code_version.name = 'Jules v3.4.1'
-        code_version.url_base = 'http://www.jchmr.org/jules/documentation/user_guide/vn3.4/'
+        code_version.name = 'Jules Not Versioned'
+        code_version.url_base = 'http://www.jchmr.org/jules/documentation/user_guide/blah'
+        code_version.is_default = False
         session.add(code_version)
 
         timesteps_namelist_file = NamelistFile()
@@ -155,7 +162,7 @@ def setup_app(command, conf, vars):
         parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
         parameter.type = 'integer'
         parameter.user_level = level
-        parameter.code_versions = [code_version]
+        parameter.code_versions = [default_code_version]
         parameter.namelist = timesteps_namelist
 
         session.add(parameter)

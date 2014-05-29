@@ -1,8 +1,9 @@
 # header
+from sqlalchemy.orm.exc import NoResultFound
 
 from joj.services.general import DatabaseService
-from joj.model import CodeVersion
-
+from joj.model import CodeVersion, ModelRun, ModelRunStatus
+from formencode.validators import Invalid
 
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
@@ -44,3 +45,29 @@ class ModelRunService(DatabaseService):
 
         with self.readonly_scope() as session:
             return session.query(CodeVersion).all()
+
+    def get_code_version_by_id(self, code_version_id):
+        """
+        Gets the code version object based on the id of the code version
+
+        Arguments:
+        code_version_id -- id for the code version
+
+        Returns:
+        the code version model or throws Invalid
+        """
+
+        with self.readonly_scope() as session:
+            return session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
+
+    def define_model_run(self, name, code_version_id):
+        with self.transaction_scope() as session:
+            model_run = ModelRun()
+            model_run.name = name
+            code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
+            model_run.code_version = code_version
+            model_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == 'Defining').one()
+            model_run.status = model_status
+            session.add(model_run)
+
+

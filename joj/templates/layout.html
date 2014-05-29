@@ -5,7 +5,7 @@
 <py:match path="head" once="true">
     <head py:attrs="select('@*')">
         <title py:with="title = list(select('title/text()'))">
-            EcoMaps<py:if test="title"> | ${title}</py:if>
+            Majic<py:if test="title"> | ${title}</py:if>
         </title>
 
         <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
@@ -34,17 +34,17 @@
                             <p id="status" class="navbar-text pull-right">
                                 Map server status <span id="status-message" class="label">Testing...</span>
                             </p>
-                        <a class="brand" href="${h.url(controller='home')}">EcoMaps</a>
+                        <a class="brand" href="${h.url(controller='home')}">Majic</a>
 
                         <ul class="nav">
                             <li>
                                 <a href="${h.url(controller='map')}">Explore</a>
                             </li>
                             <li>
-                                <a href="${h.url(controller='analysis', action='create')}">New Analysis</a>
+                                <a href="${h.url(controller='analysis', action='create')}">New Model Run</a>
                             </li>
                             <li>
-                                <a href="${h.url(controller='analysis')}">My Ecomaps</a>
+                                <a href="${h.url(controller='analysis')}">Model Runs</a>
                             </li>
                             <li>
                                 <a href="${h.url(controller='home', action='about')}">About</a>
