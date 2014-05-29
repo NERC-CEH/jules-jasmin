@@ -18,8 +18,6 @@ class UserService(DatabaseService):
                 last_name: User's last name
                 email: User's email address
                 access_level: Set to 'Admin' for administrative functions
-            Returns:
-            created user
         """
 
         with self.transaction_scope() as session:
@@ -33,7 +31,6 @@ class UserService(DatabaseService):
             user.last_name = last_name
 
             session.add(user)
-        return user
 
     def get_user_by_username(self, username):
         """Gets a single user by their username

@@ -1,22 +1,21 @@
+#header
+
 from contextlib import contextmanager
 import unittest
 from joj.model.meta import Base, Session
 from joj.model import initialise_session, User, session_scope
-
-__author__ = 'Phil Jenkins (Tessella)'
-
-
+from paste.deploy import loadapp
+from joj.tests import conf_dir
 
 class ORMTests(unittest.TestCase):
     """Verifies that the ORM definitions work correctly on a fresh database"""
 
-    _connectionstring = 'mysql+mysqlconnector://ecomaps-admin:U7gb1HmW@localhost/ecomaps_test'
-    #_app_user_connectionstring = 'mysql+mysqlconnector://ecomaps-app:ecomapsx@localhost/ecomaps_test'
-
     def __init__(self, *args, **kwargs):
 
+        wsgiapp = loadapp('config:test.ini', relative_to=conf_dir)
+        config = wsgiapp.config
         super(ORMTests,self).__init__(*args, **kwargs)
-        initialise_session(None, manual_connection_string=self._connectionstring)
+        initialise_session(None, manual_connection_string=config['sqlalchemy.url'])
 
 
     def tearDown(self):
@@ -29,6 +28,7 @@ class ORMTests(unittest.TestCase):
     def setUp(self):
         """Verifies that each of the model classes derived from declarative_base can be created"""
 
+        Base.metadata.drop_all(bind=Session.bind)
         Base.metadata.create_all(bind=Session.bind)
 
     def test_app_user_can_create(self):

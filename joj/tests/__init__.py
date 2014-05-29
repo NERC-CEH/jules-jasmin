@@ -20,7 +20,7 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-
+from services.user import UserService
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -48,4 +48,16 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         TestCase.__init__(self, *args, **kwargs)
 
+    def login(self):
+        """
+        Setup the request as if the user has already logged in as a non admin user
+        """
+        username = 'test'
+        user_service = UserService()
+        user = user_service.get_user_by_username(username)
+        if user is None:
+            user_service.create(username,'test', 'testerson', 'test@ceh.ac.uk', '')
+            user = user_service.get_user_by_username(username)
+
+        self.app.extra_environ['REMOTE_USER'] = str(user.username)
 
