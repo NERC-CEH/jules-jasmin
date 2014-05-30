@@ -7,3 +7,6 @@ DB_LONG_STRING_SIZE = 1000 # Default size (chars) to use when descriptions
 DB_PARAMETER_VALUE_STRING_SIZE = 1000 # Default size (chars) to use for a Jules name list value
 DB_URL_STRING_SIZE = 1000  # Default size (chars) to use when creating urls
 DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
+
+
+MODEL_RUN_STATUS_DEFINING = 'Defining' # Status of a model run when a user is defining it
