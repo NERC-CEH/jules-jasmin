@@ -375,8 +375,13 @@ var EcomapsMap = (function() {
         if(layerObj.visible) {
             var currentLayerStyle = $("div#options-panel").find("select[data-layerid = '" + layerId + "']")[0];
             addLegend(layerId, $(currentLayerStyle).val());
+            // Hide the legend if the legend check box is unticked
+            if (!$(".legend-toggle[data-layerid=" + layerId + "]").prop("checked")) {
+                toggleLegendDisplay(layerId);
+            }
         }
         else {
+            // Always remove the legend because we never want to see it without the data
             removeLegend(layerId);
         }
     };
