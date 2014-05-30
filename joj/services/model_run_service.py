@@ -24,11 +24,8 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             try:
                 return session.query(ModelRun).filter(ModelRun.user_id == user.id).all()
-            except NoResultFound as e:
+            except NoResultFound:
                 return []
-            except Exception as ex:
-                # A general error has occurred - pass this up
-                raise ServiceException(ex)
 
     def get_model_being_created(self, user):
         """
