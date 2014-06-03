@@ -13,7 +13,7 @@ setup(
     #author_email='',
     #url='',
     install_requires=[
-        "WebOb<=1.31"
+        "WebOb<=1.31",
         "pylons",
         "genshi",
         "SQLAlchemy",
@@ -26,6 +26,12 @@ setup(
         "FormEncode",
         "PyHamcrest",
         "Mock",
+        "Image",
+        "matplotlib",
+        "libxml2dom",
+        "libxml2-python",
+        "owslib",
+        "pycairo",
         'webhelpers'],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),

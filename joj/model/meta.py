@@ -9,4 +9,4 @@ __all__ = ['Base', 'Session']
 Base = declarative_base()
 
 # Create a session too
-Session = scoped_session(sessionmaker())
+Session = scoped_session(sessionmaker(expire_on_commit=False))

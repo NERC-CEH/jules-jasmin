@@ -13,6 +13,7 @@
     </style>
 </head>
 
+
 <body>
     <div class="hero-unit">
          <h1>Welcome, <span py:if="c.name">${c.name}</span></h1>
@@ -29,13 +30,13 @@
             </p>
         </div>
         <div class="span4">
-            <h2><a href="${h.url(controller='model_run', action='create')}">New Analysis</a></h2>
+            <h2><a href="${h.url(controller='model_run', action='create')}">New Model Run</a></h2>
             <p>
                 Run a model on map datasets
             </p>
         </div>
         <div class="span4">
-            <h2><a href="${h.url(controller='analysis')}">My Ecomaps</a></h2>
+            <h2><a href="${h.url(controller='analysis')}">Model Runs</a></h2>
             <p>
                 Review existing analysis results, publish results to the public repository
             </p>

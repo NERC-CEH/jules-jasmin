@@ -1,11 +1,9 @@
 # header
 from sqlalchemy.orm.exc import NoResultFound
+from joj.services.general import DatabaseService, ServiceException
+from joj.model import ModelRun, CodeVersion, ModelRunStatus
 
-from joj.services.general import DatabaseService
-from joj.model import CodeVersion, ModelRun, ModelRunStatus
-from formencode.validators import Invalid
-from joj.utils import constants
-
+log = logging.getLogger(__name__)
 
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
@@ -21,8 +19,11 @@ class ModelRunService(DatabaseService):
         returns:
         a list of model runs the user can see
         """
-
-        return []
+        with self.readonly_scope() as session:
+            try:
+                return session.query(ModelRun).filter(ModelRun.user_id == user.id).all()
+            except NoResultFound:
+                return []
 
     def get_model_being_created(self, user):
         """

@@ -1,6 +1,6 @@
 # Header
 from sqlalchemy import engine_from_config, Column, Integer, String, ForeignKey, Table, DateTime, create_engine, Text, Boolean, \
-    ForeignKeyConstraint, BigInteger
+    ForeignKeyConstraint, BigInteger, Float
 from sqlalchemy.orm import relationship
 from joj.model.meta import Session, Base
 from contextlib import contextmanager
@@ -34,11 +34,12 @@ class Dataset(Base):
     low_res_url = Column(String(255))
     dataset_type_id = Column(Integer, ForeignKey('dataset_types.id'))
     viewable_by_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
-    data_range_from = Column(Integer, default=1)
-    data_range_to = Column(Integer, default=50)
+    data_range_from = Column(Float, default=1)
+    data_range_to = Column(Float, default=50)
     is_categorical = Column(Boolean, default=False)
     deleted = Column(Boolean, default=False)
-
+    is_input = Column(Boolean, default=False)
+    model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     dataset_type = relationship("DatasetType", backref="datasets", lazy="joined")
 
     def __init__(self, id=None):

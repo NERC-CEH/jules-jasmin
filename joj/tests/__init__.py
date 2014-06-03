@@ -20,6 +20,7 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 from joj.config.environment import load_environment
+from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session
 from services.user import UserService
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
@@ -61,3 +62,12 @@ class TestController(TestCase):
 
         self.app.extra_environ['REMOTE_USER'] = str(user.username)
 
+    def clean_database(self):
+        """
+        Cleans the User, ModelRun, Dataset and ParameterValue tables in the database
+        """
+        with session_scope(Session) as session:
+            session.query(Dataset).delete()
+            session.query(ModelRun).delete()
+            session.query(User).delete()
+            session.query(ParameterValue).delete()
