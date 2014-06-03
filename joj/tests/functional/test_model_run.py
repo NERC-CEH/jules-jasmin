@@ -12,6 +12,9 @@ from joj.model import meta
 
 class TestModelRunController(TestController):
 
+    def setUp(self):
+        super(TestModelRunController, self).setUp()
+        self.clean_database()
 
     def test_GIVEN_nothing_WHEN_navigate_to_create_run_THEN_create_run_page_shown(self):
 

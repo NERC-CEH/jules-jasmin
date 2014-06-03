@@ -1,7 +1,9 @@
 # header
+import logging
 from sqlalchemy.orm.exc import NoResultFound
 from joj.services.general import DatabaseService, ServiceException
 from joj.model import ModelRun, CodeVersion, ModelRunStatus
+from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
