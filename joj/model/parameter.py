@@ -3,7 +3,7 @@
 
 from joj.model.meta import Base
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, SmallInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, SmallInteger, Boolean
 from joj.utils import constants
 
 # table for many to many association between code and parameters
@@ -28,6 +28,9 @@ class Parameter(Base):
 
     default_value = Column(String(constants.DB_PARAMETER_VALUE_STRING_SIZE))
     type = Column(String(constants.DB_STRING_SIZE))
+    required = Column(Boolean())
+    min = Column(Integer)
+    max = Column(Integer)
 
     #The url suffix to add to the url from the code version
     url_suffix = Column(String(constants.DB_LONG_STRING_SIZE))

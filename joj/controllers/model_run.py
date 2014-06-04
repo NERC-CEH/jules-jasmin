@@ -16,6 +16,7 @@ from webhelpers.html.tags import Option
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
+from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.model import ModelRun
 from joj.services.model_run_service import ModelRunService
 from joj.lib import helpers
@@ -63,6 +64,7 @@ class ModelRunController(BaseController):
         html = render('model_run/create.html')
         return htmlfill.render(html, defaults=values, errors=errors)
 
+
     def parameters(self):
         """
         Define parameters for the current new run being created
@@ -74,10 +76,31 @@ class ModelRunController(BaseController):
             helpers.error_flash(u"You must create a model run before any parameters can be set")
             redirect(url(controller='model_run', action='create'))
 
-        if request.POST:
-            if request.params.getone('submit') == u'Next':
+
+        if not request.POST:
+            return render('model_run/parameters.html')
+        else:
+            schema = ModelRunCreateParameters(c.parameters)
+            values = dict(request.params)
+
+            #get the action to perform and remove it from the dictionary
+            action = request.params.getone('submit')
+            del values['submit']
+
+            try:
+                c.form_result = schema.to_python(values)
+            except Invalid, error:
+                c.form_result = error.value
+                c.form_errors = error.error_dict or {}
+                html = render('model_run/parameters.html')
+                return htmlfill.render(
+                    html,
+                    defaults=c.form_result,
+                    errors=c.form_errors
+                )
+
+            if action == u'Next':
                 redirect(url(controller='model_run', action='summary'))
             else:
                 redirect(url(controller='model_run', action='create'))
 
-        return render('model_run/parameters.html')

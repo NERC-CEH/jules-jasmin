@@ -41,14 +41,17 @@ class TestModelRunParametersController(TestController):
 
         assert_that(response.normal_body, contains_string("timestep_len"))
 
-    def test_GIVEN_code_version_is_blank_WHEN_post_THEN_error_thrown(self):
+    def test_GIVEN_parameter_blank_WHEN_post_THEN_error_shown(self):
 
         self.login()
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run("test", 1)
+
         response = self.app.post(
-            url=url(controller='model_run', action='create'),
+            url=url(controller='model_run', action='parameters'),
             params={
-                'name': u'name',
-                'code_version': u'',
+                'submit': 'Next',
+                'param1': ''
             }
         )
 

@@ -26,8 +26,8 @@
         <py:for each="parameter in c.parameters">
             <h4>${parameter.namelist.name}</h4>
             <div class="control-group">
-                <label for="${parameter.id}" class="control-label">${parameter.name}</label>
-                ${h.html_tags.text(parameter.id, class_='controls')}
+                <label for="param${parameter.id}" class="control-label">${parameter.name}</label>
+                ${h.html_tags.text('param%s' % parameter.id, class_='controls')}
             </div>
         </py:for>
 

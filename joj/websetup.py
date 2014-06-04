@@ -165,7 +165,9 @@ def setup_app(command, conf, vars):
         parameter.name = 'timestep_len'
         parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
         parameter.type = 'integer'
+        parameter.min = 1
         parameter.user_level = level
+        parameter.required = True
         parameter.code_versions = [default_code_version]
         parameter.namelist = timesteps_namelist
 
