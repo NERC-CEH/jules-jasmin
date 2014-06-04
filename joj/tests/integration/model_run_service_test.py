@@ -81,3 +81,7 @@ class ModelRunServiceTest(TestController):
     def test_GIVEN_non_existent_code_version_id_WHEN_get_code_version_THEN_throws_NoResultFound_exception(self):
         with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
             model = self.model_run_service.get_code_version_by_id(-100)
+
+    def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
+        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
+            self.model_run_service.get_defining_model_with_parameters()

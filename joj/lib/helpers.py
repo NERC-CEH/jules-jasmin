@@ -7,7 +7,11 @@ from genshi.core import Markup
 from webhelpers import *
 import webhelpers.html.tags as html_tags
 from pylons import config, url
+from pylons import session
+from webhelpers.pylonslib.flash import Flash as _Flash
 
+"""Flash area for errors"""
+error_flash = _Flash()
 
 def jsonParseIfNotEmpty(var):
     if var is not None and var != "":

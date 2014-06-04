@@ -18,6 +18,7 @@ from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.model import ModelRun
 from joj.services.model_run_service import ModelRunService
+from joj.lib import helpers
 
 log = logging.getLogger(__name__)
 
@@ -68,5 +69,14 @@ class ModelRunController(BaseController):
         """
         Define parameters for the current new run being created
         """
+
+        try:
+            c.parameters = self._model_run_service.get_defining_model_with_parameters()
+        except NoResultFound:
+            helpers.error_flash("You must create a model run before any parameters can be set")
+            redirect(url(controller='model_run', action='create'))
+
+
+
 
         return render('model_run/parameters.html')

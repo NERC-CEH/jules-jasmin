@@ -69,8 +69,12 @@
                     </div>
                 </div>
             </div>
-            <div class="container">
-                <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> EcoMaps functionality will be reduced while the map server is offline.</div>
+            <div py:with="error_messages = h.error_flash.pop_messages()" class="container">
+                <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
+
+                <div  py:if="error_messages" id="flash_error" class="alert alert-danger">
+                        ${error_messages}
+                </div>
                 ${select('*|text()')}
             </div>
             <div id="push"></div>

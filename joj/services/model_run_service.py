@@ -1,8 +1,9 @@
 # header
 import logging
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.orm.exc import NoResultFound
 from joj.services.general import DatabaseService, ServiceException
-from joj.model import ModelRun, CodeVersion, ModelRunStatus
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue
 from joj.utils import constants
 
 log = logging.getLogger(__name__)
@@ -84,5 +85,17 @@ class ModelRunService(DatabaseService):
                 .one()
             model_run.status = model_status
             session.add(model_run)
+
+    def get_defining_model_with_parameters(self):
+        with self.readonly_scope() as session:
+            code_version = session.query(CodeVersion)\
+                .join(ModelRun)\
+                .join(ModelRunStatus)\
+                .filter(ModelRunStatus.name == 'Defining').one()
+
+            return session.query(Parameter)\
+                .options(subqueryload(Parameter.parameter_values))\
+                .filter(Parameter.code_versions.contains(code_version))
+
 
 
