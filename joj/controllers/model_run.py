@@ -47,17 +47,15 @@ class ModelRunController(BaseController):
         errors = None
         if request.POST:
             try:
-                self._model_run_service.define_model_run(self.form_result['name'], self.form_result['code_version'])
+                self._model_run_service.update_model_run(self.form_result['name'], self.form_result['code_version'])
 
                 redirect(url(controller='model_run', action='parameters'))
-            except Invalid, e:
-                    values = values,
-                    errors = variabledecode.variable_encode(
-                        e.unpack_errors() or {},
-                        add_repetitions=False
-                    )
             except NoResultFound:
                 errors = {'code_version': 'Code version is not recognised'}
+        else:
+            model = self._model_run_service.get_model_run_being_created_or_default()
+            values['name'] = model.name
+            values['code_version'] = model.code_version_id
 
         c.all_models = self._model_run_service.get_model_being_created(self.current_user)
         c.code_versions = [Option(version.id, version.name) for version in versions]
@@ -73,10 +71,13 @@ class ModelRunController(BaseController):
         try:
             c.parameters = self._model_run_service.get_defining_model_with_parameters()
         except NoResultFound:
-            helpers.error_flash("You must create a model run before any parameters can be set")
+            helpers.error_flash(u"You must create a model run before any parameters can be set")
             redirect(url(controller='model_run', action='create'))
 
-
-
+        if request.POST:
+            if request.params.getone('submit') == u'Next':
+                redirect(url(controller='model_run', action='summary'))
+            else:
+                redirect(url(controller='model_run', action='create'))
 
         return render('model_run/parameters.html')

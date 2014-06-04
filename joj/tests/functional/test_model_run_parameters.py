@@ -33,7 +33,7 @@ class TestModelRunParametersController(TestController):
         self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.define_model_run("test", 1)
+        model_run_service.update_model_run("test", 1)
 
         response = self.app.post(
             url=url(controller='model_run', action='parameters')

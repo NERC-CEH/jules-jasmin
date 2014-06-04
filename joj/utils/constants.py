@@ -9,7 +9,7 @@ DB_URL_STRING_SIZE = 1000  # Default size (chars) to use when creating urls
 DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
 
 
-MODEL_RUN_STATUS_DEFINING = 'Defining' # Status of a model run when a user is defining itDB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
+MODEL_RUN_STATUS_CREATING = 'Creating' # Status of a model run when a user is creating a model run
 
 #THREDDS server constants
 THREDDS_SERVER_URL = "http://thredds-prod.nerc-lancaster.ac.uk/thredds/"

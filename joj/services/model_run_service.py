@@ -66,32 +66,59 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
 
-    def define_model_run(self, name, code_version_id):
+    def update_model_run(self, name, code_version_id):
         """
-        Generate a new model run definition
+        Update the creation model run definition
 
         Arguments:
         name -- name of the model run
         code_version_id -- the id of the code version
         """
         with self.transaction_scope() as session:
-            model_run = ModelRun()
+
+            try:
+                model_run = session.query(ModelRun)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+                    .one()
+            except NoResultFound:
+                model_run = ModelRun()
+                model_status = session\
+                    .query(ModelRunStatus)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+                    .one()
+                model_run.status = model_status
+
             model_run.name = name
             code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
             model_run.code_version = code_version
-            model_status = session\
-                .query(ModelRunStatus)\
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_DEFINING)\
-                .one()
-            model_run.status = model_status
             session.add(model_run)
 
+    def get_model_run_being_created_or_default(self):
+        """
+        Get the run being created or a default model if no run is being created
+
+        Returns:
+        Model run being created or a new Model
+        """
+        try:
+            with self.readonly_scope() as session:
+                return session.query(ModelRun)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()
+        except NoResultFound:
+            return ModelRun()
+
     def get_defining_model_with_parameters(self):
+        """
+        Get the parameters for the model being create
+
+        Return:
+        a list of populated parameters, populated with parameter values
+        """
         with self.readonly_scope() as session:
             code_version = session.query(CodeVersion)\
                 .join(ModelRun)\
                 .join(ModelRunStatus)\
-                .filter(ModelRunStatus.name == 'Defining').one()
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()
 
             return session.query(Parameter)\
                 .options(subqueryload(Parameter.parameter_values))\
