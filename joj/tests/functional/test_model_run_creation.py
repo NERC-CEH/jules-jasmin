@@ -88,18 +88,7 @@ class TestModelRunController(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
 
-        session = Session()
-        row = session.query("name", "code_version_id").from_statement(
-            """
-            SELECT m.name, m.code_version_id
-            FROM model_runs m
-            JOIN model_run_statuses s on s.id = m.status_id
-            WHERE s.name=:status
-            """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATING).one()
-
-        assert_that(row.name, is_(expected_name), "model run name")
-        assert_that(row.code_version_id, is_(expected_code_version), "code version")
+        self.assert_model_definition(expected_code_version, expected_name)
 
     def test_GIVEN_model_already_being_created_WHEN_navigate_to_create_run_THEN_model_data_filled_in(self):
 
@@ -113,6 +102,8 @@ class TestModelRunController(TestController):
 
         assert_that(response.normal_body, contains_string("test"))
         assert_that(response.normal_body, contains_string(config['default_code_version']))
+
+
 
 
     def test_GIVEN_model_already_being_created_WHEN_update_THEN_model_data_overwritten(self):
@@ -134,16 +125,5 @@ class TestModelRunController(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
 
-        session = Session()
-        row = session.query("name", "code_version_id").from_statement(
-            """
-            SELECT m.name, m.code_version_id
-            FROM model_runs m
-            JOIN model_run_statuses s on s.id = m.status_id
-            WHERE s.name=:status
-            """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATING).one()
-
-        assert_that(row.name, is_(expected_name), "model run name")
-        assert_that(row.code_version_id, is_(expected_code_version), "code version")
+        self.assert_model_definition(expected_code_version, expected_name)
 

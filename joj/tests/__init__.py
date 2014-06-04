@@ -8,6 +8,7 @@ This module initializes the application via ``websetup`` (`paster
 setup-app`) and provides the base testing objects.
 """
 from unittest import TestCase
+from hamcrest import assert_that, is_
 import os
 import sys
 
@@ -22,6 +23,7 @@ from webtest import TestApp
 from joj.config.environment import load_environment
 from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session
 from services.user import UserService
+from utils import constants
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -71,3 +73,23 @@ class TestController(TestCase):
             session.query(ModelRun).delete()
             session.query(User).delete()
             session.query(ParameterValue).delete()
+
+    def assert_model_definition(self, expected_code_version, expected_name):
+        """
+        Check that a model definition is correct in the database. Throws assertion error if there is no match
+
+        Arguments:
+        expected_name -- the expected name
+        expected_code_version -- the expceted code version id
+        """
+        session = Session()
+        row = session.query("name", "code_version_id").from_statement(
+            """
+            SELECT m.name, m.code_version_id
+            FROM model_runs m
+            JOIN model_run_statuses s on s.id = m.status_id
+            WHERE s.name=:status
+            """
+        ).params(status=constants.MODEL_RUN_STATUS_CREATING).one()
+        assert_that(row.name, is_(expected_name), "model run name")
+        assert_that(row.code_version_id, is_(expected_code_version), "code version")
