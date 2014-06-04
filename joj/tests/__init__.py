@@ -21,7 +21,7 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session
+from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest
 from services.user import UserService
 from utils import constants
 
@@ -73,7 +73,8 @@ class TestController(TestCase):
             session.query(ModelRun).delete()
             session.query(User).delete()
             session.query(ParameterValue).delete()
-
+            session.query(AccountRequest).delete()
+            
     def assert_model_definition(self, expected_code_version, expected_name):
         """
         Check that a model definition is correct in the database. Throws assertion error if there is no match

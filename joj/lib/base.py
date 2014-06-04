@@ -3,6 +3,7 @@
 Provides the BaseController class for subclassing, and other objects
 utilized by Controllers.
 """
+from formencode.rewritingparser import html_quote
 from pylons import cache, config, request, response, session
 from pylons import tmpl_context as c
 from pylons.controllers import WSGIController
@@ -17,8 +18,8 @@ from joj.services.user import UserService
 
 app_globals = config['pylons.app_globals']
 
-class BaseController(WSGIController):
 
+class BaseController(WSGIController):
     _user_service = None
     current_user = None
 
@@ -35,7 +36,11 @@ class BaseController(WSGIController):
 
         # Before we do anything, is there a "REMOTE USER"?
         # If not, we've not been authenticated!
-        if not environ.get('REMOTE_USER') and 'login' not in environ.get('PATH_INFO'):
+        # Allow access to login or request account
+
+        not_public_page = 'login' not in environ.get('PATH_INFO') and 'request_account' not in environ.get('PATH_INFO')
+
+        if (not environ.get('REMOTE_USER')) and not_public_page:
             raise httpexceptions.HTTPUnauthorized()
 
         # Redirect to a canonical form of the URL if necessary.
@@ -44,8 +49,7 @@ class BaseController(WSGIController):
         # WSGIController.__call__ dispatches to the Controller method
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict'
-
-        if 'login' not in environ.get('PATH_INFO'):
+        if not_public_page:
             self.current_user = self._user_service.get_user_by_username(environ.get('REMOTE_USER'))
 
             if not self.current_user:
@@ -67,6 +71,16 @@ class BaseController(WSGIController):
             url = paste.request.construct_url(environ)
             raise httpexceptions.HTTPMovedPermanently(url)
 
+    @staticmethod
+    def error_formatter(error):
+        """
+        Custom htmlfill error formatter that doesn't add a <br/> (since this causes formatting
+        problems on our forms).
+        """
+        return '<span class="error-message">%s</span>\n' % html_quote(error)
+
 # Include the '_' function in the public names
 __all__ = [__name for __name in locals().keys() if not __name.startswith('_') \
            or __name == '_']
+
+

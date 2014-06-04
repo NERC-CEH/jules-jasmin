@@ -34,13 +34,13 @@
 
                 <form class="form-horizontal" action="/account/dologin?came_from=${came_from}" method="POST">
                     <div class="control-group">
-                        <label class="control-label" for="login">User Name:</label>
+                        <label class="control-label" for="login">User Name</label>
                         <div class="controls">
                             ${h.html_tags.text('login', placeholder='User Name')}
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="password">Password:</label>
+                        <label class="control-label" for="password">Password</label>
                         <div class="controls">
                             ${h.html_tags.password('password', placeholder='Password')}
                         </div>
@@ -51,6 +51,7 @@
                         </div>
                     </div>
                 </form>
+                <a href="${url(controller='request_account', action='request')}">Request an account</a>
             </div>
         </div>
     </div>

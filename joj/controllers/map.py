@@ -2,11 +2,11 @@
 
 import logging
 import urllib2
+from pylons import config
 from pylons.decorators import jsonify
 from joj.lib.base import BaseController, render, request, c
 from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
-from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class MapController(BaseController):
             Tests the connection to the map server
         """
         try:
-            response = urllib2.urlopen(constants.THREDDS_SERVER_URL, timeout=constants.THREDDS_SERVER_TIMEOUT).read()
+            response = urllib2.urlopen(config['thredds.server_url'], timeout=int(config['thredds.server_timeout'])).read()
             return True
         except:
             return False

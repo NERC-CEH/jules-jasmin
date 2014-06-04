@@ -5,6 +5,7 @@ from joj.model.meta import Session, Base
 from contextlib import contextmanager
 #import all the database models in so they can be built
 
+from joj.model.account_request import AccountRequest
 from joj.model.model_file import ModelFile
 from joj.model.model_run import ModelRun
 from joj.model.code_version import CodeVersion
