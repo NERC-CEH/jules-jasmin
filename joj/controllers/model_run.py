@@ -62,7 +62,7 @@ class ModelRunController(BaseController):
         c.code_versions = [Option(version.id, version.name) for version in versions]
 
         html = render('model_run/create.html')
-        return htmlfill.render(html, defaults=values, errors=errors)
+        return htmlfill.render(html, defaults=values, errors=errors, auto_error_formatter=self.error_formatter)
 
     def parameters(self):
         """

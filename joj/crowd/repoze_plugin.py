@@ -192,7 +192,8 @@ def crowd_challenge_decider(environ, status, headers):
 
     # Are we logging in anyway? So we don't get caught in an infinite loop,
     # don't challenge for the login controller
-    if 'login' in environ.get('PATH_INFO'):
+    public_page = 'login' in environ.get('PATH_INFO') or 'request_account' in environ.get('PATH_INFO')
+    if public_page:
         return False
     else:
         # The middleware should populate REMOTE_USER

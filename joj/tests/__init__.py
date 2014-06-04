@@ -20,7 +20,7 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session
+from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest
 from services.user import UserService
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
@@ -71,3 +71,4 @@ class TestController(TestCase):
             session.query(ModelRun).delete()
             session.query(User).delete()
             session.query(ParameterValue).delete()
+            session.query(AccountRequest).delete()
