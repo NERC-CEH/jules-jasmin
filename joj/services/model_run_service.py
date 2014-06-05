@@ -2,7 +2,7 @@
 import logging
 from sqlalchemy.orm import subqueryload
 from sqlalchemy.orm.exc import NoResultFound
-from joj.services.general import DatabaseService, ServiceException
+from joj.services.general import DatabaseService
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue
 from joj.utils import constants
 
@@ -77,9 +77,7 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
 
             try:
-                model_run = session.query(ModelRun)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
-                    .one()
+                model_run = self._get_model_run_being_created(session)
             except NoResultFound:
                 model_run = ModelRun()
                 model_status = session\
@@ -102,8 +100,7 @@ class ModelRunService(DatabaseService):
         """
         try:
             with self.readonly_scope() as session:
-                return session.query(ModelRun)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()
+                return self._get_model_run_being_created(session)
         except NoResultFound:
             return ModelRun()
 
@@ -115,14 +112,52 @@ class ModelRunService(DatabaseService):
         a list of populated parameters, populated with parameter values
         """
         with self.readonly_scope() as session:
-            code_version = session.query(CodeVersion)\
-                .join(ModelRun)\
-                .join(ModelRunStatus)\
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()
+            return self._get_parameters_for_creating_model(session)
 
-            return session.query(Parameter)\
-                .options(subqueryload(Parameter.parameter_values))\
-                .filter(Parameter.code_versions.contains(code_version))
+    def store_parameter_values(self, parameters_to_set):
+        """
+        Store the parameter values inb the database
+        :param parameters_to_set: dictionary of parameter ids and parameter values
+        :return: Nothing
+        """
 
+        with self.transaction_scope() as session:
+            model_run = self._get_model_run_being_created(session)
+            session.query(ParameterValue)\
+                .filter(ParameterValue.model_run == model_run)\
+                .delete()
+            parameters = self._get_parameters_for_creating_model(session)
+            for parameter in parameters:
+                parameter_value = parameters_to_set[str(parameter.id)]
+                if parameter_value is not None:
+                    val = ParameterValue()
+                    val.value = parameter_value
+                    val.parameter = parameter
+                    val.model_run = model_run
+                    session.add(val)
 
+    def _get_parameters_for_creating_model(self, session):
+        """
+        get parameters for the model run being created
+        :param session: session to use
+        :return: a list of parameters
+        """
+        code_version = session.query(CodeVersion) \
+            .join(ModelRun) \
+            .join(ModelRunStatus) \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+            .one()
+        return session.query(Parameter) \
+            .options(subqueryload(Parameter.parameter_values)) \
+            .options(subqueryload(Parameter.namelist)) \
+            .filter(Parameter.code_versions.contains(code_version))\
+            .all()
 
+    def _get_model_run_being_created(self, session):
+        """
+        Get the model run being created
+        :param session: the session to use to get the model
+        :return: the run model
+        """
+        return session.query(ModelRun) \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()

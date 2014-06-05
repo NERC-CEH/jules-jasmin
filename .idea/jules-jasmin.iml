@@ -7,5 +7,11 @@
     <orderEntry type="jdk" jdkName="Python 2.7.3 virtualenv at ~/projectenv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="myDocStringFormat" value="reStructuredText" />
+  </component>
 </module>
 

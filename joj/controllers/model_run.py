@@ -99,6 +99,13 @@ class ModelRunController(BaseController):
                     errors=c.form_errors
                 )
 
+            parameters = {}
+            for param_name, param_value in c.form_result.iteritems():
+                if param_name.startswith('param'):
+                    parameters[param_name.replace('param', '')] = param_value
+
+            self._model_run_service.store_parameter_values(parameters)
+
             if action == u'Next':
                 redirect(url(controller='model_run', action='summary'))
             else:

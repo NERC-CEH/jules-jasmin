@@ -70,9 +70,9 @@ class TestController(TestCase):
         """
         with session_scope(Session) as session:
             session.query(Dataset).delete()
+            session.query(ParameterValue).delete()
             session.query(ModelRun).delete()
             session.query(User).delete()
-            session.query(ParameterValue).delete()
             session.query(AccountRequest).delete()
             
     def assert_model_definition(self, expected_code_version, expected_name):
@@ -94,3 +94,25 @@ class TestController(TestCase):
         ).params(status=constants.MODEL_RUN_STATUS_CREATING).one()
         assert_that(row.name, is_(expected_name), "model run name")
         assert_that(row.code_version_id, is_(expected_code_version), "code version")
+
+    def assert_parameter_of_model_being_created_is_a_value(self, parameter_id, expected_parameter_value):
+        """
+        Assert that the parameter value is correct for the model being created
+        :param parameter_id: the id of the parameter to assert the value of
+        :param expected_parameter_value: expected parameters value
+        :return:Nothing
+        """
+
+        session = Session()
+        row = session.query("value").from_statement(
+            """
+            SELECT pv.value
+            FROM model_runs m
+            JOIN model_run_statuses s on s.id = m.status_id
+            JOIN parameter_values pv on pv.model_run_id = m.id
+            JOIN parameters p on pv.parameter_id = p.id
+            WHERE s.name=:status
+              AND p.id = :parameter_id
+            """
+        ).params(status=constants.MODEL_RUN_STATUS_CREATING, parameter_id = parameter_id).one()
+        assert_that(row.value, is_(expected_parameter_value), "parameter value")
