@@ -7,9 +7,6 @@ from tests import TestController
 
 class AccountRequestControllerTest(TestController):
 
-    def setUp(self):
-        self.app.extra_environ['REMOTE_USER'] = str("username")
-
     def test_GIVEN_empty_name_WHEN_submitted_THEN_returns_error(self):
         response = self.app.post(
             url=url(controller='request_account', action='request'),
