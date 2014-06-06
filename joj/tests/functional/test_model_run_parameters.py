@@ -36,11 +36,24 @@ class TestModelRunParametersController(TestController):
         model_run_service = ModelRunService()
         model_run_service.update_model_run("test", 1)
 
-        response = self.app.post(
-            url=url(controller='model_run', action='parameters')
-        )
+        response = self.app.get(
+            url(controller='model_run', action='parameters'))
 
         assert_that(response.normal_body, contains_string("timestep_len"))
+
+    def test_GIVEN_model_run_and_parameter_value_WHEN_view_THEN_parameter_value_is_shown(self):
+
+        expected_value = 123456789
+        self.login()
+
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run("test", 1)
+        model_run_service.store_parameter_values({'1': expected_value})
+
+        response = self.app.get(
+            url(controller='model_run', action='parameters'))
+
+        assert_that(response.normal_body, contains_string(str(expected_value)))
 
     def test_GIVEN_parameter_blank_WHEN_post_THEN_error_shown(self):
 
@@ -100,3 +113,4 @@ class TestModelRunParametersController(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='summary')), "url")
 
         self.assert_parameter_of_model_being_created_is_a_value(1, expected_parameter)
+

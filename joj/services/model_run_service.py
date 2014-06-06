@@ -1,7 +1,8 @@
 # header
 import logging
-from sqlalchemy.orm import subqueryload
+from sqlalchemy.orm import subqueryload, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import and_
 from joj.services.general import DatabaseService
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue
 from joj.utils import constants
@@ -142,13 +143,14 @@ class ModelRunService(DatabaseService):
         :param session: session to use
         :return: a list of parameters
         """
-        code_version = session.query(CodeVersion) \
+        code_version, model_run = session.query(CodeVersion, ModelRun) \
             .join(ModelRun) \
             .join(ModelRunStatus) \
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
             .one()
         return session.query(Parameter) \
-            .options(subqueryload(Parameter.parameter_values)) \
+            .outerjoin(ParameterValue, and_(ParameterValue.model_run == model_run)) \
+            .options(contains_eager(Parameter.parameter_values)) \
             .options(subqueryload(Parameter.namelist)) \
             .filter(Parameter.code_versions.contains(code_version))\
             .all()
@@ -160,4 +162,6 @@ class ModelRunService(DatabaseService):
         :return: the run model
         """
         return session.query(ModelRun) \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING).one()
+            .join(ModelRunStatus) \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+            .one()

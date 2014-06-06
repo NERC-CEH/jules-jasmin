@@ -76,9 +76,17 @@ class ModelRunController(BaseController):
             helpers.error_flash(u"You must create a model run before any parameters can be set")
             redirect(url(controller='model_run', action='create'))
 
-
         if not request.POST:
-            return render('model_run/parameters.html')
+            html = render('model_run/parameters.html')
+            parameter_values = {}
+            for parameter in c.parameters:
+                if parameter.parameter_values:
+                    parameter_values['param%s' % parameter.id] = parameter.parameter_values[0].value
+            return htmlfill.render(
+                html,
+                defaults=parameter_values,
+                errors={}
+            )
         else:
             schema = ModelRunCreateParameters(c.parameters)
             values = dict(request.params)

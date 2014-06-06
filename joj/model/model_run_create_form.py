@@ -3,7 +3,6 @@ from joj.utils import constants
 from formencode import Schema, validators
 
 
-
 class ModelRunCreateFirst(Schema):
     """Used to validate data for the model run create form"""
 
