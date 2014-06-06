@@ -1,6 +1,7 @@
 # header
 from hamcrest import *
 from pylons import url
+from model import session_scope, Session, AccountRequest
 
 from tests import TestController
 
@@ -150,7 +151,7 @@ class AccountRequestControllerTest(TestController):
         # Check we are still on the request account form and have not been redirected
         assert_that(response.normal_body, contains_string("Request a Majic Account"))
 
-    def test_GIVEN_valid_parameters_WHEN_submitted_THEN_redirected(self):
+    def test_GIVEN_valid_parameters_WHEN_submitted_THEN_success(self):
         response = self.app.post(
             url=url(controller='request_account', action='request'),
             params={
@@ -163,3 +164,21 @@ class AccountRequestControllerTest(TestController):
         )
         # Check we are still on the request account form and have not been redirected
         assert_that(response.normal_body, contains_string("Account Requested"))
+
+    def test_GIVEN_valid_parameters_WHEN_submitted_THEN_request_in_database(self):
+        with session_scope(Session) as session:
+            session.query(AccountRequest).delete()
+        response = self.app.post(
+            url=url(controller='request_account', action='request'),
+            params={
+                'name': u'name',
+                'email': u'email@domain.com',
+                'institution': u'hydrology',
+                'usage': u'usage',
+                'license': u'1'
+            }
+        )
+        with session_scope(Session) as session:
+            account_requests = session.query(AccountRequest).all()
+        assert_that(len(account_requests), is_(1))
+        assert_that(account_requests[0].name, is_('name'))
