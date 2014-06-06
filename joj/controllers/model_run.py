@@ -21,6 +21,9 @@ from joj.model import ModelRun
 from joj.services.model_run_service import ModelRunService
 from joj.lib import helpers
 
+# The prefix given to parameter name in html elements
+PARAMETER_NAME_PREFIX = 'param'
+
 log = logging.getLogger(__name__)
 
 
@@ -64,7 +67,6 @@ class ModelRunController(BaseController):
         html = render('model_run/create.html')
         return htmlfill.render(html, defaults=values, errors=errors, auto_error_formatter=self.error_formatter)
 
-
     def parameters(self):
         """
         Define parameters for the current new run being created
@@ -81,7 +83,7 @@ class ModelRunController(BaseController):
             parameter_values = {}
             for parameter in c.parameters:
                 if parameter.parameter_values:
-                    parameter_values['param%s' % parameter.id] = parameter.parameter_values[0].value
+                    parameter_values[PARAMETER_NAME_PREFIX + str(parameter.id)] = parameter.parameter_values[0].value
             return htmlfill.render(
                 html,
                 defaults=parameter_values,
@@ -109,8 +111,8 @@ class ModelRunController(BaseController):
 
             parameters = {}
             for param_name, param_value in c.form_result.iteritems():
-                if param_name.startswith('param'):
-                    parameters[param_name.replace('param', '')] = param_value
+                if param_name.startswith(PARAMETER_NAME_PREFIX):
+                    parameters[param_name.replace(PARAMETER_NAME_PREFIX, '')] = param_value
 
             self._model_run_service.store_parameter_values(parameters)
 
