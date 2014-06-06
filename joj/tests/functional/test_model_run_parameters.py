@@ -12,6 +12,7 @@ from services.user import UserService
 from pylons import config
 from joj.model import meta
 
+
 class TestModelRunParametersController(TestController):
 
     def setUp(self):
@@ -88,7 +89,7 @@ class TestModelRunParametersController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='summary')), "url")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='submit')), "url")
 
         self.assert_parameter_of_model_being_created_is_a_value(1, expected_parameter)
 
@@ -110,7 +111,8 @@ class TestModelRunParametersController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='summary')), "url")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='submit')), "url")
 
         self.assert_parameter_of_model_being_created_is_a_value(1, expected_parameter)
+
 

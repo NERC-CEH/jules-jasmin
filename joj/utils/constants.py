@@ -10,5 +10,6 @@ DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
 
 
 MODEL_RUN_STATUS_CREATING = 'Creating' # Status of a model run when a user is creating a model run
+MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed' # Status of a model run when a user submit a model but it can not be submitted
 
 PARAMETER_TYPE_INTEGER = 'integer' # parameter is an integer (case is from documentation)

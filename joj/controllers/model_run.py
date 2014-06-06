@@ -2,7 +2,6 @@
 
 import logging
 from formencode import htmlfill
-from formencode import variabledecode
 from formencode.validators import Invalid
 
 from pylons import url
@@ -20,9 +19,13 @@ from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.model import ModelRun
 from joj.services.model_run_service import ModelRunService
 from joj.lib import helpers
+from joj.utils import constants
 
 # The prefix given to parameter name in html elements
 PARAMETER_NAME_PREFIX = 'param'
+
+#Message to show when the submission has failed
+SUBMISSION_FAILED_MESSAGE = "Failed to submit the model run, this may be because the cluster is down. Please try again later."
 
 log = logging.getLogger(__name__)
 
@@ -73,7 +76,7 @@ class ModelRunController(BaseController):
         """
 
         try:
-            c.parameters = self._model_run_service.get_defining_model_with_parameters()
+            c.parameters = self._model_run_service.get_parameters_for_model_being_created()
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before any parameters can be set")
             redirect(url(controller='model_run', action='create'))
@@ -117,7 +120,29 @@ class ModelRunController(BaseController):
             self._model_run_service.store_parameter_values(parameters)
 
             if action == u'Next':
-                redirect(url(controller='model_run', action='summary'))
+                redirect(url(controller='model_run', action='submit'))
             else:
                 redirect(url(controller='model_run', action='create'))
 
+    def submit(self):
+        """
+        Page to submit the model un
+        """
+
+        try:
+            c.model = self._model_run_service.get_model_being_created_with_non_default_parameter_values()
+        except NoResultFound:
+            helpers.error_flash(u"You must create a model run before submitting the model run")
+            redirect(url(controller='model_run', action='create'))
+
+        if request.POST:
+            if request.params.getone('submit') == u'Submit':
+                status = self._model_run_service.submit_model_run()
+                if status.name == constants.MODEL_RUN_STATUS_SUBMIT_FAILED:
+                    helpers.error_flash(SUBMISSION_FAILED_MESSAGE)
+
+                redirect(url(controller='model_run', action='index'))
+            else:
+                redirect(url(controller='model_run', action='parameters'))
+
+        return render('model_run/submit.html')

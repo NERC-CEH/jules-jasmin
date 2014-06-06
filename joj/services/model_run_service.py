@@ -105,9 +105,9 @@ class ModelRunService(DatabaseService):
         except NoResultFound:
             return ModelRun()
 
-    def get_defining_model_with_parameters(self):
+    def get_parameters_for_model_being_created(self):
         """
-        Get the parameters for the model being create
+        Get the parameters for the model being created
 
         Return:
         a list of populated parameters, populated with parameter values
@@ -136,6 +136,36 @@ class ModelRunService(DatabaseService):
                     val.parameter = parameter
                     val.model_run = model_run
                     session.add(val)
+
+    def get_model_being_created_with_non_default_parameter_values(self):
+        """
+        Get the current model run being created including all parameter_value which are not defaults
+        :return:model tun with parameters populated
+        """
+        with self.readonly_scope() as session:
+            return session.query(ModelRun) \
+                .join(ModelRun.status) \
+                .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+                .options(subqueryload(ModelRun.code_version)) \
+                .options(contains_eager(ModelRun.parameter_values)
+                            .contains_eager(ParameterValue.parameter)
+                            .contains_eager(Parameter.namelist)) \
+                .one()
+
+    def submit_model_run(self):
+        """
+        Submit the model run which is being created to be run
+        :return:new status of the job
+        """
+        with self.transaction_scope() as session:
+            model = self._get_model_run_being_created(session)
+            status = session \
+                .query(ModelRunStatus) \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_SUBMIT_FAILED) \
+                .one()
+            model.status = status
+            return status
 
     def _get_parameters_for_creating_model(self, session):
         """

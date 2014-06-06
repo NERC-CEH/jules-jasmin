@@ -136,7 +136,8 @@ def setup_app(command, conf, vars):
             ModelRunStatus('Finished'),
             ModelRunStatus('Pending'),
             ModelRunStatus('Running'),
-            ModelRunStatus(constants.MODEL_RUN_STATUS_CREATING)]
+            ModelRunStatus(constants.MODEL_RUN_STATUS_CREATING),
+            ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMIT_FAILED)]
         map(session.add, statuses)
 
         default_code_version = CodeVersion()

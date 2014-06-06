@@ -84,4 +84,4 @@ class ModelRunServiceTest(TestController):
 
     def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
         with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
-            self.model_run_service.get_defining_model_with_parameters()
+            self.model_run_service.get_parameters_for_model_being_created()
