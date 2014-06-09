@@ -23,15 +23,31 @@ class ModelRunStatus(Base):
     name = Column(String(constants.DB_STRING_SIZE))
 
     def is_published(self):
+        """
+        Is the ModelRunStatus published?
+        :return: True if published, false otherwise
+        """
         return self.name == constants.MODEL_RUN_STATUS_PUBLISHED
 
     def allow_publish(self):
+        """
+        Does the ModelRunStatus allow the ModelRun to be published?
+        :return: True if a ModelRun can be published, false otherwise
+        """
         return self.name == constants.MODEL_RUN_STATUS_COMPLETED
 
     def allow_visualise(self):
+        """
+        Does the ModelRunStatus allow the ModelRun to be visualised on the map?
+        :return: True if the ModelRun can be visualised, false otherwise
+        """
         return self.name == constants.MODEL_RUN_STATUS_COMPLETED or self.name == constants.MODEL_RUN_STATUS_PUBLISHED
 
     def get_display_color(self):
+        """
+        Gets the appropriate display color for the ModelRunStatus to be used on the User Interface
+        :return: The ModelRunStatus display color as a hex string (#xxyyzz)
+        """
         return {
             constants.MODEL_RUN_STATUS_COMPLETED: '#38761d',
             constants.MODEL_RUN_STATUS_PUBLISHED: '#711780',

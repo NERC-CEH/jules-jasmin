@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from joj.services.tests.base import BaseTest
 from hamcrest import *
-from joj.model import User, session_scope, Session, ModelRun, Dataset, CodeVersion, ModelRunStatus
+from joj.model import User, session_scope, Session, ModelRun
 from services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
@@ -19,9 +19,6 @@ class ModelRunServiceTest(TestController):
         self.model_run_service = ModelRunService()
         self.clean_database()
 
-    def _status(self, status_name):
-        with session_scope(Session) as session:
-            return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
 
     def test_GIVEN_no_model_runs_WHEN_get_model_runs_for_user_THEN_empty_list(self):
         # Add a user who doesn't have any model runs
@@ -155,6 +152,7 @@ class ModelRunServiceTest(TestController):
 
     def test_GIVEN_model_run_id_belongs_to_another_user_WHEN_get_model_run_by_id_THEN_NoResultFound_exception(self):
         pass
-        def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
+
+    def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
         with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
             self.model_run_service.get_parameters_for_model_being_created()
