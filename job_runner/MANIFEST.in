@@ -1,0 +1,3 @@
+include job_runner/config/deployment.ini_tmpl
+recursive-include job_runner/public *
+recursive-include job_runner/templates *
