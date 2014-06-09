@@ -1,0 +1,35 @@
+
+<h3> NERC Data Discovery</h3>
+
+<h4> Background </h4>
+
+<p> This is an interface which allows one to search the contents of the NERC DataGrid catalogue.
+The catalogue is populated with "discovery" metadata, not with data themselves, but the
+response sets include links which should lead the user to the datasets of interest</p>
+
+<p> The metadata has been harvested from data providers, normally daily. Not all data providers are 
+within the NERC datagrid, and not all will provide the same data services. It is currently not possibleto provide a list of data providers which are indexed, as the membership is volatile. An easy way to find out if the data provider you care about is indexed is to search for it by name. You can limit the result set to NERC data centres or the Marine Data and Information Partnership via the advanced search page. </p>
+
+<h4> Searching </h4>
+
+<p> Currently the interface provides free text searching by default, although geographical and temporal constraints can be imposed via the advanced search page. </p>
+<p> The current interface allows multiple words to be entered, in which case the search
+uses AND to link these together (they do not have to be adjacent). The search is not case sensitive.</p>
+<p> The current geographical and temporal searches are "outer-bound' constraints, overlaps will not be returned. A future version will provide more sophisticated alternatives. 
+<p> The author search is designed to find data creators. Users should be aware that most data centres do not adequately populate all their records with enough information to identify the
+authors. We hope that this will change! </p>
+
+<h4> Understanding the Result sets </h4>
+
+<p> The summary result set provdes a title, and perhaps a formal citation, along with a piece of the dataset abstract (and if possible the geographic and temporal domains) along with some important links. The links in each response entry are </p>
+<ul>
+<li> D - to a reformatted version of the discovery metadata harvested from the original data centre</li>
+<li> R - to links presented within the discovery metadata. There may be multiple such links.</li>
+<li> A - if present, should link to a service allowing browsing of the data itself </li>
+<li> B - if present, should link to a service allowing browsing of context metadata </li>
+</ul>
+Note that
+<ul><li> unless the original data provider is within the NERC DataGrid, A and B services are unlikely
+to appear, although services with similar functionality may appear as R links. </li>
+<li>the operators of this service have no control over the content, so there may be many rendering and other problems. Feel free to email us and let us know, and we'll try and get any such problems corrected. </li>
+</ul>

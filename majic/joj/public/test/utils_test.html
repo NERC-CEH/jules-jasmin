@@ -1,0 +1,63 @@
+<html>
+
+<head>
+
+    <script type="text/javascript" src="../js/utils.js"></script>
+        
+    <script type="text/javascript">
+
+        function init() {
+    
+    		console.log("started at" +new Date());
+    
+    		var form = document.getElementById('a_form');
+    
+    		descList = ['a','b','c','d','e'];
+    		valList = ['1','2','3','4','5',];
+    		
+    		var sb = Utils.buildSelectBox('test', descList, valList, '2');
+    		form.appendChild(sb);
+    
+            //testing the addParamsToUrl
+            
+            var url = document.getElementById('original_url').textContent;
+            
+            var paramsStr = document.getElementById('params').textContent;
+            var items = paramsStr.split(',');
+            var params = {};
+            var paramNames = [];
+            for (var i=0; i<items.length; i++) {
+                var parts = items[i].split('_');
+                params[parts[0]] = parts[1];
+                paramNames.push(parts[0]);
+            }
+    
+            document.getElementById('add_url').innerHTML = Utils.addParamsToUrl(url, params);
+            document.getElementById('replace_url').innerHTML = Utils.replaceParamsInUrl(url, params);
+            document.getElementById('remove_url').innerHTML = Utils.removeParamsInUrl(url, paramNames);
+            
+            console.log("Finished.");
+            
+    	}
+    
+      
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+	<form id="a_form">
+	</form>
+    
+    Original URL : <span id="original_url">http://labs.metacarta.com/wms?version=1.1.1&service=WMS&request=GetLegendGraphic&layer=coastline_01&format=image/png</span> <br /> 
+    Params : <span id="params">FORMAT_image/png,VERSION_1.3.0,CRS_CRS:84,TRANSPARENT_true,SERVICE_WMS,REQUEST_GetMap,STYLES_,EXCEPTIONS_application/vnd.ogc.se_inimage_LAYERS_coastline_02,SRS_EPSG:4326</span> <br /> 
+    <!-- Original URL : <span id="original_url">http://behemoth.nerc-essc.ac.uk/ncWMS/wms?DATASET=GENIE&Request=GetCapabilities&service=WMS&version=1.3.0</span> <br /> -->
+    <!-- Params : <span id="params">request_1,service_wcs</span> <br /> -->
+    Added URL : <span id="add_url"></span> <br />
+    Replaced URL : <span id="replace_url"></span> <br />
+    Removed URL : <span id="remove_url"></span> <br />
+    
+</body>
+
+</html>

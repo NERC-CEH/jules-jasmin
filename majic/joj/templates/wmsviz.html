@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns:py="http://genshi.edgewall.org/" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+       
+<!-- xi:include href="utils.html" / -->
+
+<?python
+    from pylons import config
+
+    #check if we should use the minified version of the yui javascript
+    minified_yui_javascript = config.get('minified_yui_javascript', 'false').lower() == 'true'
+    minified_client_javascript = config.get('minified_client_javascript', 'false').lower() == 'true'
+?>
+
+
+<head>
+
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ndg2.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ddc_style.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ddc_vis.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/wmsviz.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/open_layers_map.css"/>
+
+<!--  script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script --> 
+
+
+<!-- BEGIN: Yahoo Interface Library -->
+
+<!-- css files -->
+<link type="text/css" rel="stylesheet" href="$app_globals.server/js/yui_2.7.0b/treeview/assets/skins/sam/treeview.css"/> 
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_old_treeview_style/treeview-menu.css"/> 
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/fonts/fonts.css" />
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/button/assets/skins/sam/button.css" />
+
+<!-- Dependency source files -->  
+
+<py:choose test="minified_yui_javascript">
+  <py:when test="False">
+  
+    <script type="text/javascript" src ="$app_globals.server/js/yui_2.7.0b/yahoo/yahoo.js" ></script> 
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/event/event.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dom/dom.js" ></script>
+    
+    <!-- YUI treevieew  -->  
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/treeview/treeview.js" ></script> 
+    
+    <!-- YUI drag and drop  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/utilities/utilities.js" ></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop.js" ></script>
+  
+  </py:when>
+  <py:otherwise>
+
+    <!-- minified js code -->
+    <script type="text/javascript" src ="$app_globals.server/js/yui_2.7.0b/yuiloader-dom-event/yuiloader-dom-event.js" ></script> 
+    
+    <!-- YUI treevieew  -->  
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/treeview/treeview-min.js" ></script> 
+    
+    <!-- YUI drag and drop  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/utilities/utilities.js" ></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop-min.js" ></script>
+  
+  </py:otherwise>
+</py:choose>
+
+<!--  customisation of the drag and drop control -->
+<script type="text/javascript" src = "$app_globals.server/js/dragAndDrop.js" ></script>
+
+<!-- END: Yahoo Interface Library -->
+
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/drag_drop_style.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/control.css"/>
+<link rel="stylesheet" type="text/css" href="$app_globals.server/layout/layer_properties.css" />
+
+<script type="text/javascript" src="$app_globals.server/js/json2.js"></script>
+<script type="text/javascript" src="${h.getOpenLayersImportPath()}"></script>
+<script type="text/javascript" src="$app_globals.server/js/openlayers-x.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/LoadingPanel.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/prototype.js"></script>
+
+<script type="text/javascript" src="$app_globals.server/js/toggleDiv.js"></script>
+
+<!-- BEGIN: WMSC library -->
+<?python
+    from ecomaps.lib.js_files_list import getJSFilesForPage
+    javascript_files = getJSFilesForPage('wmsviz')
+?>
+
+<py:choose test="minified_client_javascript">
+ <py:when test="False">
+  <py:for each="file in javascript_files">
+    <script type="text/javascript" src="$app_globals.server/js/${file}"></script>
+  </py:for>
+ </py:when>
+ 
+ <py:otherwise>
+   <script type="text/javascript" src="$app_globals.server/js/compressed_client.js"></script>
+ </py:otherwise>
+  
+</py:choose>
+
+
+<!-- END: WMSC library -->
+
+<script type="text/javascript">
+
+YAHOO.util.Event.throwErrors = true;
+
+// Hook into application for debugging.    
+var app = null;
+var control = null;
+var layerList = null;
+var layerParameters = null;
+
+var initialStatus = ${h.jsonParseIfNotEmpty(c.initialStatus)};
+
+var eventsManager = null;
+
+<?python
+from pylons import session 
+?>    
+
+function init() {
+
+    var initialSetupJSON = "${c.initialSetupJSON}";
+    var layerInfoList = "${c.layerInfoList}";
+
+    var wmcRetriever = new WMCRetriever();
+
+	var initialBounds = new OpenLayers.Bounds(-180,-90,180,90);
+
+    var makeFigureURL = "$app_globals.server/wmsviz/get_figure";
+    var bgImagePath = '$app_globals.server/layout/images/clear.gif';
+    
+    var allEvents = [];
+
+    var furtherInfoLinks = Utils.buildObjectList(FurtherInfoLink, initialStatus['FurtherInfoLinks']);
+    var endpointList     = Utils.buildObjectList(Endpoint, initialStatus['WMSEndpointsList']);
+
+    allEvents = allEvents.concat(LayerList.prototype.EVENTS_RAISED,
+                                 LayerParameters.prototype.EVENTS_RAISED,
+                                 WMSC.VisAppLayers.prototype.EVENT_TYPES,
+                                 WMSC.VisApp.prototype.EVENT_TYPES,
+                                 WMSC.BoundsControl.prototype.EVENT_TYPES,
+                                 EndpointSelection.prototype.EVENT_TYPES,
+                                 OutlineControl.prototype.EVENT_TYPES);
+
+    eventsManager =  new OpenLayers.Events(null, null,  allEvents);
+
+    WMSC.log(allEvents);
+             
+	layerList = new LayerList('layer_list', 'chk_outline_on_top', eventsManager);	
+    layerParameters = new LayerParameters('layer_properties', 'selection_form', wmcRetriever, initialStatus.HiddenDisplayOptions, eventsManager, furtherInfoLinks);
+    
+    var legendContainer = new LegendContainer('legend', eventsManager);
+    var downloadControl = new WCSDownloadControl('wcsdownloadDiv', initialBounds, eventsManager);
+    var figDownload = new LayerFigureDownload('get_figure_container', eventsManager);
+    
+    var figBuilder = new FigureBuilder('composite_figure_container', makeFigureURL, initialBounds, eventsManager) 
+        
+    var outlineControl = new OutlineControl('add_outline', eventsManager, initialStatus.OutlineSettings);
+    var boundsControl  = new WMSC.BoundsControl('dims', initialBounds, eventsManager);
+    var layerControl   = new WMSC.VisAppLayers('layerTree', 'layerLeaves',wmcRetriever, 'new_endpoint', 'add_new_endpoint', initialStatus.DefaultLayerParms, eventsManager, furtherInfoLinks);  
+    app = new WMSC.VisApp('map', 10, 640, true, initialBounds, eventsManager, bgImagePath);
+
+    var initialEndpoints = JSON.parse(initialSetupJSON);
+
+    outlineControl.addNewOutline();
+        
+    for (var i=0; i /*<![CDATA[*/ < /*]]>*/  initialEndpoints.length; i++) {
+        var endpoint = initialEndpoints[i];
+
+        if (endpoint.layers != undefined) {
+    		layerControl.addLayersToSelect(endpoint.url, endpoint.layers);
+        }
+        
+        layerControl.addWebMapContext(endpoint.url);
+    }
+
+    // build endpoint autocomplete
+    //Utils.makeCombobox("new_endpoint", "endpoint_toggle", "endpoint_options", initialStatus.WMSEndpointsList);
+
+    
+    var endpointSelect = new EndpointSelection('endpoint_select', endpointList, eventsManager); 
+    
+}
+
+
+function cleanup() 
+{
+    if ( app !== null) {
+        app.destroy();
+    }
+    
+    if (layerList !== null) {
+        layerList.destroy();
+    }
+
+    if (eventsManager !== null) {
+        eventsManager.destroy();
+    }
+}
+    
+<!--! Help Icons -->
+<span py:def="helpIcon(value, elementType = 'div')">
+      <span>
+         <a href="javascript:;" title="Toggle help" onclick="toggleDiv(1,'$value','shown','hidden','$elementType'); return false;">
+         <img src="$app_globals.helpIcon" alt="Toggle help" class="helpicon"/></a>
+      </span>
+</span>    
+
+</script>
+
+    <title> COWS client </title>
+</head>
+
+<body onload="init()" onunload="cleanup()" class="yui-skin-sam">
+
+<div id="entirepage">
+
+<div id="visBody">
+    <!--  <input type="button" value="debug" id="dbg"></input>  -->
+	<table>
+	  <tr>
+	    <td align="center">
+	        <div id="mapBox">
+	            <div id="map"></div>
+	        </div>
+	    </td>
+	    <td valign="top">
+	      <div class="optDiv">
+	        <b>Selection Description</b>
+	        <div id="description">
+	          Complete your selection below to view  <span py:replace="helpIcon('coord_help', 'div')" /> 
+	        </div>
+	      </div>
+	        
+	        <div id="coord_help" class="hidden">
+	          <div class="helptxt">
+	                Specifying coordinate dimensions will select a region on the map; 
+	                when this is appropriately sized, the map will automatically zoom to this region.<br/>
+	                'Reset selection' will return the map to its full, global size.<br/>
+	                Some map layers have additional dimensions, e.g. 'time'; 
+	                if these are available, they will also be displayed in this panel for selection.<br/>
+	                NB, the dimensions displayed are those relating to the selected dataset 
+	                in the left hand tree view - however they will also be applied, where appropriate, to all selected map layers.
+	        </div>
+	      </div>    
+	        
+	      <div class="optDiv">
+	        <b>Domain</b>
+	            <div id="dims"></div>
+	      </div>
+	    <div class="wcsDiv">
+	        <b>Download Data for this Selection</b>
+	            <div id="wcsdownloadDiv"></div>
+	            <br/>
+	        <b>Generate Figure</b> 
+            <br />
+		    <div id="composite_figure_container" > </div>
+		    
+	    </div>
+	    
+	    
+	    
+	    </td>
+	  </tr>
+	</table>
+
+	<table class="controlTable">
+	    <col id="datasets_column"/>
+        <col id="layer_column"/>
+        <col id="properties_column"/>
+                 
+		<tr class="controlHeadings">
+		<th>Dataset <span py:replace="helpIcon('dataset_help')"/> 
+		</th> 
+		<th> Layer <span py:replace="helpIcon('layer_help')"/></th>
+		<th> Properties</th>    
+		</tr>
+		<tr>
+			<td>
+			    <div id="dataset_help" class="hidden">
+			          <div class="helptxt">
+			                Select a dataset to expand it and make its map layers visible; these can then be selected to add to the 'Layer'
+			                panel for visualisation.<br/>  
+			                Remove datasets from the display by clicking their <img src="$app_globals.server/js/img/close.gif" alt="close" /> icon.
+			        </div>
+			    </div>
+			</td>
+			<td>
+			    <div id="layer_help" class="hidden">
+			          <div class="helptxt">
+			              When multiple map layers are selected, the displayed map is constructed by sequentially adding the layers from the bottom of the list
+			              to the top.<br/>
+			              NB, if the topmost layer has legend data available then this will be displayed under the completed map.<br/>
+			              Remove layers from the displayed map by clicking their <img src="$app_globals.server/js/img/close.gif" alt="close" /> icon.
+			        </div>
+			    </div>
+			</td>
+		</tr>
+		<tr>
+			<td class="controlPanel">
+                
+			    <div>
+                    Add new WMS: 
+                    <span py:replace="helpIcon('endpoint_help', 'div')"> </span> 
+                    
+                    <div id="endpoint_select"></div>
+                    
+                    <!-- div id="endpoint_autocomplete" style="display:inline;">
+                        <input id="new_endpoint" type="text" ></input> <span id="endpoint_toggle"></span>
+                        <div id="endpoint_options"></div>
+                        <input type="button" id="add_new_endpoint" value="Add"/>
+                    </div -->
+                    
+                </div>
+                
+                <div id="endpoint_help" class="hidden">
+                  <div class="helptxt">
+                    You can add new datasets from other OGC Web Map Servers (WMS) here. Just add the base service URL  (without the WMS parameters) <br/>
+                    e.g. http://myserver.com/mywms
+                 </div>
+                </div>
+                <div class="controlContent" id="layerTree">
+			         No datasets loaded.
+		        </div>
+                
+                
+                
+                <input type="button" id="add_outline" value="Add Outline Layer"/>
+			</td>
+			<td class="controlPanel">
+			    <div class="controlContent" id="layerLeaves">
+
+			        <div class="workarea">
+                        <div>
+                            <label for="chk_outline_on_top">Outline Always On Top</label>
+                            <input type="checkbox" id="chk_outline_on_top" checked="yes"/>
+                        </div>
+			            <ul class="draglist" id="layer_list">
+                            <li>list empty</li>
+			            </ul>
+			        </div>
+		            <input type="button" value="Remove Selected" id="btn_remove_selected_layer" />
+			    </div>
+			</td>
+            <td class="controlPanel">
+            
+			    <div id="layer_properties">
+                    
+					   <div id="legend"></div> 
+                    
+                        <fieldset>
+                            <legend>Layer Info</legend>
+	                       <div id="layer_info_container">
+                                <div id="layer_info">
+                                </div>                                
+                           </div>
+                            <div id="get_figure_container"></div>
+                        </fieldset>
+
+                        
+                        <fieldset>
+                            <legend>Dimensions</legend>
+                            <div id="layer_dimensions_container">
+                                <form id="WMSC_dimForm">
+                                </form>
+                            </div>
+                        </fieldset>
+       
+                        <fieldset>
+                            <legend>Display Options</legend>
+       	
+    	                    <div id="layer_display_options_container">	    
+    						    <form id='selection_form'>
+    						    </form>
+    					    </div>
+                        </fieldset>
+
+					    
+                    
+			    </div>
+            </td>
+		</tr>
+	</table>
+	
+</div>
+</div>
+</body>
+</html>

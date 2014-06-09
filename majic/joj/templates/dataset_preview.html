@@ -1,0 +1,29 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/"
+      >
+    <div class="modal-header">
+
+        <h3>${c.dataset_name}</h3>
+
+    </div>
+    <div class="modal-body">
+
+        <table class="table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th py:for="column in c.columns">
+                        ${column}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr py:for="row in c.row_set">
+                    <td py:for="data_point in row">
+                        ${data_point}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

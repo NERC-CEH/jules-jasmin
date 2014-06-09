@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="layout.html" />
+<head>
+    <title>Create Analysis</title>
+    <link rel="stylesheet" type="text/css" href="../layout/ecomaps.css"/>
+    <script type="text/javascript" src="/js/ecomaps_create_analysis.js"></script>
+</head>
+<body>
+    <h1>Create Analysis</h1>
+
+    <div class="row">
+        <div class="span12">
+            <div class="alert alert-block alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4>Be aware!</h4>
+                <p>
+                    This is some health warning text
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <form class="form-horizontal" method="POST" action="${url(controller='analysis', action='create')}">
+
+        <div class="control-group">
+            <label for="analysis_name" class="control-label">Name of Analysis:</label>
+            ${h.html_tags.text('analysis_name', class_='controls')}
+        </div>
+
+        <div class="control-group">
+
+            <label for="model_id" class="control-label">Choose Model to Run:</label>
+            <select id="model_id" name="model_id" class="controls">
+                <option py:for="model in c.all_models" value="${model.id}" py:attrs="{'selected':'True'} if defined('current_model_id') and model.id is current_model_id else {}">
+                    ${model.name}
+                </option>
+            </select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="The model used to generate the analysis results."></i>
+        </div>
+
+        <div class="control-group">
+            <label for="coverage_dataset_ids" class="control-label">Choose coverage data:</label>
+
+            <select multiple="true" id="coverage_dataset_ids" name="coverage_dataset_ids" class="controls multiselect">
+                <optgroup py:for="dataset in c.coverage_datasets" label="${dataset.name}">
+                    <option py:for="column in dataset.column_names" value="${dataset.id}_${column}" py:attrs="{'selected':'True'} if defined('current_coverage_dataset_ids') and '%s_%s' % (dataset.id, column) in current_coverage_dataset_ids else {}">
+                        ${column}
+                    </option>
+                </optgroup>
+            </select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="A coverage dataset is used to define input data into the model. More than one can be selected"></i>
+        </div>
+
+        <div id="time-point-container">
+
+        </div>
+
+        <div class="control-group">
+            <label for="point_dataset_id" class="control-label">Choose point data:</label>
+
+                <select name="point_dataset_id" id="point_dataset_id" class="controls">
+                    <option py:for="dataset in c.point_datasets" value="${dataset.id}" py:attrs="{'selected':'True'} if defined('current_point_dataset_id') and dataset.id is current_point_dataset_id else {}">
+                        ${dataset.name}
+                    </option>
+                </select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="A point dataset is used to define the spatial grid in the model. Hit the Preview button to see a sample of the data."></i>
+
+            <a id="dataset-preview-open" href='#dataset-preview' data-toggle='modal' class="btn btn-mini" type="button">Preview</a>
+        </div>
+
+        <div class="control-group">
+            <label for="unit_of_time" class="control-label">Time Column:</label>
+
+            <input type="hidden" id='unit_of_time_value' py:attrs="{'value': unit_of_time} if defined('unit_of_time') else None"/>
+
+            <select id="unit_of_time" name="unit_of_time" class="controls model-param"></select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="Unit of time used in the model."></i>
+        </div>
+
+        <div class="control-group">
+            <label for="Random Group" class="control-label">Grouping Column:</label>
+
+            <input type="hidden" id='random_group_value' py:attrs="{'value': random_group} if defined('random_group') else None"/>
+
+            <select id="random_group" name="random_group" class="controls model-param"></select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="A parameter used to group data in the model."></i>
+        </div>
+
+        <div class="control-group">
+            <label for="Model Variable" class="control-label">Model Variable Column:</label>
+
+            <input type="hidden" id='model_variable_value' py:attrs="{'value': model_variable} if defined('model_variable') else None"/>
+
+            <select id="model_variable" name="model_variable" class="controls model-param"></select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="The variable being modelled"></i>
+        </div>
+
+        <div class="control-group">
+            <label for="Data Type" class="control-label">Data Type:</label>
+
+            <select class="controls" id="data_type" name="data_type">
+                <option py:attrs="{'selected': 'True'} if defined ('data_type') and data_type =='cont' else {}" value="cont">Continuous</option>
+                <option py:attrs="{'selected': 'True'} if defined ('data_type') and data_type =='count' else {}" value="count">Count</option>
+                <option py:attrs="{'selected': 'True'} if defined ('data_type') and data_type =='binary' else {}" value="binary">Binary</option>
+            </select>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="Distribution type of the data."></i>
+        </div>
+
+        <div class="control-group">
+            <label for="Analysis Description" class="control-label">Description:</label>
+            <textarea class="controls" placeholder="Description" id="analysis_description" name="analysis_description"></textarea>
+
+            <i class="icon-info-sign" data-toggle="tooltip" title="A short description of the analysis: What is being modelled? Why is it interesting? etc."></i>
+        </div>
+
+        <div class="controls">
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Run" />
+        </div>
+    </form>
+
+    <div class="modal fade hide" id="dataset-preview"></div>
+
+
+</body>
+</html>

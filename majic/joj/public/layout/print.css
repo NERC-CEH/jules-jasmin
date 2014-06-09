@@ -1,0 +1,36 @@
+BODY {
+	BACKGROUND-COLOR: #fff
+}
+#RightColumn {
+	DISPLAY: none
+}
+#LeftColumn {
+	DISPLAY: none
+}
+#Footer {
+	DISPLAY: none
+}
+#Help {
+	DISPLAY: none
+}
+#MenuBar {
+	DISPLAY: none
+}
+#SubMenuBar {
+	DISPLAY: none
+}
+#SearchBar {
+	DISPLAY: none
+}
+#MainContent {
+	DISPLAY: block; MARGIN-LEFT: auto; MARGIN-RIGHT: auto
+}
+#RecordBox {
+	DISPLAY: block; FLOAT: none; WIDTH: 300px
+}
+#Main1 {
+	DISPLAY: block
+}
+#Header {
+	HEIGHT: auto
+}

@@ -1,0 +1,97 @@
+<html>
+
+<head>
+
+    <script src="../js/splitTimeSelect.js"></script>
+    <script src="../js/splitAxisConfig.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/wmsc.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+    
+    var time1Data = ['1945-04-15T00:00:00.0', '1945-05-15T00:00:00.0','1945-06-15T00:00:00.0',
+                 '1945-07-15T00:00:00.0','1945-08-15T00:00:00.0','1945-09-15T00:00:00.0','1945-10-15T00:00:00.0',
+                 '1945-11-15T00:00:00.0','1945-12-15T00:00:00.0','1975-01-15T00:00:00.0','1975-02-15T00:00:00.0','1975-03-15T00:00:00.0',];
+
+
+    var time2Values = ['1998-01-15T00:00:00.0',
+                       '1998-02-15T00:00:00.0',
+                       '1998-03-15T00:00:00.0',
+                       '1998-04-15T00:00:00.0',
+                       '1998-05-15T00:00:00.0',
+                       '1998-06-15T00:00:00.0',
+                       '1998-07-15T00:00:00.0',
+                       '1998-08-15T00:00:00.0',
+                       '1998-09-15T00:00:00.0',
+                       '1998-10-15T00:00:00.0',
+                       '1998-11-15T00:00:00.0',
+                       '1998-12-15T00:00:00.0'];
+
+    var time2SelectItems = [ 
+        new SplitAxisSelectList(1, 'Climatology, 1998-2007', ['January','February','March','April','May','June','July','August','September','October','November','December'])
+    ]; 
+    
+    var time2Data = new SplitAxisMapping(time2Values, time2SelectItems);
+
+    
+    var time3Values = ['1998-01-15T00:00:00.0',
+                       '1999-01-15T00:00:00.0',
+                       '1998-02-15T00:00:00.0',
+                       '1999-02-15T00:00:00.0',
+                       '1998-01-16T00:00:00.0',
+                       '1999-01-16T00:00:00.0',
+                       '1998-02-16T00:00:00.0',
+                       '1999-02-16T00:00:00.0',
+                       '1998-01-15T12:00:00.0',
+                       '1999-01-15T12:00:00.0',
+                       '1998-02-15T12:00:00.0',
+                       '1999-02-15T12:00:00.0',
+                       '1998-01-16T12:00:00.0',
+                       '1999-01-16T12:00:00.0',
+                       '1998-02-16T12:00:00.0',
+                       '1999-02-16T12:00:00.0' ];
+
+    var time3SelectItems = [
+        new SplitAxisSelectList(1, 'Year', ['1998', '1999']),
+        new SplitAxisSelectList(2, 'Month', ['January', 'Febuary']),
+        new SplitAxisSelectList(4, 'Day', ['15th', '16th']),
+        new SplitAxisSelectList(8, 'Time', ['Midnight', 'Midday'])
+    ];
+
+    var time3Data = new SplitAxisMapping(time3Values, time3SelectItems);
+    
+    function init() {
+
+        console.log("started at" +new Date());
+
+        time1 = new SplitTimeSelect('time1_container', 'time1', time1Data)
+        time1.build();
+        time2 = new SplitTimeSelect('time2_container', 'time2', time2Data, '')
+        time2.build();
+        time3 = new SplitTimeSelect('time3_container', 'time3', time3Data, '')
+        time3.build();
+
+        
+        console.log("Finished.");
+        
+    }
+
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+    <div id="time1_container"></div>
+
+    <div id="time2_container"></div>
+    
+    <div id="time3_container"></div>
+    
+    <input type="button" value="Show time 1" onClick="alert(document.getElementById('time1').value);"></input>
+    <input type="button" value="Show time 2" onClick="alert(document.getElementById('time2').value);"></input>
+    <input type="button" value="Show time 3" onClick="alert(document.getElementById('time3').value);"></input>
+    
+</body>
+
+</html>

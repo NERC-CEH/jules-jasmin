@@ -1,0 +1,96 @@
+<html>
+
+<head>
+
+    <script src="../js/wmsc.js"></script>
+    <script src="../js/json2.js"></script>
+    <script src="../js/layerDefaultSetter.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+
+    var defaultOptions = JSON.parse("[{\"layers\": [\"tmp\", \"tmx\", \"pre\"], \"endpoint\": \"http://localhost:5000/clim_10/wms3\", \"values\": {\"cmap\": \"grey\"}}, {\"layers\": [\"pre\"], \"endpoint\": \"http://localhost:5000/clim_10/wms3\", \"values\": {\"cmap_max\": \"20\", \"cmap\": \"winter\", \"cmap_min\": \"10\"}}]");
+
+    var endpoints = ['http://localhost:5000/clim_10/wms3','http://localhost:5000/clim_10/wms1'];
+    var layers = ['pre','tmp','tmx', 'var'];
+    
+    function init() {
+
+        console.log("started at" +new Date());
+        
+        var defaultParams = {format: 'image/png', version: '1.3.0', CRS: 'CRS:84', transparent: 'true'};
+
+        var defuaultSetter = new LayerDefaultSetter(defaultParams, defaultOptions);
+
+        var content = document.getElementById('content');
+
+        for (var i=0;i<defaultOptions.length;i++) {
+            var div = document.createElement('div');
+            addTxt(div,"Default display options for " + defaultOptions[i].endpoint);
+            
+            for (var j=0;j<defaultOptions[i].layers.length;j++) {
+                var div_layer = document.createElement('div');
+                addTxt(div_layer,"layer = " + defaultOptions[i].layers[j]);
+                div.appendChild(div_layer);
+            }
+            
+            for (var k in defaultOptions[i].values) {
+                var div_value = document.createElement('div');
+                addTxt(div_value,"value : k=" + k + " v=" + defaultOptions[i].values[k]);
+                div.appendChild(div_value);
+            }
+            content.appendChild(div);
+        }
+
+        
+        for (var i=0; i<endpoints.length; i++) {
+            var ep = document.createElement('div');
+            addTxt(ep,'Endpoint:' + endpoints[i] + " ");
+            
+            var ol = document.createElement('ol');
+            for (var j=0; j<layers.length; j++) {
+                var layer = document.createElement('li');
+                addTxt(layer,'Layer:' + layers[j] + " ");
+
+                var dl = document.createElement('dl');
+                var params = defuaultSetter.getDefaults(endpoints[i], layers[j]);
+                for (var k in params) {
+                    var dt = document.createElement('dt');
+                    addTxt(dt, k);
+                    dl.appendChild(dt);
+
+                    var dd = document.createElement('dd');
+                    addTxt(dd,params[k])
+                    dl.appendChild(dd);
+                    
+                }
+                layer.appendChild(dl);
+                
+                ol.appendChild(layer);
+            }
+            ep.appendChild(ol);
+            
+            content.appendChild(ep);
+        }    
+        
+        
+        console.log("finished at" +new Date());
+    }
+
+    function addTxt(elt, txt) {
+        elt.appendChild(document.createTextNode(txt));
+    }
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+    <div id="content">
+    
+    </div>
+    
+        
+
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+.ipccbanner td {
+    font: normal normal normal 12px Arial,Helvetica,sans-serif;
+}
+.ipccbanner a {
+    color: #4f96ff;
+    text-decoration: none;
+}
+.ipccbanner a:link {
+    color: #4f96ff;
+    text-decoration: none;
+}
+.ipccbanner a:visited {
+    color: #4f96ff;
+    text-decoration: none;
+}
+.ipccbanner a:hover {
+    color: #4f96ff;
+    text-decoration: underline;
+}

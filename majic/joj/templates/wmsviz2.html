@@ -1,0 +1,451 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns:py="http://genshi.edgewall.org/" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+       
+<!-- xi:include href="utils.html" / -->
+
+<?python
+    from pylons import config
+
+    #check if we should use the minified version of the yui javascript
+    minified_yui_javascript = config.get('minified_yui_javascript', 'false').lower() == 'true'
+    minified_client_javascript = config.get('minified_client_javascript', 'false').lower() == 'true'
+?>
+
+<head>
+
+
+<!--  script type='text/javascript' 
+        src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script --> 
+
+
+<!-- BEGIN: Yahoo Interface Library -->
+
+<!-- css files -->
+<link type="text/css" rel="stylesheet" href="$app_globals.server/js/yui_2.7.0b/treeview/assets/skins/sam/treeview.css"/> 
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_old_treeview_style/treeview-menu.css"/> 
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/fonts/fonts.css" />
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/button/assets/skins/sam/button.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/autocomplete/assets/skins/sam/autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/tabview/assets/skins/sam/tabview.css" />
+
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/reset-fonts-grids/reset-fonts-grids.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/resize/assets/skins/sam/resize.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/layout/assets/skins/sam/layout.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/js/yui_2.7.0b/button/assets/skins/sam/button.css" />
+
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/drag_drop_style.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ndg2.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/ddc_style.css"/>
+<link type="text/css" rel="stylesheet" href="$app_globals.server/layout/wmsviz2.css"/>
+<link rel="stylesheet" type="text/css" href="$app_globals.server/layout/bottom_controls.css" />
+<link rel="stylesheet" type="text/css" href="$app_globals.server/layout/yui_autocomplete.css" />
+
+<!-- Dependency source files -->  
+
+<py:choose test="minified_yui_javascript">
+  <py:when test="False">
+  
+    <script type="text/javascript" src ="$app_globals.server/js/yui_2.7.0b/yahoo/yahoo.js" ></script> 
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/event/event.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dom/dom.js" ></script>
+    
+    <!-- YUI treevieew  -->  
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/treeview/treeview.js" ></script> 
+    
+    <!-- YUI drag and drop  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/utilities/utilities.js" ></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop.js" ></script>
+    
+    <!-- YUI autocomplete 
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/animation/animation.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/element/element.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/button/button.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/datasource/datasource.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/autocomplete/autocomplete.js"></script>
+    -->
+    
+    <!-- YUI tabs  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/tabview/tabview.js"></script>
+    
+    <!-- YUI page layout -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/resize/resize.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/animation/animation.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/layout/layout.js"></script>
+    
+  
+  </py:when>
+  <py:otherwise>
+
+    <!-- minified js code -->
+    <script type="text/javascript" src ="$app_globals.server/js/yui_2.7.0b/yuiloader-dom-event/yuiloader-dom-event.js" ></script> 
+    
+    <!-- YUI treevieew  -->  
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/treeview/treeview-min.js" ></script> 
+    
+    <!-- YUI drag and drop  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/utilities/utilities.js" ></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop-min.js" ></script>
+    
+    <!-- YUI autocomplete
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/animation/animation-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/element/element-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/button/button-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/datasource/datasource-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/autocomplete/autocomplete-min.js"></script>  
+ -->
+    <!-- YUI tabs  -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/tabview/tabview-min.js"></script>
+    
+    <!-- YUI page layout -->
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/dragdrop/dragdrop-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/resize/resize-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/animation/animation-min.js"></script>
+    <script type="text/javascript" src="$app_globals.server/js/yui_2.7.0b/layout/layout-min.js"></script>
+          
+  </py:otherwise>
+</py:choose>
+
+
+<!-- END: Yahoo Interface Library -->
+
+<script type="text/javascript" src = "$app_globals.server/js/dragAndDrop.js" ></script> 
+
+
+
+<script type="text/javascript" src="$app_globals.server/js/json2.js"></script>
+<script type="text/javascript" src="${h.getOpenLayersImportPath()}"></script>
+<script type="text/javascript" src="$app_globals.server/js/prototype.js"></script>
+
+<script type="text/javascript" src="$app_globals.server/js/toggleDiv.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/LoadingPanel.js"></script>
+<script type="text/javascript" src="$app_globals.server/js/openlayers-x.js"></script>
+
+<!-- BEGIN: WMSC library -->
+<?python
+    javascript_files = ['wmsc.js',
+                        'utils.js',
+                        'endpoint.js',
+                        'furtherInfoLink.js',
+                        'displayOptionsRetriever.js',
+                        'mapControl.js',
+                        'layerControl.js',
+                        'capabilities.js',
+                        'wcs.js',
+                        'layerFigureDownload.js',
+                        'layerInformation.js',
+                        'layerList.js',
+                        'layerDisplayOptions.js',
+                        'layerDownload.js',
+                        'layoutManager.js',
+                        'splitAxisConfig.js',
+                        'splitAxisSelect.js',
+                        'endpointSelection.js',
+                        'ajaxRetriever.js',
+                        'axisConfigRetriever.js',
+                        'layerDimensions.js',
+                        'layerParameters.js',
+                        'figureBuilder.js',
+                        'legendContainer.js',
+                        'boundsControl.js',
+                        'wmcRetriever.js',
+                        'layerDefaultSetter.js',
+                        'outlineControl.js']
+?>
+
+<py:choose test="minified_client_javascript">
+ <py:when test="False">
+  <py:for each="file in javascript_files">
+    <script type="text/javascript" src="$app_globals.server/js/${file}"></script>
+  </py:for>
+ </py:when>
+ 
+ <py:otherwise>
+   <script type="text/javascript" src="$app_globals.server/js/compressed_client.js"></script>
+ </py:otherwise>
+  
+</py:choose>
+
+
+<!-- END: WMSC library -->
+
+<script type="text/javascript">
+
+YAHOO.util.Event.throwErrors = true;
+
+// Hook into application for debugging.    
+var app = null;
+var control = null;
+var layerList = null;
+var layerParameters = null;
+
+var initialStatus = ${h.jsonParseIfNotEmpty(c.initialStatus)};
+
+var eventsManager = null;
+var layoutManager = new LayoutManager();
+
+var layout = null;
+
+<?python
+from pylons import session 
+?>    
+
+function init() {
+
+    WMSC.log("Started drawing page " + Utils.getTimeString() );
+    
+    var initialSetupJSON = "${c.initialSetupJSON}";
+    var makeFigureULR = "$app_globals.server/wmsviz/get_figure";
+    var bgImagePath = '$app_globals.server/layout/images/clear.gif';
+    
+    var wmcRetriever = new WMCRetriever();
+
+	var initialBounds = new OpenLayers.Bounds(-180,-90,180,90);
+
+    var furtherInfoLinks = Utils.buildObjectList(FurtherInfoLink, initialStatus['FurtherInfoLinks']);
+    var endpointList     = Utils.buildObjectList(Endpoint, initialStatus['WMSEndpointsList']);
+    
+    var allEvents = [];
+
+    allEvents = allEvents.concat(LayerList.prototype.EVENTS_RAISED,
+            LayerParameters.prototype.EVENTS_RAISED,
+            WMSC.VisAppLayers.prototype.EVENT_TYPES,
+            WMSC.VisApp.prototype.EVENT_TYPES,
+            WMSC.BoundsControl.prototype.EVENT_TYPES,
+            EndpointSelection.prototype.EVENT_TYPES,
+            OutlineControl.prototype.EVENT_TYPES);
+
+    eventsManager =  new OpenLayers.Events(null, null,  allEvents);
+
+
+    
+             
+    layerList = new LayerList('layer_list', 'chk_outline_on_top', eventsManager);   
+    layerParameters = new LayerParameters('layer_properties', 'selection_form', wmcRetriever, initialStatus.HiddenDisplayOptions, eventsManager, furtherInfoLinks);
+    
+
+    var layerDownload = new LayerDownload('layer_download_container', initialBounds, makeFigureULR, eventsManager);
+    
+    var legendContainer = new LegendContainer('legend', eventsManager);
+
+    
+    var outlineControl = new OutlineControl('add_outline', eventsManager, initialStatus.OutlineSettings);
+    var boundsControl  = new WMSC.BoundsControl('dims', initialBounds, eventsManager);
+    var layerControl   = new WMSC.VisAppLayers('layerTree', 'layerLeaves',wmcRetriever, 'new_endpoint', 'add_new_endpoint', initialStatus.DefaultLayerParms, eventsManager, furtherInfoLinks);  
+    app = new WMSC.VisApp('map', 10, 640, true, initialBounds, eventsManager, bgImagePath);
+
+    var initialEndpoints = JSON.parse(initialSetupJSON);
+
+    outlineControl.addNewOutline();
+        
+    for (var i = 0; i /*<![CDATA[*/ < /*]]>*/ initialEndpoints.length; i++) {
+        var endpoint = initialEndpoints[i];
+
+        if (endpoint.layers != undefined) {
+    		layerControl.addLayersToSelect(endpoint.url, endpoint.layers);
+        }
+        
+        layerControl.addWebMapContext(endpoint.url);
+    }
+
+    // build endpoint select
+    var endpointSelect = new EndpointSelection('endpoint_select', endpointList, eventsManager); 
+    
+    // build the tab control
+    YAHOO.util.Event.throwErrors = true;
+    var myTabs = new YAHOO.widget.TabView("tabs_container");
+    
+    WMSC.log("finished drawing page at " + Utils.getTimeString());
+    
+}
+
+function cleanup() 
+{
+    return;
+    if ( app !== null) {
+        app.destroy();
+    }
+    
+    if (layerList !== null) {
+        layerList.destroy();
+    }
+
+    if (eventsManager !== null) {
+        eventsManager.destroy();
+    }
+}
+    
+<!--! Help Icons -->
+<span py:def="helpIcon(value, elementType = 'div')">
+      <span>
+         <a href="javascript:;" title="Toggle help" onclick="toggleDiv(1,'$value','shown','hidden','$elementType'); return false;">
+         <img src="$app_globals.helpIcon" alt="Toggle help" class="helpicon"/></a>
+      </span>
+</span>    
+
+</script>
+
+    <title> COWS client </title>
+</head>
+
+<body onload="init()" onunload="cleanup()" class="yui-skin-sam">
+    
+    <div id="center1">
+        <div id="center_content">
+            <table>
+                <tr>
+                    <td align="center">
+                        <div id="map"> </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div id="right1">
+
+    </div>
+    
+    <div id="bottom1">
+    
+        <div id="bottom_left">
+        
+            <div id="bottom_left_content">
+                <div id="tabs_container" class="yui-navset">
+                
+                    <ul class="yui-nav">
+                        <li class="selected"><a href="#new_layer_container"><em>New Layer</em></a></li>
+                        <li><a href="#layer_display_options_container"><em>Display Options</em></a></li>
+                        <li><a href="#layer_dimensions_container"><em>Dimensions</em></a></li>
+                        <li><a href="#layer_download_container"><em>Download</em></a></li>
+                        <li><a href="#outline_layer_container"><em>Outline</em></a></li>
+                        
+                    </ul>
+
+                    <div id="tab_content" class="yui-content">   
+                        <div id="new_layer_container" class="tab_section">
+                        
+                            <div>
+                                Add new WMS: <span py:replace="helpIcon('endpoint_help', 'div')"> </span> 
+                                <div id="endpoint_select"></div>                                
+                            </div>
+                            
+                            <div id="endpoint_help" class="hidden">
+                                <div class="helptxt">
+                                    You can add new datasets from other OGC Web Map Servers (WMS) here. Just add the base service URL  (without the WMS parameters) <br/>
+                                    e.g. http://myserver.com/mywms
+                                </div>
+                            </div>
+                            
+                            <div class="controlContent" id="layerTree">
+                                 No datasets loaded.
+                            </div>
+
+                        </div>
+                        
+
+      
+                        <div id="layer_display_options_container" class="tab_section">      
+                            <form id='selection_form'>
+                            </form>
+                        </div>
+                        
+                        <div id="layer_dimensions_container" class="tab_section">
+                        
+                            <div id="description">
+                                Complete your selection below to view  <span py:replace="helpIcon('coord_help', 'div')" /> 
+                            </div>
+
+                            <div id="coord_help" class="hidden">
+                                <div class="helptxt">
+                                    Specifying coordinate dimensions will select a region on the map; 
+                                    when this is appropriately sized, the map will automatically zoom to this region.<br/>
+                                    'Reset selection' will return the map to its full, global size.<br/>
+                                    Some map layers have additional dimensions, e.g. 'time'; 
+                                    if these are available, they will also be displayed in this panel for selection.<br/>
+                                    NB, the dimensions displayed are those relating to the selected dataset 
+                                    in the left hand tree view - however they will also be applied, where appropriate, to all selected map layers.
+                                </div>
+                            </div>    
+                        
+                        
+                            <b>Domain</b>
+                            <div id="dims"></div>
+                                   
+                        
+                            <form id="WMSC_dimForm">
+                            </form>
+                        </div>
+                        
+                        <div id="layer_download_container" class="tab_section">
+                        </div>
+                        
+                        <div id="outline_layer_container" class="tab_section">
+                            <div>
+                                <label for="chk_outline_on_top">Display Outline Layer Above Others</label>
+                                <input type="checkbox" id="chk_outline_on_top" checked="yes"/>
+                            </div>
+                            <div><input type="button" id="add_outline" value="Add Outline Layer"/></div>
+                        </div>                                 
+                    </div>                   
+                </div> 
+            </div>
+        </div>
+
+        <div id="bottom_middle">
+            <div id="bottom_middle_content">
+
+        <div id="layer_list_container">
+            <div id="layer_list_title" class='centered'>
+                <strong> Layer List <span py:replace="helpIcon('layer_help')"/> </strong>
+            </div>
+            
+            <div class="workarea">
+                <ul class="draglist" id="layer_list">
+                    <li>list empty</li>
+                </ul>
+                <input type="button" value="Remove Selected Layer" id="btn_remove_selected_layer" />
+            </div>
+            
+            
+            <div id="layer_help" class="hidden">
+                  <div class="helptxt">
+                      When multiple map layers are selected, the displayed map is constructed by sequentially adding the layers from the bottom of the list
+                      to the top.<br/>
+                      NB, if the topmost layer has legend data available then this will be displayed under the completed map.<br/>
+                      Remove layers from the displayed map by clicking their <img src="$app_globals.server/js/img/close.gif" alt="close" /> icon.
+                </div>
+            </div>                    
+            
+        </div>                
+
+            </div>
+        </div>
+
+        <div id="bottom_right">
+            <div id="bottom_right_content">
+            
+                <div id="layer_info_container">
+                        
+                    <div id="legend" class="centered"></div>
+                    
+                    <div id="layer_info"></div>
+                
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        layoutManager.setupLayout(); // this needs to run as the page loads
+
+
+    </script>
+
+</body>
+</html>

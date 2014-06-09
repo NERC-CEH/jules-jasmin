@@ -1,0 +1,67 @@
+
+DIV#visBody {
+  margin: 4px;
+  width: auto;
+}
+
+DIV#visBody>TABLE {
+  width: 100%;
+}
+
+DIV.optDiv {
+  /*color: #444488; */
+  padding: 4px;
+  border: #222277 solid 1px;
+  background-color: #ddddee;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+DIV.wcsDiv {
+  /*color: #444488; */
+  padding: 4px;
+  border: #222277 solid 1px;
+  background-color: #ddddee;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+DIV.hiddenDiv 
+{
+	display:none;
+	visibility:visible;
+}
+DIV.optDiv INPUT {
+  font-size: 12px;
+  margin: 1px;
+}
+DIV.optDiv TD {
+  font-weight: bold;
+}
+
+DIV.activeOptionArea {
+  margin-right: 8px;
+}
+DIV.inactiveOptionArea {
+  display: none;
+}
+
+TD.tabInfo { 
+             width: 40%;
+             vertical-align: top;
+}   
+
+
+#WMSC_sel table {
+	width:100%;
+}
+
+
+/* Required to make things look like the main site.  The main site is somehow
+   changing the styling in it's menu javascript.
+
+td {
+  font-size: 12px;
+}
+
+*/

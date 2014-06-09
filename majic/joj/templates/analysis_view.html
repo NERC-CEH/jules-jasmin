@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="layout.html" />
+<head>
+    <title>${c.analysis.name}</title>
+    <style type="text/css">
+        .tab-content {
+            overflow: visible;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <py:if test="added_successfully">
+            <py:choose>
+                <py:when test="added_successfully">
+                    <div class="alert alert-success">
+                        <b>Analysis Published</b> Other users can now see your results.
+                    </div>
+                </py:when>
+                <py:otherwise>
+                    <div class="alert alert-error">
+                        <b>An error occurred publishing the analysis</b>
+                    </div>
+                </py:otherwise>
+            </py:choose>
+        </py:if>
+    </div>
+
+    <py:choose>
+        <py:when test="c.analysis.complete">
+            <div class="row">
+                <div class="span9">
+                    <h1>${c.analysis.name}</h1>
+                    <h5>Run by ${c.run_by_user} on ${c.analysis.run_date.strftime('%d-%b-%Y %H:%M')}</h5>
+                </div>
+                <div class="span3">
+                    <div class="alert alert-info">
+                        <p><strong>Actions</strong></p>
+                        <ul class="nopoints">
+                            <li>
+                                <form class="inline_buttons" method="POST" action="${url(controller='analysis', action='publish')}">
+                                    <input type="hidden" id="analysis_id" name="analysis_id" value='${c.analysis.id}' />
+                                    <py:if test="c.analysis.viewable_by is not None">
+                                        <i class="icon-globe"></i> <input type="submit" class="btn btn-link" value="Publish" />
+                                    </py:if>
+                                    <py:if test="c.analysis.viewable_by is None">
+                                        <i class="icon-ok"></i> Published
+                                    </py:if>
+                                </form>
+                            </li>
+                            <li>
+                                <a href="${url(controller='analysis', action='rerun', id=str(c.analysis.id))}"><i class="icon-repeat"></i> Re-run Analysis</a>
+                            </li>
+                            <li>
+                                <a href="${url(controller='analysis', action='download', id=str(c.analysis.id))}"><i class="icon-download-alt"></i> Download</a>
+                            </li>
+                            <py:if test="c.analysis.viewable_by is not None">
+                                <li>
+                                    <form class="inline_buttons" method="POST" action="${url(controller='analysis', action='delete')}">
+                                        <input type="hidden" id="analysis_id1" name="analysis_id" value='${c.analysis.id}' />
+                                        <i class="icon-remove-circle"></i>
+                                        <input type="submit" class="btn btn-link" value="Delete" />
+                                    </form>
+                                </li>
+                            </py:if>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#map" data-toggle="tab">Map Results</a></li>
+                        <li><a href="#fitting" data-toggle="tab">Fitting Results</a></li>
+                        <li><a href="#all" data-toggle="tab">All results</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="map">
+                            <div class="row">
+                            <div class="span5">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Result</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            Geospatial Longitude Min
+                                        </td>
+                                        <td>${c.analysis.attributes['geospatial_lon_min']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Geospatial Longitude Max
+                                        </td>
+                                        <td>${c.analysis.attributes['geospatial_lon_max']} </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Geospatial Latitude Min
+                                        </td>
+                                        <td>${c.analysis.attributes['geospatial_lat_min']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Geospatial Latitude Max
+                                        </td>
+                                        <td>${c.analysis.attributes['geospatial_lat_max']} </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="span7">
+                                <img class="img-polaroid" src="data:image/png;base64, ${c.analysis.result_image}" height="250px" />
+                            </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="fitting">
+                            <div class="row">
+                            <div class="span5">
+                                <h5>Fit values</h5>
+                                <dl class="dl-horizontal">
+                                    <dt>AIC</dt>
+                                    <dd>${c.analysis.attributes['AIC']}</dd>
+                                    <dt>RMS Error</dt>
+                                    <dd>${c.analysis.attributes['root_mean_square_error']}</dd>
+                                    <dt>R<sup>2</sup></dt>
+                                    <dd>${c.analysis.attributes['r_squared']}</dd>
+                                </dl>
+                            </div>
+                            <div class="span7">
+                                <img class="img-polaroid" src="data:image/png;base64, ${c.analysis.fit_image}" height="250px" />
+                            </div>
+                                </div>
+                        </div>
+                        <div class="tab-pane" id="all">
+                            <div class="row">
+                                <div class="span12">
+                                    <h5>All attributes</h5>
+
+                                    <table class="table table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr py:for="col in c.analysis.attributes">
+                                                <td>${col}</td>
+                                                <td>${c.analysis.attributes[col]}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </py:when>
+        <py:otherwise>
+            <div class="hero-unit">
+                <h1>Not done yet!</h1>
+
+                <p>${c.analysis.name} is currently being processed, please come back later</p>
+
+                <a href="${url(controller='analysis', action='test', id=str(c.analysis.id))}">View detailed progress</a>
+            </div>
+        </py:otherwise>
+    </py:choose>
+
+</body>
+</html>

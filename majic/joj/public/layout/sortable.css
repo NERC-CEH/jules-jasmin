@@ -1,0 +1,46 @@
+body.dragging, body.dragging * {
+    cursor: move !important;
+}
+.dragged {
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    z-index: 2000;
+}
+ol.sortable {
+    margin: 0 0 9px;
+}
+ol.sortable li.placeholder, ol.sortable li.layer {
+    background: none repeat scroll 0 0 #EEEEEE;
+    border: 1px solid #CCCCCC;
+    color: #0088CC;
+    display: block;
+    margin: 5px;
+    padding: 5px;
+}
+ol.sortable li.placeholder {
+    border: medium none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+ol.sortable li.placeholder:before {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: rgba(0, 0, 0, 0) -moz-use-text-color rgba(0, 0, 0, 0) #FF0000;
+    border-image: none;
+    border-style: solid none solid solid;
+    border-width: 5px medium 5px 5px;
+    content: "";
+    height: 0;
+    left: -5px;
+    margin-top: -5px;
+    position: absolute;
+    top: -4px;
+    width: 0;
+}
+i.icon-resize-vertical {
+    cursor: pointer;
+}

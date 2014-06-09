@@ -1,0 +1,160 @@
+<html>
+
+<head>
+
+    <script src="../js/wmsc.js"></script>
+    <script src="../js/OpenLayers.js"></script>
+    
+    <!-- The DDCVismap Openlayers map -->
+    <script src="../js/openlayers-x.js"></script>
+    
+    <!-- The original bounds control -->
+    <script src="../js/boundsControl.js"></script>
+    
+    <script src="../js/utils.js"></script>
+    
+    <script src="../js/boundingBoxMapSelect.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+
+        var events = new OpenLayers.Events(null, null, ['LAYER_ORDER_CHANGED']);   
+
+
+        var baseLayerData = [
+        {
+            "url": "http://labs.metacarta.com/wms/vmap0", 
+            "params": {
+                "layers": "basic",
+                "transparent":"false", 
+                "format": "image/png"
+            }
+        },
+        {
+            "url": "http://labs.metacarta.com/wms/vmap0", 
+            "params": {
+                    "layers": "coastline_01", 
+                    "format": "image/png",
+                    "transparent":"true"
+            }
+        },
+        {
+            "url": "http://labs.metacarta.com/wms/vmap0", 
+            "params": {
+                    "layers": "coastline_02", 
+                    "format": "image/png",
+                    "transparent":"true"
+            }
+        }        
+        ];
+
+        var baseLayerData2 = {
+                "url": "http://labs.metacarta.com/wms/vmap0", 
+                "params": {
+                        "layers": "coastline_01", 
+                        "format": "image/png",
+                        "transparent":"true"
+                }
+        };        
+                    
+        var originalBoundsControlMarkup = '\
+        <div id="WMSC_sel" class="WMSC_domain">\
+        <table>\
+          <tr>\
+            <td colspan="2" align="center">\
+              <input type="text" name="bboxN" size="4" value="90"/><br/>N\
+            </td>\
+          </tr>\
+          <tr>\
+           <td><input type="text" name="bboxW" size="4" value="-180"/> W</td>\
+           <td>E <input type="text" name="bboxE" size="4" value="180"/></td>\
+          </tr>\
+          <tr><td colspan="2" align="center">S<br/>\
+                <input type="text" name="bboxS" size="4" value="-90"/>\
+              </td></tr>\
+        </table>\
+        <input id="WMSC_clear" type="button" value="Reset selection"/>\
+        </div>';
+
+
+        var bboxSelect = null;
+        
+        function init() {
+            makeBoundsControl();
+        }
+
+        function makeBoundsControl() {
+
+            var changeChk = document.getElementById('chk_changeBoundsControl');
+
+            document.getElementById('bbox_hidden_input').value ="";
+            document.getElementById('bounds_control_container').innerHTML ="";
+            document.getElementById('map').innerHTML ="";
+            document.getElementById('bbox_show_val').innerHTML = "";
+
+            if (bboxSelect !== null) {
+                bboxSelect.dispose();
+            }
+            
+            var data = null;
+            var bboxHiddenInput = null;
+            var bboxShowValue = null;
+            var boundsMarkup = null;
+            
+            if (changeChk.checked) {
+                data = baseLayerData2
+                bboxHiddenInput = 'bbox_hidden_input';
+                boundsMarkup = originalBoundsControlMarkup;
+            }
+            else {
+                // have the bounds printed to the <span id="bbox_show_val"></span>
+                bboxShowValue = 'bbox_show_val';
+                data = baseLayerData
+            }
+            
+            bboxSelect = new BoundingBoxMapSelect('map', 'bounds_control_container', data,  
+                              bboxHiddenInput, bboxShowValue, boundsMarkup);
+                        
+        }
+        
+    </script>
+    
+    <style type="text/css">
+    
+        #map{
+            width:640px;
+            height:320px;
+            border:1px solid black;
+        }
+                
+        #bbox_sel_bounds_container .input_item {
+            float:left;
+            padding-right:20px;
+        }
+       
+    </style>
+</head>
+
+<body onload="init();">
+
+    Alternative options <input type="checkbox" id="chk_changeBoundsControl" onClick="makeBoundsControl();"></input> <br />
+
+    <div id="bounding_container">
+    
+        <h4>Bounding Box</h4>    
+        <div> BBox = <span id="bbox_show_val"></span></div> 
+        <div id="bounds_control_container"></div>
+        
+        <div id="map_container">
+            <div id='map'></div>
+        </div>    
+
+        <input type="hidden" name='bbox' id='bbox_hidden_input' />
+    </div>
+
+
+
+    
+
+</body>
+
+</html>

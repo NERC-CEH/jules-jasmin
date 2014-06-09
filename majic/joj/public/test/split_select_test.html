@@ -1,0 +1,51 @@
+<html>
+
+<head>
+
+    <script src="../js/splitSelect.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/wmsc.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+    
+    time1Data = ['1945-04-15T00:00:00.0', '1945-05-15T00:00:00.0','1945-06-15T00:00:00.0',
+                 '1945-07-15T00:00:00.0','1945-08-15T00:00:00.0','1945-09-15T00:00:00.0','1945-10-15T00:00:00.0',
+                 '1945-11-15T00:00:00.0','1945-12-15T00:00:00.0','1975-01-15T00:00:00.0','1975-02-15T00:00:00.0','1975-03-15T00:00:00.0',];
+
+    time2Data = {
+                 days:['05','06','07','08','09'],
+                 times:['00:00:00.0','06:00:00.0','12:00:00.0','18:00:00.0'],
+                 months:['01','02','03','04','05', '06','07','08','09','10', '11', '12'],
+                 years:['2005','2006','2007','2008','2009'],
+                 _fmt:'%(years)s-%(months)s-%(days)sT%(times)s',
+             };
+
+    function init() {
+
+		console.log("started at" +new Date());
+
+        time1 = new SplitSelect('time1_container', 'time1', time1Data)
+        time1.build();
+        time2 = new SplitSelect('time2_container', 'time2', time2Data)
+        time2.build();
+        
+        console.log("Finished.");
+        
+	}
+
+    
+    </script>
+</head>
+
+<body onload="init();">
+
+    <div id="time1_container"></div>
+
+    <div id="time2_container"></div>
+    
+    <input type="button" value="Show time 1" onClick="alert(document.getElementById('time1').value);"></input>
+    <input type="button" value="Show time 2" onClick="alert(document.getElementById('time2').value);"></input>
+    
+</body>
+
+</html>

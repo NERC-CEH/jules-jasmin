@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/" py:strip="">
+
+<py:match path="head" once="true">
+    <head py:attrs="select('@*')">
+        <title py:with="title = list(select('title/text()'))">
+            Majic<py:if test="title"> | ${title}</py:if>
+        </title>
+
+        <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+        <link href="/layout/joj.css" rel="stylesheet" media="screen" />
+
+        <script src="/js/jquery.js"></script>
+        <script type="text/javascript" src="/layout/bootstrap/js/bootstrap.js"></script>
+
+        <script type="text/javascript" src="/js/ecomaps_general.js"></script>
+
+        <!--Page-specific styles and script tags in here...-->
+        ${select('style')}
+        ${select('link')}
+        ${select('script')}
+    </head>
+</py:match>
+
+<py:match path="body" once="true">
+    <body py:attrs="select('@*')">
+        <div id="wrap">
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container">
+
+                            <a class="btn pull-right" href="${h.url(controller='account', action='logout')}">Log out</a>
+                            <p id="status" class="navbar-text pull-right">
+                                Map server status <span id="status-message" class="label">Testing...</span>
+                            </p>
+                        <a class="brand" href="${h.url(controller='home')}">Majic</a>
+
+                        <ul class="nav">
+                            <li>
+                                <a href="${h.url(controller='map')}">Explore</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='model_run', action='create')}">New Model Run</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='model_run')}">Model Runs</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='home', action='about')}">About</a>
+                            </li>
+                            <py:if test="c.admin_user">
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle">
+                                        Admin Options
+                                        <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="${h.url(controller='user')}">Users</a>
+                                        </li>
+                                        <li>
+                                            <a href="${h.url(controller='dataset')}">Datasets</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </py:if>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div py:with="error_messages = h.error_flash.pop_messages()" class="container">
+                <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
+
+                <div  py:if="error_messages" id="flash_error" class="alert alert-danger">
+                        ${error_messages}
+                </div>
+                ${select('*|text()')}
+            </div>
+            <div id="push"></div>
+        </div>
+        <div id="footer">
+                <a class="pull-left" href="http://www.ceh.ac.uk" target="_blank"><img src="/layout/images/ceh_transparent.gif" /></a>
+                <a class="pull-right" href="http://www.tessella.co.uk" target="_blank"><img src="/layout/images/tessella.png" /></a>
+        </div>
+    </body>
+</py:match>
+</html>

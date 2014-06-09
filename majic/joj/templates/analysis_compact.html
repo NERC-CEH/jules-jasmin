@@ -1,0 +1,82 @@
+
+<div xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/"
+      ><div class="modal-header">
+
+    <h1>${c.analysis.name}</h1>
+    <p>
+        <!--Run by ${c.analysis.run_by_user.name} on ${c.analysis.run_date.strftime('%d-%b-%Y %H:%M')}-->
+    </p>
+</div>
+        <div class="modal-body">
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#details" data-toggle="tab">Details</a></li>
+                <li><a href="#image" data-toggle="tab">Map</a></li>
+                <li><a href="#fit" data-toggle="tab">Fit</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="details">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Result</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                AIC
+                            </td>
+                            <td>${c.analysis.attributes['AIC']}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Date Created
+                            </td>
+                            <td>${c.analysis.attributes['date_created']}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Geospatial Longitude Min
+                            </td>
+                            <td>${c.analysis.attributes['geospatial_lon_min']}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Geospatial Longitude Max
+                            </td>
+                            <td>${c.analysis.attributes['geospatial_lon_max']} </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Geospatial Latitude Min
+                            </td>
+                            <td>${c.analysis.attributes['geospatial_lat_min']}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Geospatial Latitude Max
+                            </td>
+                            <td>${c.analysis.attributes['geospatial_lat_max']} </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" id="image">
+                    <img class="img-polaroid" src="data:image/png;base64, ${c.analysis.result_image}" height="250px" />
+                </div>
+                <div class="tab-pane" id="fit">
+                    <img class="img-polaroid" src="data:image/png;base64, ${c.analysis.fit_image}" height="250px" />
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <a class="btn btn-primary" href="${url(controller='analysis', action='view', id=c.analysis.id)}">View full analysis</a>
+            <button class="btn" data-dismiss="modal">Close</button>
+        </div>
+</div>

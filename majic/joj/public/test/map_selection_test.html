@@ -1,0 +1,147 @@
+<html>
+
+<head>
+
+    <script src="../js/OpenLayers.js"></script>
+    <script src="../js/openlayers-x.js"></script>
+    
+    <script defer="defer" type="text/javascript">
+    
+        function init() {
+    
+            console.log("started at" +new Date());
+    
+            setupMap();
+     
+    
+            
+            console.log("Finished.");
+            
+        }
+
+        function setupMap() {
+            
+            var map = new OpenLayers.Map('map', {controls:[]});
+            map.addControl(new OpenLayers.Control.PanZoomBar());
+            map.addControl(new OpenLayers.Control.MousePosition());
+            
+            var coast = new OpenLayers.Layer.WMS(
+                    "Coastline",
+                    "http://labs.metacarta.com/wms/vmap0",
+                    { layers: 'coastline_01', format: 'image/png', transparent: 'false' },
+                    { isBaseLayer: true, maxResolution:"auto", numZoomLevels:5}
+            );
+    
+            
+            
+            
+            boxesLayer = new OpenLayers.Layer.Boxes("Sub-selection");
+
+            subselControl = new SubSelectionMouseToolbar(
+                         new OpenLayers.Pixel(500 - 40, 10), 
+                         'vertical', 
+                         boxesLayer);
+            
+            map.addControl(this.subselControl);
+            
+            
+            map.addLayer(coast);
+            map.setLayerIndex(coast, 0);
+            
+            map.addLayer(boxesLayer);
+            map.setLayerIndex(boxesLayer, 1);
+            
+            map.zoomToMaxExtent();
+            
+            subselControl.switchModeTo('zoombox');               
+        }
+
+        function setupMap2() {
+            var numZoomLevels = 10;
+            var maxResolution = 360.0 / 500.0;
+            var resolutions = [];
+            for (var i = 0; i < numZoomLevels; i++) 
+            {
+                resolutions.push(maxResolution / Math.pow(1.4, i));
+            }
+
+            // set up the map control
+            map = new DDCVisMap('map', 
+                { 
+                    resolutions: resolutions,
+                    controls: []
+                }
+            );
+            
+            
+            boxesLayer = new OpenLayers.Layer.Boxes("Sub-selection");
+
+            subselControl = new SubSelectionMouseToolbar(
+                         new OpenLayers.Pixel(500 - 40, 10), 
+                         'vertical', 
+                         boxesLayer);
+            
+            map.addControl(this.subselControl);
+            map.addControl(new OpenLayers.Control.PanZoomBar());
+            map.addControl(new OpenLayers.Control.MousePosition());
+
+            //Force no transparency
+            
+            var baseLayer = new OpenLayers.Layer.WMS(
+                    "Coastline",
+                    "http://labs.metacarta.com/wms/vmap0",
+                    { layers: 'coastline_01', format: 'image/png', transparent: 'false' },
+                    { isBaseLayer: true, maxResolution:"auto", numZoomLevels:5}
+            );
+                
+            
+            map.addLayer(baseLayer);
+            map.setLayerIndex(baseLayer, 0);
+            
+            map.addLayer(boxesLayer);
+            map.setLayerIndex(boxesLayer, 1);
+            
+            
+//            // Setup the map - initially with the basic openlayers map + coastline + boxes
+//            this.updateVisLayer();
+
+            var maxExtent = new OpenLayers.Bounds(-180, -90, 180, 90);
+            map.zoomToExtent(maxExtent);    
+            
+            map.zoom = 0;
+            
+            // force the resolution to be set, this is needed so that layers added
+            // retain the correct bounds.
+            map.resolution = this.map.getResolutionForZoom(map.zoom);
+             
+            console.log("this.map resolution= " + this.map.getResolution() + 
+                                   " zoom=" + this.map.zoom + 
+                                   " maxExtent(b,l,t,r)=" + this.map.maxExtent.bottom + "," + this.map.maxExtent.left + "," + this.map.maxExtent.top + "," + this.map.maxExtent.right + 
+                                   " center(lat,lon)=" + this.map.getCenter().lat + "," + this.map.getCenter().lon + 
+                                   " size=" + this.map.getSize().w + "," + this.map.getSize().h + 
+                                   " bounds(b,l,t,r)=" + this.map.calculateBounds().bottom + "," + this.map.calculateBounds().left + "," + this.map.calculateBounds().top + "," + this.map.calculateBounds().right);
+            
+            // Enter selection mode
+            subselControl.switchModeTo('zoombox');
+            
+        }        
+    
+    </script>
+    
+    <style type="text/css">
+
+        #map {
+            width:500px;
+            height:250px;
+        }
+
+    </style>
+</head>
+
+<body onload="init();">
+
+    <div id="map"></div>
+
+</body>
+
+</html>

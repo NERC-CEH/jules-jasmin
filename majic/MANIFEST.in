@@ -1,0 +1,2 @@
+recursive-include joj/public *
+recursive-include joj/templates *
