@@ -1,3 +1,0 @@
-
-class URLUnavailable(Exception):
-    pass
