@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:py="http://genshi.edgewall.org/">
+
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>Model Runs</title>
+</head>
+<body>
+<h1>Model Runs</h1>
+<h2>User Model Runs</h2>
+<h4 py:for="model_run in c.user_models">${model_run.id}: ${model_run.name}</h4>
+<h2>Published Model Runs</h2>
+<h4 py:for="model_run in c.published_models">${model_run.id}: ${model_run.name}</h4>
+</body>
+</html>

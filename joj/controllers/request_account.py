@@ -19,13 +19,18 @@ class RequestAccountController(BaseController):
     _account_request_service = None
 
     def __init__(self, account_request_service=AccountRequestService()):
+        """
+        Construct a new RequestAccountController
+        :param account_request_service: Access to AccountRequest database
+        :return:
+        """
         self._account_request_service = account_request_service
         super(RequestAccountController, self).__init__()
-
 
     def license(self):
         """
         Show the Majic license
+        :return: rendered license page
         """
 
         return render('request_account/license.html')
@@ -35,6 +40,7 @@ class RequestAccountController(BaseController):
     def request(self):
         """
         Process a request for a new account
+        :return: rendered form or success page
         """
         if not request.POST:
             return render('request_account/request.html')

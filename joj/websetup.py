@@ -132,12 +132,14 @@ def setup_app(command, conf, vars):
         level.name = 'Beginner'
         session.add(level)
 
-        statuses = [
-            ModelRunStatus('Finished'),
-            ModelRunStatus('Pending'),
-            ModelRunStatus('Running'),
-            ModelRunStatus(constants.MODEL_RUN_STATUS_CREATING),
-            ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMIT_FAILED)]
+        statuses = [ModelRunStatus(constants.MODEL_RUN_STATUS_CREATED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMITTED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_PENDING),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_RUNNING),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_COMPLETED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_PUBLISHED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_FAILED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMIT_FAILED)]
         map(session.add, statuses)
 
         default_code_version = CodeVersion()

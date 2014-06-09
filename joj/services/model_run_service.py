@@ -6,6 +6,9 @@ from sqlalchemy import and_
 from joj.services.general import DatabaseService
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue
 from joj.utils import constants
+from joj.services.general import DatabaseService, ServiceException
+from joj.model import ModelRun, CodeVersion, ModelRunStatus
+from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +31,22 @@ class ModelRunService(DatabaseService):
                 return session.query(ModelRun).filter(ModelRun.user_id == user.id).all()
             except NoResultFound:
                 return []
+
+    def get_published_models(self):
+        """
+        Get all the published model runs
+        :return: A list of published model runs
+        """
+        with self.readonly_scope() as session:
+            try:
+                return session.query(ModelRun).join(ModelRun.status)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED).all()
+            except NoResultFound:
+                return []
+
+    def get_model_by_id(self, user, id):
+         with self.readonly_scope() as session:
+            return session.query(ModelRun).filter(ModelRun.id == id).first()
 
     def get_model_being_created(self, user):
         """
