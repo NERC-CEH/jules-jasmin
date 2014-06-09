@@ -10,5 +10,5 @@ __pycache__/
 *.egg-info/
 
 #Intellij Project
-.idea/workspace.xml
-.idea/tasks.xml
+**/.idea/workspace.xml
+**/.idea/tasks.xml
