@@ -7,6 +7,7 @@ from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, Analysis, User, AnalysisCoverageDataset, \
     AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
 from joj.model.meta import Base, Session
+from joj.utils import constants
 
 
 def _get_result_image():
@@ -132,7 +133,13 @@ def setup_app(command, conf, vars):
         level.name = 'Beginner'
         session.add(level)
 
-        statuses = [ModelRunStatus('Finished'), ModelRunStatus('Pending'), ModelRunStatus('Running'), ModelRunStatus('Defining')]
+        statuses = [ModelRunStatus(constants.MODEL_RUN_STATUS_CREATED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMITTED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_PENDING),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_RUNNING),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_COMPLETED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_PUBLISHED),
+                    ModelRunStatus(constants.MODEL_RUN_STATUS_FAILED)]
         map(session.add, statuses)
 
         default_code_version = CodeVersion()
