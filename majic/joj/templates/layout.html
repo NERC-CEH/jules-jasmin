@@ -69,12 +69,20 @@
                     </div>
                 </div>
             </div>
-            <div py:with="error_messages = h.error_flash.pop_messages()" class="container">
+            <div class="container">
                 <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
 
-                <div  py:if="error_messages" id="flash_error" class="alert alert-danger">
-                        ${error_messages}
-                </div>
+                <py:with vars="success_messages = h.success_flash.pop_messages()">
+                    <div  py:if="success_messages" id="flash_success" class="alert alert-success">
+                        ${success_messages}
+                    </div>
+                </py:with>
+
+                <py:with vars="error_messages = h.error_flash.pop_messages()">
+                    <div  py:if="error_messages" id="flash_error" class="alert alert-danger">
+                            ${error_messages}
+                    </div>
+                </py:with>
                 ${select('*|text()')}
             </div>
             <div id="push"></div>

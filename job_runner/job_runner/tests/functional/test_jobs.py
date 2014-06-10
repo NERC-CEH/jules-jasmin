@@ -11,14 +11,14 @@ NAMELISTS = 'namelists'
 class TestJobsController(TestController):
 
     def setUp(self):
-        model_run_id = '  101  '
+        model_run_id = 101
         self.run_dir = config['run_dir'] + '/run101'
         if os.path.exists(self.run_dir):
             shutil.rmtree(self.run_dir)
 
         namelist_files = \
             [
-                {'filename':'file1',
+                {'filename': 'file1',
                  NAMELISTS:
                      [
                          {'name':'a name',

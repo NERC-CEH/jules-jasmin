@@ -10,8 +10,11 @@ from pylons import config, url
 from pylons import session
 from webhelpers.pylonslib.flash import Flash as _Flash
 
-"""Flash area for errors"""
-error_flash = _Flash()
+#Flash area for errors
+error_flash = _Flash("errors")
+
+# Flash area for success messages
+success_flash = _Flash("success")
 
 def jsonParseIfNotEmpty(var):
     if var is not None and var != "":

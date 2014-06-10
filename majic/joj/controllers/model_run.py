@@ -2,7 +2,6 @@
 
 import logging
 from formencode import htmlfill
-from formencode import variabledecode
 from formencode.validators import Invalid
 
 from pylons import url
@@ -17,7 +16,6 @@ from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.model.model_run_create_parameters import ModelRunCreateParameters
-from joj.model import ModelRun
 from joj.services.model_run_service import ModelRunService
 from joj.lib import helpers
 from joj.utils import constants
@@ -26,7 +24,8 @@ from joj.utils import constants
 PARAMETER_NAME_PREFIX = 'param'
 
 #Message to show when the submission has failed
-SUBMISSION_FAILED_MESSAGE = "Failed to submit the model run, this may be because the cluster is down. Please try again later."
+SUBMISSION_FAILED_MESSAGE = \
+    "Failed to submit the model run, this may be because the cluster is down. Please try again later."
 
 log = logging.getLogger(__name__)
 
@@ -74,7 +73,6 @@ class ModelRunController(BaseController):
         if request.POST:
             try:
                 self._model_run_service.update_model_run(self.form_result['name'], self.form_result['code_version'])
-
                 redirect(url(controller='model_run', action='parameters'))
             except NoResultFound:
                 errors = {'code_version': 'Code version is not recognised'}
@@ -156,8 +154,10 @@ class ModelRunController(BaseController):
 
         if request.POST:
             if request.params.getone('submit') == u'Submit':
-                status = self._model_run_service.submit_model_run()
-                if status.name == constants.MODEL_RUN_STATUS_SUBMIT_FAILED:
+                status, message = self._model_run_service.submit_model_run()
+                if status.name == constants.MODEL_RUN_STATUS_PENDING:
+                    helpers.success_flash(message)
+                else:
                     helpers.error_flash(SUBMISSION_FAILED_MESSAGE)
 
                 redirect(url(controller='model_run', action='index'))

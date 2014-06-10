@@ -4,17 +4,22 @@ from sqlalchemy.orm import subqueryload, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_
 from joj.services.general import DatabaseService
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session
 from joj.utils import constants
 from joj.services.general import DatabaseService, ServiceException
 from joj.model import ModelRun, CodeVersion, ModelRunStatus
 from joj.utils import constants
+from joj.services.job_runner_client import JobRunnerClient
 
 log = logging.getLogger(__name__)
+
 
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
 
+    def __init__(self, session=Session, job_runner_client=JobRunnerClient()):
+        super(ModelRunService, self).__init__(session)
+        self._job_runner_client = job_runner_client
 
     def get_models_for_user(self, user):
         """
@@ -102,7 +107,7 @@ class ModelRunService(DatabaseService):
                 model_run = ModelRun()
                 model_status = session\
                     .query(ModelRunStatus)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
                     .one()
                 model_run.status = model_status
 
@@ -165,7 +170,7 @@ class ModelRunService(DatabaseService):
             return session.query(ModelRun) \
                 .join(ModelRun.status) \
                 .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
                 .options(subqueryload(ModelRun.code_version)) \
                 .options(contains_eager(ModelRun.parameter_values)
                             .contains_eager(ParameterValue.parameter)
@@ -179,12 +184,13 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session)
+            status_name, message = self._job_runner_client.submit(model)
             status = session \
                 .query(ModelRunStatus) \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_SUBMIT_FAILED) \
+                .filter(ModelRunStatus.name == status_name) \
                 .one()
             model.status = status
-            return status
+            return status, message
 
     def _get_parameters_for_creating_model(self, session):
         """
@@ -195,7 +201,7 @@ class ModelRunService(DatabaseService):
         code_version, model_run = session.query(CodeVersion, ModelRun) \
             .join(ModelRun) \
             .join(ModelRunStatus) \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
             .one()
         return session.query(Parameter) \
             .outerjoin(ParameterValue, and_(ParameterValue.model_run == model_run)) \
@@ -212,5 +218,5 @@ class ModelRunService(DatabaseService):
         """
         return session.query(ModelRun) \
             .join(ModelRunStatus) \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATING)\
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
             .one()

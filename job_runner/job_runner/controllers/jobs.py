@@ -72,10 +72,10 @@ class JobsController(BaseController):
         if not JSON_MODEL_CODE_VERSION in json or json[JSON_MODEL_CODE_VERSION] not in VALID_CODE_VERSIONS:
             abort(400, "Invalid code version")
 
-        if not JSON_MODEL_RUN_ID in json or json[JSON_MODEL_RUN_ID].strip() == '':
+        if not JSON_MODEL_RUN_ID in json or json[JSON_MODEL_RUN_ID] is None:
             abort(400, "Invalid model run id")
 
-        if not json[JSON_MODEL_RUN_ID].strip().isdigit():
+        if not isinstance(json[JSON_MODEL_RUN_ID], (int, long)):
             abort(400, "Invalid model run id")
 
         if not JSON_MODEL_NAMELIST_FILES in json or len(json[JSON_MODEL_NAMELIST_FILES]) == 0:

@@ -19,3 +19,12 @@ MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed' # Status of a model run when a user submit a model but it can not be submitted
 
 PARAMETER_TYPE_INTEGER = 'integer' # parameter is an integer (case is from documentation)
+
+# Constants for the names of the dictionary values in the json submitted
+JSON_MODEL_RUN_ID = 'model_run_id'
+JSON_MODEL_CODE_VERSION = 'code_version'
+JSON_MODEL_NAMELISTS = 'namelists'
+JSON_MODEL_NAMELIST_FILES = 'namelist_files'
+JSON_MODEL_PARAMETERS = 'parameters'
+JSON_MODEL_NAMELIST_NAME = 'name'
+JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'

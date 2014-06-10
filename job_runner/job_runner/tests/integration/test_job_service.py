@@ -11,7 +11,7 @@ from utils.constants import *
 class TestJobService(TestController):
 
     def setUp(self):
-        model_run_id = '  201  '
+        model_run_id = 201
         self.run_dir = config['run_dir'] + '/run201'
         if os.path.exists(self.run_dir):
             shutil.rmtree(self.run_dir)

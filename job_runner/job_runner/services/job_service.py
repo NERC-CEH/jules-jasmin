@@ -36,7 +36,7 @@ class JobService(object):
         :exception ServiceError: if there is a problem submitting the job
         """
         #ensure that the model id is a number so it can not possible contain path elements
-        model_run_id_dir = model_run[JSON_MODEL_RUN_ID].strip()
+        model_run_id_dir = str(model_run[JSON_MODEL_RUN_ID])
         assert(model_run_id_dir.isdigit())
 
         run_directory = os.path.join(config['run_dir'], 'run%s' % model_run_id_dir)
