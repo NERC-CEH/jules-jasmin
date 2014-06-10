@@ -3,13 +3,17 @@ import logging
 import json
 import requests
 from pylons import config
-from requests.packages.urllib3.exceptions import ConnectionError
 from joj.utils import constants
 from joj.services.general import DatabaseService
 
 log = logging.getLogger(__name__)
 
+
 class JobRunnerClient(DatabaseService):
+    """
+    Client to contact the job runner service
+    """
+
     def submit(self, model):
         """
         Submit the model to the job_runner service
@@ -23,7 +27,7 @@ class JobRunnerClient(DatabaseService):
                         # auth=('user', 'password'))
         except Exception, ex:
             log.error("Failed to submit job %s" % ex.message)
-            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server. Error %s" % ex.message
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
 
         if response.status_code == 200:
             return constants.MODEL_RUN_STATUS_PENDING, "Model run submitted."
@@ -56,6 +60,13 @@ class JobRunnerClient(DatabaseService):
             }
 
     def _find_or_create(self, values, value_to_find, property):
+        """
+        Find or create a dictionary in an array indexed by its property
+        :param values: the list of values to find the value in
+        :param value_to_find: the value to find
+        :param property: the property to match on
+        :return:the found or created value
+        """
         for value in values:
             if value[property] == value_to_find:
                 return value

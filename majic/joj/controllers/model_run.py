@@ -158,7 +158,7 @@ class ModelRunController(BaseController):
                 if status.name == constants.MODEL_RUN_STATUS_PENDING:
                     helpers.success_flash(message)
                 else:
-                    helpers.error_flash(SUBMISSION_FAILED_MESSAGE)
+                    helpers.error_flash(message)
 
                 redirect(url(controller='model_run', action='index'))
             else:
