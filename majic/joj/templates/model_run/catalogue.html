@@ -62,11 +62,15 @@
                 <!--If the run status is published we display an inert purple icon -->
                 <i py:if="model_run.status.is_published()" class="fa fa-users fa-2x purple"></i>
                 <!--If the run status allows us to publish the run on the map then we display the publish icon with color / hover-->
-                <a href="#" py:if="model_run.status.allow_publish()"
-                   onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('purple')"
-                   onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('purple')">
-                    <i class="fa fa-users fa-2x ico" ></i>
-                </a>
+                <form py:if="model_run.status.allow_publish()"
+                      action="${h.url(controller='model_run', action='publish', id=model_run.id)}" method="post">
+                    <input type="hidden" name="came_from" id="came_from" value="catalogue"/>
+                    <a href="#" onclick="$(this).parent().submit()"
+                       onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('purple')"
+                       onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('purple')">
+                        <i class="fa fa-users fa-2x ico" ></i>
+                    </a>
+                </form>
                 <div class="ico-text purple">Publish</div>
             </div>
             <!--The Copy Icon -->

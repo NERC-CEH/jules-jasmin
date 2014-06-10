@@ -47,8 +47,39 @@ class ModelRunService(DatabaseService):
                 return []
 
     def get_model_by_id(self, user, id):
-         with self.readonly_scope() as session:
-            return session.query(ModelRun).filter(ModelRun.id == id).first()
+        """
+        Get a specified model by the model id
+        :param user: User to verify access to model run
+        :param id: ID of the model run requested
+        :return: The matching ModelRun.
+        """
+        with self.readonly_scope() as session:
+            model_run = session.query(ModelRun).filter(ModelRun.id == id).options(joinedload('user')).one()
+            # Is user allowed to acces this ID?
+            if (model_run.user_id == user.id or model_run.status.is_published()):
+                return model_run
+            raise NoResultFound
+
+    def publish_model(self, user, id):
+        """
+        Publish a specified model run
+        :param user: User to verify ownership of model run
+        :param id: ID of the model run to publish
+        :return: void
+        """
+        with self.readonly_scope() as session:
+            try:
+                model_run = session.query(ModelRun).join(ModelRunStatus)\
+                    .filter(ModelRun.user_id == user.id)\
+                    .filter(ModelRun.id == id)\
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_COMPLETED).one()
+            except NoResultFound:
+                raise ServiceException("Error publishing model run. Either the requested model run doesn't exist, "
+                                       "has not completed or you are not authorised to access it")
+            published_status_id = session.query(ModelRunStatus)\
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED).one().id
+            model_run.status_id = published_status_id
+            session.commit()
 
     def get_model_being_created(self, user):
         """

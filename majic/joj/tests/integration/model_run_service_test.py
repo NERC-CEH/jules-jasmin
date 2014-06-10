@@ -1,16 +1,14 @@
 # header
 from datetime import datetime
 
-from mock import MagicMock, ANY
 from sqlalchemy.orm.exc import NoResultFound
 
-from joj.services.tests.base import BaseTest
 from hamcrest import *
-from joj.model import User, session_scope, Session, ModelRun
-from services.model_run_service import ModelRunService
+from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus
+from joj.services.general import ServiceException
+from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
-from formencode.validators import Invalid
 from joj.utils import constants
 
 
@@ -73,7 +71,7 @@ class ModelRunServiceTest(TestController):
             user1.name = 'user1'
             session.add(user1)
             session.commit()
-            # Give them each a model
+            # Give a model
             model_run1 = ModelRun()
             model_run1.name = "MR1"
             model_run1.user_id = user1.id
@@ -87,7 +85,6 @@ class ModelRunServiceTest(TestController):
         # Get the users model runs
         model_runs = self.model_run_service.get_models_for_user(user1)
         assert_that(len(model_runs), is_(2))
-        assert_that(model_runs[0].name, is_("MR1"))
 
     def test_GIVEN_user_has_published_model_run_WHEN_get_published_model_runs_THEN_only_published_model_run_returned(self):
         # Add one user and give them a published and unpublished model run
@@ -207,8 +204,88 @@ class ModelRunServiceTest(TestController):
         assert_that(model_run_returned.name, is_("MR1"))
 
     def test_GIVEN_model_run_id_belongs_to_another_user_WHEN_get_model_run_by_id_THEN_NoResultFound_exception(self):
-        pass
+        # Add two users and give one a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            user2 = User()
+            user2.name = 'user2'
+            session.add_all([user, user2])
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_COMPLETED)
+            session.add(model_run)
+        # Get the users model runs
+        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
+            self.model_run_service.get_model_by_id(user2, model_run.id)
 
     def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
         with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
             self.model_run_service.get_parameters_for_model_being_created()
+
+    def test_GIVEN_incomplete_model_WHEN_publish_model_THEN_ServiceException_raised(self):
+        # Add a user and give them a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_FAILED)
+            session.add(model_run)
+        # Get the users model runs
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.publish_model(user, model_run.id)
+
+    def test_GIVEN_model_belongs_to_another_user_WHEN_publish_model_THEN_ServiceException_raised(self):
+        # Add two users and give one a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            user2 = User()
+            user2.name = 'user2'
+            session.add_all([user, user2])
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_COMPLETED)
+            session.add(model_run)
+        # Get the users model runs
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.publish_model(user2, model_run.id)
+
+    def test_GIVEN_nonexistent_model_id_WHEN_publish_model_THEN_ServiceException_raised(self):
+        # Add a user
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.publish_model(user, -100)
+
+    def test_GIVEN_user_has_completed_model_WHEN_publish_model_THEN_model_published(self):
+        # Add a user and give them a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_COMPLETED)
+            session.add(model_run)
+        # Get the users model runs
+        self.model_run_service.publish_model(user, model_run.id)
+        with session_scope(Session) as session:
+            updated_model_run = session.query(ModelRun).join(ModelRunStatus).filter(ModelRun.id == model_run.id).one()
+            assert_that(updated_model_run.status.name, is_(constants.MODEL_RUN_STATUS_PUBLISHED))
