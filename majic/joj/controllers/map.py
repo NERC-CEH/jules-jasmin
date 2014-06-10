@@ -32,14 +32,17 @@ class MapController(BaseController):
         self._user_service = user_service
         self._model_run_service = model_run_service
 
-    def index(self):
-        """Default action for the map controller"""
-
+    def view(self, id):
+        """
+        Controller to load specific model_runs onto the map viewer
+        :param id: Database ID of model_run to view data for
+        :return: Rendered map page
+        """
         user = self._user_service.get_user_by_username(request.environ['REMOTE_USER'])
-
-        c.model_runs = self._model_run_service.get_models_for_user(user)
-
+        c.model_runs = self._model_run_service.get_models_for_user(user) + self._model_run_service.get_published_models()
+        c.id = id
         return render('map.html')
+
 
     @jsonify
     def test(self):

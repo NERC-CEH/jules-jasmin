@@ -1,8 +1,8 @@
 # header
 import logging
-from sqlalchemy.orm import subqueryload, contains_eager
+from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import and_
+from sqlalchemy import and_, desc, asc
 from joj.services.general import DatabaseService
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session
 from joj.utils import constants
@@ -33,7 +33,8 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             try:
-                return session.query(ModelRun).filter(ModelRun.user_id == user.id).all()
+                return session.query(ModelRun).filter(ModelRun.user_id == user.id)\
+                    .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
             except NoResultFound:
                 return []
 
@@ -45,7 +46,8 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             try:
                 return session.query(ModelRun).join(ModelRun.status)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED).all()
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED)\
+                    .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
             except NoResultFound:
                 return []
 

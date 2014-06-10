@@ -1,0 +1,59 @@
+/*
+    Style sheet for the Model Run Catalogue page (catalogue.html)
+*/
+
+.date {
+    font-size: 12px;
+    color: darkgrey;
+    font-weight:normal;
+}
+.description
+{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color: darkgrey;
+}
+.status
+{
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.status-span
+{
+    text-align: right;
+}
+.ico
+{
+    color:#808080;
+}
+.ico-disabled
+{
+    color:#cecece;
+}
+.ico-span
+{
+    text-align: center;
+    text-shadow: 2px 1px #cecece;
+    padding-top: 5px
+}
+.ico-text
+{
+    visibility: hidden;
+}
+.green
+{
+    color: #38761d;
+}
+.purple
+{
+    color: #711780;
+}
+.yellow
+{
+    color: #f6b26b;
+}
+.red
+{
+    color: #990000;
+}

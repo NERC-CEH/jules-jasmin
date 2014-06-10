@@ -21,9 +21,9 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-from model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest
-from services.user import UserService
-from utils import constants
+from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus
+from joj.services.user import UserService
+from joj.utils import constants
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -116,3 +116,12 @@ class TestController(TestCase):
             """
         ).params(status=constants.MODEL_RUN_STATUS_CREATING, parameter_id = parameter_id).one()
         assert_that(row.value, is_(expected_parameter_value), "parameter value")
+
+    def _status(self, status_name):
+        """
+        Return from the database the ModelRunStatus for a requested status name
+        :param status_name: The name of the status to find
+        :return: The matching status object
+        """
+        with session_scope(Session) as session:
+            return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
