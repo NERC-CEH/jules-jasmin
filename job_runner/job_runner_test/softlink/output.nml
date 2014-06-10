@@ -1,0 +1,31 @@
+&JULES_OUTPUT
+  run_id = 'loobos',
+  
+  output_dir = '.',
+  
+  nprofiles = 2
+/
+
+&JULES_OUTPUT_PROFILE
+  profile_name = "tstep",
+  
+  output_main_run = T,
+
+  nvars = 13,
+  var         = 'tl1' 'fqw_gb' 'runoff' 'ftl_gb' 'tstar_gb' 'tstar' 'latent_heat' 'snow_mass_gb' 'sthu' 'sthf' 't_soil' 'smcl' 'canopy_gb',
+  output_type =   'S'      'S'      'S'      'S'        'S'     'S'           'S'            'S'    'S'    'S'      'S'    'S'         'S'
+/
+
+
+&JULES_OUTPUT_PROFILE
+  profile_name = 'day',
+  
+  output_main_run = T,
+  
+  output_period = 86400,
+  output_start = '1997-01-01 00:00:00',
+  
+  nvars   = 20,
+  var         = 'precip' 'tl1' 'fqw_gb' 'gpp_gb' 'latent_heat' 'ftl_gb' 'npp_gb' 'runoff' 'smcl' 'sthf' 'sthu' 't_soil' 'fqw' 'ftl' 'le' 'rad_net_tile' 'tstar' 'gpp' 'npp' 'resp_p',
+  output_type =      'M'   'M'      'M'      'M'           'M'      'M'      'M'      'M'    'M'    'M'    'M'      'M'   'M'   'M'  'M'            'M'     'M'   'M'   'M'      'M'
+/

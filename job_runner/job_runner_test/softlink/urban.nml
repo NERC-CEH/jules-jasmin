@@ -1,0 +1,15 @@
+&URBAN_SWITCHES
+  l_moruses = F,
+
+  l_moruses_albedo       = T,
+  l_moruses_emissivity   = T,
+  l_moruses_rough        = T,
+  l_moruses_storage      = T,
+  l_moruses_storage_thin = T,
+  l_moruses_macdonald    = T,
+  l_urban_empirical      = F
+/
+
+# These namelists are not used
+&URBAN2T_PARAM /
+&URBAN_PROPERTIES /

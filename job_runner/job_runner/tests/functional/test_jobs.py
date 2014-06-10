@@ -1,3 +1,7 @@
+import os
+from pylons import config
+import re
+import shutil
 from job_runner.tests import *
 from hamcrest import *
 
@@ -7,6 +11,11 @@ NAMELISTS = 'namelists'
 class TestJobsController(TestController):
 
     def setUp(self):
+        model_run_id = '  101  '
+        self.run_dir = config['run_dir'] + '/run101'
+        if os.path.exists(self.run_dir):
+            shutil.rmtree(self.run_dir)
+
         namelist_files = \
             [
                 {'filename':'file1',
@@ -23,7 +32,7 @@ class TestJobsController(TestController):
             ]
         self.valid_job_submission = {
             'code_version': 'Jules v3.4.1',
-            'model_run_id': '101',
+            'model_run_id': model_run_id,
             'namelist_files': namelist_files
         }
 
@@ -76,6 +85,16 @@ class TestJobsController(TestController):
 
     def test_GIVEN_model_run_id_is_blank_WHEN_post_new_job_THEN_error(self):
         self.valid_job_submission['model_run_id'] = '  '
+        response = self.app.post_json(
+            url(controller='jobs', action='new'),
+            params=self.valid_job_submission,
+            expect_errors=True)
+
+        assert_that(response.status_code, is_(400), "invalid request")
+        assert_that(response.normal_body, contains_string('model run id'), "invalid request")
+
+    def test_GIVEN_model_run_id_is_not_a_number_WHEN_post_new_job_THEN_error(self):
+        self.valid_job_submission['model_run_id'] = 'not a number'
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -175,9 +194,6 @@ class TestJobsController(TestController):
         assert_that(response.status_code, is_(400), "invalid request")
         assert_that(response.normal_body, contains_string('parameter name'), "invalid request")
 
-
-
-
     def test_GIVEN_valid_job_submission_WHEN_post_new_job_THEN_returns_job_id(self):
         response = self.app.post_json(
             url(controller='jobs', action='new'),
@@ -185,4 +201,5 @@ class TestJobsController(TestController):
             expect_errors=True)
 
         assert_that(response.status_code, is_(200), "invalid request")
-        assert_that(response.normal_body, contains_string('100'), "invalid request")
+        job_id = re.search("(\d*)", response.normal_body).group(1)
+        assert_that(job_id, greater_than(0), "pid")

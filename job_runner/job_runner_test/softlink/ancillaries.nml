@@ -1,0 +1,31 @@
+# Since we are using an ASCII file for fraction, the variable name doesn't matter
+&JULES_FRAC
+  file = "data/tile_fractions.dat"
+/
+
+&JULES_SOIL_PARAM
+  zsmc    = 1.0,
+  zst     = 1.0,
+  confrac = 0.3,
+  
+  dzsoil_io = 0.1  0.25  0.65  2.0
+/
+
+# All the soil variables are set to constants across all vertical levels
+&JULES_SOIL_PROPS
+  nvars = 9,
+  
+  use_file = F F F F F F F F F,
+
+  var       =   'b'    'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'     'hcap'    'hcon'  'albsoil',
+  const_val = 6.63   0.049460  0.004715  0.458150   0.242433   0.136328  1185676.0  0.226873   0.110000
+/
+
+# LSH namelists are not needed
+&JULES_PDM /
+&JULES_TOP /
+
+# No agricultural fraction
+&JULES_AGRIC
+  zero_agric = T
+/
