@@ -1,4 +1,5 @@
 # header
+from datetime import datetime
 
 from mock import MagicMock, ANY
 from sqlalchemy.orm.exc import NoResultFound
@@ -113,6 +114,61 @@ class ModelRunServiceTest(TestController):
     def test_GIVEN_no_published_runs_WHEN_get_published_model_runs_THEN_empty_list(self):
         model_runs = self.model_run_service.get_published_models()
         assert_that(model_runs, is_([]))
+
+    def test_WHEN_get_user_model_runs_THEN_list_ordered_by_date_created_newest_first(self):
+        with session_scope(Session) as session:
+            # First add user
+            user1 = User()
+            user1.name = 'user1'
+            session.add(user1)
+            session.commit()
+            # Create three published models not in datetime order
+            model_run1 = ModelRun()
+            model_run1.user_id = user1.id
+            model_run1.name = "MR1"
+            model_run1.date_created = datetime(2013, 12, 7, 17, 15, 30)
+            session.add(model_run1)
+            session.commit()
+            model_run2 = ModelRun()
+            model_run2.user_id = user1.id
+            model_run2.name = "MR2"
+            model_run2.date_created = datetime(2014, 6, 9, 12, 30, 24)
+            session.add(model_run2)
+            session.commit()
+            model_run3 = ModelRun()
+            model_run3.user_id = user1.id
+            model_run3.name = "MR3"
+            model_run3.date_created = datetime(2014, 6, 9, 11, 39, 30)
+            session.add_all([model_run1, model_run2, model_run3])
+        model_runs = self.model_run_service.get_models_for_user(user1)
+        assert_that(model_runs[0].name, is_("MR2"))
+        assert_that(model_runs[1].name, is_("MR3"))
+        assert_that(model_runs[2].name, is_("MR1"))
+
+    def test_WHEN_get_published_model_runs_THEN_list_ordered_by_date_created_newest_first(self):
+        with session_scope(Session) as session:
+            # Create three published models not in datetime order
+            model_run1 = ModelRun()
+            model_run1.name = "MR1"
+            model_run1.date_created = datetime(2013, 12, 7, 17, 15, 30)
+            model_run1.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            session.add(model_run1)
+            session.commit()
+            model_run2 = ModelRun()
+            model_run2.name = "MR2"
+            model_run2.date_created = datetime(2014, 6, 9, 12, 30, 24)
+            model_run2.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            session.add(model_run2)
+            session.commit()
+            model_run3 = ModelRun()
+            model_run3.name = "MR3"
+            model_run3.date_created = datetime(2014, 6, 9, 11, 39, 30)
+            model_run3.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            session.add_all([model_run1, model_run2, model_run3])
+        model_runs = self.model_run_service.get_published_models()
+        assert_that(model_runs[0].name, is_("MR2"))
+        assert_that(model_runs[1].name, is_("MR3"))
+        assert_that(model_runs[2].name, is_("MR1"))
 
     def test_WHEN_get_code_versions_THEN_returns_list_including_default_code_version(self):
 

@@ -19,19 +19,8 @@
     <script type="text/javascript" src="/js/ecomaps_map.js"></script>
     <script type="text/javascript" src="/js/ecomaps_general.js"></script>
     <script>
-        // Used to collapse or expand the model runs / datasets list
-        function expandCollapse(elem) {
-            div = document.getElementById(elem);
-            icon = document.getElementById(elem + "_icon");
-            if (div.style.display == 'none') {
-                div.style.display = '';
-                icon.innerHTML = " -";
-            } else {
-                div.style.display = 'none';
-                icon.innerHTML = " +";
-            }
-            return false;
-        }
+
+
     </script>
     <style type="text/css">
         div#map {
@@ -147,39 +136,62 @@
     </style>
 </head>
 <body>
-    <div id="wrap">
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="btn pull-right" href="${h.url(controller='account', action='logout')}">Log out</a>
-                    <p id="status" class="navbar-text pull-right">
-                        Map server status <span id="status-message" class="label">Testing...</span>
-                    </p>
-                    <a class="brand" href="${h.url(controller='home')}">Majic</a>
+<div id="selected_id" style="display: none">${c.id}</div>
+<div id="wrap">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn pull-right" href="${h.url(controller='account', action='logout')}">Log out</a>
+                <p id="status" class="navbar-text pull-right">
+                    Map server status <span id="status-message" class="label">Testing...</span>
+                </p>
+                <a class="brand" href="${h.url(controller='home')}">Majic</a>
 
-                    <ul class="nav">
-                        <li>
-                            <a href="${h.url(controller='map')}">Explore</a>
-                        </li>
-                        <li>
-                            <a href="${h.url(controller='analysis', action='create')}">New Model Run</a>
-                        </li>
-                        <li>
-                            <a href="${h.url(controller='analysis')}">Model Runs</a>
-                        </li>
-                    </ul>
-                </div>
-
+                        <ul class="nav">
+                            <li>
+                                <a href="${h.url(controller='map', action='view')}">Explore</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='model_run', action='create')}">New Model Run</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='model_run')}">Model Runs</a>
+                            </li>
+                            <li>
+                                <a href="${h.url(controller='home', action='about')}">About</a>
+                            </li>
+                            <py:if test="c.admin_user">
+                                <li class="dropdown">
+                                    <a data-toggle="dropdown" class="dropdown-toggle">
+                                        Admin Options
+                                        <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="${h.url(controller='user')}">Users</a>
+                                        </li>
+                                        <li>
+                                            <a href="${h.url(controller='dataset')}">Datasets</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </py:if>
+                        </ul>
             </div>
-        </div>
 
-        <div class="container-fluid">
-            <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
         <div class="row-fluid">
             <div class="span3">
-                <div class="well sidebar-nav">
-                    <h4>Model Runs</h4>
-
+                <h3>Visualise Model Runs</h3>
+                <div class="sidebar-nav">
+                    <!--<ul class="nav nav-tabs">-->
+                      <!--<li class="active"><a href="#">Mine</a></li>-->
+                      <!--<li><a href="#">Published</a></li>-->
+                    <!--</ul>-->
                     <ul class="nav nav-list" py:for="model_run in c.model_runs">
                         <li class="nav-header">
                             <a href="#" onclick="expandCollapse('mod_hdr_${model_run.id}');return false" style="color:rgb(153,153,153)">
@@ -242,20 +254,20 @@
                 </div>
             </div>
             <div class="pull-right" id="functions-panel">
-                    <div class="alert">
-                        <a href="#image-panel" id="image-export"><i class="icon-share"></i> Export as image</a>
-                    </div>
+                <div class="alert">
+                    <a href="#image-panel" id="image-export"><i class="icon-share"></i> Export as image</a>
                 </div>
+            </div>
         </div>
     </div>
-    </div>
+</div>
 
-    <div class="modal fade hide" id="analysis-detail"></div>
-    <div class="modal fade hide" id="image-panel">
-        <div class="modal-body" id="image-panel-body">
-            <p>Right-click and "Save As..." to save this image</p>
-            <canvas id="map-canvas"></canvas>
-        </div>
+<div class="modal fade hide" id="analysis-detail"></div>
+<div class="modal fade hide" id="image-panel">
+    <div class="modal-body" id="image-panel-body">
+        <p>Right-click and "Save As..." to save this image</p>
+        <canvas id="map-canvas"></canvas>
     </div>
+</div>
 </body>
 </html>

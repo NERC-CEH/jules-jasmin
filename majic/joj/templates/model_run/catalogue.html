@@ -5,81 +5,36 @@
 <xi:include href="../layout.html" />
 <head>
     <title>Model Runs</title>
-    <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet"/>
-
-    <style>
-        .date {
-            font-size: 12px;
-            color: darkgrey;
-            font-weight:normal;
-        }
-        .description
-        {
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            color: darkgrey;
-        }
-        .status
-        {
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .status-span
-        {
-            text-align: right;
-        }
-        .ico
-        {
-            color:#808080;
-        }
-        .ico-disabled
-        {
-            color:#cecece;
-        }
-        .ico-span
-        {
-            text-align: center;
-            text-shadow: 2px 1px #cecece;
-        }
-        .ico-text
-        {
-            visibility: hidden;
-        }
-        .green
-        {
-            color: #38761d;
-        }
-        .purple
-        {
-            color: #711780;
-        }
-        .yellow
-        {
-            color: #f6b26b;
-        }
-        .red
-        {
-            color: #990000;
-        }
-    </style>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="${h.url('/layout/joj_catalogue.css')}"/>
 </head>
 
 <body>
 <h1>Model Runs</h1>
-  <div class="well">
-    Search and Filtering Panel
-  </div>
+<div>
+    <ul class="nav nav-tabs">
+        <li py:if="c.showing == 'mine'" class="active">
+            <a href="${h.url(controller='model_run', action='index')}">Mine</a>
+        </li>
+        <li py:if="c.showing != 'mine'">
+            <a href="${h.url(controller='model_run', action='index')}">Mine</a>
+        </li>
+        <li py:if="c.showing == 'published'" class="active">
+            <a href="${h.url(controller='model_run', action='published')}">Published</a>
+        </li>
+        <li py:if="c.showing != 'published'">
+            <a href="${h.url(controller='model_run', action='published')}">Published</a>
+        </li>
+    </ul>
+</div>
 
-<div class="row" py:for="model_run in c.user_models">
+<div class="row" py:for="model_run in c.model_runs">
     <!--THE MAP ICON-->
     <div class="span1 ico-span">
-        <br/>
         <!--If the run status does not allow visualisation we just display an inert icon -->
         <i py:if="not model_run.status.allow_visualise()" class="fa fa-globe fa-3x ico-disabled"></i>
         <!--If the run status allows us to visualise the run on the map then we display the map icon with color / hover-->
-        <a href="#" py:if="model_run.status.allow_visualise()"
+        <a href="${h.url(controller='map', action='view', id=model_run.id)}" py:if="model_run.status.allow_visualise()"
            onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('green')"
            onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('green')">
             <i class="fa fa-globe fa-3x ico"></i>
@@ -89,9 +44,9 @@
     <!--THE TITLE AND DESCRIPTION-->
     <div class="span6">
         <h4>
-            <a href="#">${model_run.name}</a>
+            <a href="${h.url(controller='model_run', action='summary', id=model_run.id)}">${model_run.name}</a>
             <span class="date">
-                - ${model_run.date_submitted.strftime("%d %b %Y")}
+                - ${model_run.date_created.strftime("%d %b %Y")}
             </span>
         </h4>
         <p class="description">${model_run.description}</p>
@@ -103,7 +58,9 @@
             <div class="span1">
                 <br/>
                 <!--If the run status does not allow publishing we just display an inert icon -->
-                <i py:if="not model_run.status.allow_publish()" class="fa fa-users fa-2x ico-disabled"></i>
+                <i py:if="not model_run.status.allow_publish() and not model_run.status.is_published()" class="fa fa-users fa-2x ico-disabled"></i>
+                <!--If the run status is published we display an inert purple icon -->
+                <i py:if="model_run.status.is_published()" class="fa fa-users fa-2x purple"></i>
                 <!--If the run status allows us to publish the run on the map then we display the publish icon with color / hover-->
                 <a href="#" py:if="model_run.status.allow_publish()"
                    onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('purple')"
@@ -124,36 +81,29 @@
             <!--The Delete Icon -->
             <div class="span1">
                 <br/>
-                <a href="#" onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('red')"
-                            onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('red')">
+                <!--If the run is published we cannot delete it so display an inert icon-->
+                <i py:if="model_run.status.is_published()" class="fa fa-times-circle fa-2x ico-disabled"></i>
+                <!--If it's not published, add the delete icon -->
+                <a href="#" py:if="not model_run.status.is_published()"
+                   onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('red')"
+                   onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('red')">
                     <i class="fa fa-times-circle fa-2x ico"></i>
                 </a>
                 <div class="ico-text red">Delete</div>
-
-                <!--<a href="#"><i class="fa fa-users fa-2x" style="color:#711780"></i></a>-->
-                <!--<a href="#"><i class="fa fa-share-alt fa-2x" style="color:#711780"></i></a>-->
-                <!--<a href="#"><i class="fa fa-book fa-2x" style="color:#711780"></i></a>-->
-                <!--<a href="#"><i class="fa fa-cloud-upload fa-2x" style="color:#711780"></i></a>-->
-                <!--&nbsp;&nbsp;-->
-                <!--<a href="#"><i class="fa fa-copy fa-2x" style="color:#f6b26b"></i></a>-->
-                <!--&nbsp;&nbsp;-->
-                <!--<a href="#"><i class="fa fa-times fa-2x" style="color:#990000"></i></a>-->
-                <!--<a href="#" class="icon-red"><i class="fa fa-times-circle fa-2x"></i></a>-->
-                <!--<a href="#"><i class="fa fa-trash-o fa-2x" style="color:#990000"></i></a>-->
             </div>
         </div>
     </div>
     <!--THE STATUS AND DATE-->
     <div class="span2 status-span">
         <h3 class="status" style="color:${model_run.status.get_display_color()}">${model_run.status.name}</h3>
-        <span class="date">
-            ${model_run.date_submitted.strftime("%d %b %Y at %X")}
+        <span class="date" py:if="not model_run.status.is_published()">
+            ${model_run.last_status_change.strftime("%d %b %Y at %X")}
+        </span>
+        <span class="date" py:if="model_run.status.is_published()">
+            by ${model_run.user.name}
         </span>
     </div>
 </div>
 
-
-<!--<h2>Published Model Runs</h2>-->
-<h4 py:for="model_run in c.published_models">${model_run.id}: ${model_run.name}</h4>
 </body>
 </html>

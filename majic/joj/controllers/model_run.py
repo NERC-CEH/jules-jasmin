@@ -45,11 +45,20 @@ class ModelRunController(BaseController):
 
     def index(self):
         """
-        Default controller providing access to the catalogue of model_runs
+        Default controller providing access to the catalogue of user model runs
         :return: Rendered catalogue page
         """
-        c.published_models = self._model_run_service.get_published_models()
-        c.user_models = self._model_run_service.get_models_for_user(self.current_user)
+        c.model_runs = self._model_run_service.get_models_for_user(self.current_user)
+        c.showing = "mine"
+        return render("model_run/catalogue.html")
+
+    def published(self):
+        """
+        Controller providing access to the catalogue of published model runs
+        :return: Rendered catalogue page
+        """
+        c.model_runs = self._model_run_service.get_published_models()
+        c.showing = "published"
         return render("model_run/catalogue.html")
 
     def summary(self, id):

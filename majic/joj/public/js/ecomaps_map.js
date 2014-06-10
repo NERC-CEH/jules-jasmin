@@ -5,6 +5,20 @@
  *
  */
 
+// Used to collapse or expand the model runs / datasets list
+function expandCollapse(elem) {
+    var div = $('#' + elem);
+    div.toggle();
+    var icon = $('#' + elem + '_icon');
+    if (icon.text() == ' -')
+    {
+        icon.text(' +')
+    } else {
+        icon.text(' -')
+    }
+    return false;
+}
+
 var EcomapsMap = (function() {
 
     // Module-level variables
@@ -15,6 +29,19 @@ var EcomapsMap = (function() {
         buffer: 0
     };
 
+        // If the map page is called with a model run selected we need to expand
+        // the selected model_run and then click it to show it on the map.
+        function openSelectedRun()
+        {
+            var selected_id = $('#selected_id').text();
+            if (selected_id) {
+                expandCollapse('mod_hdr_' + selected_id);
+                expandCollapse('mod_ds_out_' + selected_id);
+                expandCollapse('mod_ds_in_' + selected_id);
+                $('#mod_ds_out_' + selected_id).find('a').first().click();
+            }
+        }
+
     var currentLayerIndex = 1;
 
     /*
@@ -24,7 +51,6 @@ var EcomapsMap = (function() {
      *
      */
     var initHandlers = function(){
-
         // Each dataset link in the menu...
         $("a.dataset").click(loadDataset);
 
@@ -573,6 +599,7 @@ var EcomapsMap = (function() {
         init: function() {
             setLoadingState(false);
             initHandlers();
+            openSelectedRun();
             initMap();
         }
     }
