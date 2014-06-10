@@ -599,6 +599,7 @@ var EcomapsMap = (function() {
         init: function() {
             setLoadingState(false);
             initHandlers();
+            // Open currently selected modelrun (if there is one)
             openSelectedRun();
             initMap();
         }
