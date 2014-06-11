@@ -18,10 +18,6 @@
     <script type="text/javascript" src="/js/LoadingPanel.js"></script>
     <script type="text/javascript" src="/js/ecomaps_map.js"></script>
     <script type="text/javascript" src="/js/ecomaps_general.js"></script>
-    <script>
-
-
-    </script>
     <style type="text/css">
         div#map {
             height: 600px;
@@ -188,43 +184,49 @@
             <div class="span3">
                 <h3>Visualise Model Runs</h3>
                 <div class="sidebar-nav">
-                    <!--<ul class="nav nav-tabs">-->
-                      <!--<li class="active"><a href="#">Mine</a></li>-->
-                      <!--<li><a href="#">Published</a></li>-->
-                    <!--</ul>-->
-                    <ul class="nav nav-list" py:for="model_run in c.model_runs">
-                        <li class="nav-header">
-                            <a href="#" onclick="expandCollapse('mod_hdr_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                ${model_run.name}<div id="mod_hdr_${model_run.id}_icon" style="display:inline"> +</div>
-                            </a>
-                        </li>
-                        <div id="mod_hdr_${model_run.id}" style="display:none">
-                            <ul class="nav nav-list">
-                                <li class="nav-header">
-                                    <a href="#" onclick="expandCollapse('mod_ds_in_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                        Input Datasets<div id="mod_ds_in_${model_run.id}_icon" style="display:inline"> +</div>
-                                    </a>
-                                </li>
-                                <div id="mod_ds_in_${model_run.id}" class="nav nav-list" style="display:none">
-                                    <li py:for="ds in model_run.datasets">
-                                        <a py:if="ds.is_input == 1" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
-                                    </li>
-                                </div>
-                            </ul>
-                            <ul class="nav nav-list">
-                                <li class="nav-header">
-                                    <a href="#" onclick="expandCollapse('mod_ds_out_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                        Output Datasets<div id="mod_ds_out_${model_run.id}_icon" style="display:inline"> +</div>
-                                    </a>
-                                </li>
-                                <div id="mod_ds_out_${model_run.id}" class="nav nav-list" style="display:none">
-                                    <li py:for="ds in model_run.datasets">
-                                        <a py:if="ds.is_input == 0" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
-                                    </li>
-                                </div>
-                            </ul>
-                        </div>
+                    <ul class="nav nav-tabs">
+                      <li py:for="model_run_sort in c.model_run_sorts" id="tab_${model_run_sort['name']}"
+                          onclick="selectTab('${model_run_sort['name']}')" >
+                          <a href="#" >
+                              ${model_run_sort['name']}
+                          </a>
+                      </li>
                     </ul>
+                    <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}">
+                        <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']">
+                            <li class="nav-header">
+                                <a href="#" onclick="expandCollapse('mod_hdr_${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                    ${model_run.name}<div id="mod_hdr_${model_run.id}_icon" style="display:inline"> +</div>
+                                </a>
+                            </li>
+                            <div id="mod_hdr_${model_run.id}" style="display:none">
+                                <ul class="nav nav-list">
+                                    <li class="nav-header">
+                                        <a href="#" onclick="expandCollapse('mod_ds_in_${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                            Input Datasets<div id="mod_ds_in_${model_run.id}_icon" style="display:inline"> +</div>
+                                        </a>
+                                    </li>
+                                    <div id="mod_ds_in_${model_run.id}" class="nav nav-list" style="display:none">
+                                        <li py:for="ds in model_run.datasets">
+                                            <a py:if="ds.is_input == 1" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
+                                        </li>
+                                    </div>
+                                </ul>
+                                <ul class="nav nav-list">
+                                    <li class="nav-header">
+                                        <a href="#" onclick="expandCollapse('mod_ds_out_${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                            Output Datasets<div id="mod_ds_out_${model_run.id}_icon" style="display:inline"> +</div>
+                                        </a>
+                                    </li>
+                                    <div id="mod_ds_out_${model_run.id}" class="nav nav-list" style="display:none">
+                                        <li py:for="ds in model_run.datasets">
+                                            <a py:if="ds.is_input == 0" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
+                                        </li>
+                                    </div>
+                                </ul>
+                            </div>
+                        </ul>
+                    </div>
                 </div>
 
             </div>

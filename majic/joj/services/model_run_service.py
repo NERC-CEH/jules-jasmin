@@ -38,8 +38,12 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             try:
-                return session.query(ModelRun).filter(ModelRun.user_id == user.id)\
-                    .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
+                return session \
+                    .query(ModelRun) \
+                    .filter(ModelRun.user_id == user.id)\
+                    .order_by(desc(ModelRun.date_created)) \
+                    .options(joinedload('user')) \
+                    .all()
             except NoResultFound:
                 return []
 

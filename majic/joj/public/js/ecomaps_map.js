@@ -19,6 +19,18 @@ function expandCollapse(elem) {
     return false;
 }
 
+/*
+ * Select a tab and pane based on its id post-fix
+ * name - post-fix of the name of the tab
+ */
+function selectTab(name) {
+    $(".nav-tabs li").removeClass("active");
+    $("#tab_" + name).addClass("active");
+    $(".tab-pane").hide();
+    $("#pane_" + name).show();
+}
+
+
 var EcomapsMap = (function() {
 
     // Module-level variables
@@ -35,10 +47,19 @@ var EcomapsMap = (function() {
         {
             var selected_id = $('#selected_id').text();
             if (selected_id) {
-                expandCollapse('mod_hdr_' + selected_id);
+                var mod_hdr = 'mod_hdr_' + selected_id
+                expandCollapse(mod_hdr);
                 expandCollapse('mod_ds_out_' + selected_id);
                 expandCollapse('mod_ds_in_' + selected_id);
+
+                //find the pane of the first example of the selected model and select that tab
+                var tab_name = $('#' + 'mod_hdr_' + selected_id).parents('.tab-pane').first().prop('id')
+                selectTab(tab_name.replace('pane_', ''))
                 $('#mod_ds_out_' + selected_id).find('a').first().click();
+            }
+            else {
+                var tab_name = $('.tab-pane').prop('id')
+                selectTab(tab_name.replace('pane_', ''))
             }
         }
 

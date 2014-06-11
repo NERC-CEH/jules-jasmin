@@ -4,7 +4,7 @@ import logging
 import urllib2
 from pylons import config
 from pylons.decorators import jsonify
-from joj.lib.base import BaseController, render, request, c
+from joj.lib.base import BaseController, render, c
 from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 
@@ -38,8 +38,19 @@ class MapController(BaseController):
         :param id: Database ID of model_run to view data for
         :return: Rendered map page
         """
-        user = self._user_service.get_user_by_username(request.environ['REMOTE_USER'])
-        c.model_runs = self._model_run_service.get_models_for_user(user) + self._model_run_service.get_published_models()
+        models = self._model_run_service.get_models_for_user(self.current_user)
+        models_to_view = [m for m in models if m.status.allow_visualise()]
+        c.model_run_sorts = \
+            [
+                {
+                    'name': "Mine",
+                    'model_runs': models_to_view
+                },
+                {
+                    'name': "Published",
+                    'model_runs': self._model_run_service.get_published_models()
+                }
+            ]
         c.id = id
         return render('map.html')
 
