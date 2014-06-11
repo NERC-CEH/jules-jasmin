@@ -5,7 +5,7 @@ from mock import MagicMock, ANY
 from joj.services.tests.base import BaseTest
 from hamcrest import *
 from joj.model import User
-from services.model_run_service import ModelRunService
+from joj.services.model_run_service import ModelRunService
 
 
 class ModelRunServiceTest(BaseTest):

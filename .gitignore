@@ -1,6 +1,9 @@
 # temporary files and log files
 *~
 *.log
+job_runner/job_runner_test/run
+majic/data/sessions/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

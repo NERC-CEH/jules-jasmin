@@ -1,7 +1,7 @@
 # header
 from hamcrest import *
 from pylons import url
-from model import session_scope, Session, AccountRequest
+from joj.model import session_scope, Session, AccountRequest
 
 from tests import TestController
 

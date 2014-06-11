@@ -60,6 +60,20 @@ class ModelRunController(BaseController):
         c.showing = "published"
         return render("model_run/catalogue.html")
 
+    def publish(self, id):
+        """
+        Controller allowing existing model runs to be published
+        :param id: ID of model run to publish
+        :return: ???????
+        """
+        if request.POST:
+            self._model_run_service.publish_model(self.current_user, id)
+            came_from = request.params['came_from']
+            if came_from == 'catalogue':
+                redirect(url(controller='model_run', action='index'))
+            elif came_from == 'summary':
+                redirect(url(controller='model_run', action='summary', id=id))
+
     def summary(self, id):
         """
         Controller providing a detailed summary of a single model run

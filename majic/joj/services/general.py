@@ -3,6 +3,7 @@ from joj.model import Session
 
 __author__ = 'Phil Jenkins (Tessella)'
 
+
 class ServiceException(Exception):
     """Custom exception type for service calls"""
 

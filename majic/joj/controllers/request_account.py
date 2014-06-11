@@ -8,7 +8,7 @@ from pylons import tmpl_context as c
 from joj.lib.base import BaseController, render
 from joj.services.account_request_service import AccountRequestService
 from joj.model import AccountRequest
-from model.request_account_form import RequestAccountForm
+from joj.model.request_account_form import RequestAccountForm
 
 
 class RequestAccountController(BaseController):
