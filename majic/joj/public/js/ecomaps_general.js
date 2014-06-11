@@ -67,6 +67,21 @@ var EcomapsGeneral = (function() {
         });
     };
 
+    /*
+     * Find all forms with the attribute data-confirm and add an on submit method
+     *  which shows a confirm box with the text given in the attribute
+     */
+    var confirmSubmit = function () {
+        $("[data-confirm]").submit(
+            function(event) {
+                message = $(this).attr('data-confirm')
+                answer = confirm(message);
+                if (!answer) {
+                    event.preventDefault();
+                }
+            });
+    };
+
     return {
         /*
          * init
@@ -75,6 +90,7 @@ var EcomapsGeneral = (function() {
          *
          */
         init: function(){
+            confirmSubmit();
             testMapServer();
 
             window.setInterval(testMapServer, 30000);
