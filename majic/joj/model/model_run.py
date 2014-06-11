@@ -1,9 +1,11 @@
 # Header
+import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref
 from joj.model.meta import Base
 from joj.utils import constants
+from joj.model import ModelRunStatus
 
 
 class ModelRun(Base):
@@ -28,6 +30,24 @@ class ModelRun(Base):
     datasets = relationship("Dataset", backref=backref('model_run', order_by=id), lazy="joined")
     parameter_values = relationship("ParameterValue", backref=backref('model_run', order_by=id))
     status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id), lazy="joined")
+
+    def change_status(self, session, new_status):
+        """
+        Change the status of the model run object. Will also update dates
+        :param session: session used to get the staus id
+        :param new_status: the name of the status
+        :return: the new status object
+        """
+        status = session.query(ModelRunStatus)\
+                .filter(ModelRunStatus.name == new_status)\
+                .one()
+        self.status = status
+        self.last_status_change = datetime.datetime.now()
+        if new_status == constants.MODEL_RUN_STATUS_PENDING:
+            self.date_submitted = datetime.datetime.now()
+        elif new_status == constants.MODEL_RUN_STATUS_CREATED:
+            self.date_created = datetime.datetime.now()
+        return status
 
     def __repr__(self):
         """ String representation of the model run """

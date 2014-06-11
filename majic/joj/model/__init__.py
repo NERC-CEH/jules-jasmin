@@ -6,6 +6,7 @@ from contextlib import contextmanager
 #import all the database models in so they can be built
 
 from joj.model.account_request import AccountRequest
+from joj.model.model_run_status import ModelRunStatus
 from joj.model.model_file import ModelFile
 from joj.model.model_run import ModelRun
 from joj.model.code_version import CodeVersion
@@ -15,7 +16,6 @@ from joj.model.parameter import Parameter
 from joj.model.parameter_value import ParameterValue
 from joj.model.user import User
 from joj.model.user_level import UserLevel
-from joj.model.model_run_status import ModelRunStatus
 from joj.model.ecomaps_models import *
 
 def initialise_session(config, manual_connection_string=None):

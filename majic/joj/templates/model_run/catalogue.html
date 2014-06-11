@@ -46,7 +46,7 @@
         <h4>
             <a href="${h.url(controller='model_run', action='summary', id=model_run.id)}">${model_run.name}</a>
             <span class="date">
-                - ${model_run.date_created.strftime("%d %b %Y")}
+                - ${h.display_date(model_run.date_created, "%d %b %Y")}
             </span>
         </h4>
         <p class="description">${model_run.description}</p>
@@ -101,7 +101,7 @@
     <div class="span2 status-span">
         <h3 class="status" style="color:${model_run.status.get_display_color()}">${model_run.status.name}</h3>
         <span class="date" py:if="not model_run.status.is_published()">
-            ${model_run.last_status_change.strftime("%d %b %Y at %X")}
+            ${h.display_date(model_run.last_status_change, "%d %b %Y at %X")}
         </span>
         <span class="date" py:if="model_run.status.is_published()">
             by ${model_run.user.name}

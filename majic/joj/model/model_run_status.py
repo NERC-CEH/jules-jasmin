@@ -52,7 +52,9 @@ class ModelRunStatus(Base):
             constants.MODEL_RUN_STATUS_COMPLETED: '#38761d',
             constants.MODEL_RUN_STATUS_PUBLISHED: '#711780',
             constants.MODEL_RUN_STATUS_RUNNING: '#f6b26b',
-            constants.MODEL_RUN_STATUS_FAILED: '#990000'
+            constants.MODEL_RUN_STATUS_PENDING: '#f6b26b',
+            constants.MODEL_RUN_STATUS_FAILED: '#990000',
+            constants.MODEL_RUN_STATUS_SUBMIT_FAILED: '#990000'
         }.get(self.name, '#000000')
 
 

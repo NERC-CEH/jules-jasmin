@@ -71,7 +71,7 @@ class ModelRunService(DatabaseService):
         :param id: ID of the model run to publish
         :return: void
         """
-        with self.readonly_scope() as session:
+        with self.transaction_scope() as session:
             try:
                 model_run = session.query(ModelRun).join(ModelRunStatus)\
                     .filter(ModelRun.user_id == user.id)\
@@ -80,10 +80,7 @@ class ModelRunService(DatabaseService):
             except NoResultFound:
                 raise ServiceException("Error publishing model run. Either the requested model run doesn't exist, "
                                        "has not completed or you are not authorised to access it")
-            published_status_id = session.query(ModelRunStatus)\
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED).one().id
-            model_run.status_id = published_status_id
-            session.commit()
+            model_run.change_status(session, constants.MODEL_RUN_STATUS_PUBLISHED)
 
     def get_model_being_created(self, user):
         """
@@ -138,13 +135,9 @@ class ModelRunService(DatabaseService):
                 model_run = self._get_model_run_being_created(session, user)
             except NoResultFound:
                 model_run = ModelRun()
-                model_status = session\
-                    .query(ModelRunStatus)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
-                    .one()
-                model_run.status = model_status
+                model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
                 model_run.user = user
-                model_run.date_created = datetime.datetime.now()
+
 
             model_run.name = name
             code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
@@ -225,13 +218,7 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
             status_name, message = self._job_runner_client.submit(model)
-            status = session \
-                .query(ModelRunStatus) \
-                .filter(ModelRunStatus.name == status_name) \
-                .one()
-            model.status = status
-            if model.status == constants.MODEL_RUN_STATUS_PENDING:
-                model.date_submitted = datetime.datetime.now()
+            status = model.change_status(session, status_name)
             return status, message
 
     def _get_parameters_for_creating_model(self, session, user):

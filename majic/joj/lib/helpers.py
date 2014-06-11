@@ -26,6 +26,17 @@ def getOpenLayersImportPath():
     return config.get('openlayers_js_path', config['serverurl'] + '/js/OpenLayers.js')
 
 
+def display_date(date, format):
+    """
+    Return the date as a string or none if the date isn't set
+    :param date: date
+    :param format: format for the date
+    :return: formatted date or "" if the date isn't set
+    """
+    if date is None:
+        return ""
+    return date.strftime(format)
+
 def wrap_helpers(localdict):
     def helper_wrapper(func):
         def wrapped_helper(*args, **kw):
