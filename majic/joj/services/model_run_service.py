@@ -1,13 +1,11 @@
 # header
 import logging
+import datetime
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import and_, desc, asc
-from joj.services.general import DatabaseService
+from sqlalchemy import and_, desc
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session
-from joj.utils import constants
-from joj.services.general import DatabaseService, ServiceException
-from joj.model import ModelRun, CodeVersion, ModelRunStatus
+from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 
@@ -93,18 +91,19 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
 
-    def update_model_run(self, name, code_version_id):
+    def update_model_run(self, user, name, code_version_id, description=""):
         """
         Update the creation model run definition
 
-        Arguments:
-        name -- name of the model run
-        code_version_id -- the id of the code version
+        :param user: user creating the model
+        :param name: name of the model run
+        :param code_version_id: the id of the code version
+        :param description: description
         """
         with self.transaction_scope() as session:
 
             try:
-                model_run = self._get_model_run_being_created(session)
+                model_run = self._get_model_run_being_created(session, user)
             except NoResultFound:
                 model_run = ModelRun()
                 model_status = session\
@@ -112,48 +111,52 @@ class ModelRunService(DatabaseService):
                     .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
                     .one()
                 model_run.status = model_status
+                model_run.user = user
+                model_run.date_created = datetime.datetime.now()
 
             model_run.name = name
             code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
             model_run.code_version = code_version
+            model_run.description = description
             session.add(model_run)
 
-    def get_model_run_being_created_or_default(self):
+    def get_model_run_being_created_or_default(self, user):
         """
         Get the run being created or a default model if no run is being created
 
-        Returns:
-        Model run being created or a new Model
+        :param user: logged in user
+        :returns: Model run being created or a new Model
         """
         try:
             with self.readonly_scope() as session:
-                return self._get_model_run_being_created(session)
+                return self._get_model_run_being_created(session, user)
         except NoResultFound:
             return ModelRun()
 
-    def get_parameters_for_model_being_created(self):
+    def get_parameters_for_model_being_created(self, user):
         """
         Get the parameters for the model being created
 
-        Return:
-        a list of populated parameters, populated with parameter values
+        :param user the logged in user
+        :return a list of populated parameters, populated with parameter values
         """
         with self.readonly_scope() as session:
-            return self._get_parameters_for_creating_model(session)
+            return self._get_parameters_for_creating_model(session, user)
 
-    def store_parameter_values(self, parameters_to_set):
+    def store_parameter_values(self, parameters_to_set, user):
         """
         Store the parameter values inb the database
         :param parameters_to_set: dictionary of parameter ids and parameter values
+        :param user: the logged in user
         :return: Nothing
         """
 
         with self.transaction_scope() as session:
-            model_run = self._get_model_run_being_created(session)
+            model_run = self._get_model_run_being_created(session, user)
             session.query(ParameterValue)\
                 .filter(ParameterValue.model_run == model_run)\
                 .delete()
-            parameters = self._get_parameters_for_creating_model(session)
+            parameters = self._get_parameters_for_creating_model(session, user)
             for parameter in parameters:
                 parameter_value = parameters_to_set[str(parameter.id)]
                 if parameter_value is not None:
@@ -163,9 +166,10 @@ class ModelRunService(DatabaseService):
                     val.model_run = model_run
                     session.add(val)
 
-    def get_model_being_created_with_non_default_parameter_values(self):
+    def get_model_being_created_with_non_default_parameter_values(self, user):
         """
         Get the current model run being created including all parameter_value which are not defaults
+        :param user: logged in user
         :return:model tun with parameters populated
         """
         with self.readonly_scope() as session:
@@ -173,37 +177,43 @@ class ModelRunService(DatabaseService):
                 .join(ModelRun.status) \
                 .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
                 .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+                .filter(ModelRun.user == user) \
                 .options(subqueryload(ModelRun.code_version)) \
                 .options(contains_eager(ModelRun.parameter_values)
                             .contains_eager(ParameterValue.parameter)
                             .contains_eager(Parameter.namelist)) \
                 .one()
 
-    def submit_model_run(self):
+    def submit_model_run(self, user):
         """
         Submit the model run which is being created to be run
+        :param user: the logged in user
         :return:new status of the job
         """
         with self.transaction_scope() as session:
-            model = self._get_model_run_being_created(session)
+            model = self._get_model_run_being_created(session, user)
             status_name, message = self._job_runner_client.submit(model)
             status = session \
                 .query(ModelRunStatus) \
                 .filter(ModelRunStatus.name == status_name) \
                 .one()
             model.status = status
+            if model.status == constants.MODEL_RUN_STATUS_PENDING:
+                model.date_submitted = datetime.datetime.now()
             return status, message
 
-    def _get_parameters_for_creating_model(self, session):
+    def _get_parameters_for_creating_model(self, session, user):
         """
         get parameters for the model run being created
         :param session: session to use
+        :param user: the logged in user
         :return: a list of parameters
         """
         code_version, model_run = session.query(CodeVersion, ModelRun) \
             .join(ModelRun) \
             .join(ModelRunStatus) \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+            .filter(ModelRun.user == user) \
             .one()
         return session.query(Parameter) \
             .outerjoin(ParameterValue, and_(ParameterValue.model_run == model_run)) \
@@ -212,13 +222,15 @@ class ModelRunService(DatabaseService):
             .filter(Parameter.code_versions.contains(code_version))\
             .all()
 
-    def _get_model_run_being_created(self, session):
+    def _get_model_run_being_created(self, session, user):
         """
         Get the model run being created
         :param session: the session to use to get the model
+        :param user: the currently logged in user
         :return: the run model
         """
         return session.query(ModelRun) \
             .join(ModelRunStatus) \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+            .filter(ModelRun.user == user) \
             .one()

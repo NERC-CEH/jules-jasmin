@@ -7,7 +7,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from joj.services.tests.base import BaseTest
 from hamcrest import *
 from joj.model import User, session_scope, Session, ModelRun
-from services.model_run_service import ModelRunService
+from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
 from formencode.validators import Invalid
@@ -210,5 +210,6 @@ class ModelRunServiceTest(TestController):
         pass
 
     def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
+        user = self.login()
         with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
-            self.model_run_service.get_parameters_for_model_being_created()
+            self.model_run_service.get_parameters_for_model_being_created(user)

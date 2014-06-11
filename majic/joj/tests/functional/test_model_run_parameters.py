@@ -3,12 +3,12 @@ from urlparse import urlparse
 
 from hamcrest import *
 from joj.tests import *
-from model import User
+from joj.model import User
 from joj.model import Session
 from joj.utils import constants
-from services.general import DatabaseService
-from services.model_run_service import ModelRunService
-from services.user import UserService
+from joj.services.general import DatabaseService
+from joj.services.model_run_service import ModelRunService
+from joj.services.user import UserService
 from pylons import config
 from joj.model import meta
 
@@ -32,10 +32,10 @@ class TestModelRunParametersController(TestController):
 
     def test_GIVEN_model_run_WHEN_view_THEN_parameter_for_code_version_is_shown(self):
 
-        self.login()
+        user = self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
+        model_run_service.update_model_run(user, "test", 1)
 
         response = self.app.get(
             url(controller='model_run', action='parameters'))
@@ -45,11 +45,11 @@ class TestModelRunParametersController(TestController):
     def test_GIVEN_model_run_and_parameter_value_WHEN_view_THEN_parameter_value_is_shown(self):
 
         expected_value = 123456789
-        self.login()
+        user = self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
-        model_run_service.store_parameter_values({'1': expected_value})
+        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.store_parameter_values({'1': expected_value}, user)
 
         response = self.app.get(
             url(controller='model_run', action='parameters'))
@@ -58,9 +58,9 @@ class TestModelRunParametersController(TestController):
 
     def test_GIVEN_parameter_blank_WHEN_post_THEN_error_shown(self):
 
-        self.login()
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
+        model_run_service.update_model_run(user, "test", 1)
 
         response = self.app.post(
             url=url(controller='model_run', action='parameters'),
@@ -76,9 +76,9 @@ class TestModelRunParametersController(TestController):
 
         expected_parameter = u'2'
 
-        self.login()
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
+        model_run_service.update_model_run(user, "test", 1)
 
         response = self.app.post(
             url=url(controller='model_run', action='parameters'),
@@ -97,10 +97,10 @@ class TestModelRunParametersController(TestController):
 
         expected_parameter = u'2'
 
-        self.login()
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
-        model_run_service.store_parameter_values({'1': 1})
+        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.store_parameter_values({'1': 1}, user)
 
         response = self.app.post(
             url=url(controller='model_run', action='parameters'),

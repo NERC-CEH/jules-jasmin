@@ -54,15 +54,18 @@ class TestController(TestCase):
     def login(self):
         """
         Setup the request as if the user has already logged in as a non admin user
+
+        :return the details for the logged in user
         """
-        username = 'test'
+        self.login_username = 'test'
         user_service = UserService()
-        user = user_service.get_user_by_username(username)
+        user = user_service.get_user_by_username(self.login_username)
         if user is None:
-            user_service.create(username,'test', 'testerson', 'test@ceh.ac.uk', '')
-            user = user_service.get_user_by_username(username)
+            user_service.create(self.login_username,'test', 'testerson', 'test@ceh.ac.uk', '')
+            user = user_service.get_user_by_username(self.login_username)
 
         self.app.extra_environ['REMOTE_USER'] = str(user.username)
+        return user
 
     def clean_database(self):
         """
@@ -75,7 +78,7 @@ class TestController(TestCase):
             session.query(User).delete()
             session.query(AccountRequest).delete()
             
-    def assert_model_definition(self, expected_code_version, expected_name):
+    def assert_model_definition(self, expected_username, expected_code_version, expected_name, expected_description):
         """
         Check that a model definition is correct in the database. Throws assertion error if there is no match
 
@@ -84,16 +87,19 @@ class TestController(TestCase):
         expected_code_version -- the expceted code version id
         """
         session = Session()
-        row = session.query("name", "code_version_id").from_statement(
+        row = session.query("username", "name", "code_version_id", "description").from_statement(
             """
-            SELECT m.name, m.code_version_id
+            SELECT u.username, m.name, m.code_version_id, m.description
             FROM model_runs m
             JOIN model_run_statuses s on s.id = m.status_id
+            JOIN users u on u.id = m.user_id
             WHERE s.name=:status
             """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATING).one()
+        ).params(status=constants.MODEL_RUN_STATUS_CREATED).one()
+        assert_that(row.username, is_(expected_username), "username")
         assert_that(row.name, is_(expected_name), "model run name")
         assert_that(row.code_version_id, is_(expected_code_version), "code version")
+        assert_that(row.description, is_(expected_description), "description")
 
     def assert_parameter_of_model_being_created_is_a_value(self, parameter_id, expected_parameter_value):
         """
@@ -114,7 +120,7 @@ class TestController(TestCase):
             WHERE s.name=:status
               AND p.id = :parameter_id
             """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATING, parameter_id = parameter_id).one()
+        ).params(status=constants.MODEL_RUN_STATUS_CREATED, parameter_id = parameter_id).one()
         assert_that(row.value, is_(expected_parameter_value), "parameter value")
 
     def _status(self, status_name):

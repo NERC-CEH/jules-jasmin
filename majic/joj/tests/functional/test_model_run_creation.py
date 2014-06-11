@@ -3,11 +3,11 @@ from urlparse import urlparse
 
 from hamcrest import *
 from joj.tests import *
-from model import User
+from joj.model import User
 from joj.model import Session
-from services.general import DatabaseService
-from services.model_run_service import ModelRunService
-from services.user import UserService
+from joj.services.general import DatabaseService
+from joj.services.model_run_service import ModelRunService
+from joj.services.user import UserService
 from pylons import config
 from joj.model import meta
 from joj.utils import constants
@@ -67,6 +67,7 @@ class TestModelRunController(TestController):
             params={
                 'name': u'name',
                 'code_version': u'-10',
+                'description': u'a description'
             }
         )
 
@@ -76,54 +77,57 @@ class TestModelRunController(TestController):
 
         expected_name = u'name'
         expected_code_version = 1
+        expected_description = u'This is a description'
         self.login()
         response = self.app.post(
             url=url(controller='model_run', action='create'),
             params={
                 'name': expected_name,
-                'code_version': str(expected_code_version)
+                'code_version': str(expected_code_version),
+                'description': expected_description
             }
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
 
-        self.assert_model_definition(expected_code_version, expected_name)
+        self.assert_model_definition(self.login_username, expected_code_version, expected_name, expected_description)
 
     def test_GIVEN_model_already_being_created_WHEN_navigate_to_create_run_THEN_model_data_filled_in(self):
 
-        self.login()
+        user = self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.update_model_run('test', 1)
+        model_run_service.update_model_run(user, 'test', 1, "description which is unique")
 
         response = self.app.get(
             url(controller='model_run', action='create'))
 
         assert_that(response.normal_body, contains_string("test"))
         assert_that(response.normal_body, contains_string(config['default_code_version']))
-
-
-
+        assert_that(response.normal_body, contains_string("description which is unique"))
 
     def test_GIVEN_model_already_being_created_WHEN_update_THEN_model_data_overwritten(self):
 
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run('not test', 2)
+        model_run_service.update_model_run(user, 'not test', 2, "a different description")
 
         expected_name = u'name'
         expected_code_version = 1
-        self.login()
+        expected_description = u'descr'
+
         response = self.app.post(
             url=url(controller='model_run', action='create'),
             params={
                 'name': expected_name,
-                'code_version': str(expected_code_version)
+                'code_version': str(expected_code_version),
+                'description': expected_description
             }
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
 
-        self.assert_model_definition(expected_code_version, expected_name)
+        self.assert_model_definition(self.login_username, expected_code_version, expected_name,expected_description)
 

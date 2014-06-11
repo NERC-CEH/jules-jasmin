@@ -3,12 +3,12 @@ from urlparse import urlparse
 
 from hamcrest import *
 from joj.tests import *
-from model import User
+from joj.model import User
 from joj.model import Session
 from joj.utils import constants
-from services.general import DatabaseService
-from services.model_run_service import ModelRunService
-from services.user import UserService
+from joj.services.general import DatabaseService
+from joj.services.model_run_service import ModelRunService
+from joj.services.user import UserService
 from pylons import config
 from joj.model import meta
 
@@ -32,13 +32,13 @@ class TestModelRunSummaryController(TestController):
 
     def test_GIVEN_model_run_and_parameters_WHEN_view_submit_THEN_page_is_shown_and_contains_model_run_summary(self):
 
-        self.login()
+        user = self.login()
 
         model_run_service = ModelRunService()
         expected_model_name="test model name"
-        model_run_service.update_model_run(expected_model_name, 1)
+        model_run_service.update_model_run(user, expected_model_name, 1)
         expected_value = 123456789
-        model_run_service.store_parameter_values({'1': expected_value})
+        model_run_service.store_parameter_values({'1': expected_value}, user)
 
         response = self.app.get(
             url(controller='model_run', action='submit'))
@@ -50,10 +50,10 @@ class TestModelRunSummaryController(TestController):
 
     def test_GIVEN_select_previous_WHEN_post_THEN_redirect_to_parameters_page(self):
 
-        self.login()
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
-        model_run_service.store_parameter_values({'1': 12})
+        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.store_parameter_values({'1': 12}, user)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
@@ -67,10 +67,10 @@ class TestModelRunSummaryController(TestController):
 
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
 
-        self.login()
+        user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run("test", 1)
-        model_run_service.store_parameter_values({'1': 12})
+        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.store_parameter_values({'1': 12}, user)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),

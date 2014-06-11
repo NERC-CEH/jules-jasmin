@@ -34,6 +34,11 @@
             ${h.html_tags.select('code_version', '', c.code_versions, class_='controls')}
         </div>
 
+         <div class="control-group">
+            <label for="description" class="control-label">Description</label>
+            ${h.html_tags.textarea('description', class_='controls')}
+        </div>
+
         <div class="controls">
             <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
         </div>

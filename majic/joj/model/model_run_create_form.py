@@ -11,3 +11,4 @@ class ModelRunCreateFirst(Schema):
 
     name = validators.String(not_empty=True, max=constants.DB_STRING_SIZE)
     code_version = validators.String(not_empty=True)
+    description = validators.String(max=constants.DB_LONG_STRING_SIZE)

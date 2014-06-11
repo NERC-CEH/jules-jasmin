@@ -81,14 +81,19 @@ class ModelRunController(BaseController):
         errors = None
         if request.POST:
             try:
-                self._model_run_service.update_model_run(self.form_result['name'], self.form_result['code_version'])
+                self._model_run_service.update_model_run(
+                    self.current_user,
+                    self.form_result['name'],
+                    self.form_result['code_version'],
+                    self.form_result['description'])
                 redirect(url(controller='model_run', action='parameters'))
             except NoResultFound:
                 errors = {'code_version': 'Code version is not recognised'}
         else:
-            model = self._model_run_service.get_model_run_being_created_or_default()
+            model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
             values['name'] = model.name
             values['code_version'] = model.code_version_id
+            values['description'] = model.description
 
         c.all_models = self._model_run_service.get_model_being_created(self.current_user)
         c.code_versions = [Option(version.id, version.name) for version in versions]
@@ -102,7 +107,7 @@ class ModelRunController(BaseController):
         """
 
         try:
-            c.parameters = self._model_run_service.get_parameters_for_model_being_created()
+            c.parameters = self._model_run_service.get_parameters_for_model_being_created(self.current_user)
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before any parameters can be set")
             redirect(url(controller='model_run', action='create'))
@@ -143,7 +148,7 @@ class ModelRunController(BaseController):
                 if param_name.startswith(PARAMETER_NAME_PREFIX):
                     parameters[param_name.replace(PARAMETER_NAME_PREFIX, '')] = param_value
 
-            self._model_run_service.store_parameter_values(parameters)
+            self._model_run_service.store_parameter_values(parameters, self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='submit'))
@@ -156,14 +161,15 @@ class ModelRunController(BaseController):
         """
 
         try:
-            c.model = self._model_run_service.get_model_being_created_with_non_default_parameter_values()
+            c.model = \
+                self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before submitting the model run")
             redirect(url(controller='model_run', action='create'))
 
         if request.POST:
             if request.params.getone('submit') == u'Submit':
-                status, message = self._model_run_service.submit_model_run()
+                status, message = self._model_run_service.submit_model_run(self.current_user)
                 if status.name == constants.MODEL_RUN_STATUS_PENDING:
                     helpers.success_flash(message)
                 else:
