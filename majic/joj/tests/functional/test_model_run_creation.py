@@ -3,13 +3,8 @@ from urlparse import urlparse
 
 from hamcrest import *
 from joj.tests import *
-from joj.model import User
-from joj.model import Session
-from joj.services.general import DatabaseService
 from joj.services.model_run_service import ModelRunService
-from joj.services.user import UserService
 from pylons import config
-from joj.model import meta
 from joj.utils import constants
 
 
@@ -72,6 +67,50 @@ class TestModelRunController(TestController):
         )
 
         assert_that(response.normal_body, contains_string("Code version is not recognised"))
+
+    def test_GIVEN_name_is_duplicate_WHEN_post_THEN_error_thrown(self):
+
+        duplicate_name = u'duplicate name'
+        user = self.login()
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run(user, duplicate_name, 1, "description which is unique")
+        model_run = model_run_service.get_model_run_being_created_or_default(user)
+        with model_run_service.transaction_scope() as session:
+            model_run.change_status(session, constants.MODEL_RUN_STATUS_COMPLETED)
+
+        response = self.app.post(
+            url=url(controller='model_run', action='create'),
+            params={
+                'name': duplicate_name,
+                'code_version': u'1',
+                'description': u'a description'
+            }
+        )
+
+        assert_that(response.normal_body, contains_string("Name can not be the same as another model run"))
+
+    def test_GIVEN_name_is_duplicate_but_run_is_owned_by_another_user_WHEN_post_THEN_success(self):
+
+        duplicate_name = u'duplicate name'
+        user = self.login("test_different")
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run(user, duplicate_name, 1, "description which is unique")
+        model_run = model_run_service.get_model_run_being_created_or_default(user)
+        with model_run_service.transaction_scope() as session:
+            model_run.change_status(session, constants.MODEL_RUN_STATUS_COMPLETED)
+
+        user = self.login("test")
+        response = self.app.post(
+            url=url(controller='model_run', action='create'),
+            params={
+                'name': duplicate_name,
+                'code_version': u'1',
+                'description': u'a description'
+            }
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
 
     def test_GIVEN_details_are_correct_WHEN_post_THEN_new_model_run_created_and_redirect_to_parameters_page(self):
 

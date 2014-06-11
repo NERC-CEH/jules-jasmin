@@ -51,17 +51,18 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         TestCase.__init__(self, *args, **kwargs)
 
-    def login(self):
+    def login(self, username = "test"):
         """
         Setup the request as if the user has already logged in as a non admin user
 
+        :param username the username for the user to log in, stored in self.login_username, default "test"
         :return the details for the logged in user
         """
-        self.login_username = 'test'
+        self.login_username = username
         user_service = UserService()
         user = user_service.get_user_by_username(self.login_username)
         if user is None:
-            user_service.create(self.login_username,'test', 'testerson', 'test@ceh.ac.uk', '')
+            user_service.create(self.login_username, 'test', 'testerson', 'test@ceh.ac.uk', '')
             user = user_service.get_user_by_username(self.login_username)
 
         self.app.extra_environ['REMOTE_USER'] = str(user.username)

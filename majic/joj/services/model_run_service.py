@@ -1,16 +1,22 @@
 # header
 import logging
-import datetime
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 
 log = logging.getLogger(__name__)
+
+
+class DuplicateName(Exception):
+    """
+    Exception thrown when the name of the run is a duplicate
+    """
+    pass
 
 
 class ModelRunService(DatabaseService):
@@ -82,19 +88,6 @@ class ModelRunService(DatabaseService):
                                        "has not completed or you are not authorised to access it")
             model_run.change_status(session, constants.MODEL_RUN_STATUS_PUBLISHED)
 
-    def get_model_being_created(self, user):
-        """
-        The user can have a single model run they are creating
-        This function returns it if it exists
-
-        Arguments:
-        user -- the user
-
-        Returns:
-        a model run model that the user will submit
-        """
-        pass
-
     def get_code_versions(self):
         """
         Get the list of code versions the user can select from
@@ -131,13 +124,24 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
 
+            duplicate_names = session \
+                .query(ModelRun) \
+                .join(User) \
+                .join(ModelRunStatus) \
+                .filter(ModelRun.user == user) \
+                .filter(ModelRun.name == name) \
+                .filter(ModelRunStatus.name != constants.MODEL_RUN_STATUS_CREATED) \
+                .count()
+
+            if duplicate_names != 0:
+                raise DuplicateName()
+
             try:
                 model_run = self._get_model_run_being_created(session, user)
             except NoResultFound:
                 model_run = ModelRun()
                 model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
                 model_run.user = user
-
 
             model_run.name = name
             code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()

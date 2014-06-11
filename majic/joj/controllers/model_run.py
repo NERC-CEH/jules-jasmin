@@ -16,7 +16,7 @@ from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.model.model_run_create_parameters import ModelRunCreateParameters
-from joj.services.model_run_service import ModelRunService
+from joj.services.model_run_service import ModelRunService, DuplicateName
 from joj.lib import helpers
 from joj.utils import constants
 
@@ -104,13 +104,14 @@ class ModelRunController(BaseController):
                 redirect(url(controller='model_run', action='parameters'))
             except NoResultFound:
                 errors = {'code_version': 'Code version is not recognised'}
+            except DuplicateName, ex:
+                errors = {'name': 'Name can not be the same as another model run'}
         else:
             model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
             values['name'] = model.name
             values['code_version'] = model.code_version_id
             values['description'] = model.description
 
-        c.all_models = self._model_run_service.get_model_being_created(self.current_user)
         c.code_versions = [Option(version.id, version.name) for version in versions]
 
         html = render('model_run/create.html')
