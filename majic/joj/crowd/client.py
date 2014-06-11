@@ -283,15 +283,27 @@ class CrowdClient(object):
             else:
                 response_object = None
           else:
-            response_object = {
-                'name': 'johhol',
-                'token': 'atoken',
-                'display-name': 'John',
-                'email':'john@ac.uk',
-                'first-name': 'John',
-                'last-name':'Holt',
-                'user': {'name':'johhol'}
-            }
+
+            if True:
+                response_object = {
+                    'name': 'johhol',
+                    'token': 'atoken',
+                    'display-name': 'John',
+                    'email':'ceh.ac.uk',
+                    'first-name': 'John',
+                    'last-name':'Holt',
+                    'user': {'name':'johhol'}
+                }
+            else:
+                response_object = {
+                    'name': 'matken',
+                    'token': 'atokenmtken',
+                    'display-name': 'Matt',
+                    'email':'matken@ceh.ac.uk',
+                    'first-name': 'Matt',
+                    'last-name':'Kendal',
+                    'user': {'name':'matken'}
+                }
 
           return response_object
 

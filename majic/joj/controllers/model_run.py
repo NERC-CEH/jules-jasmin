@@ -69,7 +69,8 @@ class ModelRunController(BaseController):
         c.model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         return render("model_run/summary.html")
 
-    @validate(schema=ModelRunCreateFirst(), form='create', post_only=False, on_get=False, prefix_error=False)
+    @validate(schema=ModelRunCreateFirst(), form='create', post_only=False, on_get=False, prefix_error=False,
+              auto_error_formatter=BaseController.error_formatter)
     def create(self):
         """
         Controller for creating a new run
@@ -99,7 +100,11 @@ class ModelRunController(BaseController):
         c.code_versions = [Option(version.id, version.name) for version in versions]
 
         html = render('model_run/create.html')
-        return htmlfill.render(html, defaults=values, errors=errors, auto_error_formatter=self.error_formatter)
+        return htmlfill.render(
+            html,
+            defaults=values,
+            errors=errors,
+            auto_error_formatter=BaseController.error_formatter)
 
     def parameters(self):
         """
@@ -121,7 +126,8 @@ class ModelRunController(BaseController):
             return htmlfill.render(
                 html,
                 defaults=parameter_values,
-                errors={}
+                errors={},
+                auto_error_formatter=BaseController.error_formatter
             )
         else:
             schema = ModelRunCreateParameters(c.parameters)
@@ -140,7 +146,8 @@ class ModelRunController(BaseController):
                 return htmlfill.render(
                     html,
                     defaults=c.form_result,
-                    errors=c.form_errors
+                    errors=c.form_errors,
+                    auto_error_formatter=BaseController.error_formatter
                 )
 
             parameters = {}

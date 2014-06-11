@@ -80,12 +80,6 @@ class AccountController(BaseController):
                     # If we've got enough info, we should see if they are in
                     # the ecomaps database already
 
-                    #TODO remove this
-                    request.environ['user.username'] = "johhol"
-                    request.environ['user.last-name'] = "Holt"
-                    request.environ['user.first-name'] = "John"
-                    request.environ['user.email'] = "johhol@ceh.ac.uk"
-
                     if request.environ['user.username']:
 
                         user_name = request.environ['user.username']
