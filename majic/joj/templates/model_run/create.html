@@ -24,19 +24,19 @@
 
     <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='create')}">
 
-        <div class="control-group">
+        <div class="control-group" title="The name of a model run is used to identify it. Your model runs must all have unique names.">
             <label for="name" class="control-label">Name</label>
             ${h.html_tags.text('name', class_='controls')}
         </div>
 
-        <div class="control-group">
+        <div class="control-group" title="The version of the code to run.">
             <label for="code_version" class="control-label">Code</label>
             ${h.html_tags.select('code_version', '', c.code_versions, class_='controls')}
         </div>
 
-         <div class="control-group">
+         <div class="control-group" title="The description should describe the main purpose of the run and major input parameters.">
             <label for="description" class="control-label">Description</label>
-            ${h.html_tags.textarea('description', class_='controls')}
+            ${h.html_tags.textarea('description', class_='controls', rows=10)}
         </div>
 
         <div class="controls">
