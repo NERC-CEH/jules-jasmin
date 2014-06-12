@@ -50,6 +50,18 @@ def setup_app(command, conf, vars):
 
         session.add(user2)
 
+        pointDst = DatasetType()
+        pointDst.type = 'Point'
+        coverDst = DatasetType()
+        coverDst.type = 'Coverage'
+        coverDst = DatasetType()
+        coverDst.type = 'Result'
+
+        session.add(pointDst)
+        session.add(coverDst)
+        session.add(coverDst)
+
+
         level = UserLevel()
         level.name = 'Beginner'
         session.add(level)
@@ -110,6 +122,7 @@ def setup_app(command, conf, vars):
         ds1.data_range_to = 30
         ds1.is_categorical = 0
         ds1.deleted = 0
+        ds1.dataset_type = coverDst
         ds1.is_input = 0
         
         ds2 = Dataset()
@@ -120,6 +133,7 @@ def setup_app(command, conf, vars):
         ds2.data_range_to = 350
         ds2.is_categorical = 0
         ds2.deleted = 0
+        ds2.dataset_type = coverDst
         ds2.is_input = 1
 
         mr1 = ModelRun()
@@ -173,6 +187,7 @@ def setup_app(command, conf, vars):
         ds3.data_range_to = 100000
         ds3.is_categorical = 0
         ds3.deleted = 0
+        ds3.dataset_type = coverDst
         ds3.is_input = 1
     
         ds4 = Dataset()
@@ -183,6 +198,7 @@ def setup_app(command, conf, vars):
         ds4.data_range_to = 0.0055
         ds4.is_categorical = 0
         ds4.deleted = 0
+        ds4.dataset_type = coverDst
         ds4.is_input = 0
       
         ds5 = Dataset()
@@ -193,6 +209,7 @@ def setup_app(command, conf, vars):
         ds5.data_range_to = 0.0001
         ds5.is_categorical = 0
         ds5.deleted = 0
+        ds5.dataset_type = coverDst
         ds5.is_input = 1              
         
         mr4 = ModelRun()
@@ -219,6 +236,7 @@ def setup_app(command, conf, vars):
         ds6.data_range_to = 0.003
         ds6.is_categorical = 0
         ds6.deleted = 0
+        ds6.dataset_type = coverDst
         ds6.is_input = 0
         
         ds7 = Dataset()
@@ -229,6 +247,7 @@ def setup_app(command, conf, vars):
         ds7.data_range_to = 0.1
         ds7.is_categorical = 0
         ds7.deleted = 0
+        ds7.dataset_type = coverDst
         ds7.is_input = 1
         
         ds8 = Dataset()
@@ -239,6 +258,7 @@ def setup_app(command, conf, vars):
         ds8.data_range_to = 290
         ds8.is_categorical = 0
         ds8.deleted = 0
+        ds8.dataset_type = coverDst
         ds8.is_input = 1
         
         ds9 = Dataset()
@@ -249,6 +269,7 @@ def setup_app(command, conf, vars):
         ds9.data_range_to = 20
         ds9.is_categorical = 0
         ds9.deleted = 0
+        ds9.dataset_type = coverDst
         ds9.is_input = 0
 
         mr5 = ModelRun()
