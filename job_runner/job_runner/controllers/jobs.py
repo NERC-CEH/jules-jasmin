@@ -9,7 +9,7 @@ from simplejson import JSONDecodeError
 
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
-from services.job_service import JobService, ServiceError
+from job_runner.services.job_service import JobService, ServiceError
 
 log = logging.getLogger(__name__)
 
