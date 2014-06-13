@@ -8,6 +8,7 @@ from joj.model import session_scope, DatasetType, Dataset, Analysis, User, Analy
     AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
 from joj.model.meta import Base, Session
 from joj.utils import constants
+from web_setup_jules_parameters import Parser
 
 def _get_result_image():
 
@@ -154,27 +155,11 @@ def setup_app(command, conf, vars):
         code_version.is_default = False
         session.add(code_version)
 
-        timesteps_namelist_file = NamelistFile()
-        timesteps_namelist_file.filename = 'timesteps.nml'
-        session.add(timesteps_namelist_file)
+        parser = Parser()
+        namelist_files = parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
 
-        timesteps_namelist = Namelist()
-        timesteps_namelist.name = 'JULES_TIME'
-        timesteps_namelist.namelist_file = timesteps_namelist_file
-        session.add(timesteps_namelist)
-
-        parameter = Parameter()
-        parameter.default_value = 'None'
-        parameter.name = 'timestep_len'
-        parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
-        parameter.type = 'integer'
-        parameter.min = 1
-        parameter.user_level = level
-        parameter.required = True
-        parameter.code_versions = [default_code_version]
-        parameter.namelist = timesteps_namelist
-
-        session.add(parameter)
+        for namelist_file in namelist_files:
+            session.add(namelist_file)
 
 
 
