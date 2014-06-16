@@ -1,0 +1,24 @@
+&JULES_SURF_PARAM
+  z0miz  = 1.00000e-01,
+  z0sice = 3.00000e-03
+/
+
+
+&JULES_CSMIN
+
+/
+
+
+&JULES_AERO
+  co2_mmr = 5.94100e-04
+/
+
+
+&JULES_SEED
+
+/
+
+
+&JULES_SIGM
+
+/

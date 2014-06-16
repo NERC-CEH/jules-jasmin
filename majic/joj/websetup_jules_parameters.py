@@ -1,5 +1,4 @@
 # Header
-import sys
 import logging
 from lxml import html, etree
 import re
@@ -7,7 +6,8 @@ from joj.model import NamelistFile, Namelist, Parameter
 
 log = logging.getLogger(__name__)
 
-class Parser(object):
+
+class JulesParameterParser(object):
     """
     Parser for the Jules documentation
     Parses the html namelist parameters into the database objects
@@ -35,6 +35,11 @@ class Parser(object):
         'prescribed_data.nml.html',
         'initial_conditions.nml.html',
         'output.nml.html']
+
+    _EXTRA_PARAMETERS = \
+        {
+            'JULES_PFTPARM': [Parameter(name="dust_veg_scj_io", type="real(npft)")]
+        }
 
     def _get_parameter_limits(self, parameter, value):
         """
@@ -135,11 +140,15 @@ class Parser(object):
             log.info("    Namelist: %s" % namelist.name)
             namelist_file.namelists.append(namelist)
 
+            if namelist.name.upper() in self._EXTRA_PARAMETERS:
+                namelist.parameters.extend(self._EXTRA_PARAMETERS[namelist.name])
+
             #parameters at the bottom level
             parameters = tree.xpath('//div[@id="namelist-{namelist_name}"]/dl'.format(namelist_name=namelist_name))
 
             #parameters in optional sections
-            parameters.extend(tree.xpath('//div[@id="namelist-{namelist_name}"]/div/dl'.format(namelist_name=namelist_name)))
+            parameters.extend(
+                tree.xpath('//div[@id="namelist-{namelist_name}"]/div/dl'.format(namelist_name=namelist_name)))
 
             for parameter_elements in parameters:
 
@@ -172,19 +181,20 @@ class Parser(object):
                             log.info("          min: %s" % parameter.min)
                             log.info("          max: %s" % parameter.max)
 
-                parameter.required == (parameter.default_value is None)
+                parameter.required = (parameter.default_value is None)
 
                 namelist.parameters.append(parameter)
         return namelist_file
 
     def parse_all(self, root_path, code_version):
         """
-        Pasrse all know name list files and return the namelist file objects
+        Parse all know name list files and return the namelist file objects
         :param root_path: the root path for the namelist files
         :param code_version: the code version object
         :return: namelist file objects
         """
         namelist_files = []
+        namelist_file = ""
         try:
             for namelist_file in self._NAMELIST_FILES:
                 namelist_files.append(self.run(root_path + namelist_file, namelist_file, code_version))
@@ -196,10 +206,6 @@ class Parser(object):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    parser = Parser()
+    parser = JulesParameterParser()
     base = '../docs/Jules/user_guide/html/namelists/'
     parser.parse_all(base, None)
-
-
-
-

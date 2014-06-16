@@ -8,7 +8,9 @@ from joj.model import session_scope, DatasetType, Dataset, Analysis, User, Analy
     AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
 from joj.model.meta import Base, Session
 from joj.utils import constants
-from web_setup_jules_parameters import Parser
+from websetup_jules_parameters import JulesParameterParser
+from websetup_science_configurations import JulesNamelistParse
+
 
 def _get_result_image():
 
@@ -51,6 +53,15 @@ def setup_app(command, conf, vars):
         user2.access_level = "Admin"
 
         session.add(user2)
+
+        core_user = User()
+        user2.name = 'core'
+        user2.first_name = 'Core'
+        user2.last_name = ''
+        user2.username = 'core'
+        user2.email = ''
+
+        session.add(core_user)
 
         pointDst = DatasetType()
         pointDst.type = 'Point'
@@ -133,7 +144,8 @@ def setup_app(command, conf, vars):
         level.name = 'Beginner'
         session.add(level)
 
-        statuses = [ModelRunStatus(constants.MODEL_RUN_STATUS_CREATED),
+        status_created = ModelRunStatus(constants.MODEL_RUN_STATUS_CREATED)
+        statuses = [status_created,
                     ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMITTED),
                     ModelRunStatus(constants.MODEL_RUN_STATUS_PENDING),
                     ModelRunStatus(constants.MODEL_RUN_STATUS_RUNNING),
@@ -155,11 +167,16 @@ def setup_app(command, conf, vars):
         code_version.is_default = False
         session.add(code_version)
 
-        parser = Parser()
-        namelist_files = parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
+        jules_parameter_parser = JulesParameterParser()
+        namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
+
+        jules_config_parser = JulesNamelistParser()
+        jules_config_parser.parse_all(
+            "configuration/Jules/scientific_configurations/",
+            namelist_files,
+            core_user,
+            code_version,
+            status_created)
 
         for namelist_file in namelist_files:
             session.add(namelist_file)
-
-
-
