@@ -1,4 +1,6 @@
-# header
+"""
+header
+"""
 
 import logging
 from formencode import htmlfill
@@ -9,8 +11,6 @@ from pylons import url
 from pylons.decorators import validate
 
 from sqlalchemy.orm.exc import NoResultFound
-
-from webhelpers.html.tags import Option
 
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
@@ -47,7 +47,10 @@ class ModelRunController(BaseController):
         Default controller providing access to the catalogue of user model runs
         :return: Rendered catalogue page
         """
-        c.model_runs = self._model_run_service.get_models_for_user(self.current_user)
+        # all non-created runs
+        c.model_runs = [model
+                        for model in self._model_run_service.get_models_for_user(self.current_user)
+                        if model.status.name != constants.MODEL_RUN_STATUS_CREATED]
         c.showing = "mine"
         return render("model_run/catalogue.html")
 
@@ -90,7 +93,7 @@ class ModelRunController(BaseController):
         Controller for creating a new run
         """
 
-        versions = self._model_run_service.get_code_versions()
+        scientific_configurations = self._model_run_service.get_scientific_configurations()
 
         values = dict(request.params)
         errors = None
@@ -99,20 +102,20 @@ class ModelRunController(BaseController):
                 self._model_run_service.update_model_run(
                     self.current_user,
                     self.form_result['name'],
-                    self.form_result['code_version'],
+                    self.form_result['science_configuration'],
                     self.form_result['description'])
                 redirect(url(controller='model_run', action='parameters'))
             except NoResultFound:
-                errors = {'code_version': 'Code version is not recognised'}
-            except DuplicateName, ex:
+                errors = {'science_configuration': 'Configuration is not recognised'}
+            except DuplicateName:
                 errors = {'name': 'Name can not be the same as another model run'}
         else:
             model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
             values['name'] = model.name
-            values['code_version'] = model.code_version_id
+            values['science_configuration'] = model.science_configuration_id
             values['description'] = model.description
 
-        c.code_versions = [Option(version.id, version.name) for version in versions]
+        c.scientific_configurations = scientific_configurations
 
         html = render('model_run/create.html')
         return htmlfill.render(

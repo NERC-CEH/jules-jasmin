@@ -26,18 +26,31 @@
 
         <div class="control-group" title="The name of a model run is used to identify it. Your model runs must all have unique names.">
             <label for="name" class="control-label">Name</label>
-            ${h.html_tags.text('name', class_='controls')}
-        </div>
-
-        <div class="control-group" title="The version of the code to run.">
-            <label for="code_version" class="control-label">Code</label>
-            ${h.html_tags.select('code_version', '', c.code_versions, class_='controls')}
+            <div class="controls">
+                ${h.html_tags.text('name')}
+            </div>
         </div>
 
          <div class="control-group" title="The description should describe the main purpose of the run and major input parameters.">
             <label for="description" class="control-label">Description</label>
-            ${h.html_tags.textarea('description', class_='controls', rows=10)}
+            <div class="controls">
+                ${h.html_tags.textarea('description', rows=10)}
+            </div>
         </div>
+
+        <div class="control-group" title="Model runs should start from a default configuration.">
+
+            <label for="scientific_configuration" class="control-label">Scientific Configuration</label>
+            <div class="controls">
+                <py:for each="configuration in c.scientific_configurations">
+                    <label class="radio">
+                        ${h.html_tags.radio('science_configuration', configuration['id'], True, class_='radio controls')}
+                        <strong>${configuration['name']}</strong> ${configuration['description']}
+                    </label>
+                </py:for>
+            </div>
+        </div>
+
 
         <div class="controls">
             <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />

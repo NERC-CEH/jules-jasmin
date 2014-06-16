@@ -9,7 +9,7 @@ from joj.model import session_scope, DatasetType, Dataset, Analysis, User, Analy
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from websetup_jules_parameters import JulesParameterParser
-from websetup_science_configurations import JulesNamelistParse
+from websetup_science_configurations import JulesNamelistParser
 
 
 def _get_result_image():
@@ -55,11 +55,11 @@ def setup_app(command, conf, vars):
         session.add(user2)
 
         core_user = User()
-        user2.name = 'core'
-        user2.first_name = 'Core'
-        user2.last_name = ''
-        user2.username = 'core'
-        user2.email = ''
+        core_user.name = 'core'
+        core_user.first_name = 'Core'
+        core_user.last_name = ''
+        core_user.username = constants.CORE_USERNAME
+        core_user.email = ''
 
         session.add(core_user)
 
