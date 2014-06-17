@@ -13,7 +13,7 @@ setup(
     #author_email='',
     #url='',
     install_requires=[
-        "WebOb<=1.31",
+        "WebOb<=1.3.1",
         "pylons",
         "genshi",
         "SQLAlchemy",
@@ -29,9 +29,7 @@ setup(
         "Image",
         "matplotlib",
         "libxml2dom",
-        "libxml2-python",
         "owslib",
-        "pycairo",
         'webhelpers',
         'requests'],
     setup_requires=["PasteScript>=1.6.3"],

@@ -1,0 +1,57 @@
+<project name="majic" default="install-majic" basedir=".">
+    <description>
+        build, test and install majic and job runner
+    </description>
+
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <property name="virtual_env"  location="/home/johhol/majic_virtual_env"/>
+  <property name="virtual_env_script"  location="/usr/lib/python2.7/site-packages/virtualenv.py"/>
+
+  <target name="test-majic" depends="setup-majic-test" description="install majic">
+    
+  </target>
+
+  <target name="setup-app-majic-develop"
+        description="setup the application for development" >
+    <exec executable="${virtual_env}/bin/paster">
+        <arg value="${basedir}/majic/development.ini"/>
+    </exec>
+  </target>
+
+
+  <target name="setup-majic-test"
+        description="setup the test application" >
+    <exec executable="${virtual_env}/bin/python">
+        <arg value="${basedir}/majic/setup.py"/>
+        <arg value="test"/>
+    </exec>
+  </target>
+
+  <target name="setup-majic-develop"
+        description="setup the test application" >
+    <exec executable="${virtual_env}/bin/python">
+        <arg value="${basedir}/majic/setup.py"/>
+        <arg value="develop"/>
+    </exec>
+  </target>
+
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+ 
+  <target name="create_virtual_env" description="create the virtual environment in to which python can be installed">
+    <exec executable="python2.7">
+        <arg value="${virtual_env_script}"/>
+        <arg value="${virtual_env}" />
+    </exec>
+  </target>
+</project>
