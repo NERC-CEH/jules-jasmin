@@ -1,0 +1,19 @@
+&JULES_NVEGPARM
+  nvgname_io          =   'urban'    'lake'     'soil'     'ice',
+
+  albsnc_nvg_io       = 4.00e-01  8.00e-01   8.00e-01  8.00e-01,
+  albsnf_nvg_io       = 1.80e-01  6.00e-02  -1.00e+00  7.50e-01,
+  catch_nvg_io        = 5.00e-01  0.00e+00   0.00e+00  0.00e+00,
+  gs_nvg_io           = 0.00e+00  0.00e+00   1.00e-02  1.00e+06,
+  infil_nvg_io        = 1.00e-01  0.00e+00   5.00e-01  0.00e+00,
+  z0_nvg_io           = 1.00e+00  1.00e-04   1.00e-03  5.00e-04,
+  ch_nvg_io           = 2.80e+05  2.11e+07   0.00e+00  0.00e+00,
+  vf_nvg_io           = 1.00e+00  1.00e+00   0.00e+00  0.00e+00,
+  emis_nvg_io         = 9.70e-01  9.85e-01   9.00e-01  9.90e-01,
+  z0hm_nvg_io         = 1.00e-07  2.50e-01   2.00e-02  2.00e-01,
+  
+  z0hm_classic_nvg_io =      0.1       0.1        0.1       0.1,
+  
+  albsnf_nvgu_io      =     0.20      0.15       0.80      0.75,
+  albsnf_nvgl_io      =     0.16      0.06       0.03      0.75
+/

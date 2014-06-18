@@ -1,0 +1,27 @@
+&JULES_SWITCHES
+  l_aggregate        = F,
+
+  can_model          = 4,
+  can_rad_mod        = 1,
+  ilayers            = 10,
+  l_cosz             = T,
+  l_spec_albedo      = T,
+  l_phenol           = T,
+  l_triffid          = T,
+  l_veg_compete      = T,
+  l_trif_eq          = T,
+  l_top              = F,
+  l_pdm              = T,
+  l_anthrop_heat_src = F,
+  l_o3_damage        = F,
+  l_imogen           = F,
+  l_epot_corr        = T,
+  l_snowdep_surf     = T,
+  iscrntdiag         = 1,
+  
+  l_q10              = F,
+  l_soil_sat_down    = F,
+  l_vg_soil          = F,
+  soilhc_method      = 2
+/
+

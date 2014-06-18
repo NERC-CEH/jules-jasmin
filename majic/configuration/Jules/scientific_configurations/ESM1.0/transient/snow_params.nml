@@ -1,0 +1,24 @@
+&JULES_SNOW_PARAM
+  rho_snow_const    = 250.0,
+  snow_hcon         = 0.265,
+  snow_hcap         = 0.63e6,
+  snowliqcap        = 0.05,
+  snowinterceptfact = 0.7,
+  snowloadlai       = 4.4,
+  snowunloadfact    = 0.4,
+
+  dzsnow_io         = 0.1  0.2  0.2,
+
+  cansnowpft        = F  T  F  F  F
+/
+
+&JULES_RAD_PARAM
+  r0              = 50.0,
+  rmax            = 2000.0,
+  snow_ggr        = 0.6  0.06  0.23e6,
+  amax            = 0.98  0.7,
+  maskd           = 50.0,
+  dtland          = 2.0,
+  kland_numerator = 0.3
+/
+

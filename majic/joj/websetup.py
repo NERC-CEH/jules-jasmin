@@ -1,4 +1,4 @@
-# header
+#header
 
 import datetime
 from joj.model.model_run import ModelRun
@@ -9,9 +9,12 @@ from joj.model import session_scope, DatasetType, Dataset, Analysis, User, Analy
     AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
 from joj.model.meta import Base, Session
 from joj.utils import constants
+from websetup_jules_parameters import JulesParameterParser
+from websetup_science_configurations import JulesNamelistParser
 
 
 def _get_result_image():
+
     example_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'example_image.txt')
 
     with open(example_path, 'r') as image_file:
@@ -50,10 +53,21 @@ def setup_app(command, conf, vars):
 
         session.add(user2)
 
+        core_user = User()
+        core_user.name = 'core'
+        core_user.first_name = 'Core'
+        core_user.last_name = ''
+        core_user.username = constants.CORE_USERNAME
+        core_user.email = ''
+
+        session.add(core_user)
+
         pointDst = DatasetType()
         pointDst.type = 'Point'
+
         coverDst = DatasetType()
         coverDst.type = 'Coverage'
+
         resultDst = DatasetType()
         resultDst.type = 'Result'
 
@@ -90,28 +104,21 @@ def setup_app(command, conf, vars):
         code_version.is_default = False
         session.add(code_version)
 
-        timesteps_namelist_file = NamelistFile()
-        timesteps_namelist_file.filename = 'timesteps.nml'
-        session.add(timesteps_namelist_file)
-
-        timesteps_namelist = Namelist()
-        timesteps_namelist.name = 'JULES_TIME'
-        timesteps_namelist.namelist_file = timesteps_namelist_file
-        session.add(timesteps_namelist)
-
-        parameter = Parameter()
-        parameter.default_value = 'None'
-        parameter.name = 'timestep_len'
-        parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
-        parameter.type = 'integer'
-        parameter.min = 1
-        parameter.user_level = level
-        parameter.required = True
-        parameter.code_versions = [default_code_version]
-        parameter.namelist = timesteps_namelist
-
-        session.add(parameter)
+        jules_parameter_parser = JulesParameterParser()
+        namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
         
+        for namelist_file in namelist_files:
+            session.add(namelist_file)
+            
+        jules_config_parser = JulesNamelistParser()
+        jules_config_parser.parse_all(
+            "configuration/Jules/scientific_configurations/",
+            namelist_files,
+            core_user,
+            code_version,
+            stat_created)
+
+              
         ## Add some model runs with datasets
 
         ds1 = Dataset()
@@ -283,4 +290,5 @@ def setup_app(command, conf, vars):
         mr5.status = stat_published
         mr5.datasets = [ds6, ds7, ds8, ds9]
 
-        session.add(mr5)
+        session.add(mr5)        
+

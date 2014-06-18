@@ -1,0 +1,19 @@
+&JULES_SWITCHES
+  l_aggregate        = .FALSE.,
+  can_model          = 4,
+  can_rad_mod        = 1,
+  l_snowdep_surf     = .FALSE.,
+  iscrntdiag         = 0,
+  l_vg_soil          = .TRUE.,
+  soilhc_method      = 2,
+  l_spec_albedo      = .FALSE.,
+  l_epot_corr        = .TRUE.,
+  ilayers            = 10,
+  l_cosz             = .TRUE.,
+  l_top              = .FALSE.,
+  l_pdm              = .TRUE.,
+  l_trif_eq          = .FALSE.,
+  l_anthrop_heat_src = .TRUE.,
+  l_q10              = .TRUE.,
+  l_soil_sat_down    = .FALSE.
+/

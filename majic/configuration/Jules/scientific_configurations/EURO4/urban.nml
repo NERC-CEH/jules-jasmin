@@ -1,0 +1,19 @@
+&URBAN_SWITCHES
+  l_moruses_albedo       = .FALSE.,
+  l_moruses_emissivity   = .FALSE.,
+  l_moruses_rough        = .FALSE.,
+  l_moruses_storage      = .FALSE.,
+  l_moruses_storage_thin = .FALSE.,
+  l_moruses_macdonald    = .FALSE.,
+  l_urban_empirical      = .FALSE.
+/
+
+
+&URBAN2T_PARAM
+
+/
+
+
+&URBAN_PROPERTIES
+
+/

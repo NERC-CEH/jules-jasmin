@@ -292,3 +292,12 @@ class ModelRunServiceTest(TestController):
         with session_scope(Session) as session:
             updated_model_run = session.query(ModelRun).join(ModelRunStatus).filter(ModelRun.id == model_run.id).one()
             assert_that(updated_model_run.status.name, is_(constants.MODEL_RUN_STATUS_PUBLISHED))
+
+    def test_GIVEN_default_science_configurations_THEN_all_configurations_returned(self):
+
+         results = self.model_run_service.get_scientific_configurations()
+
+         assert_that(len(results), greater_than(0), "at least one default configuration")
+         assert_that(results[0]['id'], not_none(), "Configuration has an id")
+         assert_that(results[0]['name'], not_none(), "Configuration has a name")
+         assert_that(results[0]['description'], not_none(), "Configuration has a description")

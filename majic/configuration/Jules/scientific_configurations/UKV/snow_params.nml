@@ -1,0 +1,9 @@
+&JULES_SNOW_PARAM
+  dzsnow_io  = 0.1  0.2  0.2,
+  cansnowpft = .FALSE.  .TRUE.  .FALSE.  .FALSE.  .FALSE.
+/
+
+
+&JULES_RAD_PARAM
+
+/

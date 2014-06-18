@@ -18,6 +18,7 @@ from paste.deploy import loadapp
 from pylons import url
 from paste.script.appinstall import SetupCommand
 from routes.util import URLGenerator
+from sqlalchemy import or_
 from webtest import TestApp
 
 from joj.config.environment import load_environment
@@ -74,32 +75,53 @@ class TestController(TestCase):
         """
         with session_scope(Session) as session:
             session.query(Dataset).delete()
-            session.query(ParameterValue).delete()
-            session.query(ModelRun).delete()
-            session.query(User).delete()
+
+            parameter_to_keep = session\
+                .query(ParameterValue.id)\
+                .join(ModelRun)\
+                .join(User, User.username == constants.CORE_USERNAME)\
+                .all()
+
+            session\
+                .query(ParameterValue)\
+                .filter(ParameterValue.id.notin_([x[0] for x in parameter_to_keep]))\
+                .delete(synchronize_session='fetch')
+
+            core_user_id = session.query(User.id).filter(User.username == constants.CORE_USERNAME).one()[0]
+
+            session\
+                .query(ModelRun)\
+                .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
+                .delete(synchronize_session='fetch')
+            session\
+                .query(User)\
+                .filter(User.username != constants.CORE_USERNAME)\
+                .delete()
+
             session.query(AccountRequest).delete()
             
-    def assert_model_definition(self, expected_username, expected_code_version, expected_name, expected_description):
+    def assert_model_definition(self, expected_username, expected_science_configuration, expected_name, expected_description):
         """
         Check that a model definition is correct in the database. Throws assertion error if there is no match
 
         Arguments:
         expected_name -- the expected name
-        expected_code_version -- the expceted code version id
+        expected_science_configuration -- the expected science configuration id
         """
         session = Session()
-        row = session.query("username", "name", "code_version_id", "description").from_statement(
+        row = session.query("username", "name", "science_configuration_id", "description").from_statement(
             """
-            SELECT u.username, m.name, m.code_version_id, m.description
+            SELECT u.username, m.name, m.science_configuration_id, m.description
             FROM model_runs m
             JOIN model_run_statuses s on s.id = m.status_id
             JOIN users u on u.id = m.user_id
             WHERE s.name=:status
+              AND u.username = :username
             """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATED).one()
+        ).params(status=constants.MODEL_RUN_STATUS_CREATED, username = expected_username).one()
         assert_that(row.username, is_(expected_username), "username")
         assert_that(row.name, is_(expected_name), "model run name")
-        assert_that(row.code_version_id, is_(expected_code_version), "code version")
+        assert_that(row.science_configuration_id, is_(expected_science_configuration), "science_configuration_id")
         assert_that(row.description, is_(expected_description), "description")
 
     def assert_parameter_of_model_being_created_is_a_value(self, parameter_id, expected_parameter_value):
