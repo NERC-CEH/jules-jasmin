@@ -131,3 +131,15 @@ table.sortable th
     background-color: #3A5894;
     color: #FFFFFF;
 }
+
+/*CSS for the navigation current select*/
+body#explore a#nav-explore,
+body#create a#nav-create,
+body#catalogue a#nav-catalogue,
+body#about a#nav-about,
+body#admin a#nav-admin
+{
+    color: #ffffff;
+    background-color: rgb(100, 180, 220);
+
+}

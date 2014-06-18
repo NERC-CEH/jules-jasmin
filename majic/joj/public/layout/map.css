@@ -1,0 +1,130 @@
+        div#map {
+            height: 600px;
+            background: #666;
+            position: relative;
+        }
+        div#map-loading {
+            position: absolute;
+            background-color: #000;
+            background-image: url('/layout/images/map-loader.gif');
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.7;
+            width: 100%;
+            height:100%;
+            z-index: 1000;
+            text-align: center;
+            color: #FFF;
+            font-weight: bold;
+        }
+        div#map-loading  p {
+            margin-top: 250px;
+        }
+        div#options-panel{
+            position: absolute;
+            top : 10px;
+            right: 10px;
+            opacity: 0.9;
+            z-index: 999;
+        }
+        div#functions-panel {
+            position: absolute;
+            top: 80px;
+            right: 40px;
+            z-index: 1000;
+        }
+        ul.layer-controls {
+            text-transform: none;
+            list-style-type: none;
+            padding: 0.5em;
+            color: #666666;
+        }
+
+        ul.layer-controls li {
+            float:left;
+            margin-right: 1em;
+        }
+
+        ul.layer-controls li.control-label {
+            margin-right: 2px;
+            margin-top: 2px;
+        }
+
+        ul.layer-controls  li  input
+        {
+            margin-bottom: 2px;
+            margin-left: 5px;
+        }
+        ul.layer-controls  li  select
+        {
+            font-size: 90%;
+            height: 22px;
+            width: 150px;
+            padding: 2px;
+        }
+
+        li.style {
+            margin-left: 2em;
+        }
+        li.style, li.style select, li.dimension, li.dimension select {
+            font-size: 90%;
+        }
+        li.style select {
+            height: 25px;
+            margin: 0.2em;
+        }
+        ul.layer-controls input {
+            width: 35px;
+            height: 16px;
+            font-size: 90%;
+        }
+        .olControlLoadingPanel {
+            background-image:url(/layout/images/loading7.gif);
+            background-position:center;
+            background-repeat:no-repeat;
+        }
+        div#analysis-detail img {
+            height: 250px;
+        }
+        div#image {
+            text-align: center;
+        }
+        div#legend {
+            position: absolute;
+            bottom: 140px;
+            left: 10px;
+            height: 200px;
+            /*width: 100px;*/
+            z-index: 999;
+            background: #FFF;
+        }
+        div#legend img
+        {
+            float:left;
+        }
+        div#image-panel {
+            width: 1000px;
+        }
+        ol#dimension-list {
+            margin: 0.25em;
+        }
+        .graph {
+            display: none;
+            margin-left : 1.5%;
+            /*margin-left: 2.12766%;*/
+        }
+        .graph-loading {
+            position: absolute;
+            background-color: #fff;
+            background-image: url('/layout/images/map-loader.gif');
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.7;
+            z-index: 1000;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+        .graph-loading  p {
+            margin-top: 90px;
+        }

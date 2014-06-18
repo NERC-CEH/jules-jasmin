@@ -1,6 +1,6 @@
 from mock import MagicMock, ANY
 from joj.model import Dataset, DatasetType
-from ecomjoj.ices.dataset import DatasetService
+from joj.services.dataset import DatasetService
 from joj.services.tests.base import BaseTest
 
 __author__ = 'Phil Jenkins (Tessella)'

@@ -54,12 +54,12 @@ def setup_app(command, conf, vars):
         pointDst.type = 'Point'
         coverDst = DatasetType()
         coverDst.type = 'Coverage'
-        coverDst = DatasetType()
-        coverDst.type = 'Result'
+        resultDst = DatasetType()
+        resultDst.type = 'Result'
 
         session.add(pointDst)
         session.add(coverDst)
-        session.add(coverDst)
+        session.add(resultDst)
 
 
         level = UserLevel()

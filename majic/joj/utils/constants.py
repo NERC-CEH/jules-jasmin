@@ -28,3 +28,8 @@ JSON_MODEL_NAMELIST_FILES = 'namelist_files'
 JSON_MODEL_PARAMETERS = 'parameters'
 JSON_MODEL_NAMELIST_NAME = 'name'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
+
+# Constants for reading netCDF files
+NETCDF_LATITUDE = 'Latitude'
+NETCDF_LONGITUDE = 'Longitude'
+NETCDF_TIME = 'Time'
