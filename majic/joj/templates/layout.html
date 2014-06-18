@@ -38,20 +38,20 @@
 
                         <ul class="nav">
                             <li>
-                                <a href="${h.url(controller='map', action='view')}">Explore</a>
+                                <a id="nav-explore" href="${h.url(controller='map', action='view')}">Explore</a>
                             </li>
                             <li>
-                                <a href="${h.url(controller='model_run', action='create')}">New Model Run</a>
+                                <a id="nav-create" href="${h.url(controller='model_run', action='create')}">New Model Run</a>
                             </li>
                             <li>
-                                <a href="${h.url(controller='model_run')}">Model Runs</a>
+                                <a id="nav-catalogue" href="${h.url(controller='model_run')}">Model Runs</a>
                             </li>
                             <li>
-                                <a href="${h.url(controller='home', action='about')}">About</a>
+                                <a id="nav-about" href="${h.url(controller='home', action='about')}">About</a>
                             </li>
                             <py:if test="c.admin_user">
                                 <li class="dropdown">
-                                    <a data-toggle="dropdown" class="dropdown-toggle">
+                                    <a id="nav-admin" data-toggle="dropdown" class="dropdown-toggle">
                                         Admin Options
                                         <b class="caret"></b>
                                     </a>
