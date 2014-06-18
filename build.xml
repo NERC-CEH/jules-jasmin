@@ -4,28 +4,36 @@
     </description>
 
   <!-- set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
 
   <property name="virtual_env"  location="/home/johhol/majic_virtual_env"/>
   <property name="virtual_env_script"  location="/usr/lib/python2.7/site-packages/virtualenv.py"/>
 
-  <target name="test-majic" depends="setup-majic-test" description="install majic">
-    
+  <target name="test-majic" depends="setup-app-majic-test" description="install majic">
+    <exec executable="${virtual_env}/bin/nosetests" dir="${basedir}/majic">
+    </exec> 
+  </target>
+
+
+  <target name="setup-app-majic-test" depends="setup-majic-test"
+        description="setup the application for development" >
+    <exec executable="${virtual_env}/bin/paster" dir="${basedir}/majic">
+        <arg value="setup-app"/>
+        <arg value="test.ini"/>
+    </exec> 
   </target>
 
   <target name="setup-app-majic-develop"
         description="setup the application for development" >
-    <exec executable="${virtual_env}/bin/paster">
-        <arg value="${basedir}/majic/development.ini"/>
-    </exec>
+    <exec executable="${virtual_env}/bin/paster" dir="${basedir}/majic">
+        <arg value="setup-app"/>
+        <arg value="development.ini"/>
+    </exec> 
   </target>
 
 
-  <target name="setup-majic-test"
+  <target name="setup-majic-test" depends="setup-app-majic-develop"
         description="setup the test application" >
-    <exec executable="${virtual_env}/bin/python">
+    <exec executable="${virtual_env}/bin/python" dir="${basedir}/majic">
         <arg value="${basedir}/majic/setup.py"/>
         <arg value="test"/>
     </exec>
@@ -33,7 +41,7 @@
 
   <target name="setup-majic-develop"
         description="setup the test application" >
-    <exec executable="${virtual_env}/bin/python">
+    <exec executable="${virtual_env}/bin/python" dir="${basedir}/majic">
         <arg value="${basedir}/majic/setup.py"/>
         <arg value="develop"/>
     </exec>
