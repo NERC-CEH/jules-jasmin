@@ -30,11 +30,14 @@ function selectTab(name) {
     $("#pane_" + name).show();
 }
 
+// Put the map variable here so we can use it for  graphing
+var map = null;
+var currentLayerIndex; // Need to access this when adding graphing layers
 
 var EcomapsMap = (function() {
 
     // Module-level variables
-    var map = null;
+
     var layerDict = new Object();
     var defaultLayerOptions = {
         isBaseLayer: false,
@@ -47,23 +50,23 @@ var EcomapsMap = (function() {
         {
             var selected_id = $('#selected_id').text();
             if (selected_id) {
-                var mod_hdr = 'mod_hdr_' + selected_id
+                var mod_hdr = 'mod_hdr_' + selected_id;
                 expandCollapse(mod_hdr);
                 expandCollapse('mod_ds_out_' + selected_id);
                 expandCollapse('mod_ds_in_' + selected_id);
 
                 //find the pane of the first example of the selected model and select that tab
                 var tab_name = $('#' + 'mod_hdr_' + selected_id).parents('.tab-pane').first().prop('id')
-                selectTab(tab_name.replace('pane_', ''))
+                selectTab(tab_name.replace('pane_', ''));
                 $('#mod_ds_out_' + selected_id).find('a').first().click();
             }
             else {
-                var tab_name = $('.tab-pane').prop('id')
+                var tab_name = $('.tab-pane').prop('id');
                 selectTab(tab_name.replace('pane_', ''))
             }
         }
 
-    var currentLayerIndex = 1;
+    currentLayerIndex = 1;
 
     /*
      * initHandlers
@@ -292,12 +295,12 @@ var EcomapsMap = (function() {
 
             map = new OpenLayers.Map('map');
             wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-                "/dataset/base", {layers: 'basic'});
+                "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'});
         }
 
         // Add the custom loading panel here...
         map.addControl(new OpenLayers.Control.LoadingPanel());
-        map.addControl(new OpenLayers.Control.ScaleLine())
+        map.addControl(new OpenLayers.Control.ScaleLine());
 
         map.addLayer(wms);
         map.zoomToMaxExtent();
@@ -305,8 +308,14 @@ var EcomapsMap = (function() {
         // Perform the zoom to the UK
         map.setCenter(position, 6);
 
+        // Add a click event handler in the graphing JS
+        map.events.register("click", map, function(e) {
+            var position = map.getLonLatFromPixel(e.xy);
+            createGraph(position);
+        });
+
         // Stretch the map down the page
-        $("#map").height($("#wrap").height());
+        $("#map").height($("#wrap").height() - 100);
     };
 
     /*

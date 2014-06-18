@@ -7,8 +7,8 @@
 
     <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
     <link href="/layout/joj.css" rel="stylesheet" media="screen" />
-
     <link href="/layout/sortable.css" rel="stylesheet" media="screen" />
+    <link href="/layout/map.css" rel="stylesheet" />
 
     <script type="text/javascript" src="/js/jquery.js"></script>
     <script type="text/javascript" src="/js/jquery-sortable-min.js"></script>
@@ -18,118 +18,11 @@
     <script type="text/javascript" src="/js/LoadingPanel.js"></script>
     <script type="text/javascript" src="/js/ecomaps_map.js"></script>
     <script type="text/javascript" src="/js/ecomaps_general.js"></script>
-    <style type="text/css">
-        div#map {
-            height: 600px;
-            background: #666;
-            position: relative;
-        }
-        div#map-loading {
-            position: absolute;
-            background-color: #000;
-            background-image: url('/layout/images/map-loader.gif');
-            background-position: center;
-            background-repeat: no-repeat;
-            opacity: 0.7;
-            width: 100%;
-            height:100%;
-            z-index: 1000;
-            text-align: center;
-            color: #FFF;
-            font-weight: bold;
-        }
-        div#map-loading  p {
-            margin-top: 250px;
-        }
-        div#options-panel{
-            position: absolute;
-            top : 10px;
-            right: 10px;
-            opacity: 0.9;
-            z-index: 999;
-        }
-        div#functions-panel {
-            position: absolute;
-            top: 80px;
-            right: 40px;
-            z-index: 1000;
-        }
-        ul.layer-controls {
-            text-transform: none;
-            list-style-type: none;
-            padding: 0.5em;
-            color: #666666;
-        }
-
-        ul.layer-controls li {
-            float:left;
-            margin-right: 1em;
-        }
-
-        ul.layer-controls li.control-label {
-            margin-right: 2px;
-            margin-top: 2px;
-        }
-
-        ul.layer-controls  li  input
-        {
-            margin-bottom: 2px;
-            margin-left: 5px;
-        }
-        ul.layer-controls  li  select
-        {
-            font-size: 90%;
-            height: 22px;
-            width: 150px;
-            padding: 2px;
-        }
-
-        li.style {
-            margin-left: 2em;
-        }
-        li.style, li.style select, li.dimension, li.dimension select {
-            font-size: 90%;
-        }
-        li.style select {
-            height: 25px;
-            margin: 0.2em;
-        }
-        ul.layer-controls input {
-            width: 35px;
-            height: 16px;
-            font-size: 90%;
-        }
-        .olControlLoadingPanel {
-            background-image:url(/layout/images/loading7.gif);
-            background-position:center;
-            background-repeat:no-repeat;
-        }
-        div#analysis-detail img {
-            height: 250px;
-        }
-        div#image {
-            text-align: center;
-        }
-        div#legend {
-            position: absolute;
-            bottom: 140px;
-            left: 10px;
-            height: 200px;
-            /*width: 100px;*/
-            z-index: 999;
-            background: #FFF;
-        }
-        div#legend img
-        {
-            float:left;
-        }
-        div#image-panel {
-            width: 1000px;
-        }
-        ol#dimension-list {
-            margin: 0.25em;
-        }
-    </style>
+    <script type="text/javascript" src="/js/mapGraphing.js"></script>
+    <script type="text/javascript" src="/js/flot/jquery.flot.js"></script>
+    <script type="text/javascript" src="/js/flot/jquery.flot.navigate.js"></script>
+    <script type="text/javascript" src="/js/flot/jquery.flot.time.js"></script>
+    <script type="text/javascript" src="/js/flot/jquery.flot.axislabels.js"></script>
 </head>
 <body>
 <div id="selected_id" style="display: none">${c.id}</div>
@@ -143,36 +36,36 @@
                 </p>
                 <a class="brand" href="${h.url(controller='home')}">Majic</a>
 
-                        <ul class="nav">
-                            <li>
-                                <a href="${h.url(controller='map', action='view')}">Explore</a>
-                            </li>
-                            <li>
-                                <a href="${h.url(controller='model_run', action='create')}">New Model Run</a>
-                            </li>
-                            <li>
-                                <a href="${h.url(controller='model_run')}">Model Runs</a>
-                            </li>
-                            <li>
-                                <a href="${h.url(controller='home', action='about')}">About</a>
-                            </li>
-                            <py:if test="c.admin_user">
-                                <li class="dropdown">
-                                    <a data-toggle="dropdown" class="dropdown-toggle">
-                                        Admin Options
-                                        <b class="caret"></b>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="${h.url(controller='user')}">Users</a>
-                                        </li>
-                                        <li>
-                                            <a href="${h.url(controller='dataset')}">Datasets</a>
-                                        </li>
-                                    </ul>
+                <ul class="nav">
+                    <li>
+                        <a href="${h.url(controller='map', action='view')}">Explore</a>
+                    </li>
+                    <li>
+                        <a href="${h.url(controller='model_run', action='create')}">New Model Run</a>
+                    </li>
+                    <li>
+                        <a href="${h.url(controller='model_run')}">Model Runs</a>
+                    </li>
+                    <li>
+                        <a href="${h.url(controller='home', action='about')}">About</a>
+                    </li>
+                    <py:if test="c.admin_user">
+                        <li class="dropdown">
+                            <a data-toggle="dropdown" class="dropdown-toggle">
+                                Admin Options
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="${h.url(controller='user')}">Users</a>
                                 </li>
-                            </py:if>
-                        </ul>
+                                <li>
+                                    <a href="${h.url(controller='dataset')}">Datasets</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </py:if>
+                </ul>
             </div>
 
         </div>
@@ -185,12 +78,12 @@
                 <h3>Visualise Model Runs</h3>
                 <div class="sidebar-nav">
                     <ul class="nav nav-tabs">
-                      <li py:for="model_run_sort in c.model_run_sorts" id="tab_${model_run_sort['name']}"
-                          onclick="selectTab('${model_run_sort['name']}')" >
-                          <a href="#" >
-                              ${model_run_sort['name']}
-                          </a>
-                      </li>
+                        <li py:for="model_run_sort in c.model_run_sorts" id="tab_${model_run_sort['name']}"
+                            onclick="selectTab('${model_run_sort['name']}')" >
+                            <a href="#" >
+                                ${model_run_sort['name']}
+                            </a>
+                        </li>
                     </ul>
                     <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}">
                         <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']">
@@ -231,28 +124,33 @@
 
             </div>
 
-            <div class="span9" id="map">
-                <div id="map-loading">
-                    <p>Updating Map</p>
-                </div>
-                <div id="legend" class="hide">
+            <div class="span9">
+                <div id="map">
+                    <div id="map-loading">
+                        <p>Updating Map</p>
+                    </div>
+                    <div id="legend" class="hide">
 
-                </div>
-                <div class="pull-right hidden" id="options-panel">
-                    <div id="layer-list" class="well sidebar-nav">
+                    </div>
+                    <div class="pull-right hidden" id="options-panel">
+                        <div id="layer-list" class="well sidebar-nav">
 
-                        <button class="btn btn-mini" id="reset-button"><i class="icon-backward"></i> Reset</button>
-                        <div id="dimension-panel" class="hidden">
-                            <h5>Time controls</h5>
-                            <ol class="sidebar-nav nopoints" id="dimension-list">
+                            <button class="btn btn-mini" id="reset-button"><i class="icon-backward"></i> Reset</button>
+                            <div id="dimension-panel" class="hidden">
+                                <h5>Time controls</h5>
+                                <ol class="sidebar-nav nopoints" id="dimension-list">
 
-                            </ol>
-                        </div>
-                        <h5 id="map-title">Layers</h5>
-                        <div id="layer-container">
+                                </ol>
+                            </div>
+                            <h5 id="map-title">Layers</h5>
+                            <div id="layer-container">
 
+                            </div>
                         </div>
                     </div>
+                </div>
+                <div id="graph" class="graph">
+                    <p>Loading graph</p>
                 </div>
             </div>
             <div class="pull-right" id="functions-panel">
