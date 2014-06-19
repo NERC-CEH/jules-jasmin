@@ -25,6 +25,7 @@ from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus
 from joj.services.user import UserService
 from joj.utils import constants
+from model import DrivingDataset
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -71,9 +72,10 @@ class TestController(TestCase):
 
     def clean_database(self):
         """
-        Cleans the User, ModelRun, Dataset and ParameterValue tables in the database
+        Cleans the User, ModelRun, Dataset, DrivingDataset and ParameterValue tables in the database
         """
         with session_scope(Session) as session:
+            session.query(DrivingDataset).delete()
             session.query(Dataset).delete()
 
             parameter_to_keep = session\

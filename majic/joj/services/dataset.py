@@ -1,9 +1,10 @@
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, contains_eager, immediateload
-from joj.model import Dataset, DatasetType, Analysis
+from joj.model import Dataset, DatasetType, Analysis, DrivingDataset
 from joj.services.general import DatabaseService
 
 __author__ = 'Phil Jenkins (Tessella)'
+
 
 class DatasetService(DatabaseService):
     """Encapsulates operations on Map datasets"""
@@ -26,23 +27,24 @@ class DatasetService(DatabaseService):
             # Note SQLAlchemy wants '== None' not 'is None'
             if dataset_type_id is None and dataset_type is None:
                 return session.query(DatasetType).join(DatasetType.datasets) \
-                                                .options(contains_eager(DatasetType.datasets)) \
-                                                .filter(or_(Dataset.viewable_by_user_id == user_id,
-                                                 Dataset.viewable_by_user_id == None), Dataset.deleted == False).all()
+                    .options(contains_eager(DatasetType.datasets)) \
+                    .filter(or_(Dataset.viewable_by_user_id == user_id,
+                                Dataset.viewable_by_user_id == None), Dataset.deleted == False).all()
             elif dataset_type_id is None:
-                return session.query(Dataset).join(DatasetType).filter(DatasetType.type == dataset_type, or_(Dataset.viewable_by_user_id == user_id,
-                                                 Dataset.viewable_by_user_id == None), Dataset.deleted == False).all()
+                return session.query(Dataset).join(DatasetType).filter(DatasetType.type == dataset_type,
+                                                                       or_(Dataset.viewable_by_user_id == user_id,
+                                                                           Dataset.viewable_by_user_id == None),
+                                                                       Dataset.deleted == False).all()
             else:
-                return session.query(Dataset).filter(Dataset.dataset_type_id == dataset_type_id, or_(Dataset.viewable_by_user_id == user_id,
-                                                 Dataset.viewable_by_user_id == None), Dataset.deleted == False).all()
-
-
+                return session.query(Dataset).filter(Dataset.dataset_type_id == dataset_type_id,
+                                                     or_(Dataset.viewable_by_user_id == user_id,
+                                                         Dataset.viewable_by_user_id == None),
+                                                     Dataset.deleted == False).all()
 
     def get_dataset_types(self):
         """Returns all of the dataset types in the system"""
 
         with self.readonly_scope() as session:
-
             return session.query(DatasetType).all()
 
     def get_dataset_by_id(self, dataset_id, user_id=None):
@@ -52,23 +54,23 @@ class DatasetService(DatabaseService):
         """
 
         with self.readonly_scope() as session:
-                return session.query(Dataset)\
-                            .options(joinedload(Dataset.dataset_type)) \
-                            .filter(Dataset.id == dataset_id,
-                                    or_(Dataset.viewable_by_user_id == user_id,
-                                                 Dataset.viewable_by_user_id == None)).one()
+            return session.query(Dataset) \
+                .options(joinedload(Dataset.dataset_type)) \
+                .filter(Dataset.id == dataset_id,
+                        or_(Dataset.viewable_by_user_id == user_id,
+                            Dataset.viewable_by_user_id == None)).one()
 
     def get_all_datasets(self):
         """
         Returns a list of all active datasets in EcoMaps
         """
         with self.readonly_scope() as session:
-            return session.query(Dataset)\
-                        .options(joinedload(Dataset.dataset_type)) \
-                        .filter(Dataset.deleted == False) \
-                        .all()
+            return session.query(Dataset) \
+                .options(joinedload(Dataset.dataset_type)) \
+                .filter(Dataset.deleted == False) \
+                .all()
 
-    def create_coverage_dataset(self,name,wms_url,netcdf_url,low_res_url,
+    def create_coverage_dataset(self, name, wms_url, netcdf_url, low_res_url,
                                 data_range_from, data_range_to, is_categorical):
         """
         Creates a coverage dataset in the EcoMaps DB
@@ -81,8 +83,7 @@ class DatasetService(DatabaseService):
             @param is_categorical: Set to true if the data is categorical (not continuous)
         """
         with self.transaction_scope() as session:
-
-            dataset_type = session.query(DatasetType).filter(DatasetType.type=='Coverage').one()
+            dataset_type = session.query(DatasetType).filter(DatasetType.type == 'Coverage').one()
 
             dataset = Dataset()
             dataset.name = name
@@ -91,12 +92,12 @@ class DatasetService(DatabaseService):
             dataset.wms_url = wms_url
             dataset.low_res_url = low_res_url
             dataset.data_range_from = data_range_from
-            dataset.data_range_to  = data_range_to
+            dataset.data_range_to = data_range_to
             dataset.is_categorical = is_categorical
 
             session.add(dataset)
 
-    def create_point_dataset(self,name,wms_url,netcdf_url):
+    def create_point_dataset(self, name, wms_url, netcdf_url):
         """
         Creates a point dataset in the EcoMaps DB
             @param name: Display name of the dataset
@@ -105,8 +106,7 @@ class DatasetService(DatabaseService):
         """
 
         with self.transaction_scope() as session:
-
-            dataset_type = session.query(DatasetType).filter(DatasetType.type=='Point').one()
+            dataset_type = session.query(DatasetType).filter(DatasetType.type == 'Point').one()
 
             dataset = Dataset()
             dataset.name = name
@@ -128,7 +128,6 @@ class DatasetService(DatabaseService):
 
         if ds:
             with self.transaction_scope() as session:
-
                 dataset = session.query(Dataset).get(id)
                 dataset.deleted = True
 
@@ -143,7 +142,6 @@ class DatasetService(DatabaseService):
             @param is_categorical: Set to true for non-continuous data
         """
         with self.transaction_scope() as session:
-
             dataset = session.query(Dataset).get(id)
 
             dataset.data_range_from = data_range_from
@@ -151,3 +149,12 @@ class DatasetService(DatabaseService):
             dataset.is_categorical = is_categorical
 
             session.add(dataset)
+
+    def get_driving_datasets(self):
+        """
+        Returns all the driving datasets
+        :return: List of driving datasets
+        """
+
+        with self.readonly_scope() as session:
+            return session.query(DrivingDataset).options(joinedload(DrivingDataset.dataset)).all()

@@ -17,6 +17,7 @@ from joj.model.parameter_value import ParameterValue
 from joj.model.user import User
 from joj.model.user_level import UserLevel
 from joj.model.ecomaps_models import *
+from joj.model.driving_dataset import DrivingDataset
 
 def initialise_session(config, manual_connection_string=None):
     """Sets up our database engine and session
