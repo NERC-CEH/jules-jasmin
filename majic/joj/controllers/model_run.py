@@ -124,6 +124,23 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
+    def driving_data(self):
+        """
+        Select a driving data set
+        """
+        try:
+            c.parameters = self._model_run_service.get_parameters_for_model_being_created(self.current_user)
+        except NoResultFound:
+            helpers.error_flash(u"You must create a model run before you can choose a driving data set")
+            redirect(url(controller='model_run', action='create'))
+
+        if not request.POST:
+            # Get all the driving data-sets and render the page
+            pass
+        else:
+            # Do stuff with the returned driving dataset id
+            pass
+
     def parameters(self):
         """
         Define parameters for the current new run being created

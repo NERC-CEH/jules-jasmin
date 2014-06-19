@@ -81,7 +81,8 @@ class TestController(TestCase):
             parameter_to_keep = session\
                 .query(ParameterValue.id)\
                 .join(ModelRun)\
-                .join(User, User.username == constants.CORE_USERNAME)\
+                .join(User)\
+                .filter(User.username == constants.CORE_USERNAME)\
                 .all()
 
             session\

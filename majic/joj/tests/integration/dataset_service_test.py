@@ -15,7 +15,8 @@ class DatasetServiceTest(TestController):
         self.dataset_service = DatasetService()
         self.clean_database()
 
-    def _create_two_driving_datasets(self):
+    @staticmethod
+    def create_two_driving_datasets():
         with session_scope(Session) as session:
             ds1 = Dataset()
             ds1.name = "Driving dataset 1"
@@ -37,14 +38,14 @@ class DatasetServiceTest(TestController):
             session.add_all([driving1, driving2])
 
     def test_GIVEN_two_driving_datasets_WHEN_get_driving_datasets_THEN_two_driving_datasets_returned(self):
-        self._create_two_driving_datasets()
+        self.create_two_driving_datasets()
         driving_datasets = self.dataset_service.get_driving_datasets()
         assert_that(len(driving_datasets), is_(2))
         assert_that(driving_datasets[0].name, is_("driving1"))
         assert_that(driving_datasets[1].description, is_("driving 2 description"))
 
     def test_GIVEN_driving_datasets_WHEN_get_driving_datasets_THEN_driving_datasets_have_datasets_loaded(self):
-        self._create_two_driving_datasets()
+        self.create_two_driving_datasets()
         driving_dataset = self.dataset_service.get_driving_datasets()[0]
         dataset = driving_dataset.dataset
         assert_that(dataset, is_not(None))
