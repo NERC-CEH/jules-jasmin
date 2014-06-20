@@ -1,17 +1,21 @@
-# header
+#header
 
 import datetime
-from joj.model.model_run import ModelRun
+
 import os
 import pylons.test
+
+from joj.model.model_run import ModelRun
 from joj.config.environment import load_environment
-from joj.model import session_scope, DatasetType, Dataset, Analysis, User, AnalysisCoverageDataset, \
-    AnalysisCoverageDatasetColumn, Model, UserLevel, Parameter, ModelRunStatus, NamelistFile, Namelist, CodeVersion
+from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, DrivingDataset
 from joj.model.meta import Base, Session
 from joj.utils import constants
+from websetup_jules_parameters import JulesParameterParser
+from websetup_science_configurations import JulesNamelistParser
 
 
 def _get_result_image():
+
     example_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'example_image.txt')
 
     with open(example_path, 'r') as image_file:
@@ -50,17 +54,27 @@ def setup_app(command, conf, vars):
 
         session.add(user2)
 
-        pointDst = DatasetType()
-        pointDst.type = 'Point'
-        coverDst = DatasetType()
-        coverDst.type = 'Coverage'
-        resultDst = DatasetType()
-        resultDst.type = 'Result'
+        core_user = User()
+        core_user.name = 'core'
+        core_user.first_name = 'Core'
+        core_user.last_name = ''
+        core_user.username = constants.CORE_USERNAME
+        core_user.email = ''
 
-        session.add(pointDst)
-        session.add(coverDst)
-        session.add(resultDst)
+        session.add(core_user)
 
+        point_dst = DatasetType()
+        point_dst.type = 'Point'
+
+        cover_dst = DatasetType()
+        cover_dst.type = 'Coverage'
+
+        result_dst = DatasetType()
+        result_dst.type = 'Result'
+
+        session.add(point_dst)
+        session.add(cover_dst)
+        session.add(result_dst)
 
         level = UserLevel()
         level.name = 'Beginner'
@@ -90,50 +104,43 @@ def setup_app(command, conf, vars):
         code_version.is_default = False
         session.add(code_version)
 
-        timesteps_namelist_file = NamelistFile()
-        timesteps_namelist_file.filename = 'timesteps.nml'
-        session.add(timesteps_namelist_file)
-
-        timesteps_namelist = Namelist()
-        timesteps_namelist.name = 'JULES_TIME'
-        timesteps_namelist.namelist_file = timesteps_namelist_file
-        session.add(timesteps_namelist)
-
-        parameter = Parameter()
-        parameter.default_value = 'None'
-        parameter.name = 'timestep_len'
-        parameter.name_list_url = 'namelists/timesteps.nml.html#JULES_TIME::timestep_len'
-        parameter.type = 'integer'
-        parameter.min = 1
-        parameter.user_level = level
-        parameter.required = True
-        parameter.code_versions = [default_code_version]
-        parameter.namelist = timesteps_namelist
-
-        session.add(parameter)
+        jules_parameter_parser = JulesParameterParser()
+        namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
         
-        ## Add some model runs with datasets
+        for namelist_file in namelist_files:
+            session.add(namelist_file)
+            
+        jules_config_parser = JulesNamelistParser()
+        jules_config_parser.parse_all(
+            "configuration/Jules/scientific_configurations/",
+            namelist_files,
+            core_user,
+            code_version,
+            stat_created)
 
+        ## Add some model runs with datasets
         ds1 = Dataset()
         ds1.name = "Land Cover Map 2007"
-        ds1.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LCM2007_GB_1K_DOM_TAR.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds1.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds1.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/LCM2007_GB_1K_DOM_TAR.nc"
         ds1.data_range_from = 1
         ds1.data_range_to = 30
         ds1.is_categorical = 0
         ds1.deleted = 0
-        ds1.dataset_type = coverDst
+        ds1.dataset_type = cover_dst
         ds1.is_input = 0
         
         ds2 = Dataset()
         ds2.name = "Surface incident longwave radiation"
-        ds2.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LWdown_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds2.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LWdown_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds2.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/LWdown_TEST_190101.nc"
         ds2.data_range_from = 230
         ds2.data_range_to = 350
         ds2.is_categorical = 0
         ds2.deleted = 0
-        ds2.dataset_type = coverDst
+        ds2.dataset_type = cover_dst
         ds2.is_input = 1
 
         mr1 = ModelRun()
@@ -181,35 +188,38 @@ def setup_app(command, conf, vars):
         
         ds3 = Dataset()
         ds3.name = "Surface pressure"
-        ds3.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/PSurf_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds3.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/PSurf_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds3.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/PSurf_TEST_190101.nc"
         ds3.data_range_from = 75000
         ds3.data_range_to = 100000
         ds3.is_categorical = 0
         ds3.deleted = 0
-        ds3.dataset_type = coverDst
+        ds3.dataset_type = cover_dst
         ds3.is_input = 1
     
         ds4 = Dataset()
         ds4.name = "Near surface specific humidity"
-        ds4.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Qair_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds4.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Qair_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds4.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Qair_TEST_190101.nc"
         ds4.data_range_from = 0.001
         ds4.data_range_to = 0.0055
         ds4.is_categorical = 0
         ds4.deleted = 0
-        ds4.dataset_type = coverDst
+        ds4.dataset_type = cover_dst
         ds4.is_input = 0
       
         ds5 = Dataset()
         ds5.name = "Rainfall rate"
-        ds5.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Rainf_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds5.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Rainf_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds5.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Rainf_TEST_190101.nc"
         ds5.data_range_from = 0
         ds5.data_range_to = 0.0001
         ds5.is_categorical = 0
         ds5.deleted = 0
-        ds5.dataset_type = coverDst
+        ds5.dataset_type = cover_dst
         ds5.is_input = 1              
         
         mr4 = ModelRun()
@@ -230,46 +240,50 @@ def setup_app(command, conf, vars):
         
         ds6 = Dataset()
         ds6.name = "Snowfall rate"
-        ds6.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Snowf_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds6.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Snowf_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds6.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Snowf_TEST_190101.nc"
         ds6.data_range_from = 0
         ds6.data_range_to = 0.003
         ds6.is_categorical = 0
         ds6.deleted = 0
-        ds6.dataset_type = coverDst
+        ds6.dataset_type = cover_dst
         ds6.is_input = 0
         
         ds7 = Dataset()
         ds7.name = "Surface incident shortwave radiation"
-        ds7.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/SWdown_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds7.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/SWdown_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds7.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/SWdown_TEST_190101.nc"
         ds7.data_range_from = 0
         ds7.data_range_to = 0.1
         ds7.is_categorical = 0
         ds7.deleted = 0
-        ds7.dataset_type = coverDst
+        ds7.dataset_type = cover_dst
         ds7.is_input = 1
         
         ds8 = Dataset()
         ds8.name = "Near surface air temperature"
-        ds8.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Tair_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds8.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Tair_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds8.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Tair_TEST_190101.nc"
         ds8.data_range_from = 260
         ds8.data_range_to = 290
         ds8.is_categorical = 0
         ds8.deleted = 0
-        ds8.dataset_type = coverDst
+        ds8.dataset_type = cover_dst
         ds8.is_input = 1
         
         ds9 = Dataset()
         ds9.name = "Near surface wind speed"
-        ds9.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Wind_TEST_190101.nc?service=WMS&version=1.3.0&request=GetCapabilities"
+        ds9.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Wind_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds9.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Wind_TEST_190101.nc"
         ds9.data_range_from = 0
         ds9.data_range_to = 20
         ds9.is_categorical = 0
         ds9.deleted = 0
-        ds9.dataset_type = coverDst
+        ds9.dataset_type = cover_dst
         ds9.is_input = 0
 
         mr5 = ModelRun()
@@ -284,3 +298,13 @@ def setup_app(command, conf, vars):
         mr5.datasets = [ds6, ds7, ds8, ds9]
 
         session.add(mr5)
+
+        driving_ds_1 = DrivingDataset()
+        driving_ds_1.description = "This is the first driving dataset"
+        driving_ds_1.dataset = ds1
+
+        driving_ds_2 = DrivingDataset()
+        driving_ds_2.description = "This is the second driving dataset"
+        driving_ds_2.dataset = ds2
+
+        session.add_all([driving_ds_1, driving_ds_2])

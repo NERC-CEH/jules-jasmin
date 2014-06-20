@@ -1,4 +1,7 @@
-# header
+"""
+header
+"""
+
 import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
@@ -30,17 +33,15 @@ class ModelRunService(DatabaseService):
         """
         Get all the run models a user can view
 
-        Arguments:
-        user -- the user trying to access the data
-
-        returns:
-        a list of model runs the user can see
+        :param user: the user trying to access the data
+        :return : a list of model runs the user can see
         """
         with self.readonly_scope() as session:
             try:
                 return session \
                     .query(ModelRun) \
-                    .filter(ModelRun.user_id == user.id)\
+                    .join(User) \
+                    .filter(ModelRun.user == user) \
                     .order_by(desc(ModelRun.date_created)) \
                     .options(joinedload('user')) \
                     .all()
@@ -54,8 +55,8 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             try:
-                return session.query(ModelRun).join(ModelRun.status)\
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED)\
+                return session.query(ModelRun).join(ModelRun.status) \
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
                     .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
             except NoResultFound:
                 return []
@@ -83,9 +84,11 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
             try:
-                model_run = session.query(ModelRun).join(ModelRunStatus)\
-                    .filter(ModelRun.user_id == user.id)\
-                    .filter(ModelRun.id == id)\
+                model_run = session.query(ModelRun) \
+                    .join(ModelRunStatus) \
+                    .join(User) \
+                    .filter(ModelRun.user == user) \
+                    .filter(ModelRun.id == id) \
                     .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_COMPLETED).one()
             except NoResultFound:
                 raise ServiceException("Error publishing model run. Either the requested model run doesn't exist, "
@@ -107,23 +110,20 @@ class ModelRunService(DatabaseService):
         """
         Gets the code version object based on the id of the code version
 
-        Arguments:
-        code_version_id -- id for the code version
-
-        Returns:
-        the code version model or throws Invalid
+        :param code_version_id: id for the code version
+        :return the code version model or throws Invalid
         """
 
         with self.readonly_scope() as session:
             return session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
 
-    def update_model_run(self, user, name, code_version_id, description=""):
+    def update_model_run(self, user, name, science_configuration, description=""):
         """
         Update the creation model run definition
 
         :param user: user creating the model
         :param name: name of the model run
-        :param code_version_id: the id of the code version
+        :param science_configuration: the science_configuration for the run
         :param description: description
         """
         with self.transaction_scope() as session:
@@ -148,8 +148,14 @@ class ModelRunService(DatabaseService):
                 model_run.user = user
 
             model_run.name = name
-            code_version = session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
-            model_run.code_version = code_version
+            science_configuration = session \
+                .query(ModelRun) \
+                .join(User) \
+                .filter(ModelRun.id == science_configuration) \
+                .filter(User.username == constants.CORE_USERNAME) \
+                .one()
+            model_run.science_configuration_id = science_configuration.id
+            model_run.code_version = science_configuration.code_version
             model_run.description = description
             session.add(model_run)
 
@@ -164,7 +170,7 @@ class ModelRunService(DatabaseService):
             with self.readonly_scope() as session:
                 return self._get_model_run_being_created(session, user)
         except NoResultFound:
-            return ModelRun()
+            return ModelRun(science_configuration_id=constants.DEFAULT_SCIENCE_CONFIGURATION)
 
     def get_parameters_for_model_being_created(self, user):
         """
@@ -186,18 +192,19 @@ class ModelRunService(DatabaseService):
 
         with self.transaction_scope() as session:
             model_run = self._get_model_run_being_created(session, user)
-            session.query(ParameterValue)\
-                .filter(ParameterValue.model_run == model_run)\
+            session.query(ParameterValue) \
+                .filter(ParameterValue.model_run == model_run) \
                 .delete()
             parameters = self._get_parameters_for_creating_model(session, user)
             for parameter in parameters:
-                parameter_value = parameters_to_set[str(parameter.id)]
-                if parameter_value is not None:
-                    val = ParameterValue()
-                    val.value = parameter_value
-                    val.parameter = parameter
-                    val.model_run = model_run
-                    session.add(val)
+                if parameter.id in parameters_to_set.keys():
+                    parameter_value = parameters_to_set[parameter.id]
+                    if parameter_value is not None:
+                        val = ParameterValue()
+                        val.value = parameter_value
+                        val.parameter = parameter
+                        val.model_run = model_run
+                        session.add(val)
 
     def get_model_being_created_with_non_default_parameter_values(self, user):
         """
@@ -207,14 +214,15 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             return session.query(ModelRun) \
+                .join(User) \
                 .join(ModelRun.status) \
                 .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
                 .filter(ModelRun.user == user) \
                 .options(subqueryload(ModelRun.code_version)) \
                 .options(contains_eager(ModelRun.parameter_values)
-                            .contains_eager(ParameterValue.parameter)
-                            .contains_eager(Parameter.namelist)) \
+                         .contains_eager(ParameterValue.parameter)
+                         .contains_eager(Parameter.namelist)) \
                 .one()
 
     def submit_model_run(self, user):
@@ -239,6 +247,7 @@ class ModelRunService(DatabaseService):
         code_version, model_run = session.query(CodeVersion, ModelRun) \
             .join(ModelRun) \
             .join(ModelRunStatus) \
+            .join(User) \
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
             .filter(ModelRun.user == user) \
             .one()
@@ -246,7 +255,7 @@ class ModelRunService(DatabaseService):
             .outerjoin(ParameterValue, and_(ParameterValue.model_run == model_run)) \
             .options(contains_eager(Parameter.parameter_values)) \
             .options(subqueryload(Parameter.namelist)) \
-            .filter(Parameter.code_versions.contains(code_version))\
+            .filter(Parameter.code_versions.contains(code_version)) \
             .all()
 
     def _get_model_run_being_created(self, session, user):
@@ -258,6 +267,41 @@ class ModelRunService(DatabaseService):
         """
         return session.query(ModelRun) \
             .join(ModelRunStatus) \
+            .join(User) \
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
             .filter(ModelRun.user == user) \
             .one()
+
+    def get_scientific_configurations(self):
+        """
+        get all the scientific configurations
+        :return: a list of scientific configurations
+        """
+        with self.readonly_scope() as session:
+            runs = session \
+                .query(ModelRun) \
+                .join(ModelRunStatus) \
+                .join(User) \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+                .filter(User.username == constants.CORE_USERNAME) \
+                .all()
+
+            return [{'id': run.id, 'name': run.name, 'description': run.description} for run in runs]
+
+    def save_driving_dataset_for_new_model(self, driving_dataset, user):
+        """
+        Save a driving dataset against the current model run being created
+        :param driving_dataset: Driving dataset to save
+        :param user: Currently logged in user
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_run_being_created(session, user)
+            model_run.driving_dataset_id = driving_dataset.id
+            session.add(model_run)
+            parameters = self._get_parameters_for_creating_model(session, user)
+            for driving_dataset_param_val in driving_dataset.parameter_values:
+                val = ParameterValue()
+                val.value = driving_dataset_param_val.value
+                val.parameter_id = driving_dataset_param_val.param_id
+                val.model_run = model_run
+                session.add(val)

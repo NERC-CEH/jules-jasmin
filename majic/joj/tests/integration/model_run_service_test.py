@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from hamcrest import *
-from joj.model import User, session_scope, Session, ModelRun
+from joj.model import User, session_scope, Session, ModelRun, Parameter
 from joj.services.model_run_service import ModelRunService
 from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus
 from joj.services.general import ServiceException
@@ -12,6 +12,7 @@ from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
 from joj.utils import constants
+from model import ParameterValue
 
 
 class ModelRunServiceTest(TestController):
@@ -292,3 +293,40 @@ class ModelRunServiceTest(TestController):
         with session_scope(Session) as session:
             updated_model_run = session.query(ModelRun).join(ModelRunStatus).filter(ModelRun.id == model_run.id).one()
             assert_that(updated_model_run.status.name, is_(constants.MODEL_RUN_STATUS_PUBLISHED))
+
+    def test_GIVEN_default_science_configurations_THEN_all_configurations_returned(self):
+
+         results = self.model_run_service.get_scientific_configurations()
+
+         assert_that(len(results), greater_than(0), "at least one default configuration")
+         assert_that(results[0]['id'], not_none(), "Configuration has an id")
+         assert_that(results[0]['name'], not_none(), "Configuration has a name")
+         assert_that(results[0]['description'], not_none(), "Configuration has a description")
+
+    def test_GIVEN_model_with_parameters_WHEN_get_parameter_value_THEN_parameter_value_returned(self):
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+            session.commit()
+
+            param = session.query(Parameter).first()
+            param_id = param.id
+            param_name = param.name
+            param_namelist = param.namelist.name
+
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
+            session.add(model_run)
+            session.commit()
+
+            parameter1 = ParameterValue()
+            parameter1.parameter_id = param_id
+            parameter1.value = "param1 value"
+            parameter1.model_run_id = model_run.id
+            session.add(parameter1)
+        model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+        param_value_returned = model_run_returned.get_parameter_value(param_name, param_namelist)
+        assert_that(param_value_returned, is_("param1 value"))

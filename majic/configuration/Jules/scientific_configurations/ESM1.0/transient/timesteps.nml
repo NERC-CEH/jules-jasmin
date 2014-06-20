@@ -1,0 +1,8 @@
+&JULES_TIME
+  phenol_period  = 1,
+  triffid_period = 10
+/
+
+&JULES_SPINUP
+
+/

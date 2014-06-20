@@ -30,7 +30,9 @@ class Parameter(Base):
     type = Column(String(constants.DB_STRING_SIZE))
     required = Column(Boolean())
     min = Column(Integer)
+    min_inclusive = Column(Boolean())
     max = Column(Integer)
+    max_inclusive = Column(Boolean())
 
     #The url suffix to add to the url from the code version
     url_suffix = Column(String(constants.DB_LONG_STRING_SIZE))
