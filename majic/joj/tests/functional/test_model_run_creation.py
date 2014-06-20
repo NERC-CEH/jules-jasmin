@@ -110,7 +110,7 @@ class TestModelRunController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='driving_data')), "url")
 
     def test_GIVEN_details_are_correct_WHEN_post_THEN_new_model_run_created_and_redirect_to_parameters_page(self):
 
@@ -128,7 +128,7 @@ class TestModelRunController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='driving_data')), "url")
 
         self.assert_model_definition(self.login_username, expected_science_configuration, expected_name, expected_description)
 
@@ -166,7 +166,7 @@ class TestModelRunController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='driving_data')), "url")
 
         self.assert_model_definition(self.login_username, expected_science_configuration, expected_name,expected_description)
 

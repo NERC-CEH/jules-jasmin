@@ -17,13 +17,17 @@ from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.services.model_run_service import ModelRunService, DuplicateName
+from joj.services.dataset import DatasetService
 from joj.lib import helpers
 from joj.utils import constants
+from joj.utils.error import abort_with_error
 
 # The prefix given to parameter name in html elements
+from joj.model import session_scope, Session
+
 PARAMETER_NAME_PREFIX = 'param'
 
-#Message to show when the submission has failed
+# Message to show when the submission has failed
 SUBMISSION_FAILED_MESSAGE = \
     "Failed to submit the model run, this may be because the cluster is down. Please try again later."
 
@@ -33,7 +37,8 @@ log = logging.getLogger(__name__)
 class ModelRunController(BaseController):
     """Provides operations for model runs"""
 
-    def __init__(self, user_service=UserService(), model_run_service=ModelRunService()):
+    def __init__(self, user_service=UserService(), model_run_service=ModelRunService(),
+                 dataset_service=DatasetService()):
         """Constructor
             Params:
                 user_service: service to access user details
@@ -41,6 +46,7 @@ class ModelRunController(BaseController):
         """
         super(ModelRunController, self).__init__(user_service)
         self._model_run_service = model_run_service
+        self._dataset_service = dataset_service
 
     def index(self):
         """
@@ -67,7 +73,7 @@ class ModelRunController(BaseController):
         """
         Controller allowing existing model runs to be published
         :param id: ID of model run to publish
-        :return: ???????
+        :return: redirect to the page you came from
         """
         if request.POST:
             self._model_run_service.publish_model(self.current_user, id)
@@ -104,7 +110,7 @@ class ModelRunController(BaseController):
                     self.form_result['name'],
                     self.form_result['science_configuration'],
                     self.form_result['description'])
-                redirect(url(controller='model_run', action='parameters'))
+                redirect(url(controller='model_run', action='driving_data'))
             except NoResultFound:
                 errors = {'science_configuration': 'Configuration is not recognised'}
             except DuplicateName:
@@ -128,18 +134,50 @@ class ModelRunController(BaseController):
         """
         Select a driving data set
         """
+        model_run = None
         try:
-            c.parameters = self._model_run_service.get_parameters_for_model_being_created(self.current_user)
+            model_run = self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before you can choose a driving data set")
             redirect(url(controller='model_run', action='create'))
 
+        driving_datasets = self._dataset_service.get_driving_datasets()
+        errors = {}
+
         if not request.POST:
             # Get all the driving data-sets and render the page
-            pass
+            if len(driving_datasets) == 0:
+                abort_with_error("There are no driving datasets available - cannot create a new model run")
+            driving_dataset_id = model_run.driving_dataset_id
+            if driving_dataset_id is None:
+                driving_dataset_id = driving_datasets[0].id
+            values = {'driving_dataset': driving_dataset_id}
+            c.driving_datasets = driving_datasets
+            html = render('model_run/driving_data.html')
+            return htmlfill.render(
+                html,
+                defaults=values,
+                errors=errors,
+                auto_error_formatter=BaseController.error_formatter)
         else:
-            # Do stuff with the returned driving dataset id
-            pass
+            values = dict(request.params)
+            try:
+                driving_dataset = [driving_dataset for driving_dataset
+                                   in driving_datasets if driving_dataset.id == int(values['driving_dataset'])][0]
+            except (IndexError, KeyError):
+                html = render('model_run/driving_data.html')
+                errors['driving_dataset'] = 'Driving data not recognised'
+                return htmlfill.render(
+                    html,
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
+            self._model_run_service.save_driving_dataset_for_new_model(driving_dataset, self.current_user)
+
+            if values['submit'] == u'Next':
+                redirect(url(controller='model_run', action='parameters'))
+            else:
+                redirect(url(controller='model_run', action='create'))
 
     def parameters(self):
         """
@@ -168,7 +206,7 @@ class ModelRunController(BaseController):
             schema = ModelRunCreateParameters(c.parameters)
             values = dict(request.params)
 
-            #get the action to perform and remove it from the dictionary
+            # get the action to perform and remove it from the dictionary
             action = request.params.getone('submit')
             del values['submit']
 

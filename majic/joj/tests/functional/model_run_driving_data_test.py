@@ -3,10 +3,8 @@ from urlparse import urlparse
 from hamcrest import assert_that, contains_string, is_
 from pylons import url
 from joj.tests import TestController
-from model import ModelRun
 from services.dataset import DatasetService
 from services.model_run_service import ModelRunService
-from tests.integration.dataset_service_test import DatasetServiceTest
 
 
 class ModelRunDrivingDataTest(TestController):
@@ -27,8 +25,9 @@ class ModelRunDrivingDataTest(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='create')), "url")
 
-    def test_GIVEN_nothing_WHEN_get_THEN_select_driving_data_page_rendered(self):
+    def test_GIVEN_two_driving_datasets_WHEN_get_THEN_select_driving_data_page_rendered(self):
         self._add_model_run_being_created()
+        self.create_two_driving_datasets()
 
         response = self.app.get(
             url(controller='model_run', action='driving_data'))
@@ -36,7 +35,7 @@ class ModelRunDrivingDataTest(TestController):
 
     def test_GIVEN_two_driving_datasets_WHEN_get_THEN_driving_datasets_rendered(self):
         self._add_model_run_being_created()
-        DatasetServiceTest.create_two_driving_datasets()
+        self.create_two_driving_datasets()
 
         response = self.app.get(
             url(controller='model_run', action='driving_data'))
@@ -45,18 +44,20 @@ class ModelRunDrivingDataTest(TestController):
 
     def test_GIVEN_invalid_driving_data_chosen_WHEN_post_THEN_error_returned(self):
         self._add_model_run_being_created()
+        self.create_two_driving_datasets()
 
         response = self.app.post(
             url(controller='model_run', action='driving_data'),
             params={
-                'driving_dataset_id': -100
+                'driving_dataset': -100,
+                'submit': u'Next'
             })
 
         assert_that(response.normal_body, contains_string("Driving data not recognised"))
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_post_THEN_next_page_rendered(self):
         self._add_model_run_being_created()
-        DatasetServiceTest.create_two_driving_datasets()
+        self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
         driving_data = dataset_service.get_driving_datasets()
@@ -64,29 +65,47 @@ class ModelRunDrivingDataTest(TestController):
         response = self.app.post(
             url(controller='model_run', action='driving_data'),
             params={
-                'driving_dataset_id': ds_id
+                'driving_dataset': ds_id,
+                'submit': u'Next'
             })
 
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='parameters')), "url")
 
-    def test_GIVEN_valid_driving_data_chosen_WHEN_post_THEN_driving_data_stored_against_model_run(self):
+    def test_GIVEN_valid_driving_data_chosen_WHEN_go_back_THEN_create_page_rendered(self):
         self._add_model_run_being_created()
-        DatasetServiceTest.create_two_driving_datasets()
+        self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
         driving_data = dataset_service.get_driving_datasets()
         ds_id = driving_data[0].id
-        #TODO: dataset doesn't have a filename
-        ds_filename = driving_data[0].get_parameter_value("file")
+        response = self.app.post(
+            url(controller='model_run', action='driving_data'),
+            params={
+                'driving_dataset': ds_id,
+                'submit': u'Back'
+            })
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='create')), "url")
+
+    def test_GIVEN_valid_driving_data_chosen_WHEN_post_THEN_driving_data_stored_against_model_run(self):
+        self._add_model_run_being_created()
+        self.create_two_driving_datasets()
+
+        dataset_service = DatasetService()
+        driving_data = dataset_service.get_driving_datasets()
+        ds_id = driving_data[0].id
         self.app.post(
             url(controller='model_run', action='driving_data'),
             params={
-                'driving_dataset_id': ds_id
+                'driving_dataset': ds_id,
+                'submit': u'Next'
             })
 
         model_run_service = ModelRunService()
         model_run = model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         param_val = model_run.get_parameter_value("file", "JULES_DRIVE")
-        assert_that(param_val, is_(ds_filename))
+        assert_that(param_val, is_('testFileName'))

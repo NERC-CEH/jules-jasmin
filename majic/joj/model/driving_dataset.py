@@ -15,9 +15,6 @@ class DrivingDataset(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(constants.DB_LONG_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
-    dataset_id = Column(Integer, ForeignKey('datasets.id'))
-
-    dataset = relationship("Dataset")
 
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name

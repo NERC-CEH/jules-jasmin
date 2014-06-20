@@ -19,10 +19,12 @@ from pylons import url
 from paste.script.appinstall import SetupCommand
 from routes.util import URLGenerator
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus
+from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus, \
+    Parameter, Namelist, DrivingDatasetParameterValue
 from joj.services.user import UserService
 from joj.utils import constants
 from model import DrivingDataset
@@ -75,9 +77,6 @@ class TestController(TestCase):
         Cleans the User, ModelRun, Dataset, DrivingDataset and ParameterValue tables in the database
         """
         with session_scope(Session) as session:
-            session.query(DrivingDataset).delete()
-            session.query(Dataset).delete()
-
             parameter_to_keep = session\
                 .query(ParameterValue.id)\
                 .join(ModelRun)\
@@ -96,6 +95,11 @@ class TestController(TestCase):
                 .query(ModelRun)\
                 .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
                 .delete(synchronize_session='fetch')
+
+            session.query(DrivingDatasetParameterValue).delete()
+            session.query(DrivingDataset).delete()
+            session.query(Dataset).delete()
+
             session\
                 .query(User)\
                 .filter(User.username != constants.CORE_USERNAME)\
@@ -157,3 +161,45 @@ class TestController(TestCase):
         """
         with session_scope(Session) as session:
             return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
+
+    def create_two_driving_datasets(self):
+        """
+        Creates two driving datasets with datasets, parameter values etc set up
+        :return: nothing
+        """
+        with session_scope(Session) as session:
+            ds1 = Dataset()
+            ds1.name = "Driving dataset 1"
+            ds1.netcdf_url = "url1"
+            ds2 = Dataset()
+            ds2.name = "Driving dataset 2"
+            ds2.netcdf_url = "url2"
+            session.add_all([ds1, ds2])
+
+            driving1 = DrivingDataset()
+            driving1.name = "driving1"
+            driving1.description = "driving 1 description"
+            driving1.dataset = ds1
+
+            driving2 = DrivingDataset()
+            driving2.name = "driving2"
+            driving2.description = "driving 2 description"
+            driving2.dataset = ds2
+            session.add_all([driving1, driving2])
+            session.commit()
+
+            jules_drive_nml = session.query(Namelist) \
+                .filter(Namelist.name == 'JULES_DRIVE') \
+                .options(joinedload(Namelist.parameters)) \
+                .one()
+
+            jules_drive_file_param = session.query(Parameter) \
+                .filter(Parameter.namelist_id == jules_drive_nml.id) \
+                .filter(Parameter.name == 'file') \
+                .one()
+
+            driving_data_filename_param_val = DrivingDatasetParameterValue()
+            driving_data_filename_param_val.param_id = jules_drive_file_param.id
+            driving_data_filename_param_val.value = 'testFileName'
+            driving_data_filename_param_val.driving_dataset_id = driving1.id
+            session.add(driving_data_filename_param_val)

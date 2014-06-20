@@ -28,6 +28,7 @@ class ModelRun(Base):
     status_id = Column(SmallInteger, ForeignKey('model_run_statuses.id'))
     code_version_id = Column(SmallInteger, ForeignKey('code_versions.id'))
     science_configuration_id = Column(Integer, ForeignKey('model_runs.id'))
+    driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
 
     user = relationship("User", backref=backref('model_runs', order_by=id))
     code_version = relationship("CodeVersion", backref=backref('model_runs', order_by=id))

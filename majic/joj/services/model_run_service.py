@@ -197,13 +197,14 @@ class ModelRunService(DatabaseService):
                 .delete()
             parameters = self._get_parameters_for_creating_model(session, user)
             for parameter in parameters:
-                parameter_value = parameters_to_set[str(parameter.id)]
-                if parameter_value is not None:
-                    val = ParameterValue()
-                    val.value = parameter_value
-                    val.parameter = parameter
-                    val.model_run = model_run
-                    session.add(val)
+                if parameter.id in parameters_to_set.keys():
+                    parameter_value = parameters_to_set[parameter.id]
+                    if parameter_value is not None:
+                        val = ParameterValue()
+                        val.value = parameter_value
+                        val.parameter = parameter
+                        val.model_run = model_run
+                        session.add(val)
 
     def get_model_being_created_with_non_default_parameter_values(self, user):
         """
@@ -286,3 +287,21 @@ class ModelRunService(DatabaseService):
                 .all()
 
             return [{'id': run.id, 'name': run.name, 'description': run.description} for run in runs]
+
+    def save_driving_dataset_for_new_model(self, driving_dataset, user):
+        """
+        Save a driving dataset against the current model run being created
+        :param driving_dataset: Driving dataset to save
+        :param user: Currently logged in user
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_run_being_created(session, user)
+            model_run.driving_dataset_id = driving_dataset.id
+            session.add(model_run)
+            parameters = self._get_parameters_for_creating_model(session, user)
+            for driving_dataset_param_val in driving_dataset.parameter_values:
+                val = ParameterValue()
+                val.value = driving_dataset_param_val.value
+                val.parameter_id = driving_dataset_param_val.param_id
+                val.model_run = model_run
+                session.add(val)

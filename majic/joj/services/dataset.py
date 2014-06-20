@@ -157,4 +157,7 @@ class DatasetService(DatabaseService):
         """
 
         with self.readonly_scope() as session:
-            return session.query(DrivingDataset).options(joinedload(DrivingDataset.dataset)).all()
+            return session.query(DrivingDataset)\
+                .options(joinedload(DrivingDataset.parameter_values))\
+                .order_by(DrivingDataset.id)\
+                .all()
