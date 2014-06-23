@@ -3,8 +3,8 @@ from urlparse import urlparse
 from hamcrest import assert_that, contains_string, is_
 from pylons import url
 from joj.tests import TestController
-from services.dataset import DatasetService
-from services.model_run_service import ModelRunService
+from joj.services.dataset import DatasetService
+from joj.services.model_run_service import ModelRunService
 
 
 class ModelRunDrivingDataTest(TestController):
