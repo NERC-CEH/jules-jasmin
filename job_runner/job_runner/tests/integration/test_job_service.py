@@ -5,7 +5,7 @@ from job_runner.tests import *
 from hamcrest import *
 from job_runner.services.job_service import JobService, ServiceError
 from pylons import config
-from utils.constants import *
+from job_runner.utils.constants import *
 
 
 class TestJobService(TestController):
