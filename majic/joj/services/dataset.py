@@ -2,6 +2,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, contains_eager, immediateload
 from joj.model import Dataset, DatasetType, Analysis, DrivingDataset
 from joj.services.general import DatabaseService
+from joj.model.non_database.spatial_extent import SpatialExtent
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -161,3 +162,18 @@ class DatasetService(DatabaseService):
                 .options(joinedload(DrivingDataset.parameter_values))\
                 .order_by(DrivingDataset.id)\
                 .all()
+
+    def get_spatial_extent(self, driving_dataset_id):
+        """
+        Returns a SpatialExtent representing the available lat/long boundaries for the dataset
+        :param driving_dataset_id: The database ID
+        :return: SpatialExtent for the specified dataset
+        """
+        with self.readonly_scope() as session:
+            driving_dataset = session.query(DrivingDataset)\
+                .filter(DrivingDataset.id == driving_dataset_id)\
+                .one()
+        return SpatialExtent(driving_dataset.boundary_lat_north,
+                             driving_dataset.boundary_lat_south,
+                             driving_dataset.boundary_lon_west,
+                             driving_dataset.boundary_lon_east)

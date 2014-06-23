@@ -91,14 +91,14 @@ class TestController(TestCase):
 
             core_user_id = session.query(User.id).filter(User.username == constants.CORE_USERNAME).one()[0]
 
+            session.query(DrivingDatasetParameterValue).delete()
+            session.query(DrivingDataset).delete()
+            session.query(Dataset).delete()
+
             session\
                 .query(ModelRun)\
                 .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
                 .delete(synchronize_session='fetch')
-
-            session.query(DrivingDatasetParameterValue).delete()
-            session.query(DrivingDataset).delete()
-            session.query(Dataset).delete()
 
             session\
                 .query(User)\
@@ -180,6 +180,10 @@ class TestController(TestCase):
             driving1.name = "driving1"
             driving1.description = "driving 1 description"
             driving1.dataset = ds1
+            driving1.boundary_lat_north = 50
+            driving1.boundary_lat_south = -10
+            driving1.boundary_lon_west = -15
+            driving1.boundary_lon_east = 30
 
             driving2 = DrivingDataset()
             driving2.name = "driving2"
