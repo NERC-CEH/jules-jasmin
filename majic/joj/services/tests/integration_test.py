@@ -1,7 +1,7 @@
 import unittest
 from joj.model import initialise_session, Base, Session, User, Dataset, Analysis, DatasetType, AnalysisCoverageDataset
-from ecomjoj.ices.analysis import AnalysisService
-from joj.joj..dataset import DatasetService
+from joj.services.analysis import AnalysisService
+from joj.services.dataset import DatasetService
 from joj.services.user import UserService
 
 __author__ = 'Phil Jenkins (Tessella)'

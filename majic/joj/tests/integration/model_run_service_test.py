@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from hamcrest import *
-from joj.model import User, session_scope, Session, ModelRun, Parameter
+from joj.model import User, session_scope, Session, ModelRun, Parameter, ParameterValue
 from joj.services.model_run_service import ModelRunService
 from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus
 from joj.services.general import ServiceException
@@ -12,7 +12,6 @@ from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
 from joj.utils import constants
-from model import ParameterValue
 
 
 class ModelRunServiceTest(TestController):
