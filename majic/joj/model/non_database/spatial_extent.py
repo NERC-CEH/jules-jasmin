@@ -9,11 +9,19 @@ class InvalidSpatialExtent(Exception):
 
 class SpatialExtent(object):
     """
-    Represents a model run spatial extent and allows validation
-    based on driving dataset extents
+    Represents a geographical spatial extent. Has a boundary area set upon construction and has a user selected
+    extent area which is validated to ensure it is contained inside of the boundary area.
     """
 
     def __init__(self, lat_n, lat_s, lon_w, lon_e):
+        """
+        Constructor for a new SpatialExtent instance
+        :param lat_n: The northern boundary latitude
+        :param lat_s: The southern boundary latitude
+        :param lon_w: The western boundary longitude
+        :param lon_e: The eastern boundary latitude
+        :return: a SpatialExtent instance with specified boundaries
+        """
         self._lat_n = self._bound_lat_n = lat_n
         self._lat_s = self._bound_lat_s = lat_s
         self._lon_w = self._bound_lon_w = lon_w
