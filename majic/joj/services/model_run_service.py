@@ -207,6 +207,19 @@ class ModelRunService(DatabaseService):
                         val.model_run = model_run
                         session.add(val)
 
+    def _get_model_being_created_with_non_default_parameter_values(self, user, session):
+        return session.query(ModelRun) \
+            .join(User) \
+            .join(ModelRun.status) \
+            .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+            .filter(ModelRun.user == user) \
+            .options(subqueryload(ModelRun.code_version)) \
+            .options(contains_eager(ModelRun.parameter_values)
+                     .contains_eager(ParameterValue.parameter)
+                     .contains_eager(Parameter.namelist)) \
+            .one()
+
     def get_model_being_created_with_non_default_parameter_values(self, user):
         """
         Get the current model run being created including all parameter_value which are not defaults
@@ -214,17 +227,7 @@ class ModelRunService(DatabaseService):
         :return:model tun with parameters populated
         """
         with self.readonly_scope() as session:
-            return session.query(ModelRun) \
-                .join(User) \
-                .join(ModelRun.status) \
-                .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
-                .filter(ModelRun.user == user) \
-                .options(subqueryload(ModelRun.code_version)) \
-                .options(contains_eager(ModelRun.parameter_values)
-                         .contains_eager(ParameterValue.parameter)
-                         .contains_eager(Parameter.namelist)) \
-                .one()
+            return self._get_model_being_created_with_non_default_parameter_values(user, session)
 
     def submit_model_run(self, user):
         """
@@ -307,6 +310,16 @@ class ModelRunService(DatabaseService):
                 val.model_run = model_run
                 session.add(val)
 
+    def _get_parameter_by_name(self, param_name, param_namelist, session):
+        nml_id = session.query(Namelist) \
+            .filter(Namelist.name == param_namelist) \
+            .one().id
+        parameter = session.query(Parameter) \
+            .filter(Parameter.namelist_id == nml_id) \
+            .filter(Parameter.name == param_name) \
+            .one()
+        return parameter
+
     def get_parameter_by_name(self, param_name, param_namelist):
         """
         Look up the parameter ID for a given parameter name and namelist
@@ -315,13 +328,7 @@ class ModelRunService(DatabaseService):
         :return: The first matching parameter
         """
         with self.readonly_scope() as session:
-            nml_id = session.query(Namelist) \
-                .filter(Namelist.name == param_namelist) \
-                .one().id
-            parameter = session.query(Parameter) \
-                .filter(Parameter.namelist_id == nml_id) \
-                .filter(Parameter.name == param_name) \
-                .one()
+            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
             return parameter
 
     def save_parameter(self, param_name, param_namelist, value, user):
@@ -333,9 +340,9 @@ class ModelRunService(DatabaseService):
         :param user: The currently logged in user
         :return:
         """
-        parameter = self.get_parameter_by_name(param_name, param_namelist)
-        model_run = self.get_model_being_created_with_non_default_parameter_values(user)
         with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
             parameter_value = ParameterValue()
             parameter_value.parameter = parameter
             parameter_value.model_run = model_run

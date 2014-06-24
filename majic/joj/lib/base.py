@@ -4,7 +4,7 @@ Provides the BaseController class for subclassing, and other objects
 utilized by Controllers.
 """
 from formencode.rewritingparser import html_quote
-from pylons import cache, config, request, response, session
+from pylons import cache, config, request, response, session, url
 from pylons import tmpl_context as c
 from pylons.controllers import WSGIController
 from pylons.controllers.util import abort, etag_cache, redirect
@@ -13,8 +13,10 @@ from pylons.i18n import ungettext, N_
 from pylons.templating import render_genshi as render
 from paste import httpexceptions
 import paste.request
+from sqlalchemy.orm.exc import NoResultFound
 
 from joj.services.user import UserService
+from joj.lib import helpers
 
 app_globals = config['pylons.app_globals']
 
@@ -78,6 +80,19 @@ class BaseController(WSGIController):
         problems on our forms).
         """
         return '<span class="error-message">%s</span>\n' % html_quote(error)
+
+    def get_model_run_being_created_or_redirect(self, model_run_service):
+        """
+        Check whether there is a model currently being created for the user and, if not,
+        redirect to the create model run page
+        :param model_run_service: ModelRunService to use
+        :return: ModelRun being created if there is one
+        """
+        try:
+            return model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
+        except NoResultFound:
+            helpers.error_flash(u"You must create a model run before you can select a spatial extent")
+            redirect(url(controller='model_run', action='create'))
 
 # Include the '_' function in the public names
 __all__ = [__name for __name in locals().keys() if not __name.startswith('_') \

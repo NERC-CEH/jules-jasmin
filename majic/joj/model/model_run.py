@@ -35,6 +35,7 @@ class ModelRun(Base):
     datasets = relationship("Dataset", backref=backref('model_run', order_by=id), lazy="joined")
     parameter_values = relationship("ParameterValue", backref=backref('model_run', order_by=id))
     status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id), lazy="joined")
+    driving_dataset = relationship("DrivingDataset", backref=backref('model_runs', order_by=id), lazy="joined")
 
     def change_status(self, session, new_status):
         """

@@ -302,9 +302,17 @@ def setup_app(command, conf, vars):
         driving_ds_1 = DrivingDataset()
         driving_ds_1.description = "This is the first driving dataset"
         driving_ds_1.dataset = ds1
+        driving_ds_1.boundary_lat_north = 50
+        driving_ds_1.boundary_lat_south = 40
+        driving_ds_1.boundary_lon_west = -30
+        driving_ds_1.boundary_lon_east = 10
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.description = "This is the second driving dataset"
         driving_ds_2.dataset = ds2
+        driving_ds_2.boundary_lat_north = 10
+        driving_ds_2.boundary_lat_south = -10
+        driving_ds_2.boundary_lon_west = 170
+        driving_ds_2.boundary_lon_east = -170
 
         session.add_all([driving_ds_1, driving_ds_2])

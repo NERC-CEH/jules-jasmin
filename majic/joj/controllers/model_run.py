@@ -24,6 +24,7 @@ from joj.utils.error import abort_with_error
 
 # The prefix given to parameter name in html elements
 from joj.model import session_scope, Session
+from joj.model.non_database.spatial_extent import InvalidSpatialExtent
 
 PARAMETER_NAME_PREFIX = 'param'
 
@@ -175,7 +176,7 @@ class ModelRunController(BaseController):
             self._model_run_service.save_driving_dataset_for_new_model(driving_dataset, self.current_user)
 
             if values['submit'] == u'Next':
-                redirect(url(controller='model_run', action='parameters'))
+                redirect(url(controller='model_run', action='extents'))
             else:
                 redirect(url(controller='model_run', action='create'))
 
@@ -183,14 +184,98 @@ class ModelRunController(BaseController):
         """
         Specify the spatial and temporal extents of the model
         """
+        model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
+        driving_data = model_run.driving_dataset
+        if driving_data is None:
+            helpers.error_flash(u"You must select a driving data set before you can set the extents")
+            redirect(url(controller='model_run', action='driving_data'))
+        errors = {}
 
+        # Retrieve the driving data boundaries and default the spatial extent to match these
+        lat_n = c.lat_bound_n = driving_data.boundary_lat_north
+        lat_s = c.lat_bound_s = driving_data.boundary_lat_south
+        lon_w = c.lon_bound_w = driving_data.boundary_lon_west
+        lon_e = c.lon_bound_e = driving_data.boundary_lon_east
         if not request.POST:
-            pass
+
+            # Get spatial extent if it has already been selected
+            lat_bounds = model_run.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS[1],
+                                                       constants.JULES_PARAM_LAT_BOUNDS[0])
+            lon_bounds = model_run.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS[1],
+                                                       constants.JULES_PARAM_LON_BOUNDS[0])
+            if lat_bounds is not None:
+                lat_n = float(lat_bounds.split(',')[1].strip())
+                lat_s = float(lat_bounds.split(',')[0].strip())
+            if lon_bounds is not None:
+                lon_w = float(lon_bounds.split(',')[0].strip())
+                lon_e = float(lon_bounds.split(',')[1].strip())
+
+            values = {
+                'lat_n': lat_n,
+                'lat_s': lat_s,
+                'lon_w': lon_w,
+                'lon_e': lon_e
+            }
+            # We need to check that saved values for user selected spatial extent are consistent with the chosen driving
+            # data (e.g. in case the user has gone back and changed their driving data).
+            spatial_extent = self._dataset_service.get_spatial_extent(driving_data.id)
+            try:
+                spatial_extent.set_lat(lat_n, lat_s)
+            except InvalidSpatialExtent, e:
+                errors['lat_n'] = e.message
+
+            try:
+                spatial_extent.set_lon(lon_w, lon_e)
+            except InvalidSpatialExtent as e:
+                errors['lon_w'] = e.message
+            return htmlfill.render(
+                render('model_run/extents.html'),
+                defaults=values,
+                errors=errors,
+                auto_error_formatter=BaseController.error_formatter)
         else:
-            pass
+            values = dict(request.params)
+            #Validate
+            spatial_extent = self._dataset_service.get_spatial_extent(driving_data.id)
+            try:
+                lat_n = float(values['lat_n'])
+                lat_s = float(values['lat_s'])
+                spatial_extent.set_lat(lat_n, lat_s)
+            except ValueError:
+                errors['lat_n'] = "Latitude must be a number"
+            except InvalidSpatialExtent as e:
+                errors['lat_n'] = e.message
 
-        return "Specify Spatial and Temporal Extents"
+            try:
+                lon_w = float(values['lon_w'])
+                lon_e = float(values['lon_e'])
+                spatial_extent.set_lon(lon_w, lon_e)
+            except ValueError:
+                errors['lon_w'] = "Longitude must be a number"
+            except InvalidSpatialExtent as e:
+                errors['lon_w'] = e.message
+            if len(errors) > 0:
+                return htmlfill.render(
+                    render('model_run/extents.html'),
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
 
+                # Save to DB
+            self._model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION[1],
+                                                   constants.JULES_PARAM_LATLON_REGION[0], True, self.current_user)
+            self._model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID[1],
+                                                   constants.JULES_PARAM_USE_SUBGRID[0], True, self.current_user)
+            self._model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS[1],
+                                                   constants.JULES_PARAM_LAT_BOUNDS[0], spatial_extent.get_lat_bounds(),
+                                                   self.current_user)
+            self._model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS[1],
+                                                   constants.JULES_PARAM_LON_BOUNDS[0], spatial_extent.get_lon_bounds(),
+                                                   self.current_user)
+            if values['submit'] == u'Next':
+                redirect(url(controller='model_run', action='parameters'))
+            else:
+                redirect(url(controller='model_run', action='driving_data'))
 
     def parameters(self):
         """

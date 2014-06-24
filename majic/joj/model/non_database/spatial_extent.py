@@ -5,6 +5,7 @@ class InvalidSpatialExtent(Exception):
     """
     Exception class representing an invalid spatial extent
     """
+    pass
 
 
 class SpatialExtent(object):
@@ -77,13 +78,13 @@ class SpatialExtent(object):
     def get_lat_bounds(self):
         """
         Get the latitude bounds as an array
-        :return: lat_bounds
+        :return: lat_bounds [South, North]
         """
-        return [self._lat_n, self._lat_s]
+        return [self._lat_s, self._lat_n]
 
     def get_lon_bounds(self):
         """
         Get the longitude bounds as an array
-        :return: lon_bounds
+        :return: lon_bounds [West, East]
         """
         return [self._lon_w, self._lon_e]

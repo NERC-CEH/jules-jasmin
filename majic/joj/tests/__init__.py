@@ -91,14 +91,14 @@ class TestController(TestCase):
 
             core_user_id = session.query(User.id).filter(User.username == constants.CORE_USERNAME).one()[0]
 
-            session.query(DrivingDatasetParameterValue).delete()
-            session.query(DrivingDataset).delete()
-            session.query(Dataset).delete()
-
             session\
                 .query(ModelRun)\
                 .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
                 .delete(synchronize_session='fetch')
+
+            session.query(DrivingDatasetParameterValue).delete()
+            session.query(DrivingDataset).delete()
+            session.query(Dataset).delete()
 
             session\
                 .query(User)\
