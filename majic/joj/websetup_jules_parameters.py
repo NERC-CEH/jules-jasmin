@@ -1,4 +1,6 @@
-# Header
+"""
+# header
+"""
 import logging
 from lxml import html, etree
 import re
@@ -149,7 +151,12 @@ class JulesParameterParser(object):
             #parameters in optional sections
             parameters.extend(
                 tree.xpath('//div[@id="namelist-{namelist_name}"]/div/dl'.format(namelist_name=namelist_name)))
-
+            parameters.extend(
+                tree.xpath('//div[@id="namelist-{namelist_name}"]/div/div/dl[@class="member"]'
+                           .format(namelist_name=namelist_name)))
+            parameters.extend(
+                tree.xpath('//div[@id="namelist-{namelist_name}"]/div/div/dl[@class="last member"]'
+                           .format(namelist_name=namelist_name)))
             for parameter_elements in parameters:
 
                 parameter_name = str(parameter_elements.xpath("dt")[0].attrib["id"].replace(namelist_name + '::', ''))

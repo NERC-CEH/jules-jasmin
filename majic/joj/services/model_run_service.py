@@ -8,9 +8,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
-from joj.utils import constants
+from joj.utils import constants, f90_helper
 from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
+from joj.model import Namelist
 
 log = logging.getLogger(__name__)
 
@@ -305,3 +306,38 @@ class ModelRunService(DatabaseService):
                 val.parameter_id = driving_dataset_param_val.param_id
                 val.model_run = model_run
                 session.add(val)
+
+    def get_parameter_by_name(self, param_name, param_namelist):
+        """
+        Look up the parameter ID for a given parameter name and namelist
+        :param param_name: Parameter name
+        :param param_namelist: Parameter namelist
+        :return: The first matching parameter
+        """
+        with self.readonly_scope() as session:
+            nml_id = session.query(Namelist) \
+                .filter(Namelist.name == param_namelist) \
+                .one().id
+            parameter = session.query(Parameter) \
+                .filter(Parameter.namelist_id == nml_id) \
+                .filter(Parameter.name == param_name) \
+                .one()
+            return parameter
+
+    def save_parameter(self, param_name, param_namelist, value, user):
+        """
+        Save a parameter against the model currently being created
+        :param param_name: The parameter name
+        :param param_namelist: The namelist name
+        :param value: The value to set
+        :param user: The currently logged in user
+        :return:
+        """
+        parameter = self.get_parameter_by_name(param_name, param_namelist)
+        model_run = self.get_model_being_created_with_non_default_parameter_values(user)
+        with self.transaction_scope() as session:
+            parameter_value = ParameterValue()
+            parameter_value.parameter = parameter
+            parameter_value.model_run = model_run
+            parameter_value.value = f90_helper.python_to_f90_str(value)
+            session.add(parameter_value)

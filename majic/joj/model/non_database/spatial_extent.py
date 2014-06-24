@@ -73,3 +73,17 @@ class SpatialExtent(object):
             raise InvalidSpatialExtent("The northern extent must be north of the southern extent")
         self._lat_n = lat_n
         self._lat_s = lat_s
+
+    def get_lat_bounds(self):
+        """
+        Get the latitude bounds as an array
+        :return: lat_bounds
+        """
+        return [self._lat_n, self._lat_s]
+
+    def get_lon_bounds(self):
+        """
+        Get the longitude bounds as an array
+        :return: lon_bounds
+        """
+        return [self._lon_w, self._lon_e]

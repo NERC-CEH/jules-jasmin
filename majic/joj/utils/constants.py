@@ -42,3 +42,10 @@ JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
 NETCDF_LATITUDE = 'Latitude'
 NETCDF_LONGITUDE = 'Longitude'
 NETCDF_TIME = 'Time'
+
+# Constants for Jules Parameters (so we can easily update if they change name etc)
+JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
+JULES_PARAM_USE_SUBGRID = [JULES_NML_MODEL_GRID, "use_subgrid"]
+JULES_PARAM_LATLON_REGION = "latlon_region"
+JULES_PARAM_LAT_BOUNDS = "lat_bounds"
+JULES_PARAM_LON_BOUNDS = "lon_bounds"

@@ -7,10 +7,10 @@ from services.dataset import DatasetService
 from services.model_run_service import ModelRunService
 
 
-class ModelRunDrivingDataTest(TestController):
+class TestModelRunDrivingData(TestController):
 
     def setUp(self):
-        super(ModelRunDrivingDataTest, self).setUp()
+        super(TestModelRunDrivingData, self).setUp()
         self.clean_database()
         self.user = self.login()
 

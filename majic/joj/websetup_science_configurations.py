@@ -1,8 +1,11 @@
+"""
 # Header
+"""
 import os
 import f90nml
 import logging
 from joj.model import ModelRun, ParameterValue
+from joj.utils.f90_helper import python_to_f90_str
 from websetup_jules_parameters import JulesParameterParser
 
 log = logging.getLogger(__name__)
@@ -132,7 +135,7 @@ class JulesNamelistParser(object):
             pv = self._create_parameter_value_for_parameter(
                 namelist.parameters,
                 parameter_dict_name,
-                str(parameter_dict_value))
+                python_to_f90_str(parameter_dict_value))
             parameter_values.append(pv)
             log.info("      {}: {}".format(pv.parameter.name, pv.value))
         return parameter_values
