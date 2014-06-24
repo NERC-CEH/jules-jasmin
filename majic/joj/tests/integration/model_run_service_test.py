@@ -344,15 +344,15 @@ class ModelRunServiceTest(TestController):
             model_run.user_id = user.id
             model_run.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
             session.add(model_run)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID,
-                                              constants.JULES_NML_MODEL_GRID, True, user)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION,
-                                              constants.JULES_NML_MODEL_GRID, False, user)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID[1],
+                                              constants.JULES_PARAM_USE_SUBGRID[0], True, user)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION[1],
+                                              constants.JULES_PARAM_LATLON_REGION[0], False, user)
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_USE_SUBGRID,
-                                                           constants.JULES_NML_MODEL_GRID), is_(".true."))
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LATLON_REGION,
-                                                           constants.JULES_NML_MODEL_GRID), is_(".false."))
+        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_USE_SUBGRID[1],
+                                                           constants.JULES_PARAM_USE_SUBGRID[0]), is_(".true."))
+        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LATLON_REGION[1],
+                                                           constants.JULES_PARAM_LATLON_REGION[0]), is_(".false."))
 
     def test_GIVEN_model_run_being_created_WHEN_save_parameters_array_THEN_parameters_saved_in_namelist_format(self):
         with session_scope(Session) as session:
@@ -366,12 +366,12 @@ class ModelRunServiceTest(TestController):
             model_run.user_id = user.id
             model_run.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
             session.add(model_run)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS,
-                                              constants.JULES_NML_MODEL_GRID, [40, 50], user)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS,
-                                              constants.JULES_NML_MODEL_GRID, [-10, 10], user)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS[1],
+                                              constants.JULES_PARAM_LAT_BOUNDS[0], [40, 50], user)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS[1],
+                                              constants.JULES_PARAM_LON_BOUNDS[0], [-10, 10], user)
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS,
-                                                           constants.JULES_NML_MODEL_GRID), is_("40, 50"))
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS,
-                                                           constants.JULES_NML_MODEL_GRID), is_("-10, 10"))
+        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS[1],
+                                                           constants.JULES_PARAM_LAT_BOUNDS[0]), is_("40, 50"))
+        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS[1],
+                                                           constants.JULES_PARAM_LON_BOUNDS[0]), is_("-10, 10"))

@@ -179,6 +179,19 @@ class ModelRunController(BaseController):
             else:
                 redirect(url(controller='model_run', action='create'))
 
+    def extents(self):
+        """
+        Specify the spatial and temporal extents of the model
+        """
+
+        if not request.POST:
+            pass
+        else:
+            pass
+
+        return "Specify Spatial and Temporal Extents"
+
+
     def parameters(self):
         """
         Define parameters for the current new run being created
