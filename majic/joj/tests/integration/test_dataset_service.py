@@ -30,5 +30,3 @@ class TestDatasetService(TestController):
         assert_that(spatial_extent._bound_lat_s, is_(-10))
         assert_that(spatial_extent._bound_lon_w, is_(-15))
         assert_that(spatial_extent._bound_lon_e, is_(30))
-
-

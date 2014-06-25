@@ -22,10 +22,11 @@ from joj.lib import helpers
 from joj.utils import constants
 from joj.utils.error import abort_with_error
 
-# The prefix given to parameter name in html elements
 from joj.model import session_scope, Session
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent
+from joj.model.model_run_extent_schema import ModelRunExtentSchema
 
+# The prefix given to parameter name in html elements
 PARAMETER_NAME_PREFIX = 'param'
 
 # Message to show when the submission has failed
@@ -180,6 +181,8 @@ class ModelRunController(BaseController):
             else:
                 redirect(url(controller='model_run', action='create'))
 
+    @validate(schema=ModelRunExtentSchema(), form='extents', post_only=False, on_get=False, prefix_error=False,
+              auto_error_formatter=BaseController.error_formatter)
     def extents(self):
         """
         Specify the spatial and temporal extents of the model
@@ -241,8 +244,6 @@ class ModelRunController(BaseController):
                 lat_n = float(values['lat_n'])
                 lat_s = float(values['lat_s'])
                 spatial_extent.set_lat(lat_n, lat_s)
-            except ValueError:
-                errors['lat_n'] = "Latitude must be a number"
             except InvalidSpatialExtent as e:
                 errors['lat_n'] = e.message
 
@@ -250,8 +251,6 @@ class ModelRunController(BaseController):
                 lon_w = float(values['lon_w'])
                 lon_e = float(values['lon_e'])
                 spatial_extent.set_lon(lon_w, lon_e)
-            except ValueError:
-                errors['lon_w'] = "Longitude must be a number"
             except InvalidSpatialExtent as e:
                 errors['lon_w'] = e.message
             if len(errors) > 0:

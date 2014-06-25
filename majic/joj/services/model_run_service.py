@@ -208,6 +208,13 @@ class ModelRunService(DatabaseService):
                         session.add(val)
 
     def _get_model_being_created_with_non_default_parameter_values(self, user, session):
+        """
+        Get the current model run being created including all parameter_value which are not defaults
+        Uses a supplied session
+        :param user: Logged in user
+        :param session: Session
+        :return: Model run with parameters populated
+        """
         return session.query(ModelRun) \
             .join(User) \
             .join(ModelRun.status) \
@@ -224,7 +231,7 @@ class ModelRunService(DatabaseService):
         """
         Get the current model run being created including all parameter_value which are not defaults
         :param user: logged in user
-        :return:model tun with parameters populated
+        :return:model run with parameters populated
         """
         with self.readonly_scope() as session:
             return self._get_model_being_created_with_non_default_parameter_values(user, session)
@@ -311,6 +318,13 @@ class ModelRunService(DatabaseService):
                 session.add(val)
 
     def _get_parameter_by_name(self, param_name, param_namelist, session):
+        """
+        Get a JULES parameter by name
+        :param param_name: Parameter name
+        :param param_namelist: Namelist parameter belongs to
+        :param session: Session to use
+        :return: The first matching Parameter
+        """
         nml_id = session.query(Namelist) \
             .filter(Namelist.name == param_namelist) \
             .one().id
@@ -322,7 +336,7 @@ class ModelRunService(DatabaseService):
 
     def get_parameter_by_name(self, param_name, param_namelist):
         """
-        Look up the parameter ID for a given parameter name and namelist
+        Look up the parameter for a given parameter name and namelist
         :param param_name: Parameter name
         :param param_namelist: Parameter namelist
         :return: The first matching parameter
@@ -343,8 +357,13 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
             model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
             parameter = self._get_parameter_by_name(param_name, param_namelist, session)
-            parameter_value = ParameterValue()
-            parameter_value.parameter = parameter
-            parameter_value.model_run = model_run
+            try:
+                parameter_value = session.query(ParameterValue)\
+                    .filter(ParameterValue.model_run_id == model_run.id)\
+                    .filter(ParameterValue.parameter_id == parameter.id).one()
+            except NoResultFound:
+                parameter_value = ParameterValue()
+                parameter_value.parameter = parameter
+                parameter_value.model_run = model_run
             parameter_value.value = f90_helper.python_to_f90_str(value)
             session.add(parameter_value)
