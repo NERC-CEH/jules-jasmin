@@ -1,4 +1,4 @@
-#header
+# header
 
 import datetime
 
@@ -15,7 +15,6 @@ from websetup_science_configurations import JulesNamelistParser
 
 
 def _get_result_image():
-
     example_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'example_image.txt')
 
     with open(example_path, 'r') as image_file:
@@ -106,10 +105,10 @@ def setup_app(command, conf, vars):
 
         jules_parameter_parser = JulesParameterParser()
         namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
-        
+
         for namelist_file in namelist_files:
             session.add(namelist_file)
-            
+
         jules_config_parser = JulesNamelistParser()
         jules_config_parser.parse_all(
             "configuration/Jules/scientific_configurations/",
@@ -130,7 +129,7 @@ def setup_app(command, conf, vars):
         ds1.deleted = 0
         ds1.dataset_type = cover_dst
         ds1.is_input = 0
-        
+
         ds2 = Dataset()
         ds2.name = "Surface incident longwave radiation"
         ds2.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LWdown_TEST_190101.nc" \
@@ -185,7 +184,7 @@ def setup_app(command, conf, vars):
         session.add(mr3)
 
         ## Add another model run with datasets 
-        
+
         ds3 = Dataset()
         ds3.name = "Surface pressure"
         ds3.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/PSurf_TEST_190101.nc" \
@@ -197,7 +196,7 @@ def setup_app(command, conf, vars):
         ds3.deleted = 0
         ds3.dataset_type = cover_dst
         ds3.is_input = 1
-    
+
         ds4 = Dataset()
         ds4.name = "Near surface specific humidity"
         ds4.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Qair_TEST_190101.nc" \
@@ -209,7 +208,7 @@ def setup_app(command, conf, vars):
         ds4.deleted = 0
         ds4.dataset_type = cover_dst
         ds4.is_input = 0
-      
+
         ds5 = Dataset()
         ds5.name = "Rainfall rate"
         ds5.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Rainf_TEST_190101.nc" \
@@ -220,8 +219,8 @@ def setup_app(command, conf, vars):
         ds5.is_categorical = 0
         ds5.deleted = 0
         ds5.dataset_type = cover_dst
-        ds5.is_input = 1              
-        
+        ds5.is_input = 1
+
         mr4 = ModelRun()
         mr4.name = "My Published Model Run"
         mr4.description = "I've published this model run so that everyone else can see it and use the awesome data " \
@@ -235,9 +234,9 @@ def setup_app(command, conf, vars):
         mr4.datasets = [ds3, ds4, ds5]
 
         session.add(mr4)
-        
+
         ## Add another model run with datasets 
-        
+
         ds6 = Dataset()
         ds6.name = "Snowfall rate"
         ds6.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Snowf_TEST_190101.nc" \
@@ -249,7 +248,7 @@ def setup_app(command, conf, vars):
         ds6.deleted = 0
         ds6.dataset_type = cover_dst
         ds6.is_input = 0
-        
+
         ds7 = Dataset()
         ds7.name = "Surface incident shortwave radiation"
         ds7.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/SWdown_TEST_190101.nc" \
@@ -261,7 +260,7 @@ def setup_app(command, conf, vars):
         ds7.deleted = 0
         ds7.dataset_type = cover_dst
         ds7.is_input = 1
-        
+
         ds8 = Dataset()
         ds8.name = "Near surface air temperature"
         ds8.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Tair_TEST_190101.nc" \
@@ -273,7 +272,7 @@ def setup_app(command, conf, vars):
         ds8.deleted = 0
         ds8.dataset_type = cover_dst
         ds8.is_input = 1
-        
+
         ds9 = Dataset()
         ds9.name = "Near surface wind speed"
         ds9.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Wind_TEST_190101.nc" \
@@ -300,7 +299,10 @@ def setup_app(command, conf, vars):
         session.add(mr5)
 
         driving_ds_1 = DrivingDataset()
-        driving_ds_1.description = "This is the first driving dataset"
+        driving_ds_1.name = "WATCH Forcing Data 20th Century"
+        driving_ds_1.description = "a meteorological forcing dataset (based on ERA-40) for land surface and " \
+                                   "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
+                                   "five variables are at 3 hourly resolution"
         driving_ds_1.dataset = ds1
         driving_ds_1.boundary_lat_north = 50
         driving_ds_1.boundary_lat_south = 40
@@ -308,7 +310,10 @@ def setup_app(command, conf, vars):
         driving_ds_1.boundary_lon_east = 10
 
         driving_ds_2 = DrivingDataset()
-        driving_ds_2.description = "This is the second driving dataset"
+        driving_ds_2.name = "UK CHESS Forcing Data"
+        driving_ds_2.description = "The Climate, Hydrochemistry and Economics of Surface-water Systems (CHESS)" \
+                                   " project has explored effects of climate change on the water quality of European" \
+                                   " rivers, with the purpose of informing future catchment management."
         driving_ds_2.dataset = ds2
         driving_ds_2.boundary_lat_north = 10
         driving_ds_2.boundary_lat_south = -10
