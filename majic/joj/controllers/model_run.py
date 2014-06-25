@@ -163,6 +163,12 @@ class ModelRunController(BaseController):
                 auto_error_formatter=BaseController.error_formatter)
         else:
             values = dict(request.params)
+
+            # get the action to perform and remove it from the dictionary
+            action = request.params.getone('submit')
+            del values['submit']
+
+
             try:
                 driving_dataset = [driving_dataset for driving_dataset
                                    in driving_datasets if driving_dataset.id == int(values['driving_dataset'])][0]
@@ -176,7 +182,7 @@ class ModelRunController(BaseController):
                     auto_error_formatter=BaseController.error_formatter)
             self._model_run_service.save_driving_dataset_for_new_model(driving_dataset, self.current_user)
 
-            if values['submit'] == u'Next':
+            if action == u'Next':
                 redirect(url(controller='model_run', action='extents'))
             else:
                 redirect(url(controller='model_run', action='create'))
@@ -238,6 +244,11 @@ class ModelRunController(BaseController):
                 auto_error_formatter=BaseController.error_formatter)
         else:
             values = dict(request.params)
+
+            # get the action to perform and remove it from the dictionary
+            action = request.params.getone('submit')
+            del values['submit']
+
             #Validate
             spatial_extent = self._dataset_service.get_spatial_extent(driving_data.id)
             try:
@@ -271,7 +282,7 @@ class ModelRunController(BaseController):
             self._model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS[1],
                                                    constants.JULES_PARAM_LON_BOUNDS[0], spatial_extent.get_lon_bounds(),
                                                    self.current_user)
-            if values['submit'] == u'Next':
+            if action == u'Next':
                 redirect(url(controller='model_run', action='parameters'))
             else:
                 redirect(url(controller='model_run', action='driving_data'))
