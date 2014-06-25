@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from hamcrest import *
-from joj.model import User, session_scope, Session, ModelRun, Parameter
+from joj.model import User, session_scope, Session, ModelRun, Parameter, ParameterValue
 from joj.services.model_run_service import ModelRunService
 from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus
 from joj.services.general import ServiceException
@@ -12,8 +12,7 @@ from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from pylons import config
 from joj.utils import constants
-from model import ParameterValue
-from model.non_database.spatial_extent import SpatialExtent
+from joj.model.non_database.spatial_extent import SpatialExtent
 
 
 class ModelRunServiceTest(TestController):
@@ -331,47 +330,3 @@ class ModelRunServiceTest(TestController):
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
         param_value_returned = model_run_returned.get_parameter_value(param_name, param_namelist)
         assert_that(param_value_returned, is_("param1 value"))
-
-    def test_GIVEN_model_run_being_created_WHEN_save_parameters_THEN_parameters_saved(self):
-        with session_scope(Session) as session:
-            user = User()
-            user.name = 'user1'
-            session.add(user)
-            session.commit()
-            # Give them a model
-            model_run = ModelRun()
-            model_run.name = "MR1"
-            model_run.user_id = user.id
-            model_run.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
-            session.add(model_run)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID[1],
-                                              constants.JULES_PARAM_USE_SUBGRID[0], True, user)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION[1],
-                                              constants.JULES_PARAM_LATLON_REGION[0], False, user)
-        model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_USE_SUBGRID[1],
-                                                           constants.JULES_PARAM_USE_SUBGRID[0]), is_(".true."))
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LATLON_REGION[1],
-                                                           constants.JULES_PARAM_LATLON_REGION[0]), is_(".false."))
-
-    def test_GIVEN_model_run_being_created_WHEN_save_parameters_array_THEN_parameters_saved_in_namelist_format(self):
-        with session_scope(Session) as session:
-            user = User()
-            user.name = 'user1'
-            session.add(user)
-            session.commit()
-            # Give them a model
-            model_run = ModelRun()
-            model_run.name = "MR1"
-            model_run.user_id = user.id
-            model_run.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
-            session.add(model_run)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS[1],
-                                              constants.JULES_PARAM_LAT_BOUNDS[0], [40, 50], user)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS[1],
-                                              constants.JULES_PARAM_LON_BOUNDS[0], [-10, 10], user)
-        model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS[1],
-                                                           constants.JULES_PARAM_LAT_BOUNDS[0]), is_("40, 50"))
-        assert_that(model_run_returned.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS[1],
-                                                           constants.JULES_PARAM_LON_BOUNDS[0]), is_("-10, 10"))

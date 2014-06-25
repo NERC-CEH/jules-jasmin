@@ -24,10 +24,9 @@ from webtest import TestApp
 
 from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue
+    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset
 from joj.services.user import UserService
 from joj.utils import constants
-from model import DrivingDataset
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
