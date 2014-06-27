@@ -55,16 +55,15 @@ class ModelRun(Base):
             self.date_created = datetime.datetime.now()
         return status
 
-    def get_parameter_value(self, param_name, param_namelist):
+    def get_parameter_value(self, parameter_namelist_name):
         """
         Gets the value of a specified parameter
-        :param param_namelist: name of namelist parameter belongs to
-        :param param_name: name of parameter to find
+        :param parameter_namelist_name: list containing [namelist, name] of parameter to find
         """
         for param_val in self.parameter_values:
-            if param_val.parameter.name == param_name:
-                if param_val.parameter.namelist.name == param_namelist:
-                    return param_val.value
+            if param_val.parameter.name == parameter_namelist_name[1]:
+                if param_val.parameter.namelist.name == parameter_namelist_name[0]:
+                    return param_val.get_value_as_python()
 
     def __repr__(self):
         """ String representation of the model run """

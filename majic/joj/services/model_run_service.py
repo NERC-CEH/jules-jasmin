@@ -185,7 +185,7 @@ class ModelRunService(DatabaseService):
 
     def store_parameter_values(self, parameters_to_set, user):
         """
-        Store the parameter values inb the database
+        Store the parameter values in the database
         :param parameters_to_set: dictionary of parameter ids and parameter values
         :param user: the logged in user
         :return: Nothing
@@ -202,7 +202,7 @@ class ModelRunService(DatabaseService):
                     parameter_value = parameters_to_set[parameter.id]
                     if parameter_value is not None:
                         val = ParameterValue()
-                        val.value = parameter_value
+                        val.set_value_from_python(parameter_value)
                         val.parameter = parameter
                         val.model_run = model_run
                         session.add(val)
@@ -345,18 +345,17 @@ class ModelRunService(DatabaseService):
             parameter = self._get_parameter_by_name(param_name, param_namelist, session)
             return parameter
 
-    def save_parameter(self, param_name, param_namelist, value, user):
+    def save_parameter(self, param_namelist_name, value, user):
         """
         Save a parameter against the model currently being created
-        :param param_name: The parameter name
-        :param param_namelist: The namelist name
+        :param param_namelist_name: List containg the parameter namelist, name
         :param value: The value to set
         :param user: The currently logged in user
         :return:
         """
         with self.transaction_scope() as session:
             model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
-            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
+            parameter = self._get_parameter_by_name(param_namelist_name[1], param_namelist_name[0], session)
             try:
                 parameter_value = session.query(ParameterValue)\
                     .filter(ParameterValue.model_run_id == model_run.id)\
@@ -365,5 +364,5 @@ class ModelRunService(DatabaseService):
                 parameter_value = ParameterValue()
                 parameter_value.parameter = parameter
                 parameter_value.model_run = model_run
-            parameter_value.value = f90_helper.python_to_f90_str(value)
+            parameter_value.set_value_from_python(value)
             session.add(parameter_value)

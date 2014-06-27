@@ -19,7 +19,7 @@ class JulesNamelistParser(object):
     # Scientific configurations, name, directory and descriptions
     _SCIENCE_CONFIGURATIONS = [
         ['EURO4', 'EURO4', 'This configuration replicates the science used in '
-                           'the Met Office European 4km forecast model'],
+                           'the Met Office European 4km forecast model.'],
         ['GL4.0', 'GL4.0', 'Global Land (GL) is a configuration of JULES that is developed over an annual release '
                            'cycle for use across weather and climate modelling timescales and systems. '
                            'Global Land is used in the Met Office Unified Model with the Global Atmosphere (GA) '
