@@ -120,9 +120,9 @@ def setup_app(command, conf, vars):
         ## Add some model runs with datasets
         ds1 = Dataset()
         ds1.name = "Land Cover Map 2007"
-        ds1.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
+        ds1.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds1.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/LCM2007_GB_1K_DOM_TAR.nc"
+        ds1.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LCM2007_GB_1K_DOM_TAR.nc"
         ds1.data_range_from = 1
         ds1.data_range_to = 30
         ds1.is_categorical = 0
@@ -132,9 +132,9 @@ def setup_app(command, conf, vars):
 
         ds2 = Dataset()
         ds2.name = "Surface incident longwave radiation"
-        ds2.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/LWdown_TEST_190101.nc" \
+        ds2.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/LWdown_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds2.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/LWdown_TEST_190101.nc"
+        ds2.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LWdown_TEST_190101.nc"
         ds2.data_range_from = 230
         ds2.data_range_to = 350
         ds2.is_categorical = 0
@@ -187,9 +187,9 @@ def setup_app(command, conf, vars):
 
         ds3 = Dataset()
         ds3.name = "Surface pressure"
-        ds3.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/PSurf_TEST_190101.nc" \
+        ds3.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/PSurf_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds3.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/PSurf_TEST_190101.nc"
+        ds3.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/PSurf_TEST_190101.nc"
         ds3.data_range_from = 75000
         ds3.data_range_to = 100000
         ds3.is_categorical = 0
@@ -199,9 +199,9 @@ def setup_app(command, conf, vars):
 
         ds4 = Dataset()
         ds4.name = "Near surface specific humidity"
-        ds4.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Qair_TEST_190101.nc" \
+        ds4.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/Qair_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds4.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Qair_TEST_190101.nc"
+        ds4.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Qair_TEST_190101.nc"
         ds4.data_range_from = 0.001
         ds4.data_range_to = 0.0055
         ds4.is_categorical = 0
@@ -211,9 +211,9 @@ def setup_app(command, conf, vars):
 
         ds5 = Dataset()
         ds5.name = "Rainfall rate"
-        ds5.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Rainf_TEST_190101.nc" \
+        ds5.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/Rainf_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds5.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Rainf_TEST_190101.nc"
+        ds5.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Rainf_TEST_190101.nc"
         ds5.data_range_from = 0
         ds5.data_range_to = 0.0001
         ds5.is_categorical = 0
@@ -239,9 +239,9 @@ def setup_app(command, conf, vars):
 
         ds6 = Dataset()
         ds6.name = "Snowfall rate"
-        ds6.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Snowf_TEST_190101.nc" \
+        ds6.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/Snowf_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds6.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Snowf_TEST_190101.nc"
+        ds6.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Snowf_TEST_190101.nc"
         ds6.data_range_from = 0
         ds6.data_range_to = 0.003
         ds6.is_categorical = 0
@@ -251,9 +251,9 @@ def setup_app(command, conf, vars):
 
         ds7 = Dataset()
         ds7.name = "Surface incident shortwave radiation"
-        ds7.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/SWdown_TEST_190101.nc" \
+        ds7.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/SWdown_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds7.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/SWdown_TEST_190101.nc"
+        ds7.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/SWdown_TEST_190101.nc"
         ds7.data_range_from = 0
         ds7.data_range_to = 0.1
         ds7.is_categorical = 0
@@ -263,9 +263,9 @@ def setup_app(command, conf, vars):
 
         ds8 = Dataset()
         ds8.name = "Near surface air temperature"
-        ds8.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Tair_TEST_190101.nc" \
+        ds8.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/Tair_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds8.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Tair_TEST_190101.nc"
+        ds8.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Tair_TEST_190101.nc"
         ds8.data_range_from = 260
         ds8.data_range_to = 290
         ds8.is_categorical = 0
@@ -275,9 +275,9 @@ def setup_app(command, conf, vars):
 
         ds9 = Dataset()
         ds9.name = "Near surface wind speed"
-        ds9.wms_url = "http://127.0.0.1:8080/thredds/wms/dev/Wind_TEST_190101.nc" \
+        ds9.wms_url = conf.local_conf['thredds.server_url'] + "wms/dev/Wind_TEST_190101.nc" \
                       "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds9.netcdf_url = "http://127.0.0.1:8080/thredds/dodsC/dev/Wind_TEST_190101.nc"
+        ds9.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Wind_TEST_190101.nc"
         ds9.data_range_from = 0
         ds9.data_range_to = 20
         ds9.is_categorical = 0
