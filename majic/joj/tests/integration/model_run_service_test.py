@@ -330,3 +330,27 @@ class ModelRunServiceTest(TestController):
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
         param_value_returned = model_run_returned.get_parameter_value(param_name, param_namelist)
         assert_that(param_value_returned, is_("param1 value"))
+
+    def test_GIVEN_no_run_model_WHEN_create_run_model_with_science_config_THEN_model_created_with_parameter_values_copied(self):
+
+        user = self.login()
+        expected_name = "model run name"
+        expected_description = "some slightly long winded description"
+
+        self.model_run_service.update_model_run(
+            user,
+            expected_name,
+            constants.DEFAULT_SCIENCE_CONFIGURATION,
+            expected_description)
+
+        self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+        with session_scope(Session) as session:
+            parameter_values = session\
+                .query(ParameterValue) \
+                .join(ModelRun) \
+                .join(ModelRunStatus) \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+                .filter(ModelRun.user == user) \
+                .count()
+
+        assert_that(parameter_values, is_not(0), "parameter values have been set")

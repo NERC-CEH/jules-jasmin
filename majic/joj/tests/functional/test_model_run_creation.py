@@ -22,7 +22,6 @@ class TestModelRunController(TestController):
             url(controller='model_run', action='create'))
         assert_that(response.normal_body, contains_string("Create Model Run"))
         assert_that(response.normal_body, contains_string("Name"))
-        assert_that(response.normal_body, contains_string("Code"))
         assert_that(response.normal_body, contains_string("science_configuration"))
 
         assert_that(response.normal_body, contains_string("Next"))
@@ -66,7 +65,7 @@ class TestModelRunController(TestController):
             }
         )
 
-        assert_that(response.normal_body, contains_string("Code version is not recognised"))
+        assert_that(response.normal_body, contains_string("Configuration is not recognised"))
 
     def test_GIVEN_name_is_duplicate_WHEN_post_THEN_error_thrown(self):
 
