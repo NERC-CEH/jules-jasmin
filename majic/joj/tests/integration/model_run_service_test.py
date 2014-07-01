@@ -39,10 +39,6 @@ class ModelRunServiceTest(TestController):
         model_runs = self.model_run_service.get_models_for_user(user)
         assert_that(model_runs, is_([]))
 
-    def test_GIVEN_user_None_WHEN_get_model_runs_for_user_THEN_throws_AttributeError(self):
-        with self.assertRaises(AttributeError, msg="Should have thrown a AttributeError exception"):
-            model_runs = self.model_run_service.get_models_for_user(None)
-
     def test_GIVEN_two_users_with_one_model_each_WHEN_get_model_runs_for_user_THEN_returns_correct_model(self):
         # Add two users and give them each one model run
         with session_scope(Session) as session:
@@ -343,14 +339,64 @@ class ModelRunServiceTest(TestController):
             constants.DEFAULT_SCIENCE_CONFIGURATION,
             expected_description)
 
-        self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+        parameter_values_count = self.count_parameter_values_in_model_being_created(user)
+        assert_that(parameter_values_count, is_not(0), "parameter values have been set")
+
+    def test_GIVEN_run_model_WHEN_create_run_model_with_same_science_config_THEN_model_updated_with_new_parameter_values_copied(self):
+
+        user = self.login()
+        expected_name = "model run name"
+        expected_description = "some slightly long winded description"
+        self.model_run_service.update_model_run(
+            user,
+            expected_name,
+            constants.DEFAULT_SCIENCE_CONFIGURATION,
+            expected_description)
+        expected_parameters_count = self.count_parameter_values_in_model_being_created(user)
+
+        self.model_run_service.update_model_run(
+            user,
+            expected_name,
+            constants.DEFAULT_SCIENCE_CONFIGURATION,
+            expected_description)
+
+        parameter_values_count = self.count_parameter_values_in_model_being_created(user)
+        assert_that(parameter_values_count, is_(expected_parameters_count), "parameter values have been set and old ones removed")
+
+    def test_GIVEN_run_model_with_time_extent_WHEN_create_run_model_with_same_science_config_THEN_model_updated_with_new_parameter_values_copied_and_has_time_extent(self):
+
+        user = self.login()
+        expected_name = "model run name"
+        expected_description = "some slightly long winded description"
+        self.model_run_service.update_model_run(
+            user,
+            expected_name,
+            constants.DEFAULT_SCIENCE_CONFIGURATION,
+            expected_description)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION[1],
+                                                   constants.JULES_PARAM_LATLON_REGION[0], True, user)
+        expected_parameters_count = self.count_parameter_values_in_model_being_created(user)
+
+        self.model_run_service.update_model_run(
+            user,
+            expected_name,
+            constants.DEFAULT_SCIENCE_CONFIGURATION,
+            expected_description)
+
+        parameter_values_count = self.count_parameter_values_in_model_being_created(user)
+        assert_that(parameter_values_count, is_(expected_parameters_count), "parameter values have been set and old ones removed")
+
+
+    def count_parameter_values_in_model_being_created(self, user):
+        """
+        Count the number of parameter values that this model has
+        """
         with session_scope(Session) as session:
-            parameter_values = session\
+            parameter_values = session \
                 .query(ParameterValue) \
                 .join(ModelRun) \
                 .join(ModelRunStatus) \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED)\
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
                 .filter(ModelRun.user == user) \
                 .count()
-
-        assert_that(parameter_values, is_not(0), "parameter values have been set")
+        return parameter_values

@@ -1,7 +1,7 @@
 # header
 from hamcrest import assert_that, is_, is_not
 from joj.services.dataset import DatasetService
-from tests import TestController
+from joj.tests import TestController
 
 
 class TestDatasetService(TestController):

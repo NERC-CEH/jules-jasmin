@@ -203,7 +203,7 @@ class TestController(TestCase):
                 .one()
 
             driving_data_filename_param_val = DrivingDatasetParameterValue()
-            driving_data_filename_param_val.param_id = jules_drive_file_param.id
+            driving_data_filename_param_val.parameter_id = jules_drive_file_param.id
             driving_data_filename_param_val.value = 'testFileName'
             driving_data_filename_param_val.driving_dataset_id = driving1.id
             session.add(driving_data_filename_param_val)

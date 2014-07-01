@@ -4,7 +4,6 @@ header
 
 import logging
 from formencode import htmlfill
-from formencode.validators import Invalid
 
 from pylons import url
 
@@ -15,16 +14,16 @@ from sqlalchemy.orm.exc import NoResultFound
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
-from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.services.model_run_service import ModelRunService, DuplicateName
 from joj.services.dataset import DatasetService
 from joj.lib import helpers
 from joj.utils import constants
 from joj.utils.error import abort_with_error
 
-from joj.model import session_scope, Session
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent
 from joj.model.model_run_extent_schema import ModelRunExtentSchema
+
+from joj.utils.utils import find_by_id, KeyNotFound
 
 # The prefix given to parameter name in html elements
 PARAMETER_NAME_PREFIX = 'param'
@@ -138,7 +137,8 @@ class ModelRunController(BaseController):
         """
         model_run = None
         try:
-            model_run = self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
+            model_run = \
+                self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before you can choose a driving data set")
             redirect(url(controller='model_run', action='create'))
@@ -168,11 +168,9 @@ class ModelRunController(BaseController):
             action = request.params.getone('submit')
             del values['submit']
 
-
             try:
-                driving_dataset = [driving_dataset for driving_dataset
-                                   in driving_datasets if driving_dataset.id == int(values['driving_dataset'])][0]
-            except (IndexError, KeyError):
+                driving_dataset = find_by_id(driving_datasets, int(values['driving_dataset']))
+            except (KeyNotFound, KeyError):
                 html = render('model_run/driving_data.html')
                 errors['driving_dataset'] = 'Driving data not recognised'
                 return htmlfill.render(
@@ -180,7 +178,15 @@ class ModelRunController(BaseController):
                     defaults=values,
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
-            self._model_run_service.save_driving_dataset_for_new_model(driving_dataset, self.current_user)
+
+            old_driving_dataset = None
+            if model_run.driving_dataset_id is not None:
+                old_driving_dataset = find_by_id(driving_datasets, model_run.driving_dataset_id)
+
+            self._model_run_service.save_driving_dataset_for_new_model(
+                driving_dataset,
+                old_driving_dataset,
+                self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='extents'))
@@ -311,37 +317,14 @@ class ModelRunController(BaseController):
                 auto_error_formatter=BaseController.error_formatter
             )
         else:
-            schema = ModelRunCreateParameters(c.parameters)
-            values = dict(request.params)
 
             # get the action to perform and remove it from the dictionary
             action = request.params.getone('submit')
-            del values['submit']
-
-            try:
-                c.form_result = schema.to_python(values)
-            except Invalid, error:
-                c.form_result = error.value
-                c.form_errors = error.error_dict or {}
-                html = render('model_run/parameters.html')
-                return htmlfill.render(
-                    html,
-                    defaults=c.form_result,
-                    errors=c.form_errors,
-                    auto_error_formatter=BaseController.error_formatter
-                )
-
-            parameters = {}
-            for param_name, param_value in c.form_result.iteritems():
-                if param_name.startswith(PARAMETER_NAME_PREFIX):
-                    parameters[param_name.replace(PARAMETER_NAME_PREFIX, '')] = param_value
-
-            self._model_run_service.store_parameter_values(parameters, self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='submit'))
             else:
-                redirect(url(controller='model_run', action='create'))
+                redirect(url(controller='model_run', action='extents'))
 
     def submit(self):
         """
