@@ -41,14 +41,18 @@
         <div class="control-group" title="Model runs should start from a default configuration.">
 
             <label for="scientific_configuration" class="control-label">Scientific Configuration</label>
-            <div class="controls">
-                <py:for each="configuration in c.scientific_configurations">
+
+            <py:for each="configuration in c.scientific_configurations">
+                <div class="controls">
                     <label class="radio">
                         ${h.html_tags.radio('science_configuration', configuration['id'], True, class_='radio controls')}
+                        <div>
                         <strong>${configuration['name']}</strong> ${configuration['description']}
+                        </div>
                     </label>
-                </py:for>
-            </div>
+                </div>
+            </py:for>
+
         </div>
 
 
