@@ -24,10 +24,9 @@
 
     <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='parameters')}">
         <py:for each="parameter in c.parameters">
-            <h4>${parameter.namelist.name}</h4>
             <div class="control-group">
-                <label for="param${parameter.id}" class="control-label">${parameter.name}</label>
-                ${h.html_tags.text('param%s' % parameter.id, class_='controls')}
+                <label class="control-label">${parameter.namelist.name}::${parameter.name}</label>
+                <span py:if="len(parameter.parameter_values) > 0" class="uneditable-input controls">${parameter.parameter_values[0].value }</span>
             </div>
         </py:for>
 

@@ -3,10 +3,11 @@ from urlparse import urlparse
 import datetime
 from hamcrest import assert_that, is_, contains_string
 from pylons import url
-from model import DrivingDataset, Session, session_scope, ModelRun, User
-from services.model_run_service import ModelRunService
-from tests import TestController
-from joj.utils.constants import *
+from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
+from joj.services.model_run_service import ModelRunService
+from joj.tests import TestController
+from joj.utils.constants import JULES_PARAM_LON_BOUNDS, JULES_PARAM_LAT_BOUNDS, JULES_PARAM_LATLON_REGION, \
+    JULES_PARAM_USE_SUBGRID, MODEL_RUN_STATUS_CREATED
 
 
 class TestModelRunExtents(TestController):
