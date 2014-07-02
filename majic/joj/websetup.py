@@ -302,12 +302,14 @@ def setup_app(command, conf, vars):
         driving_ds_1.name = "WATCH Forcing Data 20th Century"
         driving_ds_1.description = "a meteorological forcing dataset (based on ERA-40) for land surface and " \
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
-                                   "five variables are at 3 hourly resolution"
+                                   "five variables are at 3 hourly resolution."
         driving_ds_1.dataset = ds1
         driving_ds_1.boundary_lat_north = 50
         driving_ds_1.boundary_lat_south = 40
         driving_ds_1.boundary_lon_west = -30
         driving_ds_1.boundary_lon_east = 10
+        driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
+        driving_ds_1.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"
@@ -319,5 +321,7 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lat_south = -10
         driving_ds_2.boundary_lon_west = 170
         driving_ds_2.boundary_lon_east = -170
+        driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
+        driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
 
         session.add_all([driving_ds_1, driving_ds_2])

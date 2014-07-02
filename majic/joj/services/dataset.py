@@ -3,6 +3,7 @@ from sqlalchemy.orm import joinedload, contains_eager, immediateload
 from joj.model import Dataset, DatasetType, Analysis, DrivingDataset
 from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
+from joj.model.non_database.temporal_extent import TemporalExtent
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -177,3 +178,15 @@ class DatasetService(DatabaseService):
                              driving_dataset.boundary_lat_south,
                              driving_dataset.boundary_lon_west,
                              driving_dataset.boundary_lon_east)
+
+    def get_temporal_extent(self, driving_dataset_id):
+        """
+        Returns a TemporalExtent representing the available time boundaries for the dataset
+        :param driving_dataset_id: The database ID
+        :return: TemporalExtent for the specified dataset
+        """
+        with self.readonly_scope() as session:
+            driving_dataset = session.query(DrivingDataset)\
+                .filter(DrivingDataset.id == driving_dataset_id)\
+                .one()
+        return TemporalExtent(driving_dataset.time_start, driving_dataset.time_end)

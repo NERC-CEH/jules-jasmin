@@ -23,7 +23,7 @@ setup(
         "NetCDF4",
         "pydap",
         "coards",
-        "FormEncode",
+        "FormEncode>=1.3.0a1",
         "PyHamcrest",
         "Mock",
         "Image",

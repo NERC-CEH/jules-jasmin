@@ -107,5 +107,5 @@ class TestModelRunDrivingData(TestController):
 
         model_run_service = ModelRunService()
         model_run = model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        param_val = model_run.get_parameter_value("file", "JULES_DRIVE")
+        param_val = model_run.get_parameter_value(["JULES_DRIVE", "file"])
         assert_that(param_val, is_('testFileName'))
