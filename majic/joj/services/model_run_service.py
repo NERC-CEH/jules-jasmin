@@ -435,7 +435,7 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             query = session.query(OutputVariable)
             if not include_depends_on_nsmax:
-                query = query.filter(OutputVariable.depends_on_nsmax.is_(False))
+                query = query.filter(OutputVariable.depends_on_nsmax == False)
             return query.all()
 
     def get_output_variable_by_id(self, id):
