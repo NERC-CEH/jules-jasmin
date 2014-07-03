@@ -16,7 +16,7 @@ CORE_USERNAME = 'core'
 # The default science configuration to use
 DEFAULT_SCIENCE_CONFIGURATION = 1
 
-# Model Run status descriptions
+# Model Run status descriptions *** If you update these update the same ones in job runner****
 MODEL_RUN_STATUS_CREATED = 'Created'
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'
 MODEL_RUN_STATUS_PENDING = 'Pending'
@@ -25,6 +25,7 @@ MODEL_RUN_STATUS_COMPLETED = 'Completed'
 MODEL_RUN_STATUS_PUBLISHED = 'Published'
 MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submited a model but it can not be submitted
+MODEL_RUN_STATUS_UNKNOWN = 'Unknown' # Job is in the bjobs list but the status is not understood
 
 # Parameter types
 PARAMETER_TYPE_INTEGER = 'integer'  # parameter is an integer (case is from documentation)

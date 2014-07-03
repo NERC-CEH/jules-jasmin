@@ -8,7 +8,7 @@ from hamcrest import *
 NAMELISTS = 'namelists'
 
 
-class TestJobsController(TestController):
+class TestJobsControllerNew(TestController):
 
     def setUp(self):
         model_run_id = 101

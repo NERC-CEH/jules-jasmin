@@ -1,4 +1,6 @@
+"""
 # Header
+"""
 import glob
 
 import os
@@ -6,13 +8,17 @@ from pylons import config
 import subprocess
 import re
 from job_runner.utils.constants import *
+from job_runner.model.log_file_parser import LogFileParser
+from job_runner.model.bjobs_parser import BjobsParser
 
 
 class ServiceError(Exception):
     """
     Exception class for when the service has a problem
     """
-    pass
+    def __init__(self, message):
+        super(ServiceError, self).__init__()
+        self.message = message
 
 
 class JobService(object):
@@ -28,6 +34,62 @@ class JobService(object):
         """
         self._valid_code_version = valid_code_versions
 
+    def exists_run_dir(self, model_run_id):
+        """
+        Checks that the model run directory exists
+        :param model_run_id: the model run id
+        :return:treu if it exists, false otherwise
+        """
+        return os.path.exists(self.get_run_dir(model_run_id))
+
+    def get_run_dir(self, model_run_id):
+        """
+        Get the run directory
+        :param model_run_id: the model run id
+        :return: the run directory
+        """
+        #ensure that the model id is a number so it can not possible contain path elements
+        model_run_id_dir = str(model_run_id)
+        assert(model_run_id_dir.isdigit())
+        run_directory = os.path.join(config['run_dir'], 'run%s' % model_run_id_dir)
+        return run_directory
+
+    def get_bsub_id(self, model_run_dir):
+        """
+        Read the bsub id from the file in the model run directory
+        :param model_run_dir: the model run directory
+        :return: the id or None if the file can not be read
+        """
+        file_path = os.path.join(model_run_dir, FILENAME_BSUB_ID)
+        f = open(file_path, 'r')
+        return int(f.read())
+
+    def write_bsub_id(self, model_run_dir, bsub_id):
+        """
+        Write the bsub id to the bsub id file in the model run directory
+        :param model_run_dir: the model run directory
+        :param bsub_id: the do to write
+        :return: nothing
+        """
+        file_path = os.path.join(model_run_dir, FILENAME_BSUB_ID)
+        f = open(file_path, 'w')
+        f.write(bsub_id)
+        f.close()
+
+    def get_output_log_result(self, run_dir):
+        """
+        Get the result of the Jules by looking at the log
+        :param run_dir: the run directory to get the file from
+        :return: log file parser
+        """
+        file_path = os.path.join(run_dir, FILENAME_OUTPUT_LOG)
+        if not os.path.exists(file_path):
+            raise ServiceError(ERROR_MESSAGE_NO_LOG_FILE)
+        f = open(file_path, 'r')
+        log_file_parser = LogFileParser(f)
+        log_file_parser.parse()
+        return log_file_parser
+
     def submit(self, model_run):
         """
         submit a job to the lsf framework
@@ -35,11 +97,10 @@ class JobService(object):
         :return: job id
         :exception ServiceError: if there is a problem submitting the job
         """
-        #ensure that the model id is a number so it can not possible contain path elements
-        model_run_id_dir = str(model_run[JSON_MODEL_RUN_ID])
-        assert(model_run_id_dir.isdigit())
+        if self.exists_run_dir(model_run[JSON_MODEL_RUN_ID]):
+            raise ServiceError("Run directory already exists for model run")
 
-        run_directory = os.path.join(config['run_dir'], 'run%s' % model_run_id_dir)
+        run_directory = self.get_run_dir(model_run[JSON_MODEL_RUN_ID])
 
         #create run directory
         os.mkdir(run_directory)
@@ -57,14 +118,18 @@ class JobService(object):
         model_run[JSON_MODEL_NAMELIST_FILES][0][JSON_MODEL_NAMELISTS].append(
             {
                 'name': 'JULES_SPINUP',
-                'parameters' : {'max_spinup_cycles': '0'}
+                'parameters': {'max_spinup_cycles': '0'}
             }
         )
 
         for namelist_file in model_run[JSON_MODEL_NAMELIST_FILES]:
             self._create_namelist_file(namelist_file, run_directory)
 
-        return self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory)
+        bsub_id = self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory)
+
+        self.write_bsub_id(run_directory, bsub_id)
+
+        return bsub_id
 
     def _submit_job(self, code_version, run_directory):
         """
@@ -118,4 +183,17 @@ class JobService(object):
 
         f.write('\n/\n')
 
+    def queued_jobs_status(self):
+        """
+        Get the status of jobs in the job queue
+        :return: the status
+        """
+        try:
+            output = subprocess.check_output([config['run_bjobs_command']], stderr=subprocess.STDOUT)
+            bjobs_parser = BjobsParser(output.splitlines())
+            return bjobs_parser.parse()
 
+        except subprocess.CalledProcessError, ex:
+            raise ServiceError('When getting running jobs, failed with non-zero error code. "%s"' % ex.output)
+        except Exception, ex:
+            raise ServiceError('Problem getting running jobs. "%s"' % ex.message)
