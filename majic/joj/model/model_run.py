@@ -55,9 +55,21 @@ class ModelRun(Base):
             self.date_created = datetime.datetime.now()
         return status
 
-    def get_parameter_value(self, parameter_namelist_name):
+    def get_parameter_values(self, parameter_namelist_name):
         """
-        Gets the value of a specified parameter
+        Gets all matching values of a specified parameter
+        :param parameter_namelist_name: list containing [namelist, name] of parameter to find
+        """
+        param_vals = []
+        for param_val in self.parameter_values:
+            if param_val.parameter.name == parameter_namelist_name[1]:
+                if param_val.parameter.namelist.name == parameter_namelist_name[0]:
+                    param_vals.append(param_val)
+        return param_vals
+
+    def get_python_parameter_value(self, parameter_namelist_name):
+        """
+        Gets the value of the first matching parameter value as a python object
         :param parameter_namelist_name: list containing [namelist, name] of parameter to find
         """
         for param_val in self.parameter_values:

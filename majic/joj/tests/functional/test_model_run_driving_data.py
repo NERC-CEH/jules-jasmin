@@ -1,4 +1,6 @@
+"""
 #header
+"""
 from urlparse import urlparse
 from hamcrest import assert_that, contains_string, is_
 from pylons import url
@@ -71,7 +73,7 @@ class TestModelRunDrivingData(TestController):
 
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='parameters')), "url")
+                    is_(url(controller='model_run', action='extents')), "url")
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_go_back_THEN_create_page_rendered(self):
         self._add_model_run_being_created()
@@ -107,5 +109,5 @@ class TestModelRunDrivingData(TestController):
 
         model_run_service = ModelRunService()
         model_run = model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        param_val = model_run.get_parameter_value(["JULES_DRIVE", "file"])
+        param_val = model_run.get_python_parameter_value(["JULES_DRIVE", "file"])
         assert_that(param_val, is_('testFileName'))

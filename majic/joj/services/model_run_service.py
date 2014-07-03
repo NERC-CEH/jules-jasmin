@@ -8,10 +8,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
-from joj.utils import constants, f90_helper
+from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
+from joj.model.output_variable import OutputVariable
 
 log = logging.getLogger(__name__)
 
@@ -309,7 +310,6 @@ class ModelRunService(DatabaseService):
             model_run = self._get_model_run_being_created(session, user)
             model_run.driving_dataset_id = driving_dataset.id
             session.add(model_run)
-            parameters = self._get_parameters_for_creating_model(session, user)
             for driving_dataset_param_val in driving_dataset.parameter_values:
                 val = ParameterValue()
                 val.value = driving_dataset_param_val.value
@@ -345,12 +345,14 @@ class ModelRunService(DatabaseService):
             parameter = self._get_parameter_by_name(param_name, param_namelist, session)
             return parameter
 
-    def save_parameter(self, param_namelist_name, value, user):
+    def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """
         Save a parameter against the model currently being created
-        :param param_namelist_name: List containg the parameter namelist, name
+        :param param_namelist_name: List containing the parameter namelist, name
         :param value: The value to set
         :param user: The currently logged in user
+        :param group_id: If this parameter's namelist is used more than once, specify a group ID to group parameters
+        together into one instance of the namelist
         :return:
         """
         with self.transaction_scope() as session:
@@ -359,10 +361,29 @@ class ModelRunService(DatabaseService):
             try:
                 parameter_value = session.query(ParameterValue)\
                     .filter(ParameterValue.model_run_id == model_run.id)\
+                    .filter(ParameterValue.group_id == group_id)\
                     .filter(ParameterValue.parameter_id == parameter.id).one()
             except NoResultFound:
                 parameter_value = ParameterValue()
                 parameter_value.parameter = parameter
                 parameter_value.model_run = model_run
+                parameter_value.group_id = group_id
             parameter_value.set_value_from_python(value)
             session.add(parameter_value)
+
+    def get_output_variables(self):
+        """
+        Get all the JULES output variables
+        :return: list of OutputVariables
+        """
+        with self.readonly_scope() as session:
+            return session.query(OutputVariable).all()
+
+    def get_output_variable_by_id(self, id):
+        """
+        Get an Output Variable by Database ID
+        :param id: Database ID of Output Variable to retrieve
+        :return: Matching OutputVariable
+        """
+        with self.readonly_scope() as session:
+            return session.query(OutputVariable).filter(OutputVariable.id == id).one()
