@@ -57,7 +57,7 @@ class ModelRun(Base):
 
     def get_parameter_values(self, parameter_namelist_name):
         """
-        Gets all matching values of a specified parameter
+        Gets all matching values of a specified parameter, sorted by group id and then Python value
         :param parameter_namelist_name: list containing [namelist, name] of parameter to find
         """
         param_vals = []
@@ -65,6 +65,8 @@ class ModelRun(Base):
             if param_val.parameter.name == parameter_namelist_name[1]:
                 if param_val.parameter.namelist.name == parameter_namelist_name[0]:
                     param_vals.append(param_val)
+        param_vals.sort(key=lambda pv: pv.get_value_as_python())
+        param_vals.sort(key=lambda pv: pv.group_id)
         return param_vals
 
     def get_python_parameter_value(self, parameter_namelist_name):

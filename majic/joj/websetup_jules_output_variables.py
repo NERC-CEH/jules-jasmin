@@ -6,6 +6,7 @@ from lxml import html, etree
 import re
 from joj.model import NamelistFile, Namelist, Parameter
 from model.output_variable import OutputVariable
+from utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -15,10 +16,6 @@ class JulesOutputVariableParser(object):
     Parser for the Jules documentation
     Parses the html output variables into the database objects
     """
-
-    # Some variables depend on the value of nsmax - keep a record of those names here:
-    _DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
-                         'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
 
     def parse(self, file_path):
         """
@@ -40,7 +37,7 @@ class JulesOutputVariableParser(object):
             for i in range(len(desc_tags)):
                 output_variable.description += desc_tags[i]
                 output_variable.description += desc_texts[i+1]
-            output_variable.depends_on_nsmax = output_variable.name in self._DEPENDS_ON_NSMAX
+            output_variable.depends_on_nsmax = output_variable.name in constants.DEPENDS_ON_NSMAX
             output_variables.append(output_variable)
 
         return output_variables

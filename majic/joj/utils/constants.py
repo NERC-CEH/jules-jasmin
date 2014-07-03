@@ -45,6 +45,11 @@ NETCDF_LONGITUDE = 'Longitude'
 NETCDF_TIME = 'Time'
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
+
+# Some variables depend on the value of nsmax being > 0 - keep a record of those names here:
+DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
+                    'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
+
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_USE_SUBGRID = [JULES_NML_MODEL_GRID, "use_subgrid"]
 JULES_PARAM_LATLON_REGION = [JULES_NML_MODEL_GRID, "latlon_region"]

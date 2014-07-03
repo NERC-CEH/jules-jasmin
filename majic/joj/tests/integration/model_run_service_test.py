@@ -324,7 +324,7 @@ class ModelRunServiceTest(TestController):
             parameter1.model_run_id = model_run.id
             session.add(parameter1)
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        param_value_returned = model_run_returned.get_parameter_value([param_namelist, param_name])
+        param_value_returned = model_run_returned.get_parameter_value_as_python([param_namelist, param_name])
         assert_that(param_value_returned, is_("param1 value"))
 
     def test_GIVEN_no_run_model_WHEN_create_run_model_with_science_config_THEN_model_created_with_parameter_values_copied(self):

@@ -387,6 +387,17 @@ class ModelRunService(DatabaseService):
             .filter(ModelRun.user == user) \
             .one()
 
+    def remove_parameter_set_from_model_being_created(self, parameter_values, user):
+        """
+        Remove a group of Parameter Values from the model currently being created
+        :param parameter_values: List of ParameterValues to remove
+        :param user: Currently logged in user
+        :return: nothing
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            self._remove_parameter_set_from_model(parameter_values, model_run, session)
+
     def _remove_parameter_set_from_model(self, parameter_values, model_run, session):
         """
         Remove a group of parameters from a model
@@ -415,13 +426,17 @@ class ModelRunService(DatabaseService):
             val.model_run = model_run
             session.add(val)
 
-    def get_output_variables(self):
+    def get_output_variables(self, include_depends_on_nsmax=True):
         """
         Get all the JULES output variables
+        :param include_depends_on_nsmax: Boolean indicating whether output variables which depend on the JULES parameter
         :return: list of OutputVariables
         """
         with self.readonly_scope() as session:
-            return session.query(OutputVariable).all()
+            query = session.query(OutputVariable)
+            if not include_depends_on_nsmax:
+                query = query.filter(OutputVariable.depends_on_nsmax.is_(False))
+            return query.all()
 
     def get_output_variable_by_id(self, id):
         """
