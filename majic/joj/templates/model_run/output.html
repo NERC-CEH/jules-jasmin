@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>Create Model Run</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
+    <link rel="stylesheet" type="text/css" href="../layout/model_run_output.css"/>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <script src="../js/model_run_output.js"></script>
+    <link rel="stylesheet" type="text/css" href="${h.url('/layout/joj_catalogue.css')}"/>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+</head>
+<body id="create">
+<h1>Select Output Variables</h1>
+
+<div class="row" style="display:none">
+    <div class="span12">
+        <div class="alert alert-block alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h4>Be aware!</h4>
+            <p>
+                This is some health warning text
+            </p>
+        </div>
+    </div>
+</div>
+<p>Add or remove variables for JULES to output:</p>
+
+<div id="input-bar" class="input-prepend">
+    <button id="input-bar-btn" class="btn" type="button">
+        <i class='fa fa-plus fa-1x' style='color:green'></i>
+    </button>
+    <input id="autoText" type="text" style="width:500px" placeholder="Start typing to see matching output variables"/>
+</div>
+<ul id="results" class="uneditable-input" style="display:none; overflow-y:scroll">
+</ul>
+<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='output')}">
+    <fieldset>
+    <!--<legend>Selected Output Parameters:</legend>-->
+    <py:for each="output_var in c.output_variables">
+        <div class="row" id="output_row_${output_var.id}" style="${'display:none' if output_var.id not in c.selected_output_ids else None}">
+            <div class="span1 ico-span">
+                <a class="remove_output_var" ov-id="${output_var.id}" href="#"
+                   onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('red')"
+                   onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('red')">
+                    <i class="fa fa-times fa-3x ico"></i>
+                </a>
+                <div class="ico-text red">Delete</div>
+            </div>
+            <input id="ov_select_${output_var.id}" name="ov_select_${output_var.id}" type="checkbox"
+                   checked="${1 if output_var.id in c.selected_output_ids else None}" style="display:none"/>
+            <div class="span7">
+                <h4 style="margin-bottom:5px">
+                    ${output_var.name}
+                </h4>
+                <p class="description">${output_var.description}</p>
+            </div>
+            <div class="span1 output_period">
+                <input name="ov_yearly_${output_var.id}" type="checkbox"
+                       checked="${1 if output_var.id in c.yearly_output_ids else None}"/>
+                <br/>
+                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
+                Yearly
+            </div>
+            <div class="span1 output_period">
+                <input name="ov_monthly_${output_var.id}" type="checkbox"
+                        checked="${1 if output_var.id in c.monthly_output_ids else None}"/>
+                <br/>
+                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
+                Monthly
+            </div>
+            <div class="span1 output_period">
+                <input name="ov_daily_${output_var.id}" type="checkbox"
+                       checked="${1 if output_var.id in c.daily_output_ids else None}"/>
+                <br/>
+                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
+                Daily
+            </div>
+            <div class="span1 output_period">
+                <input name="ov_timestep_${output_var.id}" type="checkbox"
+                       checked="${1 if output_var.id in c.timestep_output_ids else None}"/>
+                <br/>
+                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
+                ${c.timestep_description}
+            </div>
+        </div>
+    </py:for>
+
+
+
+
+    <div class="control-group" title="Model runs need driving data to run.">
+
+        <div class="controls">
+        </div>
+    </div>
+
+
+    <div class="controls">
+        <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
+        <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
+    </div>
+        </fieldset>
+</form>
+
+<div class="modal fade hide" id="dataset-preview"></div>
+    <div style="display:none">
+        <table>
+            <tbody id="searchTable">
+            <py:for each="output_var in c.output_variables">
+                <tr id="output_var_${output_var.id}">
+                    <td id="name_${output_var.id}">${output_var.name}</td>
+                    <td id="desc_${output_var.id}">${output_var.description}</td>
+                </tr>
+            </py:for>
+            </tbody>
+        </table>
+    </div>
+<script>initHandlers();</script>
+</body>
+</html>
