@@ -98,14 +98,8 @@ def setup_app(command, conf, vars):
         default_code_version.is_default = True
         session.add(default_code_version)
 
-        code_version = CodeVersion()
-        code_version.name = 'Jules Not Versioned'
-        code_version.url_base = 'http://www.jchmr.org/jules/documentation/user_guide/blah'
-        code_version.is_default = False
-        session.add(code_version)
-
         jules_parameter_parser = JulesParameterParser()
-        namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", code_version)
+        namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", default_code_version)
 
         for namelist_file in namelist_files:
             session.add(namelist_file)
@@ -115,7 +109,7 @@ def setup_app(command, conf, vars):
             "configuration/Jules/scientific_configurations/",
             namelist_files,
             core_user,
-            code_version,
+            default_code_version,
             stat_created)
 
         jules_output_variables_parser = JulesOutputVariableParser()

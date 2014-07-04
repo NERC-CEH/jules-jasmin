@@ -8,15 +8,7 @@ from job_runner.lib.base import BaseController
 from lxml import html
 
 job_runner_error_document_template = literal("""\
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
- <title>Server Error %(code)s</title>
-</head>
-<body>
-        %(message)s
-</body>
-</html>
+%(message)s
 """)
 
 class ErrorController(BaseController):

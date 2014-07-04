@@ -3,6 +3,7 @@ header
 """
 
 import logging
+from pylons import config
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc

@@ -1,19 +1,18 @@
 &JULES_INPUT_GRID
-  nx = 1,
-  ny = 1
-/
 
+/
 &JULES_LATLON
-  latitude  = 52.168,
-  longitude = 5.744
+
 /
+&JULES_LAND_FRAC
 
-# Land fraction is assumed to be 1.0 for single point runs
-&JULES_LAND_FRAC /
-
-# We do not want to run on a subgrid of the input, so nothing to do here
-&JULES_MODEL_GRID /
-
+/
+&JULES_MODEL_GRID
+  latlon_region = .true.,
+  use_subgrid = .true.,
+  lat_bounds = 40, 50,
+  lon_bounds = -30, 10
+/
 &JULES_SURF_HGT
-  zero_height = T
+
 /

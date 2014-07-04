@@ -78,7 +78,7 @@ class JobsController(BaseController):
         """
 
         json = self.get_json_abort_on_error()
-
+        log.debug("New Model with parameters %s" % json)
         if not JSON_MODEL_CODE_VERSION in json or json[JSON_MODEL_CODE_VERSION] not in VALID_CODE_VERSIONS:
             abort(400, "Invalid code version")
 

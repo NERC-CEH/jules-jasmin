@@ -109,3 +109,36 @@ class TestJobRunnerClient(TestController):
                            constants.JULES_PARAM_OUTPUT_NPROFILES[1]: 2
                        }}
         assert_that(namelists, contains_inanyorder(profiles_dict1, profiles_dict2, output_dict))
+
+    def test_GIVEN_valid_model_WHEN_convert_to_dictionary_THEN_namelist_with_no_representation_are_present(self):
+
+        job_runner_client = JobRunnerClient()
+
+        parameter = Parameter(name='param1')
+        expected_parameter_value = '12'
+        #There is no parameter value:
+        parameter.parameter_values = []
+
+        namelist = Namelist(name='NAME_LIST')
+        namelist_file = NamelistFile(filename='filename')
+
+        namelist.parameters = [parameter]
+        namelist.namelist_file = namelist_file
+
+        model_run = ModelRun()
+        model_run.id = 101
+        code_version = CodeVersion(name='Jules v3.4.1')
+
+        model_run.code_version = code_version
+        code_version.parameters = [parameter]
+
+        result = job_runner_client.convert_model_to_dictionary(model_run)
+
+        namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
+        assert_that(namelist_file_result[constants.JSON_MODEL_NAMELIST_FILE_FILENAME],
+                    is_(namelist_file.filename), "value is correct")
+        assert_that(namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_NAMELIST_NAME],
+                    is_(namelist.name), "value is correct")
+
+        parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
+        assert_that(parameters_result, is_({}), "there are no values")
