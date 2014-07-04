@@ -30,13 +30,16 @@ class JulesOutputVariableParser(object):
         log.info("Parsing %s" % file_path)
         tree = html.parse(file_path)
         output_variables = []
-        output_table_rows = tree.xpath('//tbody/tr[@class="row-even"] | //tbody/tr[@class="row-odd"]')
+        output_table_rows = tree.xpath(
+            '//div[@id="variables-that-have-a-single-value-at-each-land-gridpoint"]/table/tbody/tr[@class="row-even"] '
+            '| //div[@id="variables-that-have-a-single-value-at-each-land-gridpoint"]/table/tbody/tr[@class="row-odd"]')
         for output_row in output_table_rows:
             output_variable = OutputVariable()
             output_variable.name = str(output_row.xpath('td/tt/span[@class="pre"]/text()')[0])
             # Need to reconstruct the description because of <sup> tags
             desc_texts = output_row.xpath('td[2]/text() | td[2]/p[1]/text()')
-            desc_tags = output_row.xpath('td[2]/sup/text() | td[2]/p[1]/sup/text() | td[2]/tt/span/text()')
+            desc_tags = output_row.xpath('td[2]/sup/text() | td[2]/p[1]/sup/text() | td[2]/tt/span/text() '
+                                         '| td[2]/a/tt/span/text()')
             output_variable.description = unicode(desc_texts[0])
             for i in range(len(desc_tags)):
                 output_variable.description += desc_tags[i]
