@@ -40,7 +40,6 @@
 </ul>
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='output')}">
     <fieldset>
-    <!--<legend>Selected Output Parameters:</legend>-->
     <py:for each="output_var in c.output_variables">
         <div class="row" id="output_row_${output_var.id}" style="${'display:none' if output_var.id not in c.selected_output_ids else None}">
             <div class="span1 ico-span">
@@ -54,37 +53,33 @@
             <input id="ov_select_${output_var.id}" name="ov_select_${output_var.id}" type="checkbox"
                    checked="${1 if output_var.id in c.selected_output_ids else None}" style="display:none"/>
             <div class="span7">
-                <h4 style="margin-bottom:5px">
+                <h4 id="name_${output_var.id}" style="margin-bottom:5px">
                     ${output_var.name}
                 </h4>
-                <p class="description">${output_var.description}</p>
+                <p id="desc_${output_var.id}" class="description">${output_var.description}</p>
             </div>
             <div class="span1 output_period">
                 <input name="ov_yearly_${output_var.id}" type="checkbox"
                        checked="${1 if output_var.id in c.yearly_output_ids else None}"/>
                 <br/>
-                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
                 Yearly
             </div>
             <div class="span1 output_period">
                 <input name="ov_monthly_${output_var.id}" type="checkbox"
                         checked="${1 if output_var.id in c.monthly_output_ids else None}"/>
                 <br/>
-                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
                 Monthly
             </div>
             <div class="span1 output_period">
                 <input name="ov_daily_${output_var.id}" type="checkbox"
                        checked="${1 if output_var.id in c.daily_output_ids else None}"/>
                 <br/>
-                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
                 Daily
             </div>
             <div class="span1 output_period">
                 <input name="ov_timestep_${output_var.id}" type="checkbox"
                        checked="${1 if output_var.id in c.timestep_output_ids else None}"/>
                 <br/>
-                <!--<i class="fa fa-check-square-o fa-2x green"></i>-->
                 ${c.timestep_description}
             </div>
         </div>
@@ -108,18 +103,6 @@
 </form>
 
 <div class="modal fade hide" id="dataset-preview"></div>
-    <div style="display:none">
-        <table>
-            <tbody id="searchTable">
-            <py:for each="output_var in c.output_variables">
-                <tr id="output_var_${output_var.id}">
-                    <td id="name_${output_var.id}">${output_var.name}</td>
-                    <td id="desc_${output_var.id}">${output_var.description}</td>
-                </tr>
-            </py:for>
-            </tbody>
-        </table>
-    </div>
 <script>initHandlers();</script>
 </body>
 </html>
