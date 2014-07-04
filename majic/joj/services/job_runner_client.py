@@ -48,11 +48,11 @@ class JobRunnerClient(DatabaseService):
         for parameter in run_model.code_version.parameters:
             namelist_file = self._find_or_create_namelist_file(namelist_files,
                                                                parameter.namelist.namelist_file.filename)
-            if constants.JSON_MODEL_NAMELISTS not in namelist_file:
-                namelist_file[constants.JSON_MODEL_NAMELISTS] = []
             if len(parameter.parameter_values) == 0:
-                self._find_or_create_namelist(namelist_file[constants.JSON_MODEL_NAMELISTS],
-                                                         parameter.namelist.name, None)
+                self._find_or_create_namelist(
+                    namelist_file[constants.JSON_MODEL_NAMELISTS],
+                    parameter.namelist.name,
+                    None)
             else:
                 for parameter_value in parameter.parameter_values:
                     namelist = self._find_or_create_namelist(namelist_file[constants.JSON_MODEL_NAMELISTS],
@@ -77,7 +77,8 @@ class JobRunnerClient(DatabaseService):
         for namelist_file in namelist_files:
             if namelist_file[constants.JSON_MODEL_NAMELIST_FILE_FILENAME] == namelist_filename:
                 return namelist_file
-        namelist_file = {constants.JSON_MODEL_NAMELIST_FILE_FILENAME: namelist_filename}
+        namelist_file = {constants.JSON_MODEL_NAMELIST_FILE_FILENAME: namelist_filename,
+                         constants.JSON_MODEL_NAMELISTS: []}
         namelist_files.append(namelist_file)
         return namelist_file
 
