@@ -5,6 +5,19 @@ from pylons.middleware import error_document_template
 from webhelpers.html.builder import literal
 
 from job_runner.lib.base import BaseController
+from lxml import html
+
+job_runner_error_document_template = literal("""\
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+ <title>Server Error %(code)s</title>
+</head>
+<body>
+        %(message)s
+</body>
+</html>
+""")
 
 class ErrorController(BaseController):
     """Generates error documents as and when they are required.
@@ -21,10 +34,12 @@ class ErrorController(BaseController):
         request = self._py_object.request
         resp = request.environ.get('pylons.original_response')
         content = literal(resp.body) or cgi.escape(request.GET.get('message', ''))
-        page = error_document_template % \
+        tree = html.fromstring(content)
+        message = tree.xpath('//body/text()')[-1]
+        page = job_runner_error_document_template % \
             dict(prefix=request.environ.get('SCRIPT_NAME', ''),
                  code=cgi.escape(request.GET.get('code', str(resp.status_int))),
-                 message=content)
+                 message=message)
         return page
 
     def img(self, id):
