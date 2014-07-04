@@ -117,12 +117,12 @@ hideResults = function () {
 }
 
 /** 
- * When the text in the autcomplete box is changed this function updates the autocomplete drop down
+ * When the text in the autocomplete box is changed this function updates the autocomplete drop down
  */
 autoComplete = function () {
-    searchText = $("#autoText").val();
-    results = search(searchText);
-    if (results.length == 0) {
+    var searchText = $("#autoText").val();
+    var results = search(searchText);
+    if (results.length === 0) {
         displayNoMatches(searchText);
         return;
     }
@@ -137,9 +137,9 @@ autoKeyPress = function (e) {
     	var code = (e.keyCode ? e.keyCode : e.which);
 
     	// DOWN
-    	if (code == KEY_CODE_DOWN) {
+    	if (code === KEY_CODE_DOWN) {
 			// Select the first result if none currently selected
-    		if ($(".result.hovered").length == 0) {
+    		if ($(".result.hovered").length === 0) {
     			$("#results li").first().addClass("hovered");
     		} else {
                 $(".result.hovered").first().removeClass("hovered").next().addClass("hovered");
@@ -154,12 +154,11 @@ autoKeyPress = function (e) {
     		        $(".result.hovered").removeClass("hovered");
     		        $(".result").first().addClass("hovered");
     		    }
-
     		}
     	// UP
-    	} else if (code == KEY_CODE_UP) {
+    	} else if (code === KEY_CODE_UP) {
 			// Select the last result if none currently selected (and scroll to it)
-            if ($(".result.hovered").length == 0) {
+            if ($(".result.hovered").length === 0) {
     			$("#results li").last().addClass("hovered");
     			$("#results").scrollTop($("#results")[0].scrollHeight);
     		} else {
@@ -171,7 +170,7 @@ autoKeyPress = function (e) {
 				// Select the next item up
                 $(".result.hovered").first().removeClass("hovered").prev().addClass("hovered");
                 // Wrap round and scroll
-				if (position == 0) {
+				if (position === 0) {
                     $("#results").scrollTop($("#results").height());
     		        $(".result.hovered").removeClass("hovered");
     		        $(".result").last().addClass("hovered");
@@ -180,7 +179,7 @@ autoKeyPress = function (e) {
 
     		}
         // ENTER
-        } else if(code == KEY_CODE_ENTER) {
+        } else if(code === KEY_CODE_ENTER) {
     		if($(".result.hovered").length > 0){
     			$(".result.hovered").first().mousedown();
     		}
