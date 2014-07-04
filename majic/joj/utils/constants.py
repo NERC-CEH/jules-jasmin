@@ -44,12 +44,15 @@ NETCDF_LATITUDE = 'Latitude'
 NETCDF_LONGITUDE = 'Longitude'
 NETCDF_TIME = 'Time'
 
-# Constants for Jules Parameters (so we can easily update if they change name etc)
 
-# Some variables depend on the value of nsmax being > 0 - keep a record of those names here:
+# Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
                     'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
 
+# Set the timestep length in seconds
+TIMESTEP_LEN = 60 * 60  # One hour
+
+# Constants for Jules Parameters (so we can easily update if they change name etc)
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_USE_SUBGRID = [JULES_NML_MODEL_GRID, "use_subgrid"]
 JULES_PARAM_LATLON_REGION = [JULES_NML_MODEL_GRID, "latlon_region"]
@@ -57,6 +60,7 @@ JULES_PARAM_LAT_BOUNDS = [JULES_NML_MODEL_GRID, "lat_bounds"]
 JULES_PARAM_LON_BOUNDS = [JULES_NML_MODEL_GRID, "lon_bounds"]
 
 JULES_NML_TIME = "JULES_TIME"
+JULES_PARAM_TIMESTEP_LEN = [JULES_NML_TIME, "timestep_len"]
 JULES_PARAM_RUN_START = [JULES_NML_TIME, "main_run_start"]
 JULES_PARAM_RUN_END = [JULES_NML_TIME, "main_run_end"]
 

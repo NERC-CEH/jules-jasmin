@@ -172,7 +172,7 @@ class TestModelRunExtents(TestController):
         assert_that(str(start_run), is_("'1940-10-13 12:00:00'"))
         assert_that(str(end_run), is_("'1950-10-13 12:00:00'"))
 
-    def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_parameters(self):
+    def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_output(self):
         response = self.app.post(
             url(controller='model_run', action='extents'),
             params={
@@ -188,4 +188,4 @@ class TestModelRunExtents(TestController):
             })
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='parameters')), "url")
+                    is_(url(controller='model_run', action='output')), "url")
