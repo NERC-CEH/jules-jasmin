@@ -171,7 +171,7 @@ autoKeyPress = function (e) {
                 $(".result.hovered").first().removeClass("hovered").prev().addClass("hovered");
                 // Wrap round and scroll
 				if (position === 0) {
-                    $("#results").scrollTop($("#results").height());
+                    $("#results").scrollTop($("#results")[0].scrollHeight);
     		        $(".result.hovered").removeClass("hovered");
     		        $(".result").last().addClass("hovered");
                 }
