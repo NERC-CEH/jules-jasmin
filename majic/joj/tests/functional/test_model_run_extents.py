@@ -7,7 +7,7 @@ from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import JULES_PARAM_LON_BOUNDS, JULES_PARAM_LAT_BOUNDS, JULES_PARAM_LATLON_REGION, \
-    JULES_PARAM_USE_SUBGRID, MODEL_RUN_STATUS_CREATED
+    JULES_PARAM_USE_SUBGRID, MODEL_RUN_STATUS_CREATED, JULES_PARAM_RUN_START, JULES_PARAM_RUN_END
 
 
 class TestModelRunExtents(TestController):
@@ -90,8 +90,10 @@ class TestModelRunExtents(TestController):
         self.model_run_service.save_parameter(JULES_PARAM_RUN_END, end_time, self.user)
         response = self.app.get(
             url(controller='model_run', action='extents'))
-        assert_that(response.normal_body, contains_string(start_time.strftime("%Y-%m-%d %X")))
-        assert_that(response.normal_body, contains_string(end_time.strftime("%Y-%m-%d %X")))
+        assert_that(response.normal_body, contains_string(start_time.strftime("%Y-%m-%d")))
+        assert_that(response.normal_body, contains_string(start_time.strftime("%X")))
+        assert_that(response.normal_body, contains_string(end_time.strftime("%Y-%m-%d")))
+        assert_that(response.normal_body, contains_string(end_time.strftime("%X")))
 
     def test_GIVEN_invalid_spatial_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [40, 500], self.user)
@@ -102,7 +104,7 @@ class TestModelRunExtents(TestController):
         assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
 
     def test_GIVEN_invalid_temporal_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
-        start_time = datetime.datetime(1066, 10, 14, 17, 12, 11)
+        start_time = datetime.datetime(1900, 10, 14, 17, 12, 11)
         end_time = datetime.datetime(1969, 7, 21, 20, 17, 00)
         self.model_run_service.save_parameter(JULES_PARAM_RUN_START, start_time, self.user)
         self.model_run_service.save_parameter(JULES_PARAM_RUN_END, end_time, self.user)
@@ -135,7 +137,7 @@ class TestModelRunExtents(TestController):
                 'lat_s': 20,
                 'lon_e': 40,
                 'lon_w': 35,
-                'start_date': '1066-10-14',
+                'start_date': '1900-10-14',
                 'start_time': '12:00:00',
                 'end_date': '1950-10-13',
                 'end_time': '12:00:00'
@@ -157,20 +159,20 @@ class TestModelRunExtents(TestController):
                 'end_time': '12:00:00'
             })
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        lat_bounds = model_run.get_parameter_value(JULES_PARAM_LAT_BOUNDS)
-        lon_bounds = model_run.get_parameter_value(JULES_PARAM_LON_BOUNDS)
-        use_subgrid = model_run.get_parameter_value(JULES_PARAM_USE_SUBGRID)
-        latlon_region = model_run.get_parameter_value(JULES_PARAM_LATLON_REGION)
-        start_run = model_run.get_parameter_value(JULES_PARAM_RUN_START)
-        end_run = model_run.get_parameter_value(JULES_PARAM_RUN_END)
-        assert_that(lat_bounds, is_("20.0, 25.0"))
-        assert_that(lon_bounds, is_("35.0, 40.0"))
+        lat_bounds = model_run.get_parameter_values(JULES_PARAM_LAT_BOUNDS)[0].value
+        lon_bounds = model_run.get_parameter_values(JULES_PARAM_LON_BOUNDS)[0].value
+        use_subgrid = model_run.get_parameter_values(JULES_PARAM_USE_SUBGRID)[0].value
+        latlon_region = model_run.get_parameter_values(JULES_PARAM_LATLON_REGION)[0].value
+        start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
+        end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
+        assert_that(lat_bounds, is_("20, 25"))
+        assert_that(lon_bounds, is_("35, 40"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".true."))
-        assert_that(start_run, is_('1940-10-13 12:00:00'))
-        assert_that(end_run, is_('1950-10-13 12:00:00'))
+        assert_that(str(start_run), is_("'1940-10-13 12:00:00'"))
+        assert_that(str(end_run), is_("'1950-10-13 12:00:00'"))
 
-    def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_parameters(self):
+    def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_output(self):
         response = self.app.post(
             url(controller='model_run', action='extents'),
             params={
@@ -186,4 +188,4 @@ class TestModelRunExtents(TestController):
             })
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='parameters')), "url")
+                    is_(url(controller='model_run', action='output')), "url")

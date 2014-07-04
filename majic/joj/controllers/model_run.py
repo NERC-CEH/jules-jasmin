@@ -26,6 +26,7 @@ from joj.model.model_run_extent_schema import ModelRunExtentSchema
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent
 
 from joj.utils.utils import find_by_id, KeyNotFound
+from joj.utils import output_controller_helper
 
 # The prefix given to parameter name in html elements
 
@@ -248,13 +249,13 @@ class ModelRunController(BaseController):
 
         if not request.POST:
             # Get the extents from the database if already set or default them to dataset boundaries if not
-            lat_s, lat_n = model_run.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS) \
+            lat_s, lat_n = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS) \
                 or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
-            lon_w, lon_e = model_run.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS) \
+            lon_w, lon_e = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS) \
                 or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-            run_start = model_run.get_parameter_value(constants.JULES_PARAM_RUN_START) \
+            run_start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START) \
                 or driving_data.time_start
-            run_end = model_run.get_parameter_value(constants.JULES_PARAM_RUN_END) \
+            run_end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END) \
                 or driving_data.time_end
 
             # Set the values to display in the form
@@ -315,9 +316,47 @@ class ModelRunController(BaseController):
             except KeyError:
                 action = None
             if action == u'Next':
-                redirect(url(controller='model_run', action='parameters'))
+                redirect(url(controller='model_run', action='output'))
             else:
                 redirect(url(controller='model_run', action='driving_data'))
+
+    def output(self):
+        """
+        Select output parameters
+        """
+        # First we need to check that we are allowed to be on this page
+        model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
+
+        if not request.POST:
+            # We need to not show the output variables which are dependent on JULES_MODEL_LEVELS::nsmax if nsmax is 0
+            jules_param_nsmax = model_run.get_python_parameter_value(constants.JULES_PARAM_NSMAX)
+            c.output_variables = self._model_run_service.get_output_variables(
+                include_depends_on_nsmax=jules_param_nsmax > 0)
+
+            # We want to pass the renderer a list of which output variables are already selected and for which time
+            # periods so that we can render these onto the page as selected
+            output_controller_helper.add_selected_outputs_to_template_context(c, model_run)
+
+            return render("model_run/output.html")
+        else:
+            values = dict(request.params)
+
+            # Identify the requested output variables and save the appropriate parameters
+            output_variable_groups = output_controller_helper.create_output_variable_groups(values,
+                                                                                            self._model_run_service,
+                                                                                            model_run)
+
+            self._model_run_service.set_output_variables_for_model_being_created(output_variable_groups,
+                                                                                 self.current_user)
+            # Get the action to perform
+            try:
+                action = values['submit']
+            except KeyError:
+                action = None
+            if action == u'Next':
+                redirect(url(controller='model_run', action='parameters'))
+            else:
+                redirect(url(controller='model_run', action='extents'))
 
     def parameters(self):
         """
@@ -350,7 +389,7 @@ class ModelRunController(BaseController):
             if action == u'Next':
                 redirect(url(controller='model_run', action='submit'))
             else:
-                redirect(url(controller='model_run', action='extents'))
+                redirect(url(controller='model_run', action='output'))
 
     def submit(self):
         """

@@ -5,7 +5,8 @@ import logging
 from lxml import html, etree
 import re
 from joj.model import NamelistFile, Namelist, Parameter
-from model.output_variable import OutputVariable
+from joj.model.output_variable import OutputVariable
+from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class JulesOutputVariableParser(object):
             for i in range(len(desc_tags)):
                 output_variable.description += desc_tags[i]
                 output_variable.description += desc_texts[i+1]
-            output_variable.depends_on_nsmax = output_variable.name in self._DEPENDS_ON_NSMAX
+            output_variable.depends_on_nsmax = output_variable.name in constants.DEPENDS_ON_NSMAX
             output_variables.append(output_variable)
 
         return output_variables
