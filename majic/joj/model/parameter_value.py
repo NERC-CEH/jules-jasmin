@@ -20,6 +20,7 @@ class ParameterValue(Base):
 
     model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     parameter_id = Column(Integer, ForeignKey('parameters.id'))
+    group_id = Column(Integer)
 
     def __repr__(self):
         """String representation"""

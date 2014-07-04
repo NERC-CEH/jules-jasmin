@@ -37,12 +37,21 @@ JSON_MODEL_NAMELISTS = 'namelists'
 JSON_MODEL_NAMELIST_FILES = 'namelist_files'
 JSON_MODEL_PARAMETERS = 'parameters'
 JSON_MODEL_NAMELIST_NAME = 'name'
+JSON_MODEL_NAMELIST_GROUP_ID = 'group_id'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
 
 # Constants for reading netCDF files
 NETCDF_LATITUDE = 'Latitude'
 NETCDF_LONGITUDE = 'Longitude'
 NETCDF_TIME = 'Time'
+
+
+# Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
+DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
+                    'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
+
+# Set the timestep length in seconds
+TIMESTEP_LEN = 60 * 60  # One hour
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
@@ -52,5 +61,20 @@ JULES_PARAM_LAT_BOUNDS = [JULES_NML_MODEL_GRID, "lat_bounds"]
 JULES_PARAM_LON_BOUNDS = [JULES_NML_MODEL_GRID, "lon_bounds"]
 
 JULES_NML_TIME = "JULES_TIME"
+JULES_PARAM_TIMESTEP_LEN = [JULES_NML_TIME, "timestep_len"]
 JULES_PARAM_RUN_START = [JULES_NML_TIME, "main_run_start"]
 JULES_PARAM_RUN_END = [JULES_NML_TIME, "main_run_end"]
+
+JULES_NML_OUTPUT_PROFILE = "JULES_OUTPUT_PROFILE"
+JULES_PARAM_PROFILE_NAME = [JULES_NML_OUTPUT_PROFILE, "profile_name"]
+JULES_PARAM_OUTPUT_MAIN_RUN = [JULES_NML_OUTPUT_PROFILE, "output_main_run"]
+JULES_PARAM_OUTPUT_PERIOD = [JULES_NML_OUTPUT_PROFILE, "output_period"]
+JULES_PARAM_NVARS = [JULES_NML_OUTPUT_PROFILE, "nvars"]
+JULES_PARAM_VAR = [JULES_NML_OUTPUT_PROFILE, "var"]
+JULES_PARAM_OUTPUT_TYPE = [JULES_NML_OUTPUT_PROFILE, "output_type"]
+
+JULES_NML_OUTPUT = "JULES_OUTPUT"
+JULES_PARAM_OUTPUT_NPROFILES = [JULES_NML_OUTPUT, "nprofiles"]
+
+JULES_NML_MODEL_LEVELS = "JULES_MODEL_LEVELS"
+JULES_PARAM_NSMAX = [JULES_NML_MODEL_LEVELS, "nsmax"]

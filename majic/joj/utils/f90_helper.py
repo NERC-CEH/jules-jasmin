@@ -17,6 +17,8 @@ def python_to_f90_str(value):
         return ', '.join([python_to_f90_str(v) for v in value])
     elif type(value) == datetime.datetime:
         return to_f90str(value.strftime(DATE_TIME_FORMAT))
+    elif type(value) == unicode:
+        return to_f90str(str(value))
     else:
         return to_f90str(value)
 
@@ -27,6 +29,8 @@ def f90_str_to_python(value):
     :param value: F90 value string to convert
     :return: Corresponding Python object
     """
+    if type(value) == unicode:
+        value = str(value)
     if _is_list(value):
         return _from_list(value)
     if _is_datetime(value):

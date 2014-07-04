@@ -10,6 +10,7 @@ from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, DrivingDataset
 from joj.model.meta import Base, Session
 from joj.utils import constants
+from websetup_jules_output_variables import JulesOutputVariableParser
 from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
 
@@ -116,6 +117,10 @@ def setup_app(command, conf, vars):
             core_user,
             code_version,
             stat_created)
+
+        jules_output_variables_parser = JulesOutputVariableParser()
+        output_variables = jules_output_variables_parser.parse("docs/Jules/user_guide/html/output-variables.html")
+        session.add_all(output_variables)
 
         ## Add some model runs with datasets
         ds1 = Dataset()
