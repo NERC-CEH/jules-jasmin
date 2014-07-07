@@ -54,7 +54,7 @@ class AccountController(BaseController):
         if not request.POST:
             return redirect(url(controller='account', action='login', came_from=came_from))
 
-        if came_from is u'':
+        if came_from is u'' or came_from is None:
             came_from = '/home'
 
         schema = LoginForm()

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Welcome to Majic</title>
+    <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script type="text/javascript" src="/layout/bootstrap/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="/layout/joj-external.css"/>
+</head>
+<body>
+
+<div id="logo"></div>
+<!--<div id="banner"></div>-->
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1>Welcome to Majic</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            <div class="small-overlay" style="padding:35px">
+                <h2>Managing Access to Jules in the Cloud</h2>
+                <p>Majic allows researchers to run the JULES Environmental model on the JASMIN cluster,
+                with the ability to easily customise the JULES parameters, visualise the results and share their work.</p>
+                <div class="screenshots">
+                    <img src="/layout/images/screenshot-graph.png" alt="Screenshot of Majic" class="screenshot screenshot-left"/>
+                    <img src="/layout/images/screenshot-map.png" alt="Screenshot of Majic" class="screenshot"/>
+                </div>
+
+                <p>
+                    <a href="${url(controller='home', action='about')}" class="btn btn-primary btn-large">
+                        Learn more
+                    </a>
+                </p>
+              </div>
+        </div>
+        <div class="span3">
+            <div class="small-overlay">
+                <p><strong>Existing User</strong></p>
+                <div class="control-group">
+                    <div class="controls">
+                        <form action="/account/dologin" method="POST">
+                            <p><small>CEH user? Use your login here</small></p>
+                            <input name="login" type="text" placeholder="Username" class="mini-login"/>
+                            <input name="password" type="password" placeholder="Password" class="mini-login"/>
+                            <button type="submit" class="btn btn-primary">Log In</button>
+                        </form>
+                    </div>
+                </div>
+                <div>
+                    <p>
+                        <strong>New User</strong>
+                    </p>
+                    <p>
+                        <small>Majic is freely available to any researcher for non-commercial use, as set out in the
+                            <a href="${h.url(controller='request_account', action='license')}" target="_blank">
+                                Majic Terms &amp; Conditions.
+                            </a></small>
+                    </p>
+                    <a href="${url(controller='request_account', action='request')}" class="btn btn-primary">Request Majic Account</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
