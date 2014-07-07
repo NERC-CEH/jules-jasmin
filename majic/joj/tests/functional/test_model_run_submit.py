@@ -88,7 +88,9 @@ class TestModelRunSummaryController(TestController):
             SELECT s.name
             FROM model_runs m
             JOIN model_run_statuses s on s.id = m.status_id
+            WHERE m.user_id = :userid
             """
-        ).one()
+        ).params({'userid': user.id})\
+            .one()
         assert_that(row.name, is_(constants.MODEL_RUN_STATUS_SUBMIT_FAILED), "model run status")
 
