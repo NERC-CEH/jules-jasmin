@@ -73,6 +73,7 @@ class CrowdClient(object):
 
         self.crowd_user = app_name or config.get('crowd', 'app_name')
         self.crowd_password = app_pwd or config.get('crowd', 'app_password')
+        self.use_crowd = config.get('crowd', 'use_crowd') == 'True'
 
 
         # Fall back to the config value if we haven't explicitly specified a URL
@@ -265,47 +266,34 @@ class CrowdClient(object):
             #self.opener_installed = True
 
         try:
-          #TODO fix login
-          if False:
-            # We're finally ready to make the request...
+            if self.use_crowd:
+                # We're finally ready to make the request...
 
-            f = urllib2.urlopen(request)
+                f = urllib2.urlopen(request)
 
-            # 204 is officially "No Content", so we won't have
-            # any JSON to load! This is expected for 'DELETE'
-            # operations for example
-            if f.code != 204:
-                response = f.read()
+                # 204 is officially "No Content", so we won't have
+                # any JSON to load! This is expected for 'DELETE'
+                # operations for example
+                if f.code != 204:
+                    response = f.read()
 
-                response_object = simplejson.loads(response) if response else None
+                    response_object = simplejson.loads(response) if response else None
 
-                f.close()
+                    f.close()
+                else:
+                    response_object = None
             else:
-                response_object = None
-          else:
 
-            if True:
                 response_object = {
                     'name': 'johhol',
                     'token': 'atoken',
                     'display-name': 'John',
-                    'email':'ceh.ac.uk',
+                    'email': 'ceh.ac.uk',
                     'first-name': 'John',
-                    'last-name':'Holt',
-                    'user': {'name':'johhol'}
-                }
-            else:
-                response_object = {
-                    'name': 'matken',
-                    'token': 'atokenmtken',
-                    'display-name': 'Matt',
-                    'email':'matken@ceh.ac.uk',
-                    'first-name': 'Matt',
-                    'last-name':'Kendal',
-                    'user': {'name':'matken'}
-                }
-
-          return response_object
+                    'last-name': 'Holt',
+                    'user': {'name': 'johhol'}
+                    }
+            return response_object
 
         except urllib2.HTTPError as h_ex:
 

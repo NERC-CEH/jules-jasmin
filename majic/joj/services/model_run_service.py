@@ -8,10 +8,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
-from joj.utils import constants, f90_helper
+from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
+from joj.model.output_variable import OutputVariable
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             model_run = session.query(ModelRun).filter(ModelRun.id == id).options(joinedload('user')).one()
             # Is user allowed to acces this ID?
-            if (model_run.user_id == user.id or model_run.status.is_published()):
+            if model_run.user_id == user.id or model_run.status.is_published():
                 return model_run
             raise NoResultFound
 
@@ -118,13 +119,31 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(CodeVersion).filter(CodeVersion.id == code_version_id).one()
 
-    def update_model_run(self, user, name, science_configuration, description=""):
+    def _create_new_model_run(self, session, user):
+        """
+        Create a brand new model run for user
+        :param session: session to use
+        :param user: Currently logged in user
+        :return: New model run
+        """
+        model_run = ModelRun()
+        model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
+        model_run.user = user
+        param_timestep_len = self._get_parameter_by_name(constants.JULES_PARAM_TIMESTEP_LEN[1],
+                                                         constants.JULES_PARAM_TIMESTEP_LEN[0], session)
+        timestep_len = ParameterValue()
+        timestep_len.parameter = param_timestep_len
+        timestep_len.model_run = model_run
+        timestep_len.set_value_from_python(constants.TIMESTEP_LEN)
+        return model_run
+
+    def update_model_run(self, user, name, science_configuration_id, description=""):
         """
         Update the creation model run definition
 
         :param user: user creating the model
         :param name: name of the model run
-        :param science_configuration: the science_configuration for the run
+        :param science_configuration_id: the science_configuration for the run
         :param description: description
         """
         with self.transaction_scope() as session:
@@ -143,22 +162,21 @@ class ModelRunService(DatabaseService):
 
             try:
                 model_run = self._get_model_run_being_created(session, user)
+                if model_run.science_configuration_id is not None:
+                    old_configuration = \
+                        self._get_science_configuration(model_run.science_configuration_id, session)
+                    self._remove_parameter_set_from_model(old_configuration.parameter_values, model_run, session)
+
             except NoResultFound:
-                model_run = ModelRun()
-                model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
-                model_run.user = user
+                model_run = self._create_new_model_run(session, user)
+                session.add(model_run)
 
             model_run.name = name
-            science_configuration = session \
-                .query(ModelRun) \
-                .join(User) \
-                .filter(ModelRun.id == science_configuration) \
-                .filter(User.username == constants.CORE_USERNAME) \
-                .one()
+            science_configuration = self._get_science_configuration(science_configuration_id, session)
             model_run.science_configuration_id = science_configuration.id
             model_run.code_version = science_configuration.code_version
             model_run.description = description
-            session.add(model_run)
+            self._copy_parameter_set_into_model(science_configuration.parameter_values, model_run, session)
 
     def get_model_run_being_created_or_default(self, user):
         """
@@ -207,26 +225,6 @@ class ModelRunService(DatabaseService):
                         val.model_run = model_run
                         session.add(val)
 
-    def _get_model_being_created_with_non_default_parameter_values(self, user, session):
-        """
-        Get the current model run being created including all parameter_value which are not defaults
-        Uses a supplied session
-        :param user: Logged in user
-        :param session: Session
-        :return: Model run with parameters populated
-        """
-        return session.query(ModelRun) \
-            .join(User) \
-            .join(ModelRun.status) \
-            .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
-            .filter(ModelRun.user == user) \
-            .options(subqueryload(ModelRun.code_version)) \
-            .options(contains_eager(ModelRun.parameter_values)
-                     .contains_eager(ParameterValue.parameter)
-                     .contains_eager(Parameter.namelist)) \
-            .one()
-
     def get_model_being_created_with_non_default_parameter_values(self, user):
         """
         Get the current model run being created including all parameter_value which are not defaults
@@ -248,6 +246,139 @@ class ModelRunService(DatabaseService):
             status = model.change_status(session, status_name)
             return status, message
 
+    def get_scientific_configurations(self):
+        """
+        get all the scientific configurations
+        :return: a list of scientific configurations
+        """
+        with self.readonly_scope() as session:
+            runs = session \
+                .query(ModelRun) \
+                .join(ModelRunStatus) \
+                .join(User) \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+                .filter(User.username == constants.CORE_USERNAME) \
+                .all()
+
+            return [{'id': run.id, 'name': run.name, 'description': run.description} for run in runs]
+
+    def save_driving_dataset_for_new_model(self, driving_dataset, old_driving_dataset, user):
+        """
+        Save a driving dataset against the current model run being created
+        :param driving_dataset: Driving dataset to save
+        :param old_driving_dataset: Set of old diving data parameter to remove
+        :param user: Currently logged in user
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_run_being_created(session, user)
+            model_run.driving_dataset_id = driving_dataset.id
+            if old_driving_dataset is not None:
+                self._remove_parameter_set_from_model(old_driving_dataset.parameter_values, model_run, session)
+            self._copy_parameter_set_into_model(driving_dataset.parameter_values, model_run, session)
+
+    def get_parameter_by_name(self, param_name, param_namelist):
+        """
+        Look up the parameter for a given parameter name and namelist
+        :param param_name: Parameter name
+        :param param_namelist: Parameter namelist
+        :return: The first matching parameter
+        """
+        with self.readonly_scope() as session:
+            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
+            return parameter
+
+    def save_parameter(self, param_namelist_name, value, user, group_id=None):
+        """
+        Save a parameter against the model currently being created
+        :param param_namelist_name: List containing the parameter namelist, name
+        :param value: The value to set
+        :param user: The currently logged in user
+        :param group_id: If this parameter's namelist is used more than once, specify a group ID to group parameters
+        together into one instance of the namelist
+        :return:
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            self._save_parameter(model_run, param_namelist_name, value, session, group_id=group_id)
+
+    def _save_parameter(self, model_run, param_namelist_name, value, session, group_id=None):
+        """
+        Save parameter using a supplied session
+        :param model_run: Model run to save against
+        :param param_namelist_name: List containing the parameter namelist, name
+        :param session: Session to use
+        :param value: Value to set
+        :param group_id: Specify an optional group_id to group parameters
+        :return:
+        """
+        parameter = self._get_parameter_by_name(param_namelist_name[1], param_namelist_name[0], session)
+        try:
+            parameter_value = session.query(ParameterValue) \
+                .filter(ParameterValue.model_run_id == model_run.id) \
+                .filter(ParameterValue.group_id == group_id) \
+                .filter(ParameterValue.parameter_id == parameter.id).one()
+        except NoResultFound:
+            parameter_value = ParameterValue()
+            parameter_value.parameter = parameter
+            parameter_value.model_run = model_run
+            parameter_value.group_id = group_id
+        parameter_value.set_value_from_python(value)
+        session.add(parameter_value)
+
+    def _get_parameter_by_name(self, param_name, param_namelist, session):
+        """
+        Get a JULES parameter by name
+        :param param_name: Parameter name
+        :param param_namelist: Namelist parameter belongs to
+        :param session: Session to use
+        :return: The first matching Parameter
+        """
+        nml_id = session.query(Namelist) \
+            .filter(Namelist.name == param_namelist) \
+            .one().id
+        parameter = session.query(Parameter) \
+            .filter(Parameter.namelist_id == nml_id) \
+            .filter(Parameter.name == param_name) \
+            .one()
+        return parameter
+
+    def _get_science_configuration(self, science_configuration_id, session):
+        """
+        get The science configuration indicated by the id using the current session
+        :param science_configuration_id:
+        :param session:
+        :return:
+        """
+        science_configuration = session \
+            .query(ModelRun) \
+            .join(User) \
+            .filter(ModelRun.id == science_configuration_id) \
+            .filter(User.username == constants.CORE_USERNAME) \
+            .outerjoin(ModelRun.parameter_values) \
+            .options(contains_eager(ModelRun.parameter_values)) \
+            .one()
+        return science_configuration
+
+    def _get_model_being_created_with_non_default_parameter_values(self, user, session):
+        """
+        Get the current model run being created including all parameter_value which are not defaults
+        Uses a supplied session
+        :param user: Logged in user
+        :param session: Session
+        :return: Model run with parameters populated
+        """
+        return session.query(ModelRun) \
+            .join(User) \
+            .join(ModelRun.status) \
+            .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+            .filter(ModelRun.user == user) \
+            .options(subqueryload(ModelRun.code_version)) \
+            .options(contains_eager(ModelRun.parameter_values)
+                     .contains_eager(ParameterValue.parameter)
+                     .contains_eager(Parameter.namelist)) \
+            .one()
+
     def _get_parameters_for_creating_model(self, session, user):
         """
         get parameters for the model run being created
@@ -263,7 +394,8 @@ class ModelRunService(DatabaseService):
             .filter(ModelRun.user == user) \
             .one()
         return session.query(Parameter) \
-            .outerjoin(ParameterValue, and_(ParameterValue.model_run == model_run)) \
+            .outerjoin(ParameterValue,
+                       and_(Parameter.id == ParameterValue.parameter_id, ParameterValue.model_run == model_run)) \
             .options(contains_eager(Parameter.parameter_values)) \
             .options(subqueryload(Parameter.namelist)) \
             .filter(Parameter.code_versions.contains(code_version)) \
@@ -283,86 +415,100 @@ class ModelRunService(DatabaseService):
             .filter(ModelRun.user == user) \
             .one()
 
-    def get_scientific_configurations(self):
+    def remove_parameter_set_from_model_being_created(self, parameter_values, user):
         """
-        get all the scientific configurations
-        :return: a list of scientific configurations
-        """
-        with self.readonly_scope() as session:
-            runs = session \
-                .query(ModelRun) \
-                .join(ModelRunStatus) \
-                .join(User) \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
-                .filter(User.username == constants.CORE_USERNAME) \
-                .all()
-
-            return [{'id': run.id, 'name': run.name, 'description': run.description} for run in runs]
-
-    def save_driving_dataset_for_new_model(self, driving_dataset, user):
-        """
-        Save a driving dataset against the current model run being created
-        :param driving_dataset: Driving dataset to save
+        Remove a group of Parameter Values from the model currently being created
+        :param parameter_values: List of ParameterValues to remove
         :param user: Currently logged in user
-        """
-        with self.transaction_scope() as session:
-            model_run = self._get_model_run_being_created(session, user)
-            model_run.driving_dataset_id = driving_dataset.id
-            session.add(model_run)
-            parameters = self._get_parameters_for_creating_model(session, user)
-            for driving_dataset_param_val in driving_dataset.parameter_values:
-                val = ParameterValue()
-                val.value = driving_dataset_param_val.value
-                val.parameter_id = driving_dataset_param_val.param_id
-                val.model_run = model_run
-                session.add(val)
-
-    def _get_parameter_by_name(self, param_name, param_namelist, session):
-        """
-        Get a JULES parameter by name
-        :param param_name: Parameter name
-        :param param_namelist: Namelist parameter belongs to
-        :param session: Session to use
-        :return: The first matching Parameter
-        """
-        nml_id = session.query(Namelist) \
-            .filter(Namelist.name == param_namelist) \
-            .one().id
-        parameter = session.query(Parameter) \
-            .filter(Parameter.namelist_id == nml_id) \
-            .filter(Parameter.name == param_name) \
-            .one()
-        return parameter
-
-    def get_parameter_by_name(self, param_name, param_namelist):
-        """
-        Look up the parameter for a given parameter name and namelist
-        :param param_name: Parameter name
-        :param param_namelist: Parameter namelist
-        :return: The first matching parameter
-        """
-        with self.readonly_scope() as session:
-            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
-            return parameter
-
-    def save_parameter(self, param_namelist_name, value, user):
-        """
-        Save a parameter against the model currently being created
-        :param param_namelist_name: List containg the parameter namelist, name
-        :param value: The value to set
-        :param user: The currently logged in user
-        :return:
+        :return: nothing
         """
         with self.transaction_scope() as session:
             model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
-            parameter = self._get_parameter_by_name(param_namelist_name[1], param_namelist_name[0], session)
-            try:
-                parameter_value = session.query(ParameterValue)\
-                    .filter(ParameterValue.model_run_id == model_run.id)\
-                    .filter(ParameterValue.parameter_id == parameter.id).one()
-            except NoResultFound:
-                parameter_value = ParameterValue()
-                parameter_value.parameter = parameter
-                parameter_value.model_run = model_run
-            parameter_value.set_value_from_python(value)
-            session.add(parameter_value)
+            self._remove_parameter_set_from_model(parameter_values, model_run, session)
+
+    def _remove_parameter_set_from_model(self, parameter_values, model_run, session):
+        """
+        Remove a group of parameters from a model
+        :param parameter_values: the values to remove
+        :param model_run: the model run to remove them from
+        :param session: the session to use
+        :return: nothing
+        """
+        for model_parameter_value in model_run.parameter_values:
+            for parameter_value_to_remove in parameter_values:
+                if parameter_value_to_remove.parameter.id == model_parameter_value.parameter.id:
+                    session.delete(model_parameter_value)
+
+    def _copy_parameter_set_into_model(self, parameter_values, model_run, session):
+        """
+        Copy the parameters into a model
+        :param parameter_values: the values to copy
+        :param model_run: the model run to copy them to
+        :param session: the session to use
+        :return: nothing
+        """
+        for parameter_value in parameter_values:
+            val = ParameterValue()
+            val.value = parameter_value.value
+            val.parameter_id = parameter_value.parameter_id
+            val.model_run = model_run
+            session.add(val)
+
+    def get_output_variables(self, include_depends_on_nsmax=True):
+        """
+        Get all the JULES output variables
+        :param include_depends_on_nsmax: Boolean indicating whether output variables which depend on the JULES parameter
+        :return: list of OutputVariables
+        """
+        with self.readonly_scope() as session:
+            query = session.query(OutputVariable)
+            if not include_depends_on_nsmax:
+                query = query.filter(OutputVariable.depends_on_nsmax == False)
+            return query.all()
+
+    def get_output_variable_by_id(self, id):
+        """
+        Get an Output Variable by Database ID
+        :param id: Database ID of Output Variable to retrieve
+        :return: Matching OutputVariable
+        """
+        with self.readonly_scope() as session:
+            return session.query(OutputVariable).filter(OutputVariable.id == id).one()
+
+    def set_output_variables_for_model_being_created(self, output_variable_groups, user):
+        """
+        Save the output variables parameters for the model that is currently being created. Will overwrite any
+        previously set output variables
+        :param output_variable_groups: A list of sublists, each corresponding to one group of parameters (i.e.
+        one JULES profile). The key-value pairs are JULES_PARAMETER (as [Namelist, Name] pair) : the value to set that
+        parameter for this group
+        :param user: The currently logged in user
+        :return: nothing
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+
+            # The first thing we need to do is clear any existing parameters
+            # Get the list of ParameterValues we want to delete
+            param_values_to_delete = []
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_VAR)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_NVARS)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_MAIN_RUN)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_PROFILE_NAME)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NPROFILES)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_TYPE)
+
+            # Now delete
+            self._remove_parameter_set_from_model(param_values_to_delete, model_run, session)
+
+            # Add in parameters
+            group_id = 0
+            for output_variable_group in output_variable_groups:
+                for param, value in output_variable_group:
+                    self._save_parameter(model_run, param, value, session, group_id=group_id)
+                self._save_parameter(model_run, constants.JULES_PARAM_NVARS, 1, session, group_id=group_id)
+                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_MAIN_RUN, True, session, group_id=group_id)
+                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_TYPE, 'M', session, group_id=group_id)
+                group_id += 1
+            self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, session)

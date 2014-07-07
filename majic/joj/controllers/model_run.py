@@ -5,7 +5,6 @@ header
 import logging
 import datetime
 from formencode import htmlfill
-from formencode.validators import Invalid
 
 from pylons import url
 
@@ -16,17 +15,18 @@ from sqlalchemy.orm.exc import NoResultFound
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
-from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.services.model_run_service import ModelRunService, DuplicateName
 from joj.services.dataset import DatasetService
 from joj.lib import helpers
 from joj.utils import constants
 from joj.utils.error import abort_with_error
 
-from joj.model import session_scope, Session
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent
 from joj.model.model_run_extent_schema import ModelRunExtentSchema
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent
+
+from joj.utils.utils import find_by_id, KeyNotFound
+from joj.utils import output_controller_helper
 
 # The prefix given to parameter name in html elements
 
@@ -141,8 +141,8 @@ class ModelRunController(BaseController):
         """
         model_run = None
         try:
-            model_run = self._model_run_service.get_model_being_created_with_non_default_parameter_values(
-                self.current_user)
+            model_run = \
+                self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
         except NoResultFound:
             helpers.error_flash(u"You must create a model run before you can choose a driving data set")
             redirect(url(controller='model_run', action='create'))
@@ -173,9 +173,8 @@ class ModelRunController(BaseController):
             del values['submit']
 
             try:
-                driving_dataset = [driving_dataset for driving_dataset
-                                   in driving_datasets if driving_dataset.id == int(values['driving_dataset'])][0]
-            except (IndexError, KeyError):
+                driving_dataset = find_by_id(driving_datasets, int(values['driving_dataset']))
+            except (KeyNotFound, KeyError):
                 html = render('model_run/driving_data.html')
                 errors['driving_dataset'] = 'Driving data not recognised'
                 return htmlfill.render(
@@ -183,7 +182,15 @@ class ModelRunController(BaseController):
                     defaults=values,
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
-            self._model_run_service.save_driving_dataset_for_new_model(driving_dataset, self.current_user)
+
+            old_driving_dataset = None
+            if model_run.driving_dataset_id is not None:
+                old_driving_dataset = find_by_id(driving_datasets, model_run.driving_dataset_id)
+
+            self._model_run_service.save_driving_dataset_for_new_model(
+                driving_dataset,
+                old_driving_dataset,
+                self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='extents'))
@@ -242,13 +249,13 @@ class ModelRunController(BaseController):
 
         if not request.POST:
             # Get the extents from the database if already set or default them to dataset boundaries if not
-            lat_s, lat_n = model_run.get_parameter_value(constants.JULES_PARAM_LAT_BOUNDS) \
+            lat_s, lat_n = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS) \
                 or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
-            lon_w, lon_e = model_run.get_parameter_value(constants.JULES_PARAM_LON_BOUNDS) \
+            lon_w, lon_e = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS) \
                 or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-            run_start = model_run.get_parameter_value(constants.JULES_PARAM_RUN_START) \
+            run_start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START) \
                 or driving_data.time_start
-            run_end = model_run.get_parameter_value(constants.JULES_PARAM_RUN_END) \
+            run_end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END) \
                 or driving_data.time_end
 
             # Set the values to display in the form
@@ -309,9 +316,47 @@ class ModelRunController(BaseController):
             except KeyError:
                 action = None
             if action == u'Next':
-                redirect(url(controller='model_run', action='parameters'))
+                redirect(url(controller='model_run', action='output'))
             else:
                 redirect(url(controller='model_run', action='driving_data'))
+
+    def output(self):
+        """
+        Select output parameters
+        """
+        # First we need to check that we are allowed to be on this page
+        model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
+
+        if not request.POST:
+            # We need to not show the output variables which are dependent on JULES_MODEL_LEVELS::nsmax if nsmax is 0
+            jules_param_nsmax = model_run.get_python_parameter_value(constants.JULES_PARAM_NSMAX)
+            c.output_variables = self._model_run_service.get_output_variables(
+                include_depends_on_nsmax=jules_param_nsmax > 0)
+
+            # We want to pass the renderer a list of which output variables are already selected and for which time
+            # periods so that we can render these onto the page as selected
+            output_controller_helper.add_selected_outputs_to_template_context(c, model_run)
+
+            return render("model_run/output.html")
+        else:
+            values = dict(request.params)
+
+            # Identify the requested output variables and save the appropriate parameters
+            output_variable_groups = output_controller_helper.create_output_variable_groups(values,
+                                                                                            self._model_run_service,
+                                                                                            model_run)
+
+            self._model_run_service.set_output_variables_for_model_being_created(output_variable_groups,
+                                                                                 self.current_user)
+            # Get the action to perform
+            try:
+                action = values['submit']
+            except KeyError:
+                action = None
+            if action == u'Next':
+                redirect(url(controller='model_run', action='parameters'))
+            else:
+                redirect(url(controller='model_run', action='extents'))
 
     def parameters(self):
         """
@@ -337,37 +382,14 @@ class ModelRunController(BaseController):
                 auto_error_formatter=BaseController.error_formatter
             )
         else:
-            schema = ModelRunCreateParameters(c.parameters)
-            values = dict(request.params)
 
             # get the action to perform and remove it from the dictionary
             action = request.params.getone('submit')
-            del values['submit']
-
-            try:
-                c.form_result = schema.to_python(values)
-            except Invalid, error:
-                c.form_result = error.value
-                c.form_errors = error.error_dict or {}
-                html = render('model_run/parameters.html')
-                return htmlfill.render(
-                    html,
-                    defaults=c.form_result,
-                    errors=c.form_errors,
-                    auto_error_formatter=BaseController.error_formatter
-                )
-
-            parameters = {}
-            for param_name, param_value in c.form_result.iteritems():
-                if param_name.startswith(PARAMETER_NAME_PREFIX):
-                    parameters[param_name.replace(PARAMETER_NAME_PREFIX, '')] = param_value
-
-            self._model_run_service.store_parameter_values(parameters, self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='submit'))
             else:
-                redirect(url(controller='model_run', action='create'))
+                redirect(url(controller='model_run', action='output'))
 
     def submit(self):
         """

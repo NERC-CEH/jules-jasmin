@@ -1,0 +1,28 @@
+#autoText, #input-bar {
+    margin-bottom: 0px;
+}
+
+#results {
+    margin: 0px;
+    display:block;
+    padding: 0px;
+    position: absolute;
+    cursor: pointer;
+    overflow-y:scroll;
+}
+
+.res-list, .result {
+    list-style-type: none;
+    line-height: 20px;
+    padding: 3px 1em 3px 0.4em;
+}
+
+.result.hovered {
+    background: #F5F5F5;
+    color: #262626;
+}
+
+.output_period {
+    color:#666;
+    text-align:center
+}

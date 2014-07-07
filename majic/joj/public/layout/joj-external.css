@@ -24,7 +24,7 @@ body
 
 #logo
 {
-    height: 200px;
+    height: 100px;
     background-repeat: no-repeat;
     background-position: center top;
 }
@@ -40,12 +40,19 @@ body
     width: 100%;
 }
 
-#login-form
+.overlay
 {
     background: #FFFFFF;
     margin-left: 150px;
     opacity: 0.9;
     padding: 20px;
+}
+
+.small-overlay {
+    background: #FFFFFF;
+    margin-left: 0px;
+    opacity: 0.9;
+    padding: 15px;
 }
 
 h1
@@ -87,5 +94,23 @@ div#footer div
     margin-bottom: 0.5em;
 }
 
+.mini-login {
+    width: 176px;
+}
 
+div.screenshots{
+    text-align:center;
+    margin: 10px;
+}
 
+img.screenshot {
+    height:200px;
+    border:1px solid #aaa;
+    padding: 2px;
+    display:inline-block;
+    margin: 10px
+}
+
+img.screenshot-left {
+    margin-right:75px
+}

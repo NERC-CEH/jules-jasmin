@@ -9,11 +9,11 @@
 
     <script src="http://code.jquery.com/jquery.js"></script>
     <script type="text/javascript" src="/layout/bootstrap/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="/layout/login.css"/>
+    <link rel="stylesheet" type="text/css" href="/layout/joj-external.css"/>
 </head>
 <body>
     <div id="logo"></div>
-    <div id="banner"></div>
+    <!--<div id="banner"></div>-->
 
     <div class="container">
         <div class="row">
@@ -22,10 +22,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="span12">
-
-            </div>
-            <div class="row" id="login-form">
+            <div class="row overlay">
                 <p class="lead">Please log in</p>
 
                 <py:if test="message">
@@ -34,7 +31,7 @@
 
                 <form class="form-horizontal" action="/account/dologin?came_from=${came_from}" method="POST">
                     <div class="control-group">
-                        <label class="control-label" for="login">User Name</label>
+                        <label class="control-label" for="login">Username</label>
                         <div class="controls">
                             ${h.html_tags.text('login', placeholder='User Name')}
                         </div>

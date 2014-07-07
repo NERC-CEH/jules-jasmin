@@ -14,6 +14,7 @@ from pylons.templating import render_genshi as render
 from paste import httpexceptions
 import paste.request
 from sqlalchemy.orm.exc import NoResultFound
+from joj.crowd.repoze_plugin import is_public_page, is_home_page
 
 from joj.services.user import UserService
 from joj.lib import helpers
@@ -36,32 +37,26 @@ class BaseController(WSGIController):
     def __call__(self, environ, start_response):
         """Invoke the Controller"""
 
-        # Before we do anything, is there a "REMOTE USER"?
-        # If not, we've not been authenticated!
-        # Allow access to login or request account
-
-        not_public_page = 'login' not in environ.get('PATH_INFO') and 'request_account' not in environ.get('PATH_INFO')
-
-        if (not environ.get('REMOTE_USER')) and not_public_page:
-            raise httpexceptions.HTTPUnauthorized()
-
         # Redirect to a canonical form of the URL if necessary.
         self._redirect_noncanonical_url(environ)
 
-        # WSGIController.__call__ dispatches to the Controller method
-        # the request is routed to. This routing information is
-        # available in environ['pylons.routes_dict'
-        if not_public_page:
+        if not is_public_page(environ):
             self.current_user = self._user_service.get_user_by_username(environ.get('REMOTE_USER'))
 
-            if not self.current_user:
-                raise httpexceptions.HTTPUnauthorized()
-
-            if self.current_user.access_level == "Admin":
-                c.admin_user = True
+            if self.current_user:
+                if self.current_user.access_level == "Admin":
+                    c.admin_user = True
+                else:
+                    c.admin_user = False
             else:
-                c.admin_user = False
+            # It's OK to allow access to the home URL with no user logged in because the home controller
+            # will sort out what page to show
+                if not is_home_page(environ):
+                    raise httpexceptions.HTTPUnauthorized()
 
+        # WSGIController.__call__ dispatches to the Controller method
+        # the request is routed to. This routing information is
+        # available in environ['pylons.routes_dict']
         return WSGIController.__call__(self, environ, start_response)
 
     def _redirect_noncanonical_url(self, environ):

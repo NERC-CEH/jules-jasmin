@@ -1,6 +1,6 @@
 #header
-from model.non_database.spatial_extent import SpatialExtent, InvalidSpatialExtent
-from services.tests.base import BaseTest
+from joj.model.non_database.spatial_extent import SpatialExtent, InvalidSpatialExtent
+from joj.services.tests.base import BaseTest
 
 
 class TestSpatialExtentLongitude(BaseTest):
