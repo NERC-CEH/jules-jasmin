@@ -123,8 +123,8 @@ class TestModelRunOutput(TestController):
         p_output_nprofiles = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NPROFILES)[0].get_value_as_python()
         assert_that(p_output_nprofiles, is_(n_expected))
 
-        pv_var = model_run.get_parameter_values(JULES_PARAM_VAR)
-        pv_nvars = model_run.get_parameter_values(JULES_PARAM_NVARS)
+        pv_var = model_run.get_parameter_values(JULES_PARAM_OUTPUT_VAR)
+        pv_nvars = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NVARS)
         pv_profile_name = model_run.get_parameter_values(JULES_PARAM_PROFILE_NAME)
         pv_output_main_run = model_run.get_parameter_values(JULES_PARAM_OUTPUT_MAIN_RUN)
         pv_output_period = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PERIOD)
@@ -203,8 +203,8 @@ class TestModelRunOutput(TestController):
         p_output_nprofiles = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NPROFILES)[0].get_value_as_python()
         assert_that(p_output_nprofiles, is_(n_expected))
 
-        pv_var = model_run.get_parameter_values(JULES_PARAM_VAR)
-        pv_nvars = model_run.get_parameter_values(JULES_PARAM_NVARS)
+        pv_var = model_run.get_parameter_values(JULES_PARAM_OUTPUT_VAR)
+        pv_nvars = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NVARS)
         pv_profile_name = model_run.get_parameter_values(JULES_PARAM_PROFILE_NAME)
         pv_output_main_run = model_run.get_parameter_values(JULES_PARAM_OUTPUT_MAIN_RUN)
         pv_output_period = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PERIOD)

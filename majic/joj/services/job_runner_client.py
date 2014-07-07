@@ -52,11 +52,15 @@ class JobRunnerClient(DatabaseService):
                 self._find_or_create_namelist(
                     namelist_file[constants.JSON_MODEL_NAMELISTS],
                     parameter.namelist.name,
+                    parameter.namelist.index_in_file,
                     None)
             else:
                 for parameter_value in parameter.parameter_values:
-                    namelist = self._find_or_create_namelist(namelist_file[constants.JSON_MODEL_NAMELISTS],
-                                                             parameter.namelist.name, parameter_value.group_id)
+                    namelist = self._find_or_create_namelist(
+                        namelist_file[constants.JSON_MODEL_NAMELISTS],
+                        parameter.namelist.name,
+                        parameter.namelist.index_in_file,
+                        parameter_value.group_id)
                     namelist[constants.JSON_MODEL_PARAMETERS][parameter.name] = parameter_value.value
 
         return \
@@ -82,7 +86,7 @@ class JobRunnerClient(DatabaseService):
         namelist_files.append(namelist_file)
         return namelist_file
 
-    def _find_or_create_namelist(self, namelists, namelist_name, group_id):
+    def _find_or_create_namelist(self, namelists, namelist_name, namelist_index, group_id):
         """
         Given a list of JSON model namelists, finds or creates a namelist entry
         corresponding to a specified name.
@@ -105,6 +109,7 @@ class JobRunnerClient(DatabaseService):
                     break
 
         namelist = {constants.JSON_MODEL_NAMELIST_NAME: namelist_name,
+                    constants.JSON_MODEL_NAMELIST_INDEX: namelist_index,
                     constants.JSON_MODEL_NAMELIST_GROUP_ID: group_id,
                     constants.JSON_MODEL_PARAMETERS: {}}
         namelists.append(namelist)

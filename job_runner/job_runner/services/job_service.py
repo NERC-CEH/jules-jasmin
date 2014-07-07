@@ -105,22 +105,12 @@ class JobService(object):
         #create run directory
         os.mkdir(run_directory)
 
+        #create output dir
+        os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
+
         #create softlinks
         for src in glob.glob(os.path.join(config['jules_files_to_softlink_dir'], '*')):
             os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
-
-        #TODO remove when full name lists availiable
-        jules_time_nml = model_run[JSON_MODEL_NAMELIST_FILES][0][JSON_MODEL_NAMELISTS][0][JSON_MODEL_PARAMETERS]
-        jules_time_nml['main_run_start'] = "'1996-12-31 23:00:00'"
-        jules_time_nml['main_run_end'] = "'1997-12-31 23:00:00'"
-        jules_time_nml['print_step'] = '48'
-
-        model_run[JSON_MODEL_NAMELIST_FILES][0][JSON_MODEL_NAMELISTS].append(
-            {
-                'name': 'JULES_SPINUP',
-                'parameters': {'max_spinup_cycles': '0'}
-            }
-        )
 
         for namelist_file in model_run[JSON_MODEL_NAMELIST_FILES]:
             self._create_namelist_file(namelist_file, run_directory)
@@ -162,7 +152,9 @@ class JobService(object):
         """
         f = open(os.path.join(run_directory, namelist_file[JSON_MODEL_NAMELIST_FILE_FILENAME]), 'w')
 
-        for namelist in namelist_file[JSON_MODEL_NAMELISTS]:
+        for namelist in sorted(
+                namelist_file[JSON_MODEL_NAMELISTS],
+                key=lambda namelist_to_sort: namelist_to_sort[JSON_MODEL_NAMELIST_INDEX]):
             self._write_namelist(namelist, f)
         f.close()
 

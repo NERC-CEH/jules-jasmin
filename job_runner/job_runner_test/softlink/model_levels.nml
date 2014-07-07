@@ -1,6 +1,0 @@
-&JULES_MODEL_LEVELS
-  npft = 5,
-  sm_levels = 4,
-  nsmax = 0,
-  nnvg = 4
-/
