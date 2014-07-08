@@ -4,11 +4,9 @@ import re
 import shutil
 from job_runner.tests import *
 from hamcrest import *
+from job_runner.utils.constants import *
 
-NAMELISTS = 'namelists'
-
-
-class TestJobsController(TestController):
+class TestJobsControllerNew(TestController):
 
     def setUp(self):
         model_run_id = 101
@@ -19,9 +17,10 @@ class TestJobsController(TestController):
         namelist_files = \
             [
                 {'filename': 'file1',
-                 NAMELISTS:
+                 JSON_MODEL_NAMELISTS:
                      [
                          {'name':'a name',
+                          JSON_MODEL_NAMELIST_INDEX: 1,
                           'parameters':
                               {
                                   'time_lens': '1'
@@ -135,7 +134,7 @@ class TestJobsController(TestController):
 
 
     def test_GIVEN_namelist_set_is_empty_WHEN_post_new_job_THEN_error(self):
-        self.valid_job_submission['namelist_files'][0][NAMELISTS] = []
+        self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS] = []
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -145,7 +144,7 @@ class TestJobsController(TestController):
         assert_that(response.normal_body, contains_string('namelist'), "invalid request")
 
     def test_GIVEN_namelist_is_not_present_WHEN_post_new_job_THEN_error(self):
-        del self.valid_job_submission['namelist_files'][0][NAMELISTS]
+        del self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS]
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -155,7 +154,7 @@ class TestJobsController(TestController):
         assert_that(response.normal_body, contains_string('namelist'), "invalid request")
 
     def test_GIVEN_namelist_has_no_name_WHEN_post_new_job_THEN_error(self):
-        del self.valid_job_submission['namelist_files'][0][NAMELISTS][0]['name']
+        del self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS][0]['name']
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -165,7 +164,7 @@ class TestJobsController(TestController):
         assert_that(response.normal_body, contains_string('name'), "invalid request")
 
     def test_GIVEN_namelist_has_blank_name_WHEN_post_new_job_THEN_error(self):
-        self.valid_job_submission['namelist_files'][0][NAMELISTS][0]['name'] = ''
+        self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS][0]['name'] = ''
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -175,7 +174,7 @@ class TestJobsController(TestController):
         assert_that(response.normal_body, contains_string('name'), "invalid request")
 
     def test_GIVEN_parameter_set_is_not_present_WHEN_post_new_job_THEN_error(self):
-        del self.valid_job_submission['namelist_files'][0][NAMELISTS][0]['parameters']
+        del self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS][0]['parameters']
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,
@@ -185,7 +184,7 @@ class TestJobsController(TestController):
         assert_that(response.normal_body, contains_string('parameters'), "invalid request")
 
     def test_GIVEN_parameter_name_is_blank_post_new_job_THEN_error(self):
-        self.valid_job_submission['namelist_files'][0][NAMELISTS][0]['parameters'][''] = 'val'
+        self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS][0]['parameters'][''] = 'val'
         response = self.app.post_json(
             url(controller='jobs', action='new'),
             params=self.valid_job_submission,

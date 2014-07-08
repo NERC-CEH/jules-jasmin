@@ -27,6 +27,8 @@ from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Se
     Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset
 from joj.services.user import UserService
 from joj.utils import constants
+from joj.services.model_run_service import ModelRunService
+from joj.model import session_scope, Session, ModelRun
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -192,18 +194,26 @@ class TestController(TestCase):
             session.add_all([driving1, driving2])
             session.commit()
 
-            jules_drive_nml = session.query(Namelist) \
-                .filter(Namelist.name == 'JULES_DRIVE') \
-                .options(joinedload(Namelist.parameters)) \
-                .one()
 
-            jules_drive_file_param = session.query(Parameter) \
-                .filter(Parameter.namelist_id == jules_drive_nml.id) \
-                .filter(Parameter.name == 'file') \
-                .one()
-
-            driving_data_filename_param_val = DrivingDatasetParameterValue()
-            driving_data_filename_param_val.parameter_id = jules_drive_file_param.id
-            driving_data_filename_param_val.value = "'testFileName'"
-            driving_data_filename_param_val.driving_dataset_id = driving1.id
+            model_run_service = ModelRunService()
+            driving_data_filename_param_val = DrivingDatasetParameterValue(
+                model_run_service,
+                driving1,
+                constants.JULES_PARAM_DRIVE_FILE,
+                "'testFileName'")
             session.add(driving_data_filename_param_val)
+
+    def assert_model_run_status_and_return(self, model_run_id, status):
+        """
+        assert that a model has a given status
+        :param model_run_id: id of the model
+        :param status: name of the status
+        :return:the model run
+        """
+        with session_scope(Session) as session:
+            result = session \
+                .query(ModelRun) \
+                .filter(ModelRun.id == model_run_id) \
+                .one()
+            assert_that(result.status.name, is_(status))
+            return result

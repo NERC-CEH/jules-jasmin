@@ -6,6 +6,7 @@ import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
+from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
 from joj.utils import constants
@@ -27,7 +28,7 @@ class DuplicateName(Exception):
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
 
-    def __init__(self, session=Session, job_runner_client=JobRunnerClient()):
+    def __init__(self, session=Session, job_runner_client=JobRunnerClient(config)):
         super(ModelRunService, self).__init__(session)
         self._job_runner_client = job_runner_client
 
@@ -129,12 +130,20 @@ class ModelRunService(DatabaseService):
         model_run = ModelRun()
         model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
         model_run.user = user
-        param_timestep_len = self._get_parameter_by_name(constants.JULES_PARAM_TIMESTEP_LEN[1],
-                                                         constants.JULES_PARAM_TIMESTEP_LEN[0], session)
-        timestep_len = ParameterValue()
-        timestep_len.parameter = param_timestep_len
-        timestep_len.model_run = model_run
-        timestep_len.set_value_from_python(constants.TIMESTEP_LEN)
+
+        parameters = [
+            [constants.JULES_PARAM_TIMESTEP_LEN, constants.TIMESTEP_LEN],
+            [constants.JULES_PARAM_OUTPUT_RUN_ID, constants.RUN_ID],
+            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, constants.OUTPUT_DIR],
+        ]
+
+        for constant, value in parameters:
+            param = self._get_parameter_by_constant(constant, session)
+            param_value = ParameterValue()
+            param_value.parameter = param
+            param_value.model_run = model_run
+            param_value.set_value_from_python(value)
+
         return model_run
 
     def update_model_run(self, user, name, science_configuration_id, description=""):
@@ -276,15 +285,15 @@ class ModelRunService(DatabaseService):
                 self._remove_parameter_set_from_model(old_driving_dataset.parameter_values, model_run, session)
             self._copy_parameter_set_into_model(driving_dataset.parameter_values, model_run, session)
 
-    def get_parameter_by_name(self, param_name, param_namelist):
+    def get_parameter_by_constant(self, param_namelist_and_name):
         """
         Look up the parameter for a given parameter name and namelist
-        :param param_name: Parameter name
-        :param param_namelist: Parameter namelist
+        :param param_namelist_and_name: Parameter namelist and name (in that order in a tuple)
         :return: The first matching parameter
         """
+
         with self.readonly_scope() as session:
-            parameter = self._get_parameter_by_name(param_name, param_namelist, session)
+            parameter = self._get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
 
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
@@ -311,7 +320,7 @@ class ModelRunService(DatabaseService):
         :param group_id: Specify an optional group_id to group parameters
         :return:
         """
-        parameter = self._get_parameter_by_name(param_namelist_name[1], param_namelist_name[0], session)
+        parameter = self._get_parameter_by_constant(param_namelist_name, session)
         try:
             parameter_value = session.query(ParameterValue) \
                 .filter(ParameterValue.model_run_id == model_run.id) \
@@ -325,20 +334,19 @@ class ModelRunService(DatabaseService):
         parameter_value.set_value_from_python(value)
         session.add(parameter_value)
 
-    def _get_parameter_by_name(self, param_name, param_namelist, session):
+    def _get_parameter_by_constant(self, parameter_constant, session):
         """
         Get a JULES parameter by name
-        :param param_name: Parameter name
-        :param param_namelist: Namelist parameter belongs to
+        :param parameter_constant: tuple of Namelist name and Parameter name
         :param session: Session to use
         :return: The first matching Parameter
         """
         nml_id = session.query(Namelist) \
-            .filter(Namelist.name == param_namelist) \
+            .filter(Namelist.name == parameter_constant[0]) \
             .one().id
         parameter = session.query(Parameter) \
             .filter(Parameter.namelist_id == nml_id) \
-            .filter(Parameter.name == param_name) \
+            .filter(Parameter.name == parameter_constant[1]) \
             .one()
         return parameter
 
@@ -491,8 +499,8 @@ class ModelRunService(DatabaseService):
             # The first thing we need to do is clear any existing parameters
             # Get the list of ParameterValues we want to delete
             param_values_to_delete = []
-            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_VAR)
-            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_NVARS)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NVARS)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_MAIN_RUN)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_PROFILE_NAME)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NPROFILES)
@@ -507,7 +515,7 @@ class ModelRunService(DatabaseService):
             for output_variable_group in output_variable_groups:
                 for param, value in output_variable_group:
                     self._save_parameter(model_run, param, value, session, group_id=group_id)
-                self._save_parameter(model_run, constants.JULES_PARAM_NVARS, 1, session, group_id=group_id)
+                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NVARS, 1, session, group_id=group_id)
                 self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_MAIN_RUN, True, session, group_id=group_id)
                 self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_TYPE, 'M', session, group_id=group_id)
                 group_id += 1
