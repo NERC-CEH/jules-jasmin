@@ -1,7 +1,7 @@
 # Config file for the crowd integration module
 
 [crowd]
-api_url: http://crowd.ceh.ac.uk:8095/crowd/rest/usermanagement/latest/
+api_url: https://crowd.ceh.ac.uk:8443/crowd/rest/usermanagement/latest/
 app_name: joj-dev
 app_password: password_template
-use_crowd: True
+use_crowd: False
