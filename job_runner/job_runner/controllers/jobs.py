@@ -108,6 +108,8 @@ class JobsController(BaseController):
 
         json = self.get_json_abort_on_error()
 
+        log.debug("Status with parameters %s" % json)
+
         queued_jobs_status = self._job_service.queued_jobs_status()
         job_statuses = []
         for jobid in json:

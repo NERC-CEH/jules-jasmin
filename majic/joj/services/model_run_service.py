@@ -6,6 +6,7 @@ import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_, desc
+from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
 from joj.utils import constants
@@ -27,7 +28,7 @@ class DuplicateName(Exception):
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
 
-    def __init__(self, session=Session, job_runner_client=JobRunnerClient()):
+    def __init__(self, session=Session, job_runner_client=JobRunnerClient(config)):
         super(ModelRunService, self).__init__(session)
         self._job_runner_client = job_runner_client
 

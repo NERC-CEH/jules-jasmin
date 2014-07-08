@@ -27,6 +27,9 @@ MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submited a model but it can not be submitted
 MODEL_RUN_STATUS_UNKNOWN = 'Unknown' # Job is in the bjobs list but the status is not understood
 
+# Error messages
+ERROR_MESSAGE_NO_STATUS_RETURNED = 'No status has been returned from the job runner'
+
 # Parameter types
 PARAMETER_TYPE_INTEGER = 'integer'  # parameter is an integer (case is from documentation)
 

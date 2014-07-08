@@ -6,12 +6,13 @@ from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, Namelist
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from tests import TestController
+from pylons import config
 
 
 class TestJobRunnerClient(TestController):
     def test_GIVEN_valid_model_WHEN_convert_to_dictionary_THEN_dictionary_is_correct(self):
 
-        job_runner_client = JobRunnerClient()
+        job_runner_client = JobRunnerClient(config)
 
         parameter = Parameter(name='param1')
         expected_parameter_value = '12'
@@ -48,7 +49,7 @@ class TestJobRunnerClient(TestController):
         assert_that(parameters_result, is_({parameter.name: expected_parameter_value}), "value is correct")
 
     def test_GIVEN_model_contains_repeated_namelists_WHEN_convert_to_dictionary_THEN_namelists_grouped_correctly(self):
-        job_runner_client = JobRunnerClient()
+        job_runner_client = JobRunnerClient(config)
 
         # Set the namelists here:
         nml_output = Namelist(name=constants.JULES_NML_OUTPUT)
@@ -119,7 +120,7 @@ class TestJobRunnerClient(TestController):
 
     def test_GIVEN_valid_model_WHEN_convert_to_dictionary_THEN_namelist_with_no_representation_are_present(self):
 
-        job_runner_client = JobRunnerClient()
+        job_runner_client = JobRunnerClient(config)
 
         parameter = Parameter(name='param1')
         expected_parameter_value = '12'
