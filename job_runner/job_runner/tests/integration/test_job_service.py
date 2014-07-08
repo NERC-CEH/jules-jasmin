@@ -29,6 +29,7 @@ class TestJobService(TestController):
                             [
                                 {
                                     'name': 'JULES_TIME',
+                                    JSON_MODEL_NAMELIST_INDEX: 1,
                                     'parameters': {'timestep_len': '1800'}
                                 }
                             ]

@@ -1,4 +1,6 @@
+"""
 #header
+"""
 
 import logging
 
@@ -10,6 +12,7 @@ from simplejson import JSONDecodeError
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
 from job_runner.services.job_service import JobService, ServiceError
+from job_runner.model.job_status import JobStatus
 
 log = logging.getLogger(__name__)
 
@@ -57,18 +60,25 @@ class JobsController(BaseController):
         """
         self._job_service = job_service
 
+    def get_json_abort_on_error(self):
+        """
+        raise a exception if this is not a post with a json body
+        otherwise return the body
+
+        """
+        try:
+            return request.json_body
+        except JSONDecodeError:
+            abort(400, "Only valid JSON Posts allowed")
+
     @jsonify
     def new(self):
         """
         Create a new job submission.
         """
 
-        json = {}
-        try:
-            json = request.json_body
-        except JSONDecodeError:
-            abort(400, "Only valid JSON Posts allowed")
-
+        json = self.get_json_abort_on_error()
+        log.debug("New Model with parameters %s" % json)
         if not JSON_MODEL_CODE_VERSION in json or json[JSON_MODEL_CODE_VERSION] not in VALID_CODE_VERSIONS:
             abort(400, "Invalid code version")
 
@@ -89,3 +99,23 @@ class JobsController(BaseController):
             return self._job_service.submit(json)
         except ServiceError, ex:
             abort(400, ex.message)
+
+    @jsonify
+    def status(self):
+        """
+        Return the statuses of the jobs requested
+        """
+
+        json = self.get_json_abort_on_error()
+
+        queued_jobs_status = self._job_service.queued_jobs_status()
+        job_statuses = []
+        for jobid in json:
+            try:
+                jobstatus = JobStatus(int(jobid))
+                jobstatus.check(self._job_service, queued_jobs_status)
+                job_statuses.append(jobstatus)
+            except ValueError:
+                abort(400, "Job ids must all be integers")
+
+        return job_statuses

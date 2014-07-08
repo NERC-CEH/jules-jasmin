@@ -135,12 +135,16 @@ class JulesParameterParser(object):
         log.info("Filename: %s" % namelist_file.filename)
 
         namelist_file.namelists = []
+        namelist_index = 0
 
         for namelist_name in tree.xpath('//h2/tt/span/text()'):
             namelist = Namelist()
             namelist.name = str(namelist_name)
             log.info("    Namelist: %s" % namelist.name)
             namelist_file.namelists.append(namelist)
+
+            namelist.index_in_file = namelist_index
+            namelist_index += 1
 
             if namelist.name.upper() in self._EXTRA_PARAMETERS:
                 namelist.parameters.extend(self._EXTRA_PARAMETERS[namelist.name])

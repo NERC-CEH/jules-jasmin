@@ -1,5 +1,0 @@
-# We are not prescribing any additional variables
-
-&JULES_PRESCRIBED
-  n_datasets = 0
-/
