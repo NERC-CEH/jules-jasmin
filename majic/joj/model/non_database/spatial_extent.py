@@ -1,4 +1,6 @@
+"""
 # header
+"""
 
 
 class InvalidSpatialExtent(Exception):
@@ -23,56 +25,91 @@ class SpatialExtent(object):
         :param lon_e: The eastern boundary latitude
         :return: a SpatialExtent instance with specified boundaries
         """
+        if not lat_n > lat_s:
+            raise InvalidSpatialExtent("Northern bounding latitude (%s deg N) must be North of Southern "
+                                       "bounding latitude (%s deg N)" % (lat_n, lat_s))
+        if not (-90 <= lat_n <= 90 and -90 <= lat_s <= 90):
+            raise InvalidSpatialExtent("Latitude must be between -90 and 90")
+        if not lon_e > lon_w:
+            raise InvalidSpatialExtent("Eastern bounding longitude (%s deg E) must be East of Western "
+                                       "bounding longitude (%s deg E)" % (lon_e, lon_w))
+        if not (-180 <= lon_e <= 180 and -180 <= lon_w <= 180):
+            raise InvalidSpatialExtent("Longitude must be between -180 and 180")
         self._lat_n = self._bound_lat_n = lat_n
         self._lat_s = self._bound_lat_s = lat_s
         self._lon_w = self._bound_lon_w = lon_w
         self._lon_e = self._bound_lon_e = lon_e
 
-    def set_lon(self, lon_w, lon_e):
+    def set_lon_e(self, lon_e):
         """
-        Set the longitudinal extents. Extent area is from west to east
-        :param lon_w: Western bounding longitude
-        :param lon_e: Eastern longitude
+        Set the Eastern longitudinal extent
+        :param lon_e: Eastern longitudinal extent
         :raise InvalidSpatialExtent: If the requested extent is out of bounds
         """
-        if not (-180 <= lon_e <= 180 and -180 <= lon_w <= 180):
+        if not (-180 <= lon_e <= 180):
             raise InvalidSpatialExtent("Longitude must be between -180 and 180")
-        # The case where we have -180 -> +180 is a special case where anything is acceptable
-        if not (self._bound_lon_w == -180 and self._bound_lon_e == 180):
-            # Create some new variables so we can change their value without losing the originals
-            _bound_lon_e = self._bound_lon_e
-            _bound_lon_w = self._bound_lon_w
-            _lon_e = lon_e
-            _lon_w = lon_w
-            # If the western bounding longitude is bigger than the eastern bounding longitude
-            # that means the dateline was crossed somewhere in between
-            if _bound_lon_w > self._bound_lon_e:
-                # Any lines of longitude that have crossed the dateline need to have 360 degrees added to them
-                _bound_lon_e += 360
-                if _bound_lon_w > _lon_e:
-                    _lon_e += 360
-                if _bound_lon_w > _lon_w:
-                    _lon_w += 360
-            # The points should be in this order:
-            if not (_bound_lon_w <= _lon_w <= _lon_e <= _bound_lon_e):
-                raise InvalidSpatialExtent("Longitude must not be outside of the spatial extent")
-        self._lon_w = lon_w
+        if lon_e > self._bound_lon_e:
+            raise InvalidSpatialExtent("Eastern longitude (%s deg E) cannot be East of %s deg E"
+                                       % (lon_e, self._bound_lon_e))
+        if lon_e < self._bound_lon_w:
+            raise InvalidSpatialExtent("Eastern longitude (%s deg E) cannot be West of %s deg E"
+                                       % (lon_e, self._bound_lon_w))
+        if lon_e < self._lon_w:
+            raise InvalidSpatialExtent("Eastern longitude cannot be West of the Western longitude")
         self._lon_e = lon_e
 
-    def set_lat(self, lat_n, lat_s):
+    def set_lon_w(self, lon_w):
         """
-        Set the latitudinal extents.
-        :param lat_n: Northern bounding latitude
-        :param lat_s: Southern bounding latitude
-        :return: InvalidSpatialExtent: If the requested extent is out of bounds
+        Set the Western longitudinal extent
+        :param lon_w: Western longitudinal extent
+        :raise InvalidSpatialExtent: If the requested extent is out of bounds
         """
-        if not (-90 <= lat_n <= 90 and -90 <= lat_s <= 90):
+        if not (-180 <= lon_w <= 180):
+            raise InvalidSpatialExtent("Longitude must be between -180 and 180")
+        if lon_w > self._bound_lon_e:
+            raise InvalidSpatialExtent("Western longitude (%s deg E) cannot be East of %s deg E"
+                                       % (lon_w, self._bound_lon_e))
+        if lon_w < self._bound_lon_w:
+            raise InvalidSpatialExtent("Western longitude (%s deg E) cannot be West of %s deg E"
+                                       % (lon_w, self._bound_lon_w))
+        if lon_w > self._lon_e:
+            raise InvalidSpatialExtent("Western longitude cannot be East of the Eastern longitude")
+        self._lon_w = lon_w
+
+    def set_lat_n(self, lat_n):
+        """
+        Set the Northern latitudinal extent
+        :param lat_n: Northern latitudinal extent
+        :raise InvalidSpatialExtent: If the requested extent is out of bounds
+        """
+        if not (-90 <= lat_n <= 90):
             raise InvalidSpatialExtent("Latitude must be between -90 and 90")
-        if not (self._bound_lat_s <= lat_s <= self._bound_lat_n and self._bound_lat_s <= lat_n <= self._bound_lat_n):
-            raise InvalidSpatialExtent("Latitude must not be outside of the spatial extent")
-        if lat_s > lat_n:
-            raise InvalidSpatialExtent("The northern extent must be north of the southern extent")
+        if lat_n > self._bound_lat_n:
+            raise InvalidSpatialExtent("Northern latitude (%s deg N) cannot be North of %s deg N"
+                                       % (lat_n, self._bound_lat_n))
+        if lat_n < self._bound_lat_s:
+            raise InvalidSpatialExtent("Northern latitude (%s deg N) cannot be South of %s deg N"
+                                       % (lat_n, self._bound_lat_s))
+        if lat_n < self._lat_s:
+            raise InvalidSpatialExtent("Northern latitude cannot be South of the Southern latitude")
         self._lat_n = lat_n
+
+    def set_lat_s(self, lat_s):
+        """
+        Set the Southern latitudinal extent
+        :param lat_s: Southern latitudinal extent
+        :raise InvalidSpatialExtent: If the requested extent is out of bounds
+        """
+        if not (-90 <= lat_s <= 90):
+            raise InvalidSpatialExtent("Latitude must be between -90 and 90")
+        if lat_s > self._bound_lat_n:
+            raise InvalidSpatialExtent("Southern latitude (%s deg N) cannot be North of %s deg N"
+                                       % (lat_s, self._bound_lat_n))
+        if lat_s < self._bound_lat_s:
+            raise InvalidSpatialExtent("Southern latitude (%s deg N) cannot be South of %s deg N"
+                                       % (lat_s, self._bound_lat_s))
+        if lat_s > self._lat_n:
+            raise InvalidSpatialExtent("Southern latitude cannot be North of the Northern latitude")
         self._lat_s = lat_s
 
     def get_lat_bounds(self):

@@ -227,14 +227,21 @@ class ModelRunController(BaseController):
             :param _run_start:
             """
             try:
-                spatial_extent.set_lat(_lat_n, _lat_s)
+                spatial_extent.set_lat_n(_lat_n)
             except InvalidSpatialExtent as e:
                 errors['lat_n'] = e.message
             try:
-                spatial_extent.set_lon(_lon_w, _lon_e)
+                spatial_extent.set_lat_s(_lat_s)
+            except InvalidSpatialExtent as e:
+                errors['lat_s'] = e.message
+            try:
+                spatial_extent.set_lon_w(_lon_w)
             except InvalidSpatialExtent as e:
                 errors['lon_w'] = e.message
-
+            try:
+                spatial_extent.set_lon_e(_lon_e)
+            except InvalidSpatialExtent as e:
+                errors['lon_e'] = e.message
             # We need to check the same thing with the values for temporal extent
             if _run_start is not None:
                 try:

@@ -340,8 +340,8 @@ def setup_app(command, conf, vars):
         driving_ds_2.dataset = ds2
         driving_ds_2.boundary_lat_north = 10
         driving_ds_2.boundary_lat_south = -10
-        driving_ds_2.boundary_lon_west = 170
-        driving_ds_2.boundary_lon_east = -170
+        driving_ds_2.boundary_lon_west = -170
+        driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
 
