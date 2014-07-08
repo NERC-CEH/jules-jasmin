@@ -13,6 +13,7 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
+from joj.utils.output_controller_helper import JULES_YEARLY_PERIOD, JULES_DAILY_PERIOD, JULES_MONTHLY_PERIOD
 
 log = logging.getLogger(__name__)
 
@@ -131,16 +132,36 @@ class ModelRunService(DatabaseService):
         model_run.user = user
 
         parameters = [
-            [constants.JULES_PARAM_TIMESTEP_LEN, constants.TIMESTEP_LEN],
-            [constants.JULES_PARAM_OUTPUT_RUN_ID, constants.RUN_ID],
-            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, constants.OUTPUT_DIR],
+            [constants.JULES_PARAM_TIMESTEP_LEN, constants.TIMESTEP_LEN, None],
+            [constants.JULES_PARAM_OUTPUT_RUN_ID, constants.RUN_ID, None],
+            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, constants.OUTPUT_DIR, None],
         ]
 
-        for constant, value in parameters:
+        # Add CHESS defaults:
+        chess_defaults = ['surf_roff', 'sub_surf_roff', 'fqw_gb', 'rad_net', 'ftl_gb', 'gpp_gb', 'resp_p_gb',
+                          'tstar_gb', 'snow_mass_gb', 't_soil', 'smc_tot', 'smcl', 'swet_liq_tot']
+        chess_periods = [(JULES_YEARLY_PERIOD, "_yearly"), (JULES_MONTHLY_PERIOD, "_monthly"),
+                         (JULES_DAILY_PERIOD, "_daily")]
+
+        group_id = 0
+        for output_variable in chess_defaults:
+            for period, period_profile_name in chess_periods:
+                parameters.append([constants.JULES_PARAM_OUTPUT_VAR, output_variable, group_id])
+                parameters.append([constants.JULES_PARAM_OUTPUT_PERIOD, period, group_id])
+                parameters.append([constants.JULES_PARAM_OUTPUT_PROFILE_NAME,
+                                   output_variable + period_profile_name, group_id])
+                parameters.append([constants.JULES_PARAM_OUTPUT_NVARS, 1, group_id])
+                parameters.append([constants.JULES_PARAM_OUTPUT_MAIN_RUN, True, group_id])
+                parameters.append([constants.JULES_PARAM_OUTPUT_TYPE, 'M', group_id])
+                group_id += 1
+        parameters.append([constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, None])
+
+        for constant, value, group_id in parameters:
             param = self._get_parameter_by_constant(constant, session)
             param_value = ParameterValue()
             param_value.parameter = param
             param_value.model_run = model_run
+            param_value.group_id = group_id
             param_value.set_value_from_python(value)
 
         return model_run
@@ -443,7 +464,7 @@ class ModelRunService(DatabaseService):
         """
         for model_parameter_value in model_run.parameter_values:
             for parameter_value_to_remove in parameter_values:
-                if parameter_value_to_remove.parameter.id == model_parameter_value.parameter.id:
+                if parameter_value_to_remove.parameter_id == model_parameter_value.parameter_id:
                     session.delete(model_parameter_value)
 
     def _copy_parameter_set_into_model(self, parameter_values, model_run, session):
@@ -501,7 +522,7 @@ class ModelRunService(DatabaseService):
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NVARS)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_MAIN_RUN)
-            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_PROFILE_NAME)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NPROFILES)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_TYPE)

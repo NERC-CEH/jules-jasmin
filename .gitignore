@@ -2,7 +2,7 @@
 *~
 *.log
 job_runner/job_runner_test/run
-majic/data/sessions/*
+majic/data/*
 
 
 # Byte-compiled / optimized / DLL files
@@ -15,3 +15,6 @@ __pycache__/
 #Intellij Project
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+
+#Password file for Crowd
+majic/joj/crowd/config.ini

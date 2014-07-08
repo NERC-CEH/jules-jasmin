@@ -33,8 +33,12 @@ def add_selected_outputs_to_template_context(template_context, model_run):
     # and identify the corresponding selected time periods:
     for selected_var in selected_vars:
         # Get the parameter id
-        param_id = [output_variable.id for output_variable in template_context.output_variables
-                    if output_variable.name == selected_var.get_value_as_python()][0]
+        matching_param_ids = [output_variable.id for output_variable in template_context.output_variables
+                              if output_variable.name == selected_var.get_value_as_python()]
+        # If we can't find a matching parameter ID, forget this parameter.
+        if len(matching_param_ids) == 0:
+            continue
+        param_id = matching_param_ids[0]
         template_context.selected_output_ids.append(param_id)
 
         # Go through the selected output period and see which ones are for this output variable
@@ -78,28 +82,28 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_YEARLY_PERIOD],
-                    [constants.JULES_PARAM_PROFILE_NAME, output_param_name + "_yearly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_monthly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_MONTHLY_PERIOD],
-                    [constants.JULES_PARAM_PROFILE_NAME, output_param_name + "_monthly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_daily_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_DAILY_PERIOD],
-                    [constants.JULES_PARAM_PROFILE_NAME, output_param_name + "_daily"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_timestep_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, timestep],
-                    [constants.JULES_PARAM_PROFILE_NAME, output_param_name + "_timestep"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_timestep"]
                 ]
                 output_variable_groups.append(output_variable_group)
     return output_variable_groups
