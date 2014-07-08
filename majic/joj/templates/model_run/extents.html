@@ -94,8 +94,8 @@
 
     <div>
         <h2>Temporal Extent</h2>
-        <p>Specify the time line you wish to run your model over. The selected time must fall completely within the
-            boundaries of your selected driving data. All times are UTC / GMT.</p>
+        <p>Specify the time line you wish to run your model over. The selected dates must fall completely within the
+            boundaries of your selected driving data.</p>
     </div>
     <div class="control-group" title="Model runs need a specified temporal extent">
         <div class="row">
@@ -112,26 +112,26 @@
 
         <div class="row">
             <div class="span2">
-                <p>Start time</p>
+                <p>Start date</p>
             </div>
-            <div class="span2">${c.dataset.time_start}</div>
+            <div class="span2">${c.dataset.time_start.date()}</div>
             <div class="span8">
                 <div class="controls" style="margin-left:0px">
                     ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    ${h.html_tags.text('start_time', style='width:100px', placeholder='HH:MM:SS')}<br/><br/>
+                    <br/><br/>
                 </div>
             </div>
         </div>
 
         <div class="row">
             <div class="span2">
-                <p>End time</p>
+                <p>End date</p>
             </div>
-            <div class="span2">${c.dataset.time_end}</div>
+            <div class="span2">${c.dataset.time_end.date()}</div>
             <div class="span8">
                 <div class="controls" style="margin-left:0px">
                     ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    ${h.html_tags.text('end_time', style='width:100px', placeholder='HH:MM:SS')}<br/>
+                    <br/>
                 </div>
             </div>
         </div>
