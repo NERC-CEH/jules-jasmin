@@ -8,6 +8,7 @@ from joj import model
 from paste.deploy import loadapp
 import os
 from joj.services.job_runner_client import JobRunnerClient
+import sys
 
 log = logging.getLogger(__name__)
 here_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,8 +17,14 @@ conf_dir = os.path.dirname(os.path.dirname(here_dir))
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
+    if len(sys.argv) is not 2 or sys.argv[1] == '-h':
+        print "Usage: update_job_statueses <config filename>"
+        print "       updates the job statuses in the database from the jobs service"
+        print "       config filename: filename of the configuration file e.g. development.ini"
+        exit()
+
     logging.debug("setup")
-    wsgiapp = loadapp('config:development.ini', relative_to=conf_dir)
+    wsgiapp = loadapp('config:' + sys.argv[1], relative_to=conf_dir)
     config = wsgiapp.config
     model.initialise_session(config)
 
