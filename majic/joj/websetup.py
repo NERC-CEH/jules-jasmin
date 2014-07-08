@@ -98,9 +98,10 @@ def setup_app(command, conf, vars):
         stat_published = ModelRunStatus(constants.MODEL_RUN_STATUS_PUBLISHED)
         stat_failed = ModelRunStatus(constants.MODEL_RUN_STATUS_FAILED)
         stat_submit_failed = ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMIT_FAILED)
+        stat_unknown = ModelRunStatus(constants.MODEL_RUN_STATUS_UNKNOWN)
 
         map(session.add, [stat_created, stat_submitted, stat_pending, stat_running, stat_completed, stat_published,
-                          stat_failed, stat_submit_failed])
+                          stat_failed, stat_submit_failed, stat_unknown])
 
         default_code_version = CodeVersion()
         default_code_version.name = conf.local_conf['default_code_version']
@@ -179,6 +180,7 @@ def setup_app(command, conf, vars):
         mr2.date_started = datetime.datetime(2014, 3, 5, 18, 11, 12)
         mr2.last_status_change = datetime.datetime(2014, 3, 6, 1, 9, 2)
         mr2.status = stat_failed
+        mr2.error_message = 'Parameters are not correct'
 
         session.add(mr2)
 

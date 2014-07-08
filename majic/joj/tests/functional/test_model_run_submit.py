@@ -84,13 +84,12 @@ class TestModelRunSummaryController(TestController):
 
         session = Session()
         row = session.query("name").from_statement(
-            """
-            SELECT s.name
-            FROM model_runs m
-            JOIN model_run_statuses s on s.id = m.status_id
-            WHERE m.user_id = :userid
-            """
-        ).params({'userid': user.id})\
+                """
+                SELECT s.name
+                FROM model_runs m
+                JOIN model_run_statuses s on s.id = m.status_id
+                WHERE m.user_id = :userid
+                """)\
+            .params({'userid': user.id})\
             .one()
         assert_that(row.name, is_(constants.MODEL_RUN_STATUS_SUBMIT_FAILED), "model run status")
-

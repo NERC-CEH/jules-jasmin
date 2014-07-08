@@ -24,15 +24,18 @@ class LogFileParser(object):
         Parse the log file this will set the status and error message
         :return: nothing
         """
-        if len(self._lines) == 0:
-            self.status = constants.MODEL_RUN_STATUS_FAILED
-            self.error_message = constants.ERROR_MESSAGE_OUTPUT_IS_EMPTY
-            return
 
+        found_a_line = False
         for line in self._lines:
+            found_a_line = True
             if constants.JULES_RUN_COMPLETED_MESSAGE in line:
                 self.status = constants.MODEL_RUN_STATUS_COMPLETED
                 return
+
+        if not found_a_line:
+            self.status = constants.MODEL_RUN_STATUS_FAILED
+            self.error_message = constants.ERROR_MESSAGE_OUTPUT_IS_EMPTY
+            return
 
         self.status = constants.MODEL_RUN_STATUS_FAILED
         self.error_message = constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR

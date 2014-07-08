@@ -28,6 +28,7 @@ from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Se
 from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
+from joj.model import session_scope, Session, ModelRun
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -201,3 +202,18 @@ class TestController(TestCase):
                 constants.JULES_PARAM_DRIVE_FILE,
                 "'testFileName'")
             session.add(driving_data_filename_param_val)
+
+    def assert_model_run_status_and_return(self, model_run_id, status):
+        """
+        assert that a model has a given status
+        :param model_run_id: id of the model
+        :param status: name of the status
+        :return:the model run
+        """
+        with session_scope(Session) as session:
+            result = session \
+                .query(ModelRun) \
+                .filter(ModelRun.id == model_run_id) \
+                .one()
+            assert_that(result.status.name, is_(status))
+            return result

@@ -19,6 +19,7 @@ class ModelRun(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(constants.DB_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
+    error_message = Column(String(constants.DB_LONG_STRING_SIZE))
     user_id = Column(Integer, ForeignKey('users.id'))
     date_created = Column(DateTime)
     date_submitted = Column(DateTime)
@@ -37,11 +38,12 @@ class ModelRun(Base):
     status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id), lazy="joined")
     driving_dataset = relationship("DrivingDataset", backref=backref('model_runs', order_by=id), lazy="joined")
 
-    def change_status(self, session, new_status):
+    def change_status(self, session, new_status, error_message=""):
         """
         Change the status of the model run object. Will also update dates
         :param session: session used to get the staus id
         :param new_status: the name of the status
+        :param error_message: the error message associated with the new status default to blank
         :return: the new status object
         """
         status = session.query(ModelRunStatus) \
@@ -49,6 +51,7 @@ class ModelRun(Base):
             .one()
         self.status = status
         self.last_status_change = datetime.datetime.now()
+        self.error_message = error_message
         if new_status == constants.MODEL_RUN_STATUS_PENDING:
             self.date_submitted = datetime.datetime.now()
         elif new_status == constants.MODEL_RUN_STATUS_CREATED:
