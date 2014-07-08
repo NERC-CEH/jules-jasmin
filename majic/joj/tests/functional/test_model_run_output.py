@@ -125,7 +125,7 @@ class TestModelRunOutput(TestController):
 
         pv_var = model_run.get_parameter_values(JULES_PARAM_OUTPUT_VAR)
         pv_nvars = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NVARS)
-        pv_profile_name = model_run.get_parameter_values(JULES_PARAM_PROFILE_NAME)
+        pv_profile_name = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PROFILE_NAME)
         pv_output_main_run = model_run.get_parameter_values(JULES_PARAM_OUTPUT_MAIN_RUN)
         pv_output_period = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PERIOD)
         pv_output_types = model_run.get_parameter_values(JULES_PARAM_OUTPUT_TYPE)
@@ -148,10 +148,15 @@ class TestModelRunOutput(TestController):
 
         # Check that we got the correct values
         # The order is assured consistent by the sort in model_run.get_parameter_values()
-        assert_that(var_vals, is_(['con_rain', 'con_rain', 'con_snow', 'con_snow', 'cosz']))
+        output_var_1 = self.model_run_service.get_output_variable_by_id(1)
+        output_var_2 = self.model_run_service.get_output_variable_by_id(2)
+        output_var_3 = self.model_run_service.get_output_variable_by_id(3)
+        assert_that(var_vals, is_([output_var_1.name, output_var_1.name, output_var_2.name,
+                                   output_var_2.name, output_var_3.name]))
         assert_that(nvars_vals, is_([1, 1, 1, 1, 1]))
-        assert_that(profile_name_vals, is_(['con_rain_yearly', 'con_rain_monthly',
-                                            'con_snow_daily', 'con_snow_timestep', 'cosz_monthly']))
+        assert_that(profile_name_vals, is_([output_var_1.name + '_yearly', output_var_1.name + '_monthly',
+                                            output_var_2.name + '_daily', output_var_2.name + '_timestep',
+                                            output_var_3.name + '_monthly']))
         assert_that(output_main_run_vals, is_([True, True, True, True, True]))
         assert_that(output_period_vals, is_([-2, -1, 24 * 60 * 60, TIMESTEP_LEN, -1]))
         assert_that(output_types, is_(['M', 'M', 'M', 'M', 'M']))
@@ -177,8 +182,10 @@ class TestModelRunOutput(TestController):
         self.model_run_service.save_parameter(JULES_PARAM_NSMAX, 3, self.user)
         response = self.app.get(
             url(controller='model_run', action='output'))
-        for output_name in DEPENDS_ON_NSMAX:
-            assert_that(response.normal_body, contains_string(output_name))
+        output_variables = self.model_run_service.get_output_variables(include_depends_on_nsmax=True)
+        for output_variable in output_variables:
+            if output_variable.depends_on_nsmax:
+                assert_that(response.normal_body, contains_string(str(output_variable.name)))
 
     def test_GIVEN_page_already_run_once_WHEN_page_post_THEN_new_parameters_overwrite_old_parameters(self):
         self.app.post(
@@ -205,7 +212,7 @@ class TestModelRunOutput(TestController):
 
         pv_var = model_run.get_parameter_values(JULES_PARAM_OUTPUT_VAR)
         pv_nvars = model_run.get_parameter_values(JULES_PARAM_OUTPUT_NVARS)
-        pv_profile_name = model_run.get_parameter_values(JULES_PARAM_PROFILE_NAME)
+        pv_profile_name = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PROFILE_NAME)
         pv_output_main_run = model_run.get_parameter_values(JULES_PARAM_OUTPUT_MAIN_RUN)
         pv_output_period = model_run.get_parameter_values(JULES_PARAM_OUTPUT_PERIOD)
         pv_output_types = model_run.get_parameter_values(JULES_PARAM_OUTPUT_TYPE)
@@ -228,9 +235,12 @@ class TestModelRunOutput(TestController):
 
         # Check that we got the correct values
         # The order is assured consistent by the sort in model_run.get_parameter_values()
-        assert_that(var_vals, is_(['land_albedo_1', 'land_albedo_1', 'con_rain']))
+        output_var_1 = self.model_run_service.get_output_variable_by_id(1)
+        output_var_10 = self.model_run_service.get_output_variable_by_id(10)
+        assert_that(var_vals, is_([output_var_10.name, output_var_10.name, output_var_1.name]))
         assert_that(nvars_vals, is_([1, 1, 1]))
-        assert_that(profile_name_vals, is_(['land_albedo_1_yearly', 'land_albedo_1_monthly', 'con_rain_timestep']))
+        assert_that(profile_name_vals, is_([output_var_10.name + '_yearly', output_var_10.name + '_monthly',
+                                            output_var_1.name + '_timestep']))
         assert_that(output_main_run_vals, is_([True, True, True]))
         assert_that(output_period_vals, is_([-2, -1, TIMESTEP_LEN]))
         assert_that(output_types, is_(['M', 'M', 'M']))
