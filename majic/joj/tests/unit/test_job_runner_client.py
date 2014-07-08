@@ -5,7 +5,7 @@ from hamcrest import *
 from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
-from tests import TestController
+from joj.tests import TestController
 from pylons import config
 
 

@@ -8,7 +8,7 @@ from job_runner.model.job_status import JobStatus
 from job_runner.tests import TestController
 from job_runner.utils import constants
 from job_runner.services.job_service import JobService, ServiceError
-from model.log_file_parser import LogFileParser
+from job_runner.model.log_file_parser import LogFileParser
 
 
 class TestJobRunnerClient(TestController):

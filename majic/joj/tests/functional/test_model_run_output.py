@@ -8,7 +8,7 @@ from pylons import url
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import *
-from model import ModelRun, session_scope, Session
+from joj.model import ModelRun, session_scope, Session
 
 
 class TestModelRunOutput(TestController):
