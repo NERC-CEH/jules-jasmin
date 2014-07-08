@@ -58,7 +58,7 @@ class TestJobRunnerClient(TestController):
 
         # Set the parameters here:
         param_nprofiles = Parameter(name=constants.JULES_PARAM_OUTPUT_NPROFILES[1])
-        param_profile_name = Parameter(name=constants.JULES_PARAM_PROFILE_NAME[1])
+        param_profile_name = Parameter(name=constants.JULES_PARAM_OUTPUT_PROFILE_NAME[1])
         param_var = Parameter(name=constants.JULES_PARAM_OUTPUT_VAR[1])
 
         # Set the parameter values
@@ -101,14 +101,14 @@ class TestJobRunnerClient(TestController):
                           constants.JSON_MODEL_NAMELIST_NAME: constants.JULES_NML_OUTPUT_PROFILE,
                           constants.JSON_MODEL_PARAMETERS: {
                               constants.JULES_PARAM_OUTPUT_VAR[1]: '"emis_gb", "ftl_gb"',
-                              constants.JULES_PARAM_PROFILE_NAME[1]: "monthly"
+                              constants.JULES_PARAM_OUTPUT_PROFILE_NAME[1]: "monthly"
                           }}
         profiles_dict2 = {constants.JSON_MODEL_NAMELIST_GROUP_ID: 1,
                           constants.JSON_MODEL_NAMELIST_INDEX: None,
                           constants.JSON_MODEL_NAMELIST_NAME: constants.JULES_NML_OUTPUT_PROFILE,
                           constants.JSON_MODEL_PARAMETERS: {
                               constants.JULES_PARAM_OUTPUT_VAR[1]: '"snow_mass_gb", "tstar_gb"',
-                              constants.JULES_PARAM_PROFILE_NAME[1]: "yearly"
+                              constants.JULES_PARAM_OUTPUT_PROFILE_NAME[1]: "yearly"
                           }}
         output_dict = {constants.JSON_MODEL_NAMELIST_GROUP_ID: None,
                        constants.JSON_MODEL_NAMELIST_INDEX: None,

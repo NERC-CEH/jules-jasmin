@@ -91,9 +91,7 @@ class TestModelRunExtents(TestController):
         response = self.app.get(
             url(controller='model_run', action='extents'))
         assert_that(response.normal_body, contains_string(start_time.strftime("%Y-%m-%d")))
-        assert_that(response.normal_body, contains_string(start_time.strftime("%X")))
         assert_that(response.normal_body, contains_string(end_time.strftime("%Y-%m-%d")))
-        assert_that(response.normal_body, contains_string(end_time.strftime("%X")))
 
     def test_GIVEN_invalid_spatial_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [40, 500], self.user)
@@ -110,7 +108,7 @@ class TestModelRunExtents(TestController):
         self.model_run_service.save_parameter(JULES_PARAM_RUN_END, end_time, self.user)
         response = self.app.get(
             url(controller='model_run', action='extents'))
-        assert_that(response.normal_body, contains_string("Start time is outside the acceptable range"))
+        assert_that(response.normal_body, contains_string("Start date cannot be earlier than 1901-01-01"))
 
     def test_GIVEN_invalid_spatial_extents_WHEN_post_THEN_errors_rendered(self):
         response = self.app.post(
@@ -122,9 +120,7 @@ class TestModelRunExtents(TestController):
                 'lon_e': 40,
                 'lon_w': 500,
                 'start_date': '1940-10-13',
-                'start_time': '12:00:00',
-                'end_date': '1950-10-13',
-                'end_time': '12:00:00'
+                'end_date': '1950-10-13'
             })
         assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
 
@@ -138,11 +134,9 @@ class TestModelRunExtents(TestController):
                 'lon_e': 40,
                 'lon_w': 35,
                 'start_date': '1900-10-14',
-                'start_time': '12:00:00',
-                'end_date': '1950-10-13',
-                'end_time': '12:00:00'
+                'end_date': '1950-10-13'
             })
-        assert_that(response.normal_body, contains_string("Start time is outside the acceptable range"))
+        assert_that(response.normal_body, contains_string("Start date cannot be earlier than 1901-01-01"))
 
     def test_GIVEN_valid_extents_WHEN_post_THEN_extents_saved(self):
         response = self.app.post(
@@ -154,9 +148,7 @@ class TestModelRunExtents(TestController):
                 'lon_e': 40,
                 'lon_w': 35,
                 'start_date': '1940-10-13',
-                'start_time': '12:00:00',
-                'end_date': '1950-10-13',
-                'end_time': '12:00:00'
+                'end_date': '1950-10-13'
             })
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         lat_bounds = model_run.get_parameter_values(JULES_PARAM_LAT_BOUNDS)[0].value
@@ -169,8 +161,8 @@ class TestModelRunExtents(TestController):
         assert_that(lon_bounds, is_("35, 40"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".true."))
-        assert_that(str(start_run), is_("'1940-10-13 12:00:00'"))
-        assert_that(str(end_run), is_("'1950-10-13 12:00:00'"))
+        assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
+        assert_that(str(end_run), is_("'1950-10-13 00:00:00'"))
 
     def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_output(self):
         response = self.app.post(
@@ -182,9 +174,7 @@ class TestModelRunExtents(TestController):
                 'lon_e': 40,
                 'lon_w': 35,
                 'start_date': '1940-10-13',
-                'start_time': '12:00:00',
-                'end_date': '1950-10-13',
-                'end_time': '12:00:00'
+                'end_date': '1950-10-13'
             })
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,

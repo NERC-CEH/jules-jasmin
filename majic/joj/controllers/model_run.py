@@ -265,9 +265,7 @@ class ModelRunController(BaseController):
                 'lon_w': lon_w,
                 'lon_e': lon_e,
                 'start_date': run_start.date(),
-                'start_time': run_start.time(),
-                'end_date': run_end.date(),
-                'end_time': run_end.time()
+                'end_date': run_end.date()
             }
 
             # We need to check that saved values for user selected spatial extent are consistent with the chosen
@@ -285,8 +283,9 @@ class ModelRunController(BaseController):
         else:
             values = self.form_result
 
-            run_start = datetime.datetime.combine(values['start_date'], values['start_time'])
-            run_end = datetime.datetime.combine(values['end_date'], values['end_time'])
+            # Set the start and end times to be the times at which the driving data starts and ends.
+            run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
+            run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
 
             _validate_extents(values['lat_n'], values['lat_s'], values['lon_e'], values['lon_w'], run_end, run_start)
 

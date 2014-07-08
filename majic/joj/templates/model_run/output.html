@@ -48,7 +48,7 @@
                    onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('red')">
                     <i class="fa fa-times fa-3x ico"></i>
                 </a>
-                <div class="ico-text red">Delete</div>
+                <div class="ico-text red">Remove</div>
             </div>
             <input id="ov_select_${output_var.id}" name="ov_select_${output_var.id}" type="checkbox"
                    checked="${1 if output_var.id in c.selected_output_ids else None}" style="display:none"/>
