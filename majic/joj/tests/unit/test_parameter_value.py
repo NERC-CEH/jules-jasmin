@@ -3,8 +3,8 @@
 """
 import datetime
 from hamcrest import assert_that, is_
-from model import ParameterValue
-from services.tests.base import BaseTest
+from joj.model import ParameterValue
+from joj.services.tests.base import BaseTest
 
 
 class TestParameterValue(BaseTest):

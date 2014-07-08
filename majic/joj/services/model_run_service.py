@@ -273,7 +273,7 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
             status_name, message = self._job_runner_client.submit(model)
-            status = model.change_status(session, status_name)
+            status = model.change_status(session, status_name, message)
             return status, message
 
     def get_scientific_configurations(self):

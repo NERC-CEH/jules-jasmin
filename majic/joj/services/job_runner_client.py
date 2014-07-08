@@ -34,7 +34,7 @@ class JobRunnerClient(object):
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
 
         if response.status_code == 200:
-            return constants.MODEL_RUN_STATUS_PENDING, "Model run submitted."
+            return constants.MODEL_RUN_STATUS_SUBMITTED, "Model run submitted."
         else:
             log.error("Failed to submit job %s" % response.text)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error %s" % response.text
