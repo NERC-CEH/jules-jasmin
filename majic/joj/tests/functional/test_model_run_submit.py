@@ -1,59 +1,34 @@
+"""
 # Header
+"""
 from urlparse import urlparse
+import datetime
 
 from hamcrest import *
 from joj.tests import *
-from joj.model import User
 from joj.model import Session
 from joj.utils import constants
-from joj.services.general import DatabaseService
 from joj.services.model_run_service import ModelRunService
-from joj.services.user import UserService
-from pylons import config
-from joj.model import meta
+from services.dataset import DatasetService
 
 
 class TestModelRunSummaryController(TestController):
-
     def setUp(self):
         super(TestModelRunSummaryController, self).setUp()
         self.clean_database()
+        self.user = self.login()
+        self.model_run_service = ModelRunService()
 
     def test_GIVEN_no_defining_model_WHEN_navigate_to_summary_THEN_redirect_to_create_model_run(self):
-
-        self.login()
-
         response = self.app.get(
             url(controller='model_run', action='submit'))
 
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='create')), "url")
 
-
-    def test_GIVEN_model_run_and_parameters_WHEN_view_submit_THEN_page_is_shown_and_contains_model_run_summary(self):
-
-        user = self.login()
-
-        model_run_service = ModelRunService()
-        expected_model_name="test model name"
-        model_run_service.update_model_run(user, expected_model_name, 1)
-        expected_value = 123456789
-        model_run_service.store_parameter_values({'1': expected_value}, user)
-
-        response = self.app.get(
-            url(controller='model_run', action='submit'))
-
-        assert_that(response.normal_body, contains_string("<h2>Submit</h2>"))
-        assert_that(response.normal_body, contains_string(expected_model_name))
-        assert_that(response.normal_body, contains_string("timestep_len"))
-        assert_that(response.normal_body, contains_string(str(expected_value)))
-
-    def test_GIVEN_select_previous_WHEN_post_THEN_redirect_to_parameters_page(self):
-
-        user = self.login()
-        model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, "test", 1)
-        model_run_service.store_parameter_values({'1': 12}, user)
+    def test_GIVEN_select_previous_WHEN_post_THEN_redirect_to_output_page(self):
+        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
@@ -63,14 +38,12 @@ class TestModelRunSummaryController(TestController):
         )
 
         assert_that(response.status_code, is_(302), "Respose is redirect")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='parameters')), "url")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='output')), "url")
 
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
-
-        user = self.login()
-        model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, "test", 1)
-        model_run_service.store_parameter_values({'1': 12}, user)
+        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
@@ -84,12 +57,85 @@ class TestModelRunSummaryController(TestController):
 
         session = Session()
         row = session.query("name").from_statement(
-                """
+            """
                 SELECT s.name
                 FROM model_runs m
                 JOIN model_run_statuses s on s.id = m.status_id
                 WHERE m.user_id = :userid
-                """)\
-            .params({'userid': user.id})\
+                """) \
+            .params({'userid': self.user.id}) \
             .one()
         assert_that(row.name, is_(constants.MODEL_RUN_STATUS_SUBMIT_FAILED), "model run status")
+
+    def test_GIVEN_model_run_and_parameters_WHEN_view_submit_THEN_page_is_shown_and_contains_model_run_summary(self):
+        self.create_model_run_ready_for_submit()
+        response = self.app.get(
+            url(controller='model_run', action='submit'))
+
+        assert_that(response.normal_body, contains_string("<h1>Submit Model Run</h1>"))
+        assert_that(response.normal_body, contains_string(self.model_name))
+        assert_that(response.normal_body, contains_string(self.model_description))
+        assert_that(response.normal_body, contains_string(self.science_config['name']))
+
+        assert_that(response.normal_body, contains_string(self.driving_data.name))
+
+        assert_that(response.normal_body, contains_string(str(self.lat_n)))
+        assert_that(response.normal_body, contains_string(str(self.lat_s)))
+        assert_that(response.normal_body, contains_string(str(self.lon_w)))
+        assert_that(response.normal_body, contains_string(str(self.lon_e)))
+        assert_that(response.normal_body, contains_string(self.date_start.strftime("%Y-%m-%d")))
+        assert_that(response.normal_body, contains_string(self.date_end.strftime("%Y-%m-%d")))
+
+        output_variable_1 = self.model_run_service.get_output_variable_by_id(1)
+        output_variable_10 = self.model_run_service.get_output_variable_by_id(10)
+        assert_that(response.normal_body, contains_string(output_variable_1.name))
+        assert_that(response.normal_body, contains_string(output_variable_10.name))
+
+    def create_model_run_ready_for_submit(self):
+         # Set up the model as if we'd gone through all the previous pages
+        # The Create page
+        self.model_name = u'name'
+        self.model_description = u'This is a description'
+        self.science_config = self.model_run_service.get_scientific_configurations()[0]
+        model_science_config_id = self.science_config['id']
+        self.app.post(url=url(controller='model_run', action='create'),
+                      params={
+                          'name': self.model_name,
+                          'science_configuration': str(model_science_config_id),
+                          'description': self.model_description
+                      })
+        # The Driving Data page
+        self.create_two_driving_datasets()
+        dataset_service = DatasetService()
+        self.driving_data = dataset_service.get_driving_datasets()[0]
+        ds_id = self.driving_data.id
+        self.app.post(url(controller='model_run', action='driving_data'),
+                      params={
+                          'driving_dataset': ds_id,
+                          'submit': u'Next'
+                      })
+        # The Extents page
+        self.lat_n, self.lat_s = 40, 0
+        self.lon_w, self.lon_e = -15, 15
+        self.date_start = datetime.datetime(1980, 1, 1, 0, 0, 0)
+        self.date_end = datetime.datetime(1980, 1, 1, 0, 0, 0)
+        self.app.post(url(controller='model_run', action='extents'),
+                      params={
+                          'submit': u'Next',
+                          'lat_n': self.lat_n,
+                          'lat_s': self.lat_s,
+                          'lon_e': self.lon_e,
+                          'lon_w': self.lon_w,
+                          'start_date': self.date_start.strftime("%Y-%m-%d"),
+                          'end_date': self.date_end.strftime("%Y-%m-%d")
+                      })
+        # The Output Variables page
+        self.app.post(url(controller='model_run', action='output'),
+                      params={
+                          'submit': u'Next',
+                          'ov_select_1': 1,
+                          'ov_timestep_1': 1,
+                          'ov_select_10': 1,
+                          'ov_yearly_10': 1,
+                          'ov_monthly_10': 1
+                      })
