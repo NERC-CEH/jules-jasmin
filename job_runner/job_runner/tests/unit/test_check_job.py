@@ -18,7 +18,6 @@ class TestJobRunnerClient(TestController):
         self.model_run_id = 1
         self.job_status = JobStatus(self.model_run_id)
 
-
     def test_GIVEN_run_folder_does_not_WHEN_get_job_status_THEN_job_status_failed(self):
         self.job_service.exists_run_dir = Mock(return_value=False)
 
