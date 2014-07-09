@@ -1,8 +1,13 @@
+"""
 # header
+"""
 from pylons import config
-from joj.model import AccountRequest
+import logging
+from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
-from joj.utils.emailer import send_email
+from services.email_service import EmailService
+
+log = logging.getLogger(__name__)
 
 
 class AccountRequestService(DatabaseService):
@@ -28,6 +33,16 @@ class AccountRequestService(DatabaseService):
                             "Unfortunately we are unable to accept any more account requests for today. We're " \
                             "sorry for the inconvenience, please try again tomorrow."
 
+    def __init__(self, session=Session, email_service=EmailService()):
+        """
+
+        :param session: session to use
+        :param email_service: the email service to use
+        :return:nothing
+        """
+        super(AccountRequestService, self).__init__(session)
+        self._email_service = email_service
+
     def _add_account_request(self, account_request):
         """
         Adds an account request to the database
@@ -49,21 +64,28 @@ class AccountRequestService(DatabaseService):
         if self._is_database_full():
             # Email the person who requested the account
             msg = self.MESSAGE_TEMPLATE_FULL % account_request.name
-            send_email(config['email.from_address'], account_request.email,
-                       "Unable to process account request", msg)
+            self._email_service.send_email(config['email.from_address'], account_request.email,
+                                           "Unable to process account request", msg)
             return
 
         self._add_account_request(account_request)
         # Email the person who requested the account
         msg = self.MESSAGE_TEMPLATE_REQUESTED % account_request.name
-        send_email(config['email.from_address'], account_request.email, "Majic Account Requested", msg)
+        self._email_service.send_email(
+            config['email.from_address'],
+            account_request.email,
+            "Majic Account Requested",
+            msg)
 
         # Then email the admin to approve
         msg = self.MESSAGE_TEMPLATE_ADMIN % (account_request.name, account_request.email,
                                              account_request.institution,
                                              account_request.usage)
-        send_email(config['email.from_address'], config['email.admin_address'], "Majic Account Requested", msg)
-
+        self._email_service.send_email(
+            config['email.from_address'],
+            config['email.admin_address'],
+            "Majic Account Requested",
+            msg)
 
     def _is_database_full(self):
         """
