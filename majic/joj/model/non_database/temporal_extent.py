@@ -26,10 +26,12 @@ class TemporalExtent(object):
         :param start_time: start Datetime
         :return:
         """
-        if not self._start_bound <= start_time <= self._end_bound:
-            raise InvalidTemporalExtent("Start time is outside the acceptable range")
-        if not start_time <= self._end:
-            raise InvalidTemporalExtent("Start time must be before the end time")
+        if start_time < self._start_bound:
+            raise InvalidTemporalExtent("Start date cannot be earlier than %s" % self._start_bound.strftime("%Y-%m-%d"))
+        if start_time > self._end:
+            raise InvalidTemporalExtent("Start date cannot be later than the end date")
+        if start_time > self._end_bound:
+            raise InvalidTemporalExtent("Start date cannot be later than %s" % self._end_bound.strftime("%Y-%m-%d"))
         self._start = start_time
 
     def set_end(self, end_time):
@@ -38,8 +40,17 @@ class TemporalExtent(object):
         :param end_time: end Datetime
         :return:
         """
-        if not self._start_bound <= end_time <= self._end_bound:
-            raise InvalidTemporalExtent("End time is outside the acceptable range")
-        if not end_time >= self._start:
-            raise InvalidTemporalExtent("Start time must be before the end time")
+        if end_time < self._start_bound:
+            raise InvalidTemporalExtent("End date cannot be earlier than %s" % self._start_bound.strftime("%Y-%m-%d"))
+        if end_time < self._start:
+            raise InvalidTemporalExtent("End date cannot be earlier than the start date")
+        if end_time > self._end_bound:
+            raise InvalidTemporalExtent("End date cannot be later than %s" % self._end_bound.strftime("%Y-%m-%d"))
         self._end = end_time
+
+    def get_temporal_extent(self):
+        """
+        Get the selected time extent as an array
+        :return:
+        """
+        return [self._start, self._end]

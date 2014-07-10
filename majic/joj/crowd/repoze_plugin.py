@@ -41,7 +41,6 @@ class CrowdRepozePlugin(object):
 
             # Do we have an active session already?
             if 'token' in identity:
-
                 log.debug("--> Already got a token, returning %s" % identity['login'])
 
                 # If so, we can just return the user name
@@ -63,7 +62,7 @@ class CrowdRepozePlugin(object):
         except KeyError:
             return None
         except ClientException as ex:
-            log.error("Error authenticating %s with Crowd: %s" % (identity['login'],ex))
+            log.error("Error authenticating %s with Crowd: %s" % (identity['login'], ex))
             return None
 
     def add_metadata(self, environ, identity):
@@ -169,6 +168,7 @@ class CrowdRepozePlugin(object):
         """Gets the token value stored in the cookie"""
 
         from paste.request import get_cookies
+
         cookies = get_cookies(environ)
         cookie = cookies.get(self._cookie_name)
 
@@ -179,21 +179,20 @@ class CrowdRepozePlugin(object):
 
         return token
 
+
 def crowd_challenge_decider(environ, status, headers):
-    """Inspects each request and decides whether to challenge for authentication
+    """
+    Inspects each request and decides whether to challenge for authentication
     this is an implementation for repoze.who
-        Params:
-            environ: WSGI environment
-            status: The HTTP status message
-            headers: Any HTTP headers in the request
-        Returns:
-            True if a challenge should be made, otherwise False
+    :param environ: WSGI environment
+    :param status: The HTTP status message
+    :param headers: Any HTTP headers in the request
+    :return: True if a challenge should be made, otherwise False
     """
 
     # Are we logging in anyway? So we don't get caught in an infinite loop,
     # don't challenge for the login controller
-    public_page = 'login' in environ.get('PATH_INFO') or 'request_account' in environ.get('PATH_INFO')
-    if public_page:
+    if is_public_page(environ) or is_home_page(environ):
         return False
     else:
         # The middleware should populate REMOTE_USER
@@ -204,3 +203,28 @@ def crowd_challenge_decider(environ, status, headers):
 
 # Let zope know we're a challenge decider
 directlyProvides(crowd_challenge_decider, IChallengeDecider)
+
+
+def is_public_page(environ):
+    """
+    Determines if the currently requested page is allowed to be publicly accessible without being logged in
+    :param environ: WSGI environment
+    :return: True if public, False otherwise
+    """
+    path_info = environ.get('PATH_INFO')
+    public_urls = ['login', 'request_account']
+    for public_url in public_urls:
+        if public_url in path_info:
+            return True
+    return False
+
+
+def is_home_page(environ):
+    """
+    Determines if the currently requested URL is for the home controller
+    :param environ: WSGI environment
+    :return: True if home page, False otherwise
+    """
+    path_info = environ.get('PATH_INFO')
+    # Includes 'about' page ('home/about')
+    return path_info == '/' or 'home' in path_info

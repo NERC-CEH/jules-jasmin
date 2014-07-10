@@ -14,6 +14,7 @@ setup(
     url='',
     install_requires=[
         "Pylons>=1.0.1rc1",
+        "lxml"
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
