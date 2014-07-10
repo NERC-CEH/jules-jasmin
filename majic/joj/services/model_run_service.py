@@ -371,6 +371,15 @@ class ModelRunService(DatabaseService):
             .one()
         return parameter
 
+    def get_science_configuration_by_id(self, science_config_id):
+        """
+        Get the Science Configuration with a specified ID
+        :param science_config_id: The database ID of the Science Configuration to retrieve
+        :return: Science Configuration
+        """
+        with self.readonly_scope() as session:
+            return self._get_science_configuration(science_config_id, session)
+
     def _get_science_configuration(self, science_configuration_id, session):
         """
         get The science configuration indicated by the id using the current session

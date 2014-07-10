@@ -8,42 +8,26 @@
     <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
 </head>
 <body id="create">
-    <h1>Create Model Run</h1>
-    <h2>Submit</h2>
-    <div class="row" style="display:none">
-        <div class="span12">
-            <div class="alert alert-block alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <h4>Be aware!</h4>
-                <p>
-                    This is some health warning text
-                </p>
-            </div>
-        </div>
-    </div>
+    <h1>Submit Model Run</h1>
 
-    <h3>Model Information</h3>
-    <div class="form-horizontal">
-        <div class="control-group">
-            <span class="control-label">model name</span>
-            <span class="uneditable-input controls">${c.model.name}</span>
-        </div>
-        <div class="control-group">
-            <span class="control-label">code version</span>
-            <span class="uneditable-input controls">${c.model.code_version.name}</span>
-        </div>
-    </div>
+    <h3>Basic Information</h3>
+    <p><b>Name: </b>${c.model_run_name}</p>
+    <p><b>Description: </b>${c.model_run_desc}</p>
+    <p><b>Science Configuration: </b>${c.science_config_name}</p>
 
-    <h3>Non Default Parameters</h3>
-    <div class="form-horizontal">
-        <py:for each="parameter_value in c.model.parameter_values">
-            <h4>${parameter_value.parameter.namelist.name}</h4>
-            <div class="control-group">
-                <span class="control-label">${parameter_value.parameter.name}</span>
-                <span class="uneditable-input controls">${parameter_value.value}</span>
-            </div>
-        </py:for>
-    </div>
+    <h3>Driving Data and Extents</h3>
+    <p><b>Driving Data: </b>${c.driving_data_name}</p>
+    <p><b>Latitudinal extent (N, S): </b>${c.lat_n}, ${c.lat_s} (deg N)</p>
+    <p><b>Longitudinal extent (W, E): </b>${c.lon_w}, ${c.lon_e} (deg E)</p>
+    <p><b>Start Date: </b>${c.run_start}</p>
+    <p><b>End Date: </b>${c.run_end}</p>
+
+
+    <h3>Output Variables</h3>
+    <p><b>Hourly: </b>${c.hourly}</p>
+    <p><b>Daily: </b>${c.daily}</p>
+    <p><b>Monthly: </b>${c.monthly}</p>
+    <p><b>Yearly: </b>${c.yearly}</p>
 
     <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='submit')}">
         <div class="controls">

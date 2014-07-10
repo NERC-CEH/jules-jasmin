@@ -70,8 +70,8 @@ class TestModelRunExtents(TestController):
     def test_GIVEN_driving_dataset_selected_for_model_WHEN_page_get_THEN_driving_data_temporal_extents_rendered(self):
         response = self.app.get(
             url(controller='model_run', action='extents'))
-        assert_that(response.normal_body, contains_string(self.driving_data.time_start.strftime("%Y-%m-%d %X")))
-        assert_that(response.normal_body, contains_string(self.driving_data.time_end.strftime("%Y-%m-%d %X")))
+        assert_that(response.normal_body, contains_string(self.driving_data.time_start.strftime("%Y-%m-%d")))
+        assert_that(response.normal_body, contains_string(self.driving_data.time_end.strftime("%Y-%m-%d")))
 
     def test_GIVEN_spatial_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [12.3, 35.5], self.user)
@@ -98,7 +98,6 @@ class TestModelRunExtents(TestController):
         self.model_run_service.save_parameter(JULES_PARAM_LAT_BOUNDS, [20, 25], self.user)
         response = self.app.get(
             url(controller='model_run', action='extents'))
-
         assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
 
     def test_GIVEN_invalid_temporal_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):

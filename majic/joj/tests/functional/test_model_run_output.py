@@ -109,7 +109,7 @@ class TestModelRunOutput(TestController):
             params=self.valid_params)
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='parameters')), "url")
+                    is_(url(controller='model_run', action='submit')), "url")
 
     def test_GIVEN_selected_outputs_WHEN_post_THEN_params_stored_in_database(self):
         self.app.post(

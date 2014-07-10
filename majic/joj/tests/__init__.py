@@ -8,6 +8,7 @@ This module initializes the application via ``websetup`` (`paster
 setup-app`) and provides the base testing objects.
 """
 from unittest import TestCase
+import datetime
 from hamcrest import assert_that, is_
 import os
 import sys
@@ -186,6 +187,8 @@ class TestController(TestCase):
             driving1.boundary_lat_south = -10
             driving1.boundary_lon_west = -15
             driving1.boundary_lon_east = 30
+            driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
+            driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
 
             driving2 = DrivingDataset()
             driving2.name = "driving2"
