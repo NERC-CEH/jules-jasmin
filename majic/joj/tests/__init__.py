@@ -194,9 +194,14 @@ class TestController(TestCase):
             driving2.name = "driving2"
             driving2.description = "driving 2 description"
             driving2.dataset = ds2
+            driving2.boundary_lat_north = 90
+            driving2.boundary_lat_south = -90
+            driving2.boundary_lon_west = -180
+            driving2.boundary_lon_east = 180
+            driving2.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
+            driving2.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
             session.add_all([driving1, driving2])
             session.commit()
-
 
             model_run_service = ModelRunService()
             driving_data_filename_param_val = DrivingDatasetParameterValue(
