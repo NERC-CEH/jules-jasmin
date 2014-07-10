@@ -5,38 +5,86 @@
 <xi:include href="../layout.html" />
 <head>
     <title>Create Model Run: Submit</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
     <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
+    <link rel="stylesheet" type="text/css" href="../layout/model_run_submit.css"/>
+    <script src="../js/model_run_submit.js"></script>
 </head>
 <body id="create">
-    <h1>Submit Model Run</h1>
-
-    <h3>Basic Information</h3>
-    <p><b>Name: </b>${c.model_run_name}</p>
-    <p><b>Description: </b>${c.model_run_desc}</p>
-    <p><b>Science Configuration: </b>${c.science_config_name}</p>
-
-    <h3>Driving Data and Extents</h3>
-    <p><b>Driving Data: </b>${c.driving_data_name}</p>
-    <p><b>Latitudinal extent (N, S): </b>${c.lat_n}, ${c.lat_s} (deg N)</p>
-    <p><b>Longitudinal extent (W, E): </b>${c.lon_w}, ${c.lon_e} (deg E)</p>
-    <p><b>Start Date: </b>${c.run_start}</p>
-    <p><b>End Date: </b>${c.run_end}</p>
-
-
-    <h3>Output Variables</h3>
-    <p><b>Hourly: </b>${c.hourly}</p>
-    <p><b>Daily: </b>${c.daily}</p>
-    <p><b>Monthly: </b>${c.monthly}</p>
-    <p><b>Yearly: </b>${c.yearly}</p>
-
-    <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='submit')}">
-        <div class="controls">
-            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Submit" />
-            <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
+<h1>Submit Model Run</h1>
+<div class="row">
+    <div id="edit-create-page" class="span1 edit">
+        <div class="icon">
+            <a href="${h.url(controller='model_run', action='create')}" class="edit">
+                <i class="fa fa-edit fa-2x"></i>
+            </a>
         </div>
-    </form>
+    </div>
+    <div class="span11">
+        <div id="create-page" class="page-group">
+            <h3>${c.model_run.name}</h3>
+            <p>${c.model_run.description}</p>
+            <p><b>Science Configuration - </b>${c.science_config.name}</p>
+        </div>
+    </div>
+</div>
 
-    <div class="modal fade hide" id="dataset-preview"></div>
+<div class="row">
+    <div id="edit-driving-page" class="span1 edit">
+        <div class="icon">
+            <a href="${h.url(controller='model_run', action='driving_data')}" class="edit">
+                <i class="fa fa-edit fa-2x edit"></i>
+            </a>
+        </div>
+    </div>
+    <div class="span11">
+        <div id="driving-page" class="page-group">
+            <p><b>Driving Data - </b>${c.driving_data_name}</p>
+        </div>
+    </div>
+</div>
 
+<div class="row">
+    <div id="edit-extents" class="span1 edit">
+        <div class="icon">
+            <a href="${h.url(controller='model_run', action='extents')}" class="edit">
+                <i class="fa fa-edit fa-2x edit"></i>
+            </a>
+        </div>
+    </div>
+    <div class="span11">
+        <div id="extents" class="page-group">
+            <p><b>Spatial Extents - </b>${c.lat_s}&deg;N to ${c.lat_n}&deg;N; ${c.lon_w}&deg;E to ${c.lon_e}&deg;E</p>
+            <p><b>Temporal Extents - </b>${c.run_start.date()} to ${c.run_end.date()}</p>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id="edit-output" class="span1 edit">
+        <div class="icon">
+            <a href="${h.url(controller='model_run', action='output')}" class="edit">
+                <i class="fa fa-edit fa-2x edit"></i>
+            </a>
+        </div>
+    </div>
+    <div class="span11">
+        <div id="output" class="page-group">
+            <p><b>Output Variables: </b></p>
+            <ul>
+            <li py:for="output in c.outputs">
+                ${output}
+            </li></ul>
+        </div>
+    </div>
+</div>
+
+<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='submit')}">
+    <div class="controls">
+        <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Submit" />
+        <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
+    </div>
+</form>
+
+<div class="modal fade hide" id="dataset-preview"></div>
 </body>
 </html>
