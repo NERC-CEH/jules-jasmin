@@ -5,7 +5,7 @@ header
 import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, asc
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
@@ -504,7 +504,7 @@ class ModelRunService(DatabaseService):
             query = session.query(OutputVariable)
             if not include_depends_on_nsmax:
                 query = query.filter(OutputVariable.depends_on_nsmax == False)
-            return query.all()
+            return query.order_by(asc(OutputVariable.description)).all()
 
     def get_output_variable_by_id(self, id):
         """

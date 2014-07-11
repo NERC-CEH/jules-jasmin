@@ -14,7 +14,7 @@
 <h1>Submit Model Run</h1>
 <p>Your model run is ready to submit. Below is a summary of your choices for this model run - review them and then submit your run.</p>
 <div class="edit-rows">
-    <div class="row">
+    <div class="row summary">
         <div id="edit-create-page" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='create')}" class="edit">
@@ -31,7 +31,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row summary">
         <div id="edit-driving-page" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='driving_data')}" class="edit">
@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row summary">
         <div id="edit-extents" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='extents')}" class="edit">
@@ -61,7 +61,8 @@
             </div>
         </div>
     </div>
-    <div class="row">
+
+    <div class="row summary">
         <div id="edit-output" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='output')}" class="edit">

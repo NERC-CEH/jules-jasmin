@@ -50,7 +50,7 @@ function displayResults(results) {
     for (var i=0; i < results.length; i++)
     {
         var id = results[i];
-        var html = "<li class='res-list result' title='" + getDesc(id) + "' value=" + id + "><b>" + getName(id) + "</b>" + " - " + getDesc(id) + "</li>";
+        var html = "<li class='res-list result' title='" + getDesc(id) + "' value=" + id + ">" + getName(id) + " - " + "<i>" + getDesc(id) + "</i></li>";
         res.append(html);
     }
     res.width($("#input-bar").width() -2);
@@ -95,7 +95,9 @@ function displayNoMatches(searchText) {
 addOutput = function() {
     var id = $(this).val();
     $("#ov_select_" + id).prop('checked', true);
-    $("#output_row_" + id).show();
+    var output_row = $("#output_row_" + id);
+    $('#output_rows').prepend($("#output_row_" + id));
+    output_row.show();
     hideResults();
 }
 

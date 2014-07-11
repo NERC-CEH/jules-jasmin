@@ -378,19 +378,16 @@ class ModelRunController(BaseController):
 
             c.driving_data_name = model_run.driving_dataset.name
 
+            output_variables = self._model_run_service.get_output_variables()
+            output_variable_dict = dict((x.name, x.description) for x in output_variables)
             selected_vars = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
             selected_output_periods = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
-
-            hourly = []
-            daily = []
-            monthly = []
-            yearly = []
 
             outputs = {}
 
             # Each group contains one output variable and one output period
             for selected_var in selected_vars:
-                var_name = selected_var.get_value_as_python()
+                var_name = output_variable_dict[selected_var.get_value_as_python()]
                 if var_name not in outputs:
                     outputs[var_name] = []
                 for output_period in selected_output_periods:
@@ -407,23 +404,7 @@ class ModelRunController(BaseController):
             c.outputs = []
             for output in outputs:
                 c.outputs.append(output + ' - ' + ', '.join(map(str, outputs[output])) + '')
-
-            if len(hourly) == 0:
-                c.hourly = 'None'
-            else:
-                c.hourly = ', '.join(map(str, hourly))
-            if len(daily) == 0:
-                c.daily = 'None'
-            else:
-                c.daily = ', '.join(map(str, daily))
-            if len(monthly) == 0:
-                c.monthly = 'None'
-            else:
-                c.monthly = ', '.join(map(str, monthly))
-            if len(yearly) == 0:
-                c.yearly = 'None'
-            else:
-                c.yearly = ', '.join(map(str, yearly))
+            c.outputs.sort()
 
         else:
             if request.params.getone('submit') == u'Submit':
