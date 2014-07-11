@@ -323,7 +323,7 @@ class ModelRunServiceTest(TestController):
             parameter1.model_run_id = model_run.id
             session.add(parameter1)
         model_run_returned = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
-        param_value_returned = model_run_returned.get_parameter_value_as_python([param_namelist, param_name])
+        param_value_returned = model_run_returned.get_python_parameter_value([param_namelist, param_name])
         assert_that(param_value_returned, is_("param1 value"))
 
     def test_GIVEN_no_run_model_WHEN_create_run_model_with_science_config_THEN_model_created_with_parameter_values_copied(self):
@@ -372,8 +372,7 @@ class ModelRunServiceTest(TestController):
             expected_name,
             constants.DEFAULT_SCIENCE_CONFIGURATION,
             expected_description)
-        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION[1],
-                                                   constants.JULES_PARAM_LATLON_REGION[0], True, user)
+        self.model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION, True, user)
         expected_parameters_count = self.count_parameter_values_in_model_being_created(user)
 
         self.model_run_service.update_model_run(

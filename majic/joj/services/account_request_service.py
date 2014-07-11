@@ -5,7 +5,7 @@ from pylons import config
 import logging
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
-from services.email_service import EmailService
+from joj.services.email_service import EmailService
 
 log = logging.getLogger(__name__)
 

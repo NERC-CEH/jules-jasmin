@@ -121,9 +121,9 @@ Majic
             model_runs = session.query(ModelRun) \
                 .join(ModelRunStatus) \
                 .filter(ModelRunStatus.name.in_([
-                constants.MODEL_RUN_STATUS_PENDING,
-                constants.MODEL_RUN_STATUS_RUNNING,
-                constants.MODEL_RUN_STATUS_SUBMITTED])) \
+                    constants.MODEL_RUN_STATUS_PENDING,
+                    constants.MODEL_RUN_STATUS_RUNNING,
+                    constants.MODEL_RUN_STATUS_SUBMITTED])) \
                 .all()
             return [model_run.id for model_run in model_runs]
 
@@ -251,13 +251,13 @@ Majic
         dataset.wms_url = \
             "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
             "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
-                .format(
+            .format(
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)
         dataset.netcdf_url = \
             "{thredds_server_url}/dodsC/model_runs/run{model_run_id}/{filename}" \
-                .format(
+            .format(
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)

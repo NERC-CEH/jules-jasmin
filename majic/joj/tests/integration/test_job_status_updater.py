@@ -1,6 +1,7 @@
 # header
 from hamcrest import assert_that, is_
 from mock import Mock
+from pylons import config
 
 from joj.tests import TestController
 from joj.model import session_scope, Session, ModelRun, Dataset
@@ -23,6 +24,7 @@ class TestJobDataUpdater(TestController):
         self.email_service.send_email = Mock()
         self.job_status_updater = JobStatusUpdaterService(
             job_runner_client=self.running_job_client,
+            config=config,
             email_service=self.email_service)
         self.user = self.login()
 
