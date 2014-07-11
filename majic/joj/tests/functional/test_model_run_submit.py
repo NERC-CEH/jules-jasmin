@@ -91,8 +91,31 @@ class TestModelRunSummaryController(TestController):
         assert_that(response.normal_body, contains_string(output_variable_1.name))
         assert_that(response.normal_body, contains_string(output_variable_10.name))
 
+    def test_GIVEN_alternate_workflow_branch_followed_WHEN_reach_submit_THEN_parameter_values_the_same(self):
+        # We create a model run, then simulate going back to the first page and recreating it with different options
+        # Finally we again go back to the first page and recreate the original model run to check the end result is
+        # the same both paths.
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        param_values_start = model_run.parameter_values
+        self.create_alternate_model_run()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        param_values_end = model_run.parameter_values
+
+        # Sort by param_id
+        param_values_start.sort(key=lambda pv: pv.parameter_id)
+        param_values_end.sort(key=lambda pv: pv.parameter_id)
+
+        # The two lists should match up
+        assert_that(len(param_values_start), is_(len(param_values_end)))
+        for i in range(len(param_values_start)):
+            assert_that(param_values_start[i].parameter_id, is_(param_values_end[i].parameter_id))
+            assert_that(param_values_start[i].value, is_(param_values_end[i].value))
+            assert_that(param_values_start[i].group_id, is_(param_values_end[i].group_id))
+
     def create_model_run_ready_for_submit(self):
-         # Set up the model as if we'd gone through all the previous pages
+        # Set up the model as if we'd gone through all the previous pages
         # The Create page
         self.model_name = u'name'
         self.model_description = u'This is a description'
@@ -138,4 +161,55 @@ class TestModelRunSummaryController(TestController):
                           'ov_select_10': 1,
                           'ov_yearly_10': 1,
                           'ov_monthly_10': 1
+                      })
+
+    def create_alternate_model_run(self):
+        # Set up the model as if we'd gone through all the previous pages
+        # (but differently to the other model)
+        # The Create page
+        self.model_name = u'alternate name'
+        self.model_description = u'This is a description of another model_run'
+        self.science_config = self.model_run_service.get_scientific_configurations()[2]
+        model_science_config_id = self.science_config['id']
+        self.app.post(url=url(controller='model_run', action='create'),
+                      params={
+                          'name': self.model_name,
+                          'science_configuration': str(model_science_config_id),
+                          'description': self.model_description
+                      })
+        # The Driving Data page
+        self.create_two_driving_datasets()
+        dataset_service = DatasetService()
+        self.driving_data = dataset_service.get_driving_datasets()[1]
+        ds_id = self.driving_data.id
+        self.app.post(url(controller='model_run', action='driving_data'),
+                      params={
+                          'driving_dataset': ds_id,
+                          'submit': u'Next'
+                      })
+        # The Extents page
+        self.lat_n, self.lat_s = 80, -75
+        self.lon_w, self.lon_e = -100, 120
+        self.date_start = datetime.datetime(1907, 1, 1, 0, 0, 0)
+        self.date_end = datetime.datetime(1914, 1, 1, 0, 0, 0)
+        self.app.post(url(controller='model_run', action='extents'),
+                      params={
+                          'submit': u'Next',
+                          'lat_n': self.lat_n,
+                          'lat_s': self.lat_s,
+                          'lon_e': self.lon_e,
+                          'lon_w': self.lon_w,
+                          'start_date': self.date_start.strftime("%Y-%m-%d"),
+                          'end_date': self.date_end.strftime("%Y-%m-%d")
+                      })
+        # The Output Variables page
+        self.app.post(url(controller='model_run', action='output'),
+                      params={
+                          'submit': u'Next',
+                          'ov_select_6': 1,
+                          'ov_timestep_6': 1,
+                          'ov_monthly_6': 1,
+                          'ov_select_11': 1,
+                          'ov_yearly_11': 1,
+                          'ov_monthly_11': 1
                       })

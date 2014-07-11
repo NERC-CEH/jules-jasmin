@@ -1,0 +1,39 @@
+/*
+    Style sheet for the Model Run Driving Data page (driving_data.html)
+*/
+
+table.driving-data {
+    margin-bottom: 20px;
+}
+
+td.select, td.geog, td.temp-res, td.spat-res, td.date {
+    width:8%;
+    text-align:center;
+    color:#777
+}
+
+td.name {
+    width: 52%
+}
+
+p.description
+{
+    color: #777;
+}
+
+.green {
+    color:green
+
+}
+
+.grey {
+    color:darkgrey;
+}
+
+.select-icon {
+    cursor: pointer;
+}
+
+.select-image:hover {
+    color:green
+}

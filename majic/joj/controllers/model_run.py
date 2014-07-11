@@ -370,10 +370,9 @@ class ModelRunController(BaseController):
 
         if not request.POST:
 
-            c.model_run_name = model_run.name
-            c.model_run_desc = model_run.description
-            science_config = self._model_run_service.get_science_configuration_by_id(model_run.science_configuration_id)
-            c.science_config_name = science_config.name
+            c.model_run = model_run
+            c.science_config = self._model_run_service.get_science_configuration_by_id(
+                model_run.science_configuration_id)
 
             extents_controller_helper.add_selected_extents_to_template_context(c, model_run, None)
 
@@ -387,19 +386,27 @@ class ModelRunController(BaseController):
             monthly = []
             yearly = []
 
+            outputs = {}
+
             # Each group contains one output variable and one output period
             for selected_var in selected_vars:
+                var_name = selected_var.get_value_as_python()
+                if var_name not in outputs:
+                    outputs[var_name] = []
                 for output_period in selected_output_periods:
                     if output_period.group_id == selected_var.group_id:
                         period = output_period.get_value_as_python()
                         if period == JULES_YEARLY_PERIOD:
-                            yearly.append(selected_var.get_value_as_python())
+                            outputs[var_name].append('Yearly')
                         elif period == JULES_MONTHLY_PERIOD:
-                            monthly.append(selected_var.get_value_as_python())
+                            outputs[var_name].append('Monthly')
                         elif period == JULES_DAILY_PERIOD:
-                            daily.append(selected_var.get_value_as_python())
+                            outputs[var_name].append('Daily')
                         else:
-                            hourly.append(selected_var.get_value_as_python())
+                            outputs[var_name].append('Hourly')
+            c.outputs = []
+            for output in outputs:
+                c.outputs.append(output + ' - ' + ', '.join(map(str, outputs[output])) + '')
 
             if len(hourly) == 0:
                 c.hourly = 'None'

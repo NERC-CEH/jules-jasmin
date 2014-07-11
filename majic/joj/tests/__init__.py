@@ -184,6 +184,9 @@ class TestController(TestCase):
             driving1.name = "driving1"
             driving1.description = "driving 1 description"
             driving1.dataset = ds1
+            driving1.geographic_region = 'European'
+            driving1.spatial_resolution = '1km'
+            driving1.temporal_resolution = '24 hours'
             driving1.boundary_lat_north = 50
             driving1.boundary_lat_south = -10
             driving1.boundary_lon_west = -15
@@ -201,6 +204,15 @@ class TestController(TestCase):
             driving2.name = "driving2"
             driving2.description = "driving 2 description"
             driving2.dataset = ds2
+            driving2.geographic_region = 'Global'
+            driving2.spatial_resolution = 'Half degree'
+            driving2.temporal_resolution = '3 Hours'
+            driving2.boundary_lat_north = 90
+            driving2.boundary_lat_south = -90
+            driving2.boundary_lon_west = -180
+            driving2.boundary_lon_east = 180
+            driving2.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
+            driving2.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
 
             location3 = DrivingDatasetLocation()
             location3.base_url = "base_url3"
@@ -208,7 +220,6 @@ class TestController(TestCase):
 
             session.add_all([driving1, driving2])
             session.commit()
-
 
             model_run_service = ModelRunService()
             driving_data_filename_param_val = DrivingDatasetParameterValue(
