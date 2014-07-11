@@ -1,0 +1,35 @@
+/*
+    Style sheet for the Model Run Driving Data page (driving_data.html)
+*/
+
+.green {
+    color:green
+}
+
+.grey {
+    color:darkgrey;
+}
+
+.select-div {
+    width:50px;
+    float:left;
+    text-align: center
+}
+
+.description-div {
+    margin: 0 0 0 50px;
+    cursor:pointer;
+}
+
+.select-icon {
+    cursor: pointer;
+    font-size: 1.5em;
+}
+
+.select-image:hover {
+    color:green
+}
+
+.sci-config:hover i {
+    color:green
+}
