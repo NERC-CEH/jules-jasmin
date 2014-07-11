@@ -3,7 +3,7 @@ from hamcrest import assert_that, is_
 from mock import Mock
 
 from joj.tests import TestController
-from joj.model import session_scope, Session, ModelRun
+from joj.model import session_scope, Session, ModelRun, Dataset
 from joj.services.job_status_updater import JobStatusUpdaterService
 from joj.services.email_service import EmailService
 from joj.utils import constants
@@ -20,17 +20,18 @@ class TestJobDataUpdater(TestController):
         self.clean_database()
         self.running_job_client = JobRunnerClient(None)
         self.email_service = EmailService()
-        #self.email_service.send_email = Mock()
+        self.email_service.send_email = Mock()
         self.job_status_updater = JobStatusUpdaterService(
             job_runner_client=self.running_job_client,
             email_service=self.email_service)
+        self.user = self.login()
 
     def create_model(self, status_pending):
-        user = self.login()
         with session_scope(Session) as session:
             model_run = ModelRun()
-            model_run.user = user
+            model_run.user = self.user
             model_run.change_status(session, status_pending)
+
         return model_run
 
     def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_THEN_model_run_is_set_to_complete_and_email_sent(self):

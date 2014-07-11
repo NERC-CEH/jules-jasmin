@@ -6,8 +6,7 @@ import logging
 from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import formataddr, parseaddr
-from smtplib import SMTP, SMTPConnectError, SMTPException
-from socket import socket
+from smtplib import SMTP, SMTPException
 from pylons import config
 
 log = logging.getLogger(__name__)
@@ -17,6 +16,12 @@ class EmailService(object):
     """
     Service to create and send emails
     """
+
+    def __init__(self, configuration=None):
+        if configuration is None:
+            self._config = config
+        else:
+            self._config = configuration
 
     def send_email(self, sender, recipient, subject, body):
         """
@@ -66,7 +71,7 @@ class EmailService(object):
 
         try:
             # Send the message via SMTP to localhost:25
-            smtp = SMTP(config['email.smtp_server'], port=config['email.smtp_port'], timeout=1)
+            smtp = SMTP(self._config['email.smtp_server'], port=self._config['email.smtp_port'], timeout=1)
             smtp.sendmail(sender, recipient, msg.as_string())
             smtp.quit()
         except KeyError:

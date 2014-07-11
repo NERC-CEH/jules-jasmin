@@ -25,7 +25,7 @@ from webtest import TestApp
 
 from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset
+    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation
 from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
@@ -100,6 +100,7 @@ class TestController(TestCase):
                 .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
                 .delete(synchronize_session='fetch')
 
+            session.query(DrivingDatasetLocation).delete()
             session.query(DrivingDatasetParameterValue).delete()
             session.query(DrivingDataset).delete()
 
@@ -189,11 +190,22 @@ class TestController(TestCase):
             driving1.boundary_lon_east = 30
             driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
             driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
+            location1 = DrivingDatasetLocation()
+            location1.base_url = "base_url"
+            location1.driving_dataset = driving1
+            location2 = DrivingDatasetLocation()
+            location2.base_url = "base_url2"
+            location2.driving_dataset = driving1
 
             driving2 = DrivingDataset()
             driving2.name = "driving2"
             driving2.description = "driving 2 description"
             driving2.dataset = ds2
+
+            location3 = DrivingDatasetLocation()
+            location3.base_url = "base_url3"
+            location3.driving_dataset = driving2
+
             session.add_all([driving1, driving2])
             session.commit()
 

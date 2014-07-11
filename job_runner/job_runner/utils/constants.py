@@ -6,7 +6,7 @@
 VALID_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_3_4_1.sh'}
 
 # Set the name of the output directory (if changed copy to joj)
-OUTPUT_DIR = './output'
+OUTPUT_DIR = 'output'
 
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'

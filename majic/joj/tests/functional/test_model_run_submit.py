@@ -9,7 +9,7 @@ from joj.tests import *
 from joj.model import Session
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
-from services.dataset import DatasetService
+from joj.services.dataset import DatasetService
 
 
 class TestModelRunSummaryController(TestController):

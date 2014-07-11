@@ -135,7 +135,7 @@ class ModelRunService(DatabaseService):
         parameters = [
             [constants.JULES_PARAM_TIMESTEP_LEN, constants.TIMESTEP_LEN, None],
             [constants.JULES_PARAM_OUTPUT_RUN_ID, constants.RUN_ID, None],
-            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, constants.OUTPUT_DIR, None],
+            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, ".\\" + constants.OUTPUT_DIR, None],
         ]
 
         # Add CHESS defaults:
@@ -273,7 +273,10 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
             status_name, message = self._job_runner_client.submit(model)
-            status = model.change_status(session, status_name, message)
+            if status_name == constants.MODEL_RUN_STATUS_SUBMITTED:
+                status = model.change_status(session, status_name)
+            else:
+                status = model.change_status(session, status_name, message)
             return status, message
 
     def get_scientific_configurations(self):

@@ -1,9 +1,9 @@
+"""
 # Header
-
+"""
 
 from joj.model.meta import Base
-from sqlalchemy import Column, Integer, String, ForeignKey, SmallInteger
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, String, SmallInteger
 from joj.utils import constants
 
 
@@ -51,12 +51,13 @@ class ModelRunStatus(Base):
         return {
             constants.MODEL_RUN_STATUS_COMPLETED: '#38761d',
             constants.MODEL_RUN_STATUS_PUBLISHED: '#711780',
+            constants.MODEL_RUN_STATUS_SUBMITTED: '#f6b26b',
             constants.MODEL_RUN_STATUS_RUNNING: '#f6b26b',
             constants.MODEL_RUN_STATUS_PENDING: '#f6b26b',
             constants.MODEL_RUN_STATUS_FAILED: '#990000',
-            constants.MODEL_RUN_STATUS_SUBMIT_FAILED: '#990000'
+            constants.MODEL_RUN_STATUS_SUBMIT_FAILED: '#990000',
+            constants.MODEL_RUN_STATUS_UNKNOWN: '#990000',
         }.get(self.name, '#000000')
-
 
     def __repr__(self):
         """String representation"""

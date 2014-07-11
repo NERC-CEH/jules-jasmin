@@ -112,11 +112,11 @@ class JobsController(BaseController):
 
         queued_jobs_status = self._job_service.queued_jobs_status()
         job_statuses = []
-        for jobid in json:
+        for job_id in json:
             try:
-                jobstatus = JobStatus(int(jobid))
-                jobstatus.check(self._job_service, queued_jobs_status)
-                job_statuses.append(jobstatus)
+                job_status = JobStatus(int(job_id))
+                job_status.check(self._job_service, queued_jobs_status)
+                job_statuses.append(job_status)
             except ValueError:
                 abort(400, "Job ids must all be integers")
 

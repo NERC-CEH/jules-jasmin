@@ -1,11 +1,13 @@
+"""
 # header
+"""
 import datetime
 import re
 from pydap.client import open_url
-from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME
+from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
 
 
-class DapClient():
+class DapClient(object):
     """
     Client for communicating with the OpenDAP server to extract time series data for a particular latitude / longitude
     """
@@ -16,9 +18,11 @@ class DapClient():
         :param url: The URL of the OpenDAP dataset to look for
         """
         self._dataset = open_url(url)
-        self._lat = self._dataset[NETCDF_LATITUDE][:]
-        self._lon = self._dataset[NETCDF_LONGITUDE][:]
-        self._time = self._dataset[NETCDF_TIME][:]
+
+        self._lat = self._dataset[self._get_key(NETCDF_LATITUDE)][:]
+        self._lon = self._dataset[self._get_key(NETCDF_LONGITUDE)][:]
+        self._time = self._dataset[self._get_key(NETCDF_TIME)][:]
+        self.variable_names = []
         self._variable = self._get_variable_to_plot()
 
     def get_graph_data(self, lat, lon):
@@ -41,7 +45,7 @@ class DapClient():
             t = self._get_millis_since_epoch(timestamps[i])
             data.append([t, variable_data[i][0][0]])
         return {'data': data,
-                'label': "%s (%s) @ %s, %s" % (self._variable.long_name, self._variable.units, lat, lon),
+                'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
                 'lat': lat,
                 'lon': lon,
                 'xmin': self._get_millis_since_epoch(min(timestamps)),
@@ -58,8 +62,13 @@ class DapClient():
         keys = self._dataset.keys()
         variables = []
         for key in keys:
-            if key not in [NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME]:
+            if key not in [
+                    self._get_key(NETCDF_LATITUDE),
+                    self._get_key(NETCDF_LONGITUDE),
+                    self._get_key(NETCDF_TIME),
+                    self._get_key(NETCDF_TIME_BOUNDS)]:
                 variables.append(self._dataset[key])
+                self.variable_names.append(key)
         return variables[0]  # Do we want to only return the first variable?
 
     def _get_closest_value_index(self, data, value):
@@ -86,3 +95,35 @@ class DapClient():
         date = datetime.datetime.strptime(start_date, "%Y-%m-%d %X")
         delta = date - epoch
         return (secs + delta.total_seconds()) * 1000
+
+    def get_longname(self):
+        """
+        The longname of the variable in this dataset
+        :return: the long name
+        """
+        try:
+            return self._variable.attributes['long_name']
+        except KeyError:
+            return self.variable_names[0]
+
+    def get_data_range(self):
+        """
+        Gets the datarange of the variable in this dataset
+        :return: min and max tuple for the range
+        """
+        try:
+            return [self._variable.attributes['valid_min'], self._variable.attributes['valid_max']]
+        except KeyError:
+            return [0, 100]
+
+    def _get_key(self, var_names):
+        """
+        Try to find the key in the list of variables (make it case insensitive)
+        :param var_names: list of possible variable name
+        :return: the key
+        """
+        for key in self._dataset.keys():
+            for possible_var_name in var_names:
+                if key.lower() == possible_var_name.lower():
+                    return key
+        return var_names[0]

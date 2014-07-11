@@ -1,17 +1,16 @@
 """
-header
+# header
 """
 
 import logging
-from pylons import config, url
 from sqlalchemy.orm import subqueryload
 from joj.services.model_run_service import ModelRunService
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
-from joj.model import ModelRun, ModelRunStatus, Session
+from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, DrivingDatasetLocation
 from joj.utils import constants
 from joj.utils.utils import KeyNotFound, find_by_id_in_dict
-
+from joj.services.dap_client_factory import DapClientFactory
 
 log = logging.getLogger(__name__)
 
@@ -71,21 +70,29 @@ class JobStatusUpdaterService(DatabaseService):
     def __init__(
             self,
             job_runner_client,
+            config,
             session=Session,
             model_run_service=ModelRunService(),
-            email_service=EmailService()):
+            email_service=None,
+            dap_client_factory=DapClientFactory()):
         """
         Initiate
         :param session: the session to use
         :param model_run_service: the model run service
         :param job_runner_client: the job runner client
-        :param email_service: the email service to use
+        :param email_service: the email service to use (defaults to one using the config passed in)
+        :param dap_client_factory: factory for making dap clients class to use
         :return:nothing
         """
         super(JobStatusUpdaterService, self).__init__(session)
         self._job_runner_client = job_runner_client
         self._model_run_service = model_run_service
-        self._email_service = email_service
+        if email_service is None:
+            self._email_service = EmailService(config)
+        else:
+            self._email_service = email_service
+        self._dap_client_factory = dap_client_factory
+        self._config = config
 
     def update(self):
         """
@@ -133,6 +140,8 @@ class JobStatusUpdaterService(DatabaseService):
             try:
                 job_status = find_by_id_in_dict(job_statuses, model_run.id)
                 model_run.change_status(session, job_status['status'], job_status['error_message'])
+                if job_status['status'] == constants.MODEL_RUN_STATUS_COMPLETED:
+                    self._update_datasets(model_run, session)
             except KeyNotFound:
                 log.error("No status returned from job runner for model run %s", model_id)
                 model_run.change_status(session, constants.MODEL_RUN_STATUS_UNKNOWN,
@@ -151,7 +160,7 @@ class JobStatusUpdaterService(DatabaseService):
             msg = self.COMPLETED_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
-                url=url(controller='model_run', action='summary', id=model_run.id),
+                url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name)
             subject = self.COMPLETED_SUBJECT_TEMPLATE.format(name=model_run.name)
 
@@ -160,7 +169,7 @@ class JobStatusUpdaterService(DatabaseService):
             msg = self.FAILED_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
-                url=url(controller='model_run', action='summary', id=model_run.id),
+                url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name,
                 error_message=model_run.error_message)
             subject = self.FAILED_SUBJECT_TEMPLATE.format(name=model_run.name)
@@ -170,7 +179,7 @@ class JobStatusUpdaterService(DatabaseService):
             msg = self.UNKNOWN_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
-                url=url(controller='model_run', action='summary', id=model_run.id),
+                url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name,
                 error_message=model_run.error_message)
             subject = self.UNKNOWN_SUBJECT_TEMPLATE.format(name=model_run.name)
@@ -178,7 +187,78 @@ class JobStatusUpdaterService(DatabaseService):
             return
 
         self._email_service.send_email(
-            config['email.from_address'],
+            self._config['email.from_address'],
             model_run.user.email,
             subject,
             msg)
+
+    def _update_datasets(self, model_run, session):
+        """
+        Update all data sets for this model
+        :param model_run: the model run to update
+        :param session: a session
+        :return:nothing
+        """
+
+        run_id = model_run.get_python_parameter_value(constants.JULES_PARAM_OUTPUT_RUN_ID)
+        selected_output_profile_names = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
+        selected_output_variables = {}
+        for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR):
+            selected_output_variables[var.group_id] = var.get_value_as_python()
+
+        dataset_type = session.query(DatasetType).filter(DatasetType.type == constants.DATASET_TYPE_COVERAGE).one()
+        thredds_server = self._config['thredds.server_url'].rstrip("/")
+
+        for selected_output_profile_name in selected_output_profile_names:
+            filename = "{output_dir}/{run_id}.{profile_name}.nc".format(
+                run_id=run_id,
+                profile_name=selected_output_profile_name.get_value_as_python(),
+                output_dir=constants.OUTPUT_DIR)
+            is_input = False
+
+            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
+
+        input_locations = session\
+            .query(DrivingDatasetLocation)\
+            .filter(DrivingDatasetLocation.driving_dataset_id == model_run.driving_dataset_id)\
+            .all()
+
+        for input_location in input_locations:
+            filename = input_location.base_url
+            is_input = True
+            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
+
+    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, thredds_server):
+        """
+        Create a single dataset
+        :param dataset_type: the dataset type
+        :param filename: filename of the dataset
+        :param is_input: true if this is an input dataset
+        :param model_run: the model run
+        :param session: the session
+        :param thredds_server: url of the thredds server
+        :return:
+        """
+        dataset = Dataset()
+        dataset.model_run_id = model_run.id
+        dataset.dataset_type = dataset_type
+        dataset.is_categorical = False
+        dataset.is_input = is_input
+        dataset.viewable_by_user_id = model_run.user.id
+        dataset.wms_url = \
+            "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
+            "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
+            .format(
+                thredds_server_url=thredds_server,
+                model_run_id=model_run.id,
+                filename=filename)
+        dataset.netcdf_url = \
+            "{thredds_server_url}/dodsC/model_runs/run{model_run_id}/{filename}" \
+            .format(
+                thredds_server_url=thredds_server,
+                model_run_id=model_run.id,
+                filename=filename)
+        dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
+        dataset.name = dap_client.get_longname()
+        dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
+        session.add(dataset)
