@@ -52,8 +52,10 @@ to be output.</p>
                 Yearly
             </div>
             <div class="span1 output_period">
+                <!--We want new rows to be selected as monthly by default - so if this row is not selected, tick monthly-->
                 <input name="ov_monthly_${output_var.id}" type="checkbox"
-                        checked="${1 if output_var.id in c.monthly_output_ids else None}"/>
+                        checked="${1 if (output_var.id in c.monthly_output_ids or
+                        output_var.id not in c.selected_output_ids) else None}"/>
                 <br/>
                 Monthly
             </div>
@@ -72,15 +74,11 @@ to be output.</p>
         </div>
     </py:for>
 
-
-
-
     <div class="control-group" title="Model runs need driving data to run.">
 
         <div class="controls">
         </div>
     </div>
-
 
     <div class="controls">
         <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />

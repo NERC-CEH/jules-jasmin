@@ -141,8 +141,7 @@ class ModelRunService(DatabaseService):
         # Add CHESS defaults:
         chess_defaults = ['surf_roff', 'sub_surf_roff', 'fqw_gb', 'rad_net', 'ftl_gb', 'gpp_gb', 'resp_p_gb',
                           'tstar_gb', 'snow_mass_gb', 't_soil', 'smc_tot', 'smcl', 'swet_liq_tot']
-        chess_periods = [(JULES_YEARLY_PERIOD, "_yearly"), (JULES_MONTHLY_PERIOD, "_monthly"),
-                         (JULES_DAILY_PERIOD, "_daily")]
+        chess_periods = [(JULES_MONTHLY_PERIOD, "_monthly")]
 
         group_id = 0
         for output_variable in chess_defaults:
