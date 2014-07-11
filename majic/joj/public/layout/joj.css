@@ -114,6 +114,17 @@ div.arrow {
     display: none;
 }
 
+.label-explain {
+    font-size:12px;
+    color:#808080;
+    text-align: right;
+    margin-top: 10px
+}
+
+input.placeholder, textarea.placeholder {
+    color: #aaa;
+}
+
 /* Modal dataset preview window */
 div#dataset-preview, div#image-panel {
     width: 900px;
