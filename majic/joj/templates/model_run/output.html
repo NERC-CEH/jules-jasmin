@@ -6,9 +6,7 @@
 <head>
     <title>Create Model Run | Select Output Variables</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"/>
-    <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
     <link rel="stylesheet" type="text/css" href="../layout/model_run_output.css"/>
-    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
     <script src="../js/model_run_output.js"></script>
     <link rel="stylesheet" type="text/css" href="${h.url('/layout/joj_catalogue.css')}"/>
@@ -16,19 +14,8 @@
 </head>
 <body id="create">
 <h1>Select Output Variables</h1>
-
-<div class="row" style="display:none">
-    <div class="span12">
-        <div class="alert alert-block alert-warning">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <h4>Be aware!</h4>
-            <p>
-                This is some health warning text
-            </p>
-        </div>
-    </div>
-</div>
-<p>Add or remove variables for JULES to output:</p>
+<p>Choose which variables you'd like JULES to output. You can also choose how frequently you'd like those variables
+to be output.</p>
 
 <div id="input-bar" class="input-prepend">
     <button id="input-bar-btn" class="btn" type="button">
