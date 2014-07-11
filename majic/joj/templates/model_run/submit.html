@@ -12,72 +12,74 @@
 </head>
 <body id="create">
 <h1>Submit Model Run</h1>
-<div class="row">
-    <div id="edit-create-page" class="span1 edit">
-        <div class="icon">
-            <a href="${h.url(controller='model_run', action='create')}" class="edit">
-                <i class="fa fa-edit fa-2x"></i>
-            </a>
+<p>Your model run is ready to submit. Below is a summary of your choices for this model run - review them and then submit your run.</p>
+<div class="edit-rows">
+    <div class="row">
+        <div id="edit-create-page" class="span1 edit">
+            <div class="icon">
+                <a href="${h.url(controller='model_run', action='create')}" class="edit">
+                    <i class="fa fa-edit fa-2x"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span11">
+            <div id="create-page" class="page-group">
+                <h3>${c.model_run.name}</h3>
+                <p>${c.model_run.description}</p>
+                <p><b>Science Configuration - </b>${c.science_config.name}</p>
+            </div>
         </div>
     </div>
-    <div class="span11">
-        <div id="create-page" class="page-group">
-            <h3>${c.model_run.name}</h3>
-            <p>${c.model_run.description}</p>
-            <p><b>Science Configuration - </b>${c.science_config.name}</p>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div id="edit-driving-page" class="span1 edit">
-        <div class="icon">
-            <a href="${h.url(controller='model_run', action='driving_data')}" class="edit">
-                <i class="fa fa-edit fa-2x edit"></i>
-            </a>
+    <div class="row">
+        <div id="edit-driving-page" class="span1 edit">
+            <div class="icon">
+                <a href="${h.url(controller='model_run', action='driving_data')}" class="edit">
+                    <i class="fa fa-edit fa-2x edit"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span11">
+            <div id="driving-page" class="page-group">
+                <p><b>Driving Data - </b>${c.driving_data_name}</p>
+            </div>
         </div>
     </div>
-    <div class="span11">
-        <div id="driving-page" class="page-group">
-            <p><b>Driving Data - </b>${c.driving_data_name}</p>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div id="edit-extents" class="span1 edit">
-        <div class="icon">
-            <a href="${h.url(controller='model_run', action='extents')}" class="edit">
-                <i class="fa fa-edit fa-2x edit"></i>
-            </a>
+    <div class="row">
+        <div id="edit-extents" class="span1 edit">
+            <div class="icon">
+                <a href="${h.url(controller='model_run', action='extents')}" class="edit">
+                    <i class="fa fa-edit fa-2x edit"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span11">
+            <div id="extents" class="page-group">
+                <p><b>Spatial Extents - </b>${c.lat_s}&deg;N to ${c.lat_n}&deg;N; ${c.lon_w}&deg;E to ${c.lon_e}&deg;E</p>
+                <p><b>Temporal Extents - </b>${c.run_start.date()} to ${c.run_end.date()}</p>
+            </div>
         </div>
     </div>
-    <div class="span11">
-        <div id="extents" class="page-group">
-            <p><b>Spatial Extents - </b>${c.lat_s}&deg;N to ${c.lat_n}&deg;N; ${c.lon_w}&deg;E to ${c.lon_e}&deg;E</p>
-            <p><b>Temporal Extents - </b>${c.run_start.date()} to ${c.run_end.date()}</p>
+    <div class="row">
+        <div id="edit-output" class="span1 edit">
+            <div class="icon">
+                <a href="${h.url(controller='model_run', action='output')}" class="edit">
+                    <i class="fa fa-edit fa-2x edit"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span11">
+            <div id="output" class="page-group">
+                <p><b>Output Variables: </b></p>
+                <ul>
+                    <li py:for="output in c.outputs">
+                        ${output}
+                    </li></ul>
+            </div>
         </div>
     </div>
 </div>
-<div class="row">
-    <div id="edit-output" class="span1 edit">
-        <div class="icon">
-            <a href="${h.url(controller='model_run', action='output')}" class="edit">
-                <i class="fa fa-edit fa-2x edit"></i>
-            </a>
-        </div>
-    </div>
-    <div class="span11">
-        <div id="output" class="page-group">
-            <p><b>Output Variables: </b></p>
-            <ul>
-            <li py:for="output in c.outputs">
-                ${output}
-            </li></ul>
-        </div>
-    </div>
-</div>
-
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='submit')}">
     <div class="controls">
         <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Submit" />
