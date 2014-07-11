@@ -5,46 +5,64 @@
 <xi:include href="../layout.html" />
 <head>
     <title>Create Model Run | Select Driving Data</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
     <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
+    <link rel="stylesheet" type="text/css" href="../layout/model_run_driving_data.css"/>
+    <script src="../js/model_run_driving_data.js"></script>
 </head>
 <body id="create">
-    <h1>Select Driving Data</h1>
+<h1>Select Driving Data</h1>
 
-    <div class="row" style="display:none">
-        <div class="span12">
-            <div class="alert alert-block alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <h4>Be aware!</h4>
-                <p>
-                    This is some health warning text
-                </p>
-            </div>
+<div class="row" style="display:none">
+    <div class="span12">
+        <div class="alert alert-block alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h4>Be aware!</h4>
+            <p>
+                This is some health warning text
+            </p>
         </div>
     </div>
+</div>
 
-    <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='driving_data')}">
+<form method="POST" action="${url(controller='model_run', action='driving_data')}">
 
-        <div class="control-group" title="Model runs need driving data to run.">
+        <table class="driving-data">
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Geographic Region</th>
+                <th>Spatial Resolution</th>
+                <th>Temporal Resolution</th>
+                <th>Start / End Date</th>
+            </tr>
 
-            <label for="driving_dataset" class="control-label">Driving Datasets</label>
-            <div class="controls">
-                <py:for each="driving_dataset in c.driving_datasets">
-                    <label class="radio">
-                        ${h.html_tags.radio('driving_dataset', driving_dataset.id, True, class_='radio controls')}
-                        <strong>${driving_dataset.name}</strong> ${driving_dataset.description}
-                    </label>
-                </py:for>
-            </div>
-        </div>
+            <py:for each="driving_dataset in c.driving_datasets">
+                <tr>
+                    <td class="select">
+                        ${h.html_tags.radio('driving_dataset', driving_dataset.id, True, style='display:none')}
+                        <i dsid="${driving_dataset.id}" class="fa fa-check-circle-o fa-2x select-icon"></i>
+                    </td>
+                    <td class="name"><h4>${driving_dataset.name}</h4><p class="description">${driving_dataset.description}</p></td>
+                    <td class="geog">${driving_dataset.geographic_region}</td>
+                    <td class="spat-res">${driving_dataset.spatial_resolution}</td>
+                    <td class="temp-res">${driving_dataset.temporal_resolution}</td>
+                    <td class="date">${driving_dataset.time_start.date()}<p style="margin:0"><small>to</small></p>${driving_dataset.time_end.date()}</td>
+                </tr>
+            </py:for>
+        </table>
 
 
-        <div class="controls">
-            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
-            <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
-        </div>
-    </form>
+    <div class="controls">
+        <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
+        <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
+    </div>
+</form>
 
-    <div class="modal fade hide" id="dataset-preview"></div>
+<div class="modal fade hide" id="dataset-preview"></div>
 
+<script>
+
+</script>
 </body>
 </html>

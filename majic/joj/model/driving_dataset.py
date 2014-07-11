@@ -1,5 +1,5 @@
 # header
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Interval
 from joj.model.meta import Base
 from joj.utils import constants
 
@@ -14,6 +14,9 @@ class DrivingDataset(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(constants.DB_LONG_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
+    geographic_region = Column(String(constants.DB_LONG_STRING_SIZE))
+    spatial_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
+    temporal_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
     boundary_lat_north = Column(Float)
     boundary_lat_south = Column(Float)
     boundary_lon_east = Column(Float)

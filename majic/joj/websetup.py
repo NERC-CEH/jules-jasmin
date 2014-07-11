@@ -321,10 +321,13 @@ def setup_app(command, conf, vars):
     with session_scope(Session) as session:
         driving_ds_1 = DrivingDataset()
         driving_ds_1.name = "WATCH Forcing Data 20th Century"
-        driving_ds_1.description = "a meteorological forcing dataset (based on ERA-40) for land surface and " \
+        driving_ds_1.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
                                    "five variables are at 3 hourly resolution."
         driving_ds_1.dataset = ds1
+        driving_ds_1.geographic_region = 'United Kingdom'
+        driving_ds_1.temporal_resolution = '24 Hours'
+        driving_ds_1.spatial_resolution = '1 km'
         driving_ds_1.boundary_lat_north = 50
         driving_ds_1.boundary_lat_south = 40
         driving_ds_1.boundary_lon_west = -30
@@ -338,6 +341,9 @@ def setup_app(command, conf, vars):
                                    " project has explored effects of climate change on the water quality of European" \
                                    " rivers, with the purpose of informing future catchment management."
         driving_ds_2.dataset = ds2
+        driving_ds_2.geographic_region = 'Equator'
+        driving_ds_2.temporal_resolution = '24 Hours'
+        driving_ds_2.spatial_resolution = '1 km'
         driving_ds_2.boundary_lat_north = 10
         driving_ds_2.boundary_lat_south = -10
         driving_ds_2.boundary_lon_west = -170
@@ -349,6 +355,9 @@ def setup_app(command, conf, vars):
         driving_ds_3.name = "QA Driving Data set"
         driving_ds_3.description = "Driving data set used for QA"
         driving_ds_3.dataset = ds3
+        driving_ds_3.geographic_region = 'Global'
+        driving_ds_3.temporal_resolution = '3 Hours'
+        driving_ds_3.spatial_resolution = 'Half degree'
         driving_ds_3.boundary_lat_north = 90
         driving_ds_3.boundary_lat_south = -90
         driving_ds_3.boundary_lon_west = -180
