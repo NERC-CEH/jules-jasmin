@@ -12,6 +12,7 @@
 </head>
 <body id="create">
 <h1>Select Driving Data</h1>
+<p>Choose a set of meteorological data for JULES to use as input for this model run.</p>
 
 <div class="row" style="display:none">
     <div class="span12">
@@ -38,7 +39,7 @@
             </tr>
 
             <py:for each="driving_dataset in c.driving_datasets">
-                <tr>
+                <tr class="driving-data" dsid="${driving_dataset.id}">
                     <td class="select">
                         ${h.html_tags.radio('driving_dataset', driving_dataset.id, True, style='display:none')}
                         <i dsid="${driving_dataset.id}" class="fa fa-check-circle-o fa-2x select-icon"></i>

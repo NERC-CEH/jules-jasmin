@@ -26,11 +26,11 @@ $(document).ready(function() {
     setCorrectChecks();
 
     // Add click handlers to select icons
-    $('.select-icon').click(function() {
-    dsid = $(this).attr("dsid");
-    $('input').prop('checked', false);
-    select = $('#driving_dataset_' + dsid);
-    select.prop('checked', true);
-    setCorrectChecks();
+    $('.select-icon, tr.driving-data').click(function() {
+        dsid = $(this).attr("dsid");
+        $('input').prop('checked', false);
+        select = $('#driving_dataset_' + dsid);
+        select.prop('checked', true);
+        setCorrectChecks();
     });
 });
