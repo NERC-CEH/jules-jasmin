@@ -26,11 +26,14 @@ class LogFileParser(object):
         """
 
         found_a_line = False
+        errors = []
         for line in self._lines:
             found_a_line = True
             if constants.JULES_RUN_COMPLETED_MESSAGE in line:
                 self.status = constants.MODEL_RUN_STATUS_COMPLETED
                 return
+            if line.startswith(constants.JULES_FATAL_ERROR_PREFIX):
+                errors.append(line[len(constants.JULES_FATAL_ERROR_PREFIX):].strip())
 
         if not found_a_line:
             self.status = constants.MODEL_RUN_STATUS_FAILED
@@ -38,4 +41,7 @@ class LogFileParser(object):
             return
 
         self.status = constants.MODEL_RUN_STATUS_FAILED
-        self.error_message = constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR
+        if len(errors) == 0:
+            self.error_message = constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR
+        else:
+            self.error_message = "Jules error:" + " \n".join(errors)

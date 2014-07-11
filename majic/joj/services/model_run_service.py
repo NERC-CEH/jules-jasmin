@@ -135,7 +135,7 @@ class ModelRunService(DatabaseService):
         parameters = [
             [constants.JULES_PARAM_TIMESTEP_LEN, constants.TIMESTEP_LEN, None],
             [constants.JULES_PARAM_OUTPUT_RUN_ID, constants.RUN_ID, None],
-            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, ".\\" + constants.OUTPUT_DIR, None],
+            [constants.JULES_PARAM_OUTPUT_OUTPUT_DIR, "./" + constants.OUTPUT_DIR, None],
         ]
 
         # Add CHESS defaults:
