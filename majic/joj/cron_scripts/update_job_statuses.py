@@ -23,13 +23,13 @@ if __name__ == "__main__":
         print "       config filename: filename of the configuration file e.g. development.ini"
         exit()
 
-    logging.debug("setup")
+    log.debug("setup")
     wsgiapp = loadapp('config:' + sys.argv[1], relative_to=conf_dir)
     config = wsgiapp.config
     model.initialise_session(config)
 
     job_runner_client = JobRunnerClient(config)
-    job_status_updater = JobStatusUpdaterService(job_runner_client)
+    job_status_updater = JobStatusUpdaterService(job_runner_client, config)
 
     try:
         log.info("Getting and setting statuses")
@@ -37,3 +37,4 @@ if __name__ == "__main__":
         log.info("Statuses updated")
     except Exception, ex:
         log.error("Cron job throw an exception: %s" % ex.message)
+        log.exception(ex)

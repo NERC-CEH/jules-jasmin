@@ -6,10 +6,11 @@
 VALID_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_3_4_1.sh'}
 
 # Set the name of the output directory (if changed copy to joj)
-OUTPUT_DIR = './output'
+OUTPUT_DIR = 'output'
 
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'
+JULES_FATAL_ERROR_PREFIX = "[FATAL ERROR]"
 
 # Constants for the names of the dictionary values in the json submitted
 JSON_MODEL_RUN_ID = 'model_run_id'

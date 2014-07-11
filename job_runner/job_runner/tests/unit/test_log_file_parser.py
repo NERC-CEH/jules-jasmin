@@ -38,3 +38,23 @@ class TestJulesLogFileParser(TestController):
 
         assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
         assert_that(self.parser.error_message, is_(constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR), "error message")
+
+    def test_GIVEN_file_does_not_contain_success_AND_HAS_fatal_error_inWHEN_parse_THEN_job_status_failed_error_message_is_fatal_error(self):
+        expected_error = 'init_output: Output directory does not exist'
+        self.lines.extend(['random line', '[FATAL ERROR] ' + expected_error, 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
+        assert_that(self.parser.error_message, is_("Jules error:" + expected_error), "error message")
+
+    def test_GIVEN_file_does_not_contain_success_and_has_multiple_fatal_error_inWHEN_parse_THEN_job_status_failed_error_message_is_fatal_error(self):
+        expected_error1 = 'init_output:'
+        expected_error2 = 'Output directory does not exist'
+        self.lines.extend(['random line', '[FATAL ERROR] ' + expected_error1, '[FATAL ERROR] ' + expected_error2,'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
+        assert_that(self.parser.error_message, is_("Jules error:" + expected_error1 + ' \n' + expected_error2), "error message")
+

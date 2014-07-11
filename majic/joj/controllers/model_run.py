@@ -428,7 +428,7 @@ class ModelRunController(BaseController):
         else:
             if request.params.getone('submit') == u'Submit':
                 status, message = self._model_run_service.submit_model_run(self.current_user)
-                if status.name == constants.MODEL_RUN_STATUS_PENDING:
+                if status.name == constants.MODEL_RUN_STATUS_SUBMITTED:
                     helpers.success_flash(message)
                 else:
                     helpers.error_flash(message)

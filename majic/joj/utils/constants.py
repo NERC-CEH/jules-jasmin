@@ -25,7 +25,7 @@ MODEL_RUN_STATUS_COMPLETED = 'Completed'
 MODEL_RUN_STATUS_PUBLISHED = 'Published'
 MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submited a model but it can not be submitted
-MODEL_RUN_STATUS_UNKNOWN = 'Unknown' # Job is in the bjobs list but the status is not understood
+MODEL_RUN_STATUS_UNKNOWN = 'Unknown'  # Job is in the bjobs list but the status is not understood
 
 # Error messages
 ERROR_MESSAGE_NO_STATUS_RETURNED = 'No status has been returned from the job runner'
@@ -45,9 +45,10 @@ JSON_MODEL_NAMELIST_GROUP_ID = 'group_id'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
 
 # Constants for reading netCDF files
-NETCDF_LATITUDE = 'Latitude'
-NETCDF_LONGITUDE = 'Longitude'
-NETCDF_TIME = 'Time'
+NETCDF_LATITUDE = ['Latitude', 'lat']
+NETCDF_LONGITUDE = ['Longitude', 'lon']
+NETCDF_TIME = ['Time']
+NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
@@ -61,7 +62,7 @@ TIMESTEP_LEN = 60 * 60  # One hour
 RUN_ID = "majic"
 
 # Set the name of the output directory (if changed copy to job_runner)
-OUTPUT_DIR = './output'
+OUTPUT_DIR = 'output'
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
@@ -141,3 +142,5 @@ JULES_PARAM_INITIAL_NVARS = [JULES_NML_INITIAL, "nvars"]
 JULES_PARAM_INITIAL_VAR = [JULES_NML_INITIAL, "var"]
 JULES_PARAM_INITIAL_USE_FILE = [JULES_NML_INITIAL, "use_file"]
 JULES_PARAM_INITIAL_CONST_VAL = [JULES_NML_INITIAL, "const_val"]
+
+DATASET_TYPE_COVERAGE = 'Coverage'

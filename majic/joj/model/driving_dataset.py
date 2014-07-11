@@ -1,5 +1,8 @@
+"""
 # header
-from sqlalchemy import Column, Integer, String, Float, DateTime, Interval
+"""
+
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from joj.model.meta import Base
 from joj.utils import constants
 

@@ -10,7 +10,7 @@ import pylons.test
 from joj.model.model_run import ModelRun
 from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, \
-    DrivingDataset, DrivingDatasetParameterValue
+    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from websetup_jules_output_variables import JulesOutputVariableParser
@@ -77,7 +77,7 @@ def setup_app(command, conf, vars):
         point_dst.type = 'Point'
 
         cover_dst = DatasetType()
-        cover_dst.type = 'Coverage'
+        cover_dst.type = constants.DATASET_TYPE_COVERAGE
 
         result_dst = DatasetType()
         result_dst.type = 'Result'
@@ -423,5 +423,13 @@ def setup_app(command, conf, vars):
         for constant, value in parameters:
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
             driving_ds_3.parameter_values.append(ddpv)
+
+        file_template = 'data/met_data/driving/{}_197901.nc'
+
+        for name in ['PSurf_WFDEI_land', 'Tair_WFDEI_land', 'Qair_WFDEI_land', 'Wind_WFDEI_land', 'LWdown_WFDEI_land',
+                     'SWdown_WFDEI_land', 'Rainf_WFDEI_GPCC_land', 'Snowf_WFDEI_land']:
+            location = DrivingDatasetLocation()
+            location.base_url = file_template.format(name)
+            location.driving_dataset = driving_ds_3
 
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3])
