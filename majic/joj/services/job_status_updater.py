@@ -22,50 +22,53 @@ class JobStatusUpdaterService(DatabaseService):
 
     COMPLETED_SUBJECT_TEMPLATE = "Majic: {name} has completed"
     COMPLETED_MESSAGE_TEMPLATE = \
-        """Hi {users_name},
-
-           Majic has successfully finished your model run.
-
-           Name: {name}
-           Description: {description}
-           Link: {url}
-
-        Regards,
-
-        Majic
         """
+Hi {users_name},
+
+Majic has successfully finished your model run.
+
+   Name: {name}
+   Description: {description}
+   Link: {url}
+
+Regards,
+
+Majic
+"""
 
     FAILED_SUBJECT_TEMPLATE = "Majic: {name} has encountered an error"
     FAILED_MESSAGE_TEMPLATE = \
-        """Hi {users_name},
-
-           Majic has encountered an error when running your model run.
-
-           Name: {name}
-           Description: {description}
-           Link: {url}
-           Error: {error_message}
-
-        Regards,
-
-        Majic
         """
+Hi {users_name},
+
+Majic has encountered an error when running your model run.
+
+   Name: {name}
+   Description: {description}
+   Link: {url}
+   Error: {error_message}
+
+Regards,
+
+Majic
+"""
 
     UNKNOWN_SUBJECT_TEMPLATE = "Majic: {name} has encountered an unexpected problem"
     UNKNOWN_MESSAGE_TEMPLATE = \
-        """Hi {users_name},
-
-           Majic has encountered an unexpected problem when running your model run.
-
-           Name: {name}
-           Description: {description}
-           Link: {url}
-           Unknown problem: {error_message}
-
-        Regards,
-
-        Majic
         """
+Hi {users_name},
+
+Majic has encountered an unexpected problem when running your model run.
+
+   Name: {name}
+   Description: {description}
+   Link: {url}
+   Unknown problem: {error_message}
+
+Regards,
+
+Majic
+"""
 
     def __init__(
             self,
@@ -118,9 +121,9 @@ class JobStatusUpdaterService(DatabaseService):
             model_runs = session.query(ModelRun) \
                 .join(ModelRunStatus) \
                 .filter(ModelRunStatus.name.in_([
-                    constants.MODEL_RUN_STATUS_PENDING,
-                    constants.MODEL_RUN_STATUS_RUNNING,
-                    constants.MODEL_RUN_STATUS_SUBMITTED])) \
+                constants.MODEL_RUN_STATUS_PENDING,
+                constants.MODEL_RUN_STATUS_RUNNING,
+                constants.MODEL_RUN_STATUS_SUBMITTED])) \
                 .all()
             return [model_run.id for model_run in model_runs]
 
@@ -218,9 +221,9 @@ class JobStatusUpdaterService(DatabaseService):
 
             self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
 
-        input_locations = session\
-            .query(DrivingDatasetLocation)\
-            .filter(DrivingDatasetLocation.driving_dataset_id == model_run.driving_dataset_id)\
+        input_locations = session \
+            .query(DrivingDatasetLocation) \
+            .filter(DrivingDatasetLocation.driving_dataset_id == model_run.driving_dataset_id) \
             .all()
 
         for input_location in input_locations:
@@ -248,13 +251,13 @@ class JobStatusUpdaterService(DatabaseService):
         dataset.wms_url = \
             "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
             "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
-            .format(
+                .format(
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)
         dataset.netcdf_url = \
             "{thredds_server_url}/dodsC/model_runs/run{model_run_id}/{filename}" \
-            .format(
+                .format(
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)
