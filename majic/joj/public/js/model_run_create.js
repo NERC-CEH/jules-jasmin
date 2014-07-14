@@ -1,5 +1,5 @@
 /*
- * Prepare the Model run Driving data page (driving_data.html).
+ * Prepare the Model run Create page (create.html).
  */
 $(document).ready(function() {
     /*
@@ -7,8 +7,8 @@ $(document).ready(function() {
      */
     setCorrectChecks = function() {
         checks = $('.select-icon').each(function() {
-            dsid = $(this).attr("dsid");
-            select = $('#driving_dataset_' + dsid);
+            configid = $(this).attr("configid");
+            select = $('#science_configuration_' + configid);
             if (select.is(':checked')) {
                 $(this).removeClass('grey');
                 $(this).addClass('green');
@@ -25,11 +25,11 @@ $(document).ready(function() {
 
     setCorrectChecks();
 
-    // Add click handlers to select icons
-    $('.select-icon, tr.driving-data').click(function() {
-        dsid = $(this).attr("dsid");
+    // Add click handlers to select icons and div
+    $('.select-icon, .description-div').click(function() {
+        configid = $(this).attr("configid");
         $('input').prop('checked', false);
-        select = $('#driving_dataset_' + dsid);
+        select = $('#science_configuration_' + configid);
         select.prop('checked', true);
         setCorrectChecks();
     });

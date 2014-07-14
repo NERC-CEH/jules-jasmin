@@ -9,26 +9,17 @@
 </head>
 <body id="create">
 <h1>Specify Model Run Extents</h1>
-
-<div class="row" style="display:none">
-    <div class="span12">
-        <div class="alert alert-block alert-warning">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <h4>Be aware!</h4>
-            <p>
-                This is some health warning text
-            </p>
-        </div>
-    </div>
-</div>
+<p>Choose the area and time period you'd like to run JULES over. Your chosen driving data dictates the maximum area and
+    time period you can use.
+</p>
 
 <div>
-    <h2>Spatial Extent</h2>
+    <h3>Spatial Extent</h3>
     <p>Specify the spatial area you wish to run your model over. The selected area must fall completely within the
-        boundaries of your selected driving data.</p>
+        boundaries of your chosen driving data.</p>
 </div>
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='extents')}">
-    <div class="control-group" title="Model runs need a specified spatial extent">
+    <div class="control-group">
 
         <div class="row">
             <div class="span3">
@@ -40,7 +31,6 @@
             <div class="span7">
                 <h5>Model Run</h5>
             </div>
-            <!--<div class="span7"></div>-->
         </div>
 
         <div class="row">
@@ -93,11 +83,11 @@
     </div>
 
     <div>
-        <h2>Temporal Extent</h2>
+        <h3>Temporal Extent</h3>
         <p>Specify the time line you wish to run your model over. The selected dates must fall completely within the
-            boundaries of your selected driving data.</p>
+            boundaries of your chosen driving data.</p>
     </div>
-    <div class="control-group" title="Model runs need a specified temporal extent">
+    <div class="control-group">
         <div class="row">
             <div class="span2">
                 <h5></h5>

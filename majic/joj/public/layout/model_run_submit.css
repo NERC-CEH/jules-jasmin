@@ -30,5 +30,9 @@ div.edit {
 }
 
 a.edit:hover i {
-    color:#08C
+    color:#08C;
+}
+
+.edit-rows {
+    margin-bottom: 20px;
 }

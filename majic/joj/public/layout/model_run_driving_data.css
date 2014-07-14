@@ -9,11 +9,18 @@ table.driving-data {
 td.select, td.geog, td.temp-res, td.spat-res, td.date {
     width:8%;
     text-align:center;
-    color:#777
+    color:#777;
+    cursor:pointer;
+}
+
+td.select {
+    vertical-align: top;
+    padding-top: 10px
 }
 
 td.name {
-    width: 52%
+    width: 52%;
+    cursor:pointer;
 }
 
 p.description
@@ -35,5 +42,9 @@ p.description
 }
 
 .select-image:hover {
-    color:green
+    color:green;
+}
+
+tr.driving-data:hover i {
+    color:green;
 }

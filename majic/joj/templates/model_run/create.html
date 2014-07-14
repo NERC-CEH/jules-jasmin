@@ -5,63 +5,67 @@
 <xi:include href="../layout.html" />
 <head>
     <title>Create Model Run</title>
-    <link rel="stylesheet" type="text/css" href="../layout/joj.css"/>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../layout/model_run_create.css"/>
+    <script src="../js/model_run_create.js"></script>
 </head>
 <body id="create">
-    <h1>Create Model Run</h1>
+<h1>Create Model Run</h1>
+<p>Choose some basic starting information for your model run.</p>
 
-    <div class="row" style="display:none">
-        <div class="span12">
-            <div class="alert alert-block alert-warning">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <h4>Be aware!</h4>
-                <p>
-                    This is some health warning text
-                </p>
-            </div>
+<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='create')}">
+
+    <div class="control-group">
+        <label for="name" class="control-label">Name</label>
+        <div class="controls">
+            ${h.html_tags.text('name', placeholder='Enter a unique name')}
         </div>
     </div>
 
-    <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='create')}">
-
-        <div class="control-group" title="The name of a model run is used to identify it. Your model runs must all have unique names.">
-            <label for="name" class="control-label">Name</label>
-            <div class="controls">
-                ${h.html_tags.text('name')}
-            </div>
+    <div class="control-group">
+        <label for="description" class="control-label">
+            Description
+            <p class="label-explain">
+                Describe the main purpose of the run and major input parameters.
+            </p>
+        </label>
+        <div class="controls">
+            ${h.html_tags.textarea('description', rows=10, placeholder='Enter a description')}
         </div>
+    </div>
 
-         <div class="control-group" title="The description should describe the main purpose of the run and major input parameters.">
-            <label for="description" class="control-label">Description</label>
-            <div class="controls">
-                ${h.html_tags.textarea('description', rows=10)}
-            </div>
-        </div>
+    <div class="control-group">
 
-        <div class="control-group" title="Model runs should start from a default configuration.">
-
-            <label for="scientific_configuration" class="control-label">Scientific Configuration</label>
-
+        <label for="scientific_configuration" class="control-label">
+            Scientific Configuration
+            <p class="label-explain">
+                Model runs start from a default configuration which you choose here.
+            </p>
+        </label>
+        <div class="controls">
             <py:for each="configuration in c.scientific_configurations">
-                <div class="controls">
-                    <label class="radio">
-                        ${h.html_tags.radio('science_configuration', configuration['id'], True, class_='radio controls')}
-                        <div>
-                        <strong>${configuration['name']}</strong> ${configuration['description']}
-                        </div>
-                    </label>
+                <div class="sci-config">
+                    <div class="select-div">
+                        ${h.html_tags.radio('science_configuration', configuration['id'], True, style='display:none')}
+                        <i configid="${configuration['id']}" class="fa fa-check-circle-o fa-2x select-icon"></i>
+                    </div>
+                    <div configid="${configuration['id']}" class="description-div">
+                        <p>
+                            <strong>${configuration['name']} - </strong>${configuration['description']}
+                        </p>
+                    </div>
                 </div>
             </py:for>
-
         </div>
+    </div>
 
 
-        <div class="controls">
-            <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
-        </div>
-    </form>
+    <div class="controls">
+        <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
+    </div>
+</form>
 
-    <div class="modal fade hide" id="dataset-preview"></div>
+<div class="modal fade hide" id="dataset-preview"></div>
 
 </body>
 </html>

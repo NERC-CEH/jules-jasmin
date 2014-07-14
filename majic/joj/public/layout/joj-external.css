@@ -98,6 +98,10 @@ div#footer div
     width: 176px;
 }
 
+input.placeholder, textarea.placeholder {
+    color: #aaa;
+}
+
 div.screenshots{
     text-align:center;
     margin: 10px;
