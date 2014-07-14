@@ -1,12 +1,14 @@
 # header
 from hamcrest import *
-from pylons import url
 from joj.model import session_scope, Session, AccountRequest
 
-from tests import TestController
+from joj.tests import *
 
+class TestAccountRequestController(TestController):
 
-class AccountRequestControllerTest(TestController):
+    def setUp(self):
+        super(TestAccountRequestController, self).setUp()
+        self.clean_database()
 
     def test_GIVEN_empty_name_WHEN_submitted_THEN_returns_error(self):
         response = self.app.post(

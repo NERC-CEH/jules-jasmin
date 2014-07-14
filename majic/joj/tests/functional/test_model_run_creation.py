@@ -4,7 +4,6 @@ from urlparse import urlparse
 from hamcrest import *
 from joj.tests import *
 from joj.services.model_run_service import ModelRunService
-from pylons import config
 from joj.utils import constants
 
 
