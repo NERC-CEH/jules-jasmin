@@ -1,7 +1,11 @@
-var LINE_HEIGHT = 26.5; // This specifies the height of a line in the floating results div
+var LINE_HEIGHT = 26.0; // This specifies the height of a line in the floating results div
 var KEY_CODE_UP = 38;
 var KEY_CODE_DOWN = 40;
 var KEY_CODE_ENTER = 13;
+var should_show_results = false; // This is used to keep track of whether or not the floating results div should be shown
+                                 // since IE doesn't handle blur events involving scroll bars nicely.
+var mouse_hover_active = true; // We sometimes need to disable mouse hover on the results list (so that you can scroll
+                               // with the up/down keys without mouse hover events getting in the way
 
 function getName(id) {
     var name = $("#name_" + id)
@@ -37,7 +41,7 @@ function search(searchText) {
             results.push(id);
         }
     }
-    return results;
+    return results.sort();
 }
 
 /**
@@ -54,7 +58,7 @@ function displayResults(results) {
         res.append(html);
     }
     res.width($("#input-bar").width() -2);
-    $(".result").mousedown(addOutput);
+    $(".result").click(addOutput);
     $(".result").hover(resultHoverOn, resultHoverOff);
     n_lines = Math.min(results.length, 10)
     res.height(27 * n_lines + "px");
@@ -65,15 +69,19 @@ function displayResults(results) {
  * Set this result list item to 'hovered'
  */
 resultHoverOn = function () {
-    $(".result").removeClass("hovered");
-    $(this).addClass("hovered");
+    if (mouse_hover_active) {
+        $(".result").removeClass("hovered");
+        $(this).addClass("hovered");
+    }
 }
 
 /**
  * Hover-off function for a result
  */
 resultHoverOff = function () {
-    $(this).removeClass("hovered");
+    if (mouse_hover_active) {
+        $(this).removeClass("hovered");
+    }
 }
 
 /**
@@ -136,8 +144,8 @@ autoComplete = function () {
  * with a bit of extra code to make sure that it copes with wrap arounds to the top / bottom of the list and to sort out the 
  */
 autoKeyPress = function (e) {
+    	mouse_hover_active = false; // If we're using keys we don't want the mouse to trigger hover events on scroll.
     	var code = (e.keyCode ? e.keyCode : e.which);
-
     	// DOWN
     	if (code === KEY_CODE_DOWN) {
 			// Select the first result if none currently selected
@@ -183,7 +191,8 @@ autoKeyPress = function (e) {
         // ENTER
         } else if(code === KEY_CODE_ENTER) {
     		if($(".result.hovered").length > 0){
-    			$(".result.hovered").first().mousedown();
+    			$(".result.hovered").first().click();
+    			$("#autoText").blur()
     		}
     	} else {
     	        autoComplete();
@@ -198,9 +207,26 @@ initHandlers = function () {
     $(".remove_output_var").click(removeOutput);
     var autoText = $("#autoText");
     autoText.keyup(autoKeyPress);
-    autoText.blur(hideResults);
     autoText.focus(autoComplete);
     var inputBtn = $("#input-bar-btn");
     inputBtn.click(autoComplete);
-    inputBtn.blur(hideResults);
+
+    // We need to keep track of where a mouse click occurs so we know whether to blur or not.
+    $("#results, #autoText, #input-bar-btn").mouseenter(function() {
+        should_show_results = true;
+    }).mouseleave(function() {
+        should_show_results = false;
+    });
+
+    // If a mouse click occurs outside of the results box, button or drop-down, then hide the results.
+    $('body').click(function() {
+        if (!should_show_results) {
+            hideResults();
+        }
+    });
+
+    // If the user moves the mouse over the result function we reactivate mouse hover of results.
+    $('#results').mousemove(function() {
+        mouse_hover_active = true;
+    });
 }
