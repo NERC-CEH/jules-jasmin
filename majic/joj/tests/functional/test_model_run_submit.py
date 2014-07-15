@@ -88,8 +88,8 @@ class TestModelRunSummaryController(TestController):
 
         output_variable_1 = self.model_run_service.get_output_variable_by_id(1)
         output_variable_10 = self.model_run_service.get_output_variable_by_id(10)
-        assert_that(response.normal_body, contains_string(str(output_variable_1.name)))
-        assert_that(response.normal_body, contains_string(str(output_variable_10.name)))
+        assert_that(response.normal_body, contains_string(str(output_variable_1.description)))
+        assert_that(response.normal_body, contains_string(str(output_variable_10.description)))
 
     def test_GIVEN_alternate_workflow_branch_followed_WHEN_reach_submit_THEN_parameter_values_the_same(self):
         # We create a model run, then simulate going back to the first page and recreating it with different options
