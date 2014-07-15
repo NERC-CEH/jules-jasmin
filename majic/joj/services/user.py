@@ -1,23 +1,31 @@
+"""
+# header
+"""
 import logging
+from pylons import config
 from sqlalchemy.orm.exc import NoResultFound
 from joj.model import User
 from joj.services.general import DatabaseService, ServiceException
+from joj.utils import constants
 
 __author__ = 'Phil Jenkins (Tessella)'
 
 log = logging.getLogger(__name__)
 
+
 class UserService(DatabaseService):
     """Provides operations on User objects"""
 
     def create(self, username, first_name, last_name, email, access_level):
-        """Creates a user (if the user doesn't already exist)
-            Params:
-                username: The login name of the user
-                first_name: User's first name
-                last_name: User's last name
-                email: User's email address
-                access_level: Set to 'Admin' for administrative functions
+        """
+        Creates a user (if the user doesn't already exist)
+
+        :param username: The login name of the user
+        :param first_name: User's first name
+        :param last_name: User's last name
+        :param email: User's email address
+        :param access_level: Set to 'Admin' for administrative functions
+        :return: nothing
         """
 
         with self.transaction_scope() as session:
@@ -29,13 +37,18 @@ class UserService(DatabaseService):
             user.access_level = access_level
             user.first_name = first_name
             user.last_name = last_name
+            if user.access_level == constants.USER_ACCESS_LEVEL_ADMIN:
+                user.storage_quota_in_gb = config['storage_quota_admin_GB']
+            else:
+                user.storage_quota_in_gb = config['storage_quota_user_GB']
 
             session.add(user)
 
     def get_user_by_username(self, username):
-        """Gets a single user by their username
-            Params:
-                username: Login name of the user to retrieve
+        """
+        Gets a single user by their username
+        :param username: Login name of the user to retrieve
+        :return: user object or None if there is no match
         """
 
         with self.readonly_scope() as session:
@@ -53,7 +66,6 @@ class UserService(DatabaseService):
                 # A general error has occurred - pass this up
                 raise ServiceException(ex)
 
-
     def get_user_by_email_address(self, email):
         """ Returns a user with the given email (which should be unique)
 
@@ -69,8 +81,6 @@ class UserService(DatabaseService):
                 # We'll get an exception if the user can't be found
                 return None
 
-
-
     def get_user_by_id(self, id):
         """ Simply returns the user with the specified ID
 
@@ -84,14 +94,12 @@ class UserService(DatabaseService):
             except:
                 return None
 
-
     def get_all_users(self):
         """Returns an array containing all the users"""
 
         with self.readonly_scope() as session:
 
             return session.query(User)
-
 
     def update(self, first_name, last_name, email, access_level, user_id):
         """ Updates the user specified by the ID passed in
@@ -113,5 +121,3 @@ class UserService(DatabaseService):
             user.access_level = access_level
 
             session.add(user)
-
-

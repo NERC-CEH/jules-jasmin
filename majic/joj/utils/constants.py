@@ -13,6 +13,13 @@ DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
 #Username for the core user, The core user will have scientific configurations and model runs
 CORE_USERNAME = 'core'
 
+USER_ACCESS_LEVEL_ADMIN = "Admin"
+USER_ACCESS_LEVEL_CEH = "CEH"
+USER_ACCESS_LEVEL_EXTERNAL = "External"
+
+QUOTA_WARNING_LIMIT_PERCENT = 80
+QUOTA_ABSOLUTE_LIMIT_PERCENT = 100
+
 # The default science configuration to use
 DEFAULT_SCIENCE_CONFIGURATION = 1
 
@@ -24,7 +31,7 @@ MODEL_RUN_STATUS_RUNNING = 'Running'
 MODEL_RUN_STATUS_COMPLETED = 'Completed'
 MODEL_RUN_STATUS_PUBLISHED = 'Published'
 MODEL_RUN_STATUS_FAILED = 'Failed'
-MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submited a model but it can not be submitted
+MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submitted a model but it can not be submitted
 MODEL_RUN_STATUS_UNKNOWN = 'Unknown'  # Job is in the bjobs list but the status is not understood
 
 # Error messages

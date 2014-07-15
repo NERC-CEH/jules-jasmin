@@ -1,8 +1,9 @@
+"""
 # Header
-
+"""
 
 from joj.model.meta import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BigInteger
 from joj.utils import constants
 
 
@@ -18,6 +19,7 @@ class User(Base):
     access_level = Column(String(constants.DB_STRING_SIZE))
     first_name = Column(String(constants.DB_STRING_SIZE))
     last_name = Column(String(constants.DB_STRING_SIZE))
+    storage_quota_in_gb = Column(BigInteger)
 
     def __repr__(self):
         """String representation of the user"""

@@ -28,6 +28,20 @@
     </ul>
 </div>
 
+<div py:if="c.showing == 'mine'" class="well">
+    <div class="span2" >Storage quota <i class="fa fa-info-circle" data-toggle="tooltip" title="Storage Quota" data-trigger="click | hover"
+                                         data-content="You have a limited storage allocation and each model run will use some of that storage.
+                                         Once your storage allocation in full you will not be able to start any new runs.
+                                         To reduce your storage allocation delete runs using the delete button or publish them so they can be view by others."></i></div>
+    <div class="progress span8" style="margin-bottom: 0px;">
+        <div class="bar bar-${c.bar_class}"
+             style="width: ${min(100, max(c.storage_percent_used, 8))}%;"
+             title="Total storage ${int(round(c.storage_percent_used, 0))}%">
+                ${round(c.storage_total_used_in_gb,1)}GB
+        </div>
+    </div>
+    <div class="span1">${c.user.storage_quota_in_gb}GB</div>
+</div>
 <div class="row" py:for="model_run in c.model_runs">
     <!--THE MAP ICON-->
     <div class="span1 ico-span">

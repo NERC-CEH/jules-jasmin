@@ -51,6 +51,7 @@ def setup_app(command, conf, vars):
         user.username = 'johhol'
         user.email = 'john.holt@tessella.com'
         user.access_level = "Admin"
+        user.storage_quota_in_gb = conf['storage_quota_admin_GB']
 
         session.add(user)
 
@@ -61,6 +62,7 @@ def setup_app(command, conf, vars):
         user2.username = 'matken'
         user2.email = 'matthew.kendall@tessella.com'
         user2.access_level = "Admin"
+        user2.storage_quota_in_gb = conf['storage_quota_admin_GB']
 
         session.add(user2)
 
@@ -165,6 +167,7 @@ def setup_app(command, conf, vars):
         mr1.last_status_change = datetime.datetime(2014, 2, 6, 9, 17, 12)
         mr1.status = stat_completed
         mr1.datasets = [ds1, ds2]
+        mr1.storage_in_mb = 1000
 
         session.add(mr1)
 
@@ -181,6 +184,7 @@ def setup_app(command, conf, vars):
         mr2.last_status_change = datetime.datetime(2014, 3, 6, 1, 9, 2)
         mr2.status = stat_failed
         mr2.error_message = 'Parameters are not correct'
+        mr2.storage_in_mb = 100
 
         session.add(mr2)
 
@@ -248,6 +252,7 @@ def setup_app(command, conf, vars):
         mr4.last_status_change = datetime.datetime(2014, 6, 12, 12, 13, 14)
         mr4.status = stat_published
         mr4.datasets = [ds3, ds4, ds5]
+        mr4.storage_in_mb = 61000
 
         session.add(mr4)
 
@@ -314,6 +319,7 @@ def setup_app(command, conf, vars):
         mr5.date_started = datetime.datetime.now()
         mr5.last_status_change = datetime.datetime.now()
         mr5.status = stat_published
+        mr4.storage_in_mb = 1000
         mr5.datasets = [ds6, ds7, ds8, ds9]
 
         session.add(mr5)

@@ -1,17 +1,22 @@
+"""
+# header
+"""
 import logging
 from pylons.controllers.util import redirect
 
-from joj.lib.base import BaseController, c, request, response, render, session, abort
+from joj.lib.base import BaseController, request, render
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
 from pylons import tmpl_context as c, url
 from formencode import htmlfill
 import formencode
 from joj.model.create_new_user_form import CreateUserForm, UpdateUserForm
+from joj.utils import constants
 
 __author__ = 'Chirag Mistry'
 
 log = logging.getLogger(__name__)
+
 
 class UserController(BaseController):
     """Provides operations for user page actions"""
@@ -83,17 +88,17 @@ class UserController(BaseController):
                 return htmlfill.render(html,
                                        defaults=c.form_result,
                                        errors=c.form_errors,
-                                       auto_error_formatter=custom_formatter)
+                                       prefix_error=False,
+                                       auto_error_formatter=BaseController.error_formatter)
             else:
-
-
 
                 # By default a user will be an external user
                 self._user_service.create(c.form_result.get('user_name'),
                                           c.form_result.get('first_name'),
                                           c.form_result.get('last_name'),
                                           user_email,
-                                          "Admin" if c.form_result.get('is_admin') else "CEH")
+                                          constants.USER_ACCESS_LEVEL_ADMIN if c.form_result.get('is_admin')
+                                          else constants.USER_ACCESS_LEVEL_CEH)
                 return redirect(url(controller="user"))
 
     def edit(self, id):
@@ -146,7 +151,8 @@ class UserController(BaseController):
                 return htmlfill.render(html,
                                        defaults=c.form_result,
                                        errors=c.form_errors,
-                                       auto_error_formatter=custom_formatter)
+                                       prefix_error=False,
+                                       auto_error_formatter=BaseController.error_formatter)
             else:
                 # By default a user will be an external user
                 self._user_service.update(c.form_result.get('first_name'),
@@ -156,11 +162,3 @@ class UserController(BaseController):
                                           c.form_result.get('user_id'))
 
                 return redirect(url(controller="user"))
-
-
-
-def custom_formatter(error):
-    """Custom error formatter"""
-    return '<span class="help-inline">%s</span>' % (
-        htmlfill.html_quote(error)
-    )

@@ -99,5 +99,6 @@ var EcomapsGeneral = (function() {
 })();
 $(function() {
         EcomapsGeneral.init();
+        $('.fa-info-circle').popover({container: 'body'})
     }
 );

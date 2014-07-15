@@ -58,11 +58,21 @@ class ModelRunController(BaseController):
         Default controller providing access to the catalogue of user model runs
         :return: Rendered catalogue page
         """
-        # all non-created runs
+        # all non-created runs for the user
+        c.user = self.current_user
         c.model_runs = [model
                         for model in self._model_run_service.get_models_for_user(self.current_user)
                         if model.status.name != constants.MODEL_RUN_STATUS_CREATED]
+        c.storage_total_used_in_gb = sum([model.storage_in_mb for model in c.model_runs]) / 1024.0
+        c.storage_percent_used = round(c.storage_total_used_in_gb / c.user.storage_quota_in_gb * 100.0, 0)
+        if c.storage_percent_used < constants.QUOTA_WARNING_LIMIT_PERCENT:
+            c.bar_class = "success"
+        elif c.storage_percent_used < constants.QUOTA_ABSOLUTE_LIMIT_PERCENT:
+            c.bar_class = "warning"
+        else:
+            c.bar_class = "danger"
         c.showing = "mine"
+
         return render("model_run/catalogue.html")
 
     def published(self):
