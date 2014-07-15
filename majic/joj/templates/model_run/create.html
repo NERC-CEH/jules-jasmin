@@ -45,7 +45,7 @@
         <div class="controls">
             <py:for each="configuration in c.scientific_configurations">
                 <div class="sci-config">
-                    <div class="select-div">
+                    <div configid="${configuration['id']}" class="select-div">
                         ${h.html_tags.radio('science_configuration', configuration['id'], True, style='display:none')}
                         <i configid="${configuration['id']}" class="fa fa-check-circle-o fa-2x select-icon"></i>
                     </div>

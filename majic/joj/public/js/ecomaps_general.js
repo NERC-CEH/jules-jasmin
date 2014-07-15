@@ -82,6 +82,41 @@ var EcomapsGeneral = (function() {
             });
     };
 
+    var initialise_custom_checkboxes = function(id_attr, radio_button_id_prefix, click_selectors) {
+        /*
+         * Identify which tick box icons should be visible based on the underlying radio buttons
+         */
+        setCorrectChecks = function() {
+            checks = $('.select-icon').each(function() {
+                id = $(this).attr(id_attr);
+                select = $(radio_button_id_prefix + id);
+                if (select.is(':checked')) {
+                    $(this).removeClass('grey');
+                    $(this).addClass('green');
+                    $(this).removeClass('fa-circle-o');
+                    $(this).addClass('fa-check-circle-o');
+                } else {
+                    $(this).addClass('grey');
+                    $(this).removeClass('green');
+                    $(this).addClass('fa-circle-o');
+                    $(this).removeClass('fa-check-circle-o');
+                }
+            });
+        }
+
+    setCorrectChecks();
+
+    // Add click handlers to select icons
+    $(click_selectors).click(function() {
+        id = $(this).attr(id_attr);
+        $('input[id^="' + radio_button_id_prefix + '"]').prop('checked', false);
+        select = $(radio_button_id_prefix + id);
+        select.prop('checked', true);
+        setCorrectChecks();
+    });
+
+    }
+
     return {
         /*
          * init
@@ -94,7 +129,9 @@ var EcomapsGeneral = (function() {
             testMapServer();
 
             window.setInterval(testMapServer, 30000);
-        }
+        },
+
+        initialise_custom_checkboxes: initialise_custom_checkboxes
     }
 })();
 $(function() {
