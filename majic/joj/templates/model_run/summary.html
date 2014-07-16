@@ -135,6 +135,13 @@
         <td class="info-title">Date started:</td>
         <td class="info-text">Not yet started</td>
     </tr>
+    <tr>
+        <td class="info-title" py:choose="c.model_run.status.name">
+            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">Public storage used (GB):</py:when>
+            <py:otherwise>Storage used (GB):</py:otherwise>
+        </td>
+        <td class="info-text">${h.utils.convert_mb_to_gb_and_round(c.model_run.storage_in_mb)}</td>
+    </tr>
 </table>
 <h5>Selected Parameters</h5>
 <table class="description">
