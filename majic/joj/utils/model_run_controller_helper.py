@@ -20,7 +20,7 @@ class ModelRunControllerHelper(object):
         """
         self._model_run_service = model_run_service
 
-    def check_model_get(self, current_user):
+    def check_user_quota(self, current_user):
         """
         Check that the user can create a new model run
         :param current_user: the current user

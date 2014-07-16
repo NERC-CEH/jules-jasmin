@@ -107,6 +107,21 @@ class ModelRunController(BaseController):
         c.model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         return render("model_run/summary.html")
 
+    def pre_create(self):
+        """
+        Controller for directing the creation of a new run
+        If user is over quota redirects to index with error
+        If model created redirects to last viewed page otherwise redirects to create page
+        """
+        self._model_run_controller_helper.check_user_quota(self.current_user)
+        model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
+
+        if self.current_user.model_run_creation_action and model.id is not None:
+            helpers.success_flash("Continuing with the creation of your model run")
+            redirect(url(controller='model_run', action=self.current_user.model_run_creation_action))
+        helpers.success_flash("Creating a new model run")
+        redirect(url(controller='model_run', action='create'))
+
     @validate(schema=ModelRunCreateFirst(), form='create', post_only=False, on_get=False, prefix_error=False,
               auto_error_formatter=BaseController.error_formatter)
     def create(self):
@@ -125,7 +140,7 @@ class ModelRunController(BaseController):
                     self.form_result['name'],
                     self.form_result['science_configuration'],
                     self.form_result['description'])
-                self._model_run_controller_helper.check_model_get(self.current_user)
+                self._model_run_controller_helper.check_user_quota(self.current_user)
                 redirect(url(controller='model_run', action='driving_data'))
             except NoResultFound:
                 errors = {'science_configuration': 'Configuration is not recognised'}
@@ -206,7 +221,7 @@ class ModelRunController(BaseController):
                 old_driving_dataset,
                 self.current_user)
 
-            self._model_run_controller_helper.check_model_get(self.current_user)
+            self._model_run_controller_helper.check_user_quota(self.current_user)
 
             if action == u'Next':
                 redirect(url(controller='model_run', action='extents'))
@@ -293,7 +308,7 @@ class ModelRunController(BaseController):
             self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_END,
                                                    run_end, self.current_user)
             # get the action to perform
-            self._model_run_controller_helper.check_model_get(self.current_user)
+            self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
                 action = values['submit']
             except KeyError:
@@ -333,7 +348,7 @@ class ModelRunController(BaseController):
             self._model_run_service.set_output_variables_for_model_being_created(output_variable_groups,
                                                                                  self.current_user)
             # Get the action to perform
-            self._model_run_controller_helper.check_model_get(self.current_user)
+            self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
                 action = values['submit']
             except KeyError:
@@ -446,7 +461,7 @@ class ModelRunController(BaseController):
                 c.yearly = ', '.join(map(str, yearly))
 
         else:
-            self._model_run_controller_helper.check_model_get(self.current_user)
+            self._model_run_controller_helper.check_user_quota(self.current_user)
             if request.params.getone('submit') == u'Submit':
                 status, message = self._model_run_service.submit_model_run(self.current_user)
                 if status.name == constants.MODEL_RUN_STATUS_SUBMITTED:

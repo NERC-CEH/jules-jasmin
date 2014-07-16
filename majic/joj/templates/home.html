@@ -31,7 +31,7 @@
             </p>
         </div>
         <div class="span4">
-            <h2><a href="${h.url(controller='model_run', action='create')}">New Model Run</a></h2>
+            <h2><a href="${h.url(controller='model_run', action='pre_create')}">New Model Run</a></h2>
             <p>
                 Run a model on map datasets
             </p>
@@ -44,24 +44,12 @@
         </div>
     </div>
 
-    <!--<div class="row">-->
-        <!--<div class="span4">-->
-            <!--<a href="${h.url(controller='viewdata')}"><img class="img-rounded" src="/layout/images/Explore.PNG" /></a>-->
-        <!--</div>-->
-        <!--<div class="span4">-->
-            <!--<a href="${h.url(controller='analysis', action='create')}"><img class="img-rounded" src="/layout/images/NewAnalysis.PNG" /></a>-->
-        <!--</div>-->
-        <!--<div class="span4">-->
-            <!--<a href="${h.url(controller='analysis')}"><img class="img-rounded" src="/layout/images/MyEcomaps.PNG" /></a>-->
-        <!--</div>-->
-    <!--</div>-->
-
     <div class="row arrow">
         <div class="span4">
             <a href="${h.url(controller='map', action='view')}"><img class="img-rounded" src="/layout/images/workflow-1.png" /></a>
         </div>
         <div class="span4">
-            <a href="${h.url(controller='model_run', action='create')}"><img class="img-rounded" src="/layout/images/workflow-2.png" /></a>
+            <a href="${h.url(controller='model_run', action='pre_create')}"><img class="img-rounded" src="/layout/images/workflow-2.png" /></a>
         </div>
         <div class="span4">
             <a href="${h.url(controller='model_run')}"><img class="img-rounded" src="/layout/images/workflow-3.png" /></a>
