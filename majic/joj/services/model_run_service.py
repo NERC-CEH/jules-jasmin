@@ -319,6 +319,26 @@ class ModelRunService(DatabaseService):
             parameter = self._get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
 
+    def save_new_parameters(self, params_values, params_to_delete, user):
+        """
+        Save a list of parameters against the model currently being created and delete old parameters
+        in the same transaction.
+        :param params_values: List of parameter namelist / name pair and value
+        in the form [[[parameter namelist, name], value]]
+        :param params_to_delete: List of parameter namelist / name pairs to delete
+        :param user: The currently logged in user
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            param_values_to_delete = []
+            # Delete any parameters we've been asked to delete
+            for parameter in params_to_delete:
+                param_values_to_delete += model_run.get_parameter_values(parameter)
+            self._remove_parameter_set_from_model(param_values_to_delete, model_run, session)
+            # And save new parameters
+            for parameter in params_values:
+                self._save_parameter(model_run, parameter[0], parameter[1], session)
+
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """
         Save a parameter against the model currently being created

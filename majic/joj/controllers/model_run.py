@@ -217,23 +217,11 @@ class ModelRunController(BaseController):
         temporal_extent = self._dataset_service.get_temporal_extent(driving_data.id)
 
         if not request.POST:
-            extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
-
-            # Set the values to display in the form
-            values = {
-                'lat_n': c.lat_n,
-                'lat_s': c.lat_s,
-                'lon_w': c.lon_w,
-                'lon_e': c.lon_e,
-                'start_date': c.run_start.date(),
-                'end_date': c.run_end.date()
-            }
+            values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
 
             # We need to check that saved values for user selected spatial extent are consistent with the chosen
             # driving data (e.g. in case the user has gone back and changed their driving data).
-            extents_controller_helper.validate_spatial_extents(spatial_extent, errors,
-                                                               c.lat_n, c.lat_s, c.lon_e, c.lon_w)
-            extents_controller_helper.validate_temporal_extents(temporal_extent, errors, c.run_start, c.run_end)
+            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
 
             # Finally in our GET we render the page with any errors and values we have
             return htmlfill.render(
@@ -246,14 +234,7 @@ class ModelRunController(BaseController):
         else:
             values = self.form_result
 
-            # Set the start and end times to be the times at which the driving data starts and ends.
-            run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
-            run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
-
-            extents_controller_helper.validate_spatial_extents(spatial_extent, errors,
-                                                               values['lat_n'], values['lat_s'],
-                                                               values['lon_e'], values['lon_w'])
-            extents_controller_helper.validate_temporal_extents(temporal_extent, errors, run_start, run_end)
+            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
 
             if len(errors) > 0:
                 return htmlfill.render(
@@ -262,20 +243,9 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
 
-            # Save to DB
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION,
-                                                   True, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID,
-                                                   True, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS,
-                                                   spatial_extent.get_lat_bounds(), self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS,
-                                                   spatial_extent.get_lon_bounds(), self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_START,
-                                                   run_start, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_END,
-                                                   run_end, self.current_user)
-            # get the action to perform
+            extents_controller_helper.save_extents_against_model_run(values, driving_data,
+                                                                     self._model_run_service, self.current_user)
+            # Get the action to perform
             try:
                 action = values['submit']
             except KeyError:

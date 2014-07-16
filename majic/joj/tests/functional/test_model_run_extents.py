@@ -159,12 +159,12 @@ class TestModelRunExtents(TestController):
             params={
                 'submit': u'Next',
                 'site': u'single',
-                'lat': 2500,
+                'lat': -88,
                 'lon': 40,
                 'start_date': '1940-10-13',
                 'end_date': '1950-10-13'
             })
-        assert_that(response.normal_body, contains_string("Latitude must be between -90 and 90"))
+        assert_that(response.normal_body, contains_string("Latitude (-88 deg N) cannot be south of 13.8 deg N"))
 
     def test_GIVEN_invalid_temporal_extents_WHEN_post_THEN_errors_rendered(self):
         response = self.app.post(
@@ -222,7 +222,7 @@ class TestModelRunExtents(TestController):
             })
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         pointfile = model_run.get_parameter_values(JULES_PARAM_POINTS_FILE)[0].value
-        n_points = model_run.get_parameter_values(JULES_PARAM_NPOINTS)
+        n_points = model_run.get_parameter_values(JULES_PARAM_NPOINTS)[0].value
         use_subgrid = model_run.get_parameter_values(JULES_PARAM_USE_SUBGRID)[0].value
         latlon_region = model_run.get_parameter_values(JULES_PARAM_LATLON_REGION)[0].value
         l_point_data = model_run.get_parameter_values(JULES_PARAM_SWITCHES_L_POINT_DATA)[0].value
