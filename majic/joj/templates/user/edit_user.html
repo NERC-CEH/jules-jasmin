@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>Edit User</title>
+    <link rel="stylesheet" type="text/css" href="../layout/ecomaps.css"/>
+</head>
+<body id="admin">
+    <h1>Edit user</h1>
+
+    <form class="form-horizontal" method="POST">
+        <div class="control-group" title="The login name is stored with crowd and can not be changed">
+            <label class="control-label">
+                Login Name
+            </label>
+            <div class="controls">
+                <span class="uneditable-input">
+                    ${c.user_to_edit.username}
+                </span>
+             </div>
+        </div>
+        <div class="control-group">
+            <label for="first_name" class="control-label">First name</label>
+            <div class="controls">
+               <input id="first_name" name="first_name" type="text" value="${c.user_to_edit.first_name}"/>
+            </div>
+        </div>
+        <div class="control-group">
+
+            <label for="last_name" class="control-label">Last name</label>
+            <div class="controls">
+               <input id="last_name" name="last_name" type="text" value="${c.user_to_edit.last_name}"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="email" class="control-label">Email</label>
+            <div class="controls">
+                <input type="text" name="email" id="email" value="${c.user_to_edit.email}" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="storage" class="control-label">Storage Quota (GB)</label>
+            <div class="controls">
+                <input type="text" name="storage_quota" id="storage" value="${c.user_to_edit.storage_quota_in_gb}" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="is_admin" class="control-label">
+                Admin user
+            </label>
+            <div class="controls">
+                <input type="checkbox" name="is_admin" id="is_admin" class="checkbox" py:attrs="{ 'checked' : 'true' } if c.user_to_edit.access_level == 'Admin' else {}" />
+            </div>
+        </div>
+            <input type="hidden" name="user_id" value="${c.user_to_edit.id}" />
+        <div class="controls">
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
+        </div>
+    </form>
+</body>
+</html>

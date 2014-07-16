@@ -24,7 +24,7 @@ from sqlalchemy.orm import joinedload
 from webtest import TestApp
 
 from joj.config.environment import load_environment
-from joj.model import User, ModelRun, Dataset, ParameterValue, session_scope, Session, AccountRequest, ModelRunStatus, \
+from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
     Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation
 from joj.services.user import UserService
 from joj.utils import constants

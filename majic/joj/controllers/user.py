@@ -138,7 +138,7 @@ class UserController(BaseController):
         """
 
         # Kick unauthorized users out straight away
-        if not self.current_user.access_level == 'Admin':
+        if not self.current_user.is_admin():
             return render('not_found.html')
 
         c.user_to_edit = self._user_service.get_user_by_id(id)
@@ -149,12 +149,13 @@ class UserController(BaseController):
         # GET request...
         if not request.method == 'POST':
 
-            return render("edit_user.html")
+            return render("user/edit_user.html")
 
         else:
+            # POST
             schema = UpdateUserForm()
             c.form_errors = {}
-            # POST
+
             try:
                 c.form_result = schema.to_python(request.params)
 
@@ -176,7 +177,7 @@ class UserController(BaseController):
                 }.items())
 
             if c.form_errors:
-                html = render('edit_user.html')
+                html = render('user/edit_user.html')
                 return htmlfill.render(html,
                                        defaults=c.form_result,
                                        errors=c.form_errors,
@@ -188,6 +189,7 @@ class UserController(BaseController):
                                           c.form_result.get('last_name'),
                                           user_email,
                                           "Admin" if c.form_result.get('is_admin') else "CEH",
-                                          c.form_result.get('user_id'))
+                                          c.form_result.get('user_id'),
+                                          c.form_result.get('storage_quota'))
 
                 return redirect(url(controller="user"))
