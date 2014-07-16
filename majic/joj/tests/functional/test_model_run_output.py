@@ -45,6 +45,7 @@ class TestModelRunOutput(TestController):
         response = self.app.get(
             url(controller='model_run', action='output'))
         assert_that(response.normal_body, contains_string("Select Output Variables"))
+        self.assert_model_run_creation_action(self.user, 'output')
 
     def test_GIVEN_output_parameters_already_chosen_WHEN_page_get_THEN_parameters_rendered(self):
         self.app.post(
@@ -110,6 +111,15 @@ class TestModelRunOutput(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='submit')), "url")
+
+    def test_GIVEN_selected_outputs_and_user_over_quota_WHEN_post_THEN_redirected_to_catalogue(self):
+        self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        response = self.app.post(
+            url(controller='model_run', action='output'),
+            params=self.valid_params)
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='index')), "url")
 
     def test_GIVEN_selected_outputs_WHEN_post_THEN_params_stored_in_database(self):
         self.app.post(

@@ -58,6 +58,7 @@ class TestModelRunExtents(TestController):
         response = self.app.get(
             url(controller='model_run', action='extents'))
         assert_that(response.normal_body, contains_string("Specify Model Run Extents"))
+        self.assert_model_run_creation_action(self.user, 'extents')
 
     def test_GIVEN_driving_dataset_selected_for_model_WHEN_page_get_THEN_driving_data_spatial_extents_rendered(self):
         response = self.app.get(
@@ -178,3 +179,21 @@ class TestModelRunExtents(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='output')), "url")
+
+    def test_GIVEN_valid_extents_and_user_over_quota_WHEN_post_THEN_redirect_to_catalogue(self):
+        self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+
+        response = self.app.post(
+            url(controller='model_run', action='extents'),
+            params={
+                'submit': u'Next',
+                'lat_n': 25,
+                'lat_s': 20,
+                'lon_e': 40,
+                'lon_w': 35,
+                'start_date': '1940-10-13',
+                'end_date': '1950-10-13'
+            })
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='index')), "url")

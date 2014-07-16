@@ -53,7 +53,7 @@ class ModelRunController(BaseController):
         super(ModelRunController, self).__init__(user_service)
         self._model_run_service = model_run_service
         self._dataset_service = dataset_service
-        self._model_run_controller_helper = ModelRunControllerHelper(user_service, model_run_service)
+        self._model_run_controller_helper = ModelRunControllerHelper(model_run_service)
 
     def index(self):
         """
@@ -125,13 +125,14 @@ class ModelRunController(BaseController):
                     self.form_result['name'],
                     self.form_result['science_configuration'],
                     self.form_result['description'])
+                self._model_run_controller_helper.check_model_get(self.current_user)
                 redirect(url(controller='model_run', action='driving_data'))
             except NoResultFound:
                 errors = {'science_configuration': 'Configuration is not recognised'}
             except DuplicateName:
                 errors = {'name': 'Name can not be the same as another model run'}
         else:
-            self._model_run_controller_helper.check_model_get(self.current_user, "create")
+            self._user_service.set_current_model_run_creation_action(self.current_user, "create")
             model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
             values['name'] = model.name
             values['science_configuration'] = model.science_configuration_id
@@ -150,6 +151,7 @@ class ModelRunController(BaseController):
         """
         Select a driving data set
         """
+
         model_run = None
         try:
             model_run = \
@@ -162,6 +164,7 @@ class ModelRunController(BaseController):
         errors = {}
 
         if not request.POST:
+            self._user_service.set_current_model_run_creation_action(self.current_user, "driving_data")
             # Get all the driving data-sets and render the page
             if len(driving_datasets) == 0:
                 abort_with_error("There are no driving datasets available - cannot create a new model run")
@@ -203,6 +206,8 @@ class ModelRunController(BaseController):
                 old_driving_dataset,
                 self.current_user)
 
+            self._model_run_controller_helper.check_model_get(self.current_user)
+
             if action == u'Next':
                 redirect(url(controller='model_run', action='extents'))
             else:
@@ -228,6 +233,7 @@ class ModelRunController(BaseController):
         temporal_extent = self._dataset_service.get_temporal_extent(driving_data.id)
 
         if not request.POST:
+            self._user_service.set_current_model_run_creation_action(self.current_user, "extents")
             extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
 
             # Set the values to display in the form
@@ -287,6 +293,7 @@ class ModelRunController(BaseController):
             self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_END,
                                                    run_end, self.current_user)
             # get the action to perform
+            self._model_run_controller_helper.check_model_get(self.current_user)
             try:
                 action = values['submit']
             except KeyError:
@@ -304,6 +311,7 @@ class ModelRunController(BaseController):
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
 
         if not request.POST:
+            self._user_service.set_current_model_run_creation_action(self.current_user, "output")
             # We need to not show the output variables which are dependent on JULES_MODEL_LEVELS::nsmax if nsmax is 0
             jules_param_nsmax = model_run.get_python_parameter_value(constants.JULES_PARAM_NSMAX)
             c.output_variables = self._model_run_service.get_output_variables(
@@ -325,6 +333,7 @@ class ModelRunController(BaseController):
             self._model_run_service.set_output_variables_for_model_being_created(output_variable_groups,
                                                                                  self.current_user)
             # Get the action to perform
+            self._model_run_controller_helper.check_model_get(self.current_user)
             try:
                 action = values['submit']
             except KeyError:
@@ -380,7 +389,7 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='create'))
 
         if not request.POST:
-
+            self._user_service.set_current_model_run_creation_action(self.current_user, "submit")
             c.model_run = model_run
             c.science_config = self._model_run_service.get_science_configuration_by_id(
                 model_run.science_configuration_id)
@@ -437,6 +446,7 @@ class ModelRunController(BaseController):
                 c.yearly = ', '.join(map(str, yearly))
 
         else:
+            self._model_run_controller_helper.check_model_get(self.current_user)
             if request.params.getone('submit') == u'Submit':
                 status, message = self._model_run_service.submit_model_run(self.current_user)
                 if status.name == constants.MODEL_RUN_STATUS_SUBMITTED:

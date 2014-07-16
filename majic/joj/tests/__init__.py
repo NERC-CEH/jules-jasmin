@@ -250,14 +250,31 @@ class TestController(TestCase):
         :param storage: storage for the model
         :param name: name of the model run
         :param user: user who has created the model run
-        :param status: the staus, default to complete
+        :param status: the status, default to complete
         :return:the model run
         """
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, name, 1)
         with model_run_service.transaction_scope() as session:
-            model_run = model_run_service.get_model_run_being_created_or_default(user)
+            model_run = model_run_service._create_new_model_run(session, user)
+            session.add(model_run)
+            model_run.name = name
+            science_configuration = model_run_service._get_science_configuration(constants.DEFAULT_SCIENCE_CONFIGURATION, session)
+            model_run.science_configuration_id = science_configuration.id
+            model_run.code_version = science_configuration.code_version
+            model_run.description = "testing"
+            model_run_service._copy_parameter_set_into_model(science_configuration.parameter_values, model_run, session)
             model_run.storage_in_mb = storage
             model_run.change_status(session, status)
 
         return model_run
+
+    def assert_model_run_creation_action(self, user, expected_action):
+        """
+        Assert that the user model run creation expected_action is correct
+        :param user: user
+        :param expected_action: expected_action
+        :return:nothing
+        """
+        with session_scope(Session) as session:
+            modified_user = session.query(User).filter(User.id == user.id).one()
+            assert_that(modified_user.model_run_creation_action, is_(expected_action), "model run creation action")

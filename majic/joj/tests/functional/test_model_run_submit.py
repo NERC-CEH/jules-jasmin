@@ -41,6 +41,22 @@ class TestModelRunSummaryController(TestController):
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='output')), "url")
 
+    def test_GIVEN_select_previous_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page(self):
+        self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.store_parameter_values({'1': 12}, self.user)
+
+        response = self.app.post(
+            url=url(controller='model_run', action='submit'),
+            params={
+                'submit': u'Previous'
+            }
+        )
+
+        assert_that(response.status_code, is_(302), "Respose is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='index')), "url")
+
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
         self.model_run_service.update_model_run(self.user, "test", 1)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
@@ -67,6 +83,33 @@ class TestModelRunSummaryController(TestController):
             .one()
         assert_that(row.name, is_(constants.MODEL_RUN_STATUS_SUBMIT_FAILED), "model run status")
 
+    def test_GIVEN_select_submit_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page_job_not_submitted(self):
+        big_model_run = self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.store_parameter_values({'1': 12}, self.user)
+
+        response = self.app.post(
+            url=url(controller='model_run', action='submit'),
+            params={
+                'submit': u'Submit'
+            }
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='index')), "url")
+
+        session = Session()
+        row = session.query("name").from_statement(
+            """
+                SELECT s.name
+                FROM model_runs m
+                JOIN model_run_statuses s on s.id = m.status_id
+                WHERE m.user_id = :userid AND m.id != :model_run_id
+                """) \
+            .params({'userid': self.user.id, 'model_run_id': big_model_run.id}) \
+            .one()
+        assert_that(row.name, is_(constants.MODEL_RUN_STATUS_CREATED), "model run status")
+
     def test_GIVEN_model_run_and_parameters_WHEN_view_submit_THEN_page_is_shown_and_contains_model_run_summary(self):
         self.create_model_run_ready_for_submit()
         response = self.app.get(
@@ -90,6 +133,7 @@ class TestModelRunSummaryController(TestController):
         output_variable_10 = self.model_run_service.get_output_variable_by_id(10)
         assert_that(response.normal_body, contains_string(str(output_variable_1.name)))
         assert_that(response.normal_body, contains_string(str(output_variable_10.name)))
+        self.assert_model_run_creation_action(self.user, 'submit')
 
     def test_GIVEN_alternate_workflow_branch_followed_WHEN_reach_submit_THEN_parameter_values_the_same(self):
         # We create a model run, then simulate going back to the first page and recreating it with different options

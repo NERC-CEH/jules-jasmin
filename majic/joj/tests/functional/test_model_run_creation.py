@@ -29,21 +29,10 @@ class TestModelRunController(TestController):
             modified_user = session.query(User).filter(User.id == user.id).one()
             assert_that(modified_user.model_run_creation_action, is_('create'), "model run creation action")
 
-    def test_GIVEN_user_quota_exceeded_WHEN_navigate_to_create_run_THEN_error_page_shown(self):
+    def test_GIVEN_model_run_has_no_name_WHEN_post_THEN_error_thrown(self):
 
         user = self.login()
         self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
-
-        response = self.app.get(
-            url(controller='model_run', action='create'),
-            )
-
-        assert_that(response.status_code, is_(302), "should redirect to catalogue page")
-        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='index')), "url")
-
-    def test_GIVEN_model_run_has_no_name_WHEN_post_THEN_error_thrown(self):
-
-        self.login()
 
         response = self.app.post(
             url=url(controller='model_run', action='create'),
@@ -145,6 +134,27 @@ class TestModelRunController(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='driving_data')), "url")
 
         self.assert_model_definition(self.login_username, expected_science_configuration, expected_name, expected_description)
+
+    def test_GIVEN_user_quota_exceeded_WHEN_post_THEN_save_redirect_to_error_page_shown(self):
+
+        user = self.login()
+        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+
+        expected_name = u'name'
+        expected_science_configuration = 1
+        expected_description = u'This is a description'
+        response = self.app.post(
+            url=url(controller='model_run', action='create'),
+            params={
+                'name': expected_name,
+                'science_configuration': str(expected_science_configuration),
+                'description': expected_description
+            }
+        )
+
+        assert_that(response.status_code, is_(302), "should redirect to catalogue page")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='index')), "url")
+
 
     def test_GIVEN_model_already_being_created_WHEN_navigate_to_create_run_THEN_model_data_filled_in(self):
 
