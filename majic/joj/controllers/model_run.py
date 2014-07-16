@@ -27,10 +27,10 @@ from joj.utils.utils import find_by_id, KeyNotFound
 from joj.utils import output_controller_helper
 from joj.utils import extents_controller_helper
 from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY_PERIOD, JULES_YEARLY_PERIOD
+from joj.utils import utils
+from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 
 # The prefix given to parameter name in html elements
-from joj.utils import utils
-
 PARAMETER_NAME_PREFIX = 'param'
 
 # Message to show when the submission has failed
@@ -53,6 +53,7 @@ class ModelRunController(BaseController):
         super(ModelRunController, self).__init__(user_service)
         self._model_run_service = model_run_service
         self._dataset_service = dataset_service
+        self._model_run_controller_helper = ModelRunControllerHelper(user_service, model_run_service)
 
     def index(self):
         """
@@ -130,6 +131,7 @@ class ModelRunController(BaseController):
             except DuplicateName:
                 errors = {'name': 'Name can not be the same as another model run'}
         else:
+            self._model_run_controller_helper.check_model_get(self.current_user, "create")
             model = self._model_run_service.get_model_run_being_created_or_default(self.current_user)
             values['name'] = model.name
             values['science_configuration'] = model.science_configuration_id

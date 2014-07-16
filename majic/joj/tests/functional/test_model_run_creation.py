@@ -5,6 +5,7 @@ from hamcrest import *
 from joj.tests import *
 from joj.services.model_run_service import ModelRunService
 from joj.utils import constants
+from joj.model import session_scope, Session, User
 
 
 class TestModelRunController(TestController):
@@ -15,7 +16,7 @@ class TestModelRunController(TestController):
 
     def test_GIVEN_nothing_WHEN_navigate_to_create_run_THEN_create_run_page_shown(self):
 
-        self.login()
+        user = self.login()
 
         response = self.app.get(
             url(controller='model_run', action='create'))
@@ -24,6 +25,21 @@ class TestModelRunController(TestController):
         assert_that(response.normal_body, contains_string("science_configuration"))
 
         assert_that(response.normal_body, contains_string("Next"))
+        with session_scope(Session) as session:
+            modified_user = session.query(User).filter(User.id == user.id).one()
+            assert_that(modified_user.model_run_creation_action, is_('create'), "model run creation action")
+
+    def test_GIVEN_user_quota_exceeded_WHEN_navigate_to_create_run_THEN_error_page_shown(self):
+
+        user = self.login()
+        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+
+        response = self.app.get(
+            url(controller='model_run', action='create'),
+            )
+
+        assert_that(response.status_code, is_(302), "should redirect to catalogue page")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='index')), "url")
 
     def test_GIVEN_model_run_has_no_name_WHEN_post_THEN_error_thrown(self):
 

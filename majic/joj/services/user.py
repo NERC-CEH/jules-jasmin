@@ -126,3 +126,14 @@ class UserService(DatabaseService):
             user.storage_quota_in_gb = storage_quota
 
             session.add(user)
+
+    def set_current_model_run_creation_action(self, user, action):
+        """
+        Set the current action for the user when created a model run
+        :param user: the user to change the action on
+        :param action: the model run action
+        :return: nothing
+        """
+        with self.transaction_scope() as session:
+            user = session.merge(user)
+            user.model_run_creation_action = action

@@ -16,6 +16,7 @@ from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
 from joj.utils.output_controller_helper import JULES_YEARLY_PERIOD, JULES_DAILY_PERIOD, JULES_MONTHLY_PERIOD
+from sqlalchemy.sql.expression import false
 
 log = logging.getLogger(__name__)
 
@@ -505,7 +506,7 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             query = session.query(OutputVariable)
             if not include_depends_on_nsmax:
-                query = query.filter(OutputVariable.depends_on_nsmax == False)
+                query = query.filter(OutputVariable.depends_on_nsmax == false())
             return query.all()
 
     def get_output_variable_by_id(self, id):
@@ -555,14 +556,17 @@ class ModelRunService(DatabaseService):
                 group_id += 1
             self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, session)
 
-    def get_storage_used(self):
+    def get_storage_used(self, user=None):
         """
-        Get the storage used by model runs for userd
+        Get the storage used by model runs for a user or all users
+        :param user: the user
         :return: a tuple of user id, model run status name, sum of storage in mb
         """
         with self.readonly_scope() as session:
-            return session\
+            query = session\
                 .query(ModelRun.user_id, ModelRunStatus.name, func.sum(ModelRun.storage_in_mb))\
                 .join(ModelRunStatus)\
-                .group_by(ModelRun.user_id, ModelRunStatus.name)\
-                .all()
+                .group_by(ModelRun.user_id, ModelRunStatus.name)
+            if user is not None:
+                query = query.filter(ModelRun.user_id == user.id)
+            return query.all()

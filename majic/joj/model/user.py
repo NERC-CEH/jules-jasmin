@@ -20,6 +20,7 @@ class User(Base):
     first_name = Column(String(constants.DB_STRING_SIZE))
     last_name = Column(String(constants.DB_STRING_SIZE))
     storage_quota_in_gb = Column(BigInteger)
+    model_run_creation_action = Column(String(constants.DB_STRING_SIZE))
 
     def is_admin(self):
         """

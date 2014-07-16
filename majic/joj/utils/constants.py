@@ -36,6 +36,10 @@ MODEL_RUN_STATUS_UNKNOWN = 'Unknown'  # Job is in the bjobs list but the status 
 
 # Error messages
 ERROR_MESSAGE_NO_STATUS_RETURNED = 'No status has been returned from the job runner'
+ERROR_MESSAGE_QUOTA_EXCEEDED = "You have exceeded your quota and can no longer create a new model run; " \
+                               "any changes you made have been saved. " \
+                               "Please delete or publish one of your model runs" \
+                               " to reduce the amount of storage you are using."
 
 # Parameter types
 PARAMETER_TYPE_INTEGER = 'integer'  # parameter is an integer (case is from documentation)
