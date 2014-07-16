@@ -8,8 +8,6 @@ from joj.model import User
 from joj.services.general import DatabaseService, ServiceException
 from joj.utils import constants
 
-__author__ = 'Phil Jenkins (Tessella)'
-
 log = logging.getLogger(__name__)
 
 
@@ -95,11 +93,16 @@ class UserService(DatabaseService):
                 return None
 
     def get_all_users(self):
-        """Returns an array containing all the users"""
+        """
+        Returns an array containing all the users
+        """
 
         with self.readonly_scope() as session:
 
-            return session.query(User)
+            return session\
+                .query(User)\
+                .order_by(User.email)\
+                .all()
 
     def update(self, first_name, last_name, email, access_level, user_id):
         """ Updates the user specified by the ID passed in

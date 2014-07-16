@@ -2,7 +2,6 @@
 header
 """
 
-
 class KeyNotFound(Exception):
     """
     Thrown when a key is not found in a list
@@ -25,6 +24,7 @@ def find_by_id(values, id_to_match):
 
     raise KeyNotFound(id_to_match)
 
+
 def find_by_id_in_dict(values, id_to_match):
     """
     Find a value in values which are dictionaries with the id id_to_match
@@ -37,3 +37,12 @@ def find_by_id_in_dict(values, id_to_match):
             return value
 
     raise KeyNotFound(id_to_match)
+
+
+def convert_mb_to_gb_and_round(value_in_mb):
+    """
+    Convert a value from MB to GB and round it to the nearest 1dp
+    :param value_in_mb: value in MB
+    :return: value in GB to 1dp
+    """
+    return round(value_in_mb / 1024.0, 1)

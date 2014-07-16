@@ -67,11 +67,12 @@ def setup_app(command, conf, vars):
         session.add(user2)
 
         core_user = User()
-        core_user.name = 'core'
-        core_user.first_name = 'Core'
-        core_user.last_name = ''
+        core_user.name = 'System'
+        core_user.first_name = 'The'
+        core_user.last_name = 'System'
         core_user.username = constants.CORE_USERNAME
         core_user.email = ''
+        core_user.storage_quota_in_gb = 1000000  #This is the total storage for the group workspace
 
         session.add(core_user)
 

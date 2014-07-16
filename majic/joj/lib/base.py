@@ -23,6 +23,9 @@ app_globals = config['pylons.app_globals']
 
 
 class BaseController(WSGIController):
+    """
+    Base controller for all controllers, includes access code
+    """
     _user_service = None
     current_user = None
 
@@ -32,7 +35,7 @@ class BaseController(WSGIController):
                 user_service: User service to use within the controller
         """
         self._user_service = user_service
-
+        self.current_user = None
 
     def __call__(self, environ, start_response):
         """Invoke the Controller"""
@@ -44,10 +47,7 @@ class BaseController(WSGIController):
             self.current_user = self._user_service.get_user_by_username(environ.get('REMOTE_USER'))
 
             if self.current_user:
-                if self.current_user.access_level == "Admin":
-                    c.admin_user = True
-                else:
-                    c.admin_user = False
+                c.admin_user = self.current_user.is_admin()
             else:
             # It's OK to allow access to the home URL with no user logged in because the home controller
             # will sort out what page to show
@@ -73,6 +73,7 @@ class BaseController(WSGIController):
         """
         Custom htmlfill error formatter that doesn't add a <br/> (since this causes formatting
         problems on our forms).
+        :param error: the error to format
         """
         return '<span class="error-message">%s</span>\n' % html_quote(error)
 
@@ -90,7 +91,4 @@ class BaseController(WSGIController):
             redirect(url(controller='model_run', action='create'))
 
 # Include the '_' function in the public names
-__all__ = [__name for __name in locals().keys() if not __name.startswith('_') \
-           or __name == '_']
-
-
+__all__ = [__name for __name in locals().keys() if not __name.startswith('_') or __name == '_']

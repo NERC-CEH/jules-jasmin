@@ -5,6 +5,7 @@ header
 import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
@@ -553,3 +554,15 @@ class ModelRunService(DatabaseService):
                 self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_TYPE, 'M', session, group_id=group_id)
                 group_id += 1
             self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, session)
+
+    def get_storage_used(self):
+        """
+        Get the storage used by model runs for userd
+        :return: a tuple of user id, model run status name, sum of storage in mb
+        """
+        with self.readonly_scope() as session:
+            return session\
+                .query(ModelRun.user_id, ModelRunStatus.name, func.sum(ModelRun.storage_in_mb))\
+                .join(ModelRunStatus)\
+                .group_by(ModelRun.user_id, ModelRunStatus.name)\
+                .all()

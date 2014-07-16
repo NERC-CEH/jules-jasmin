@@ -154,3 +154,8 @@ body#admin a#nav-admin
     background-color: rgb(100, 180, 220);
 
 }
+
+.fa-info-circle
+{
+    color: #0088CC;
+}

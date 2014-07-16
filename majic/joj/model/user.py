@@ -21,6 +21,13 @@ class User(Base):
     last_name = Column(String(constants.DB_STRING_SIZE))
     storage_quota_in_gb = Column(BigInteger)
 
+    def is_admin(self):
+        """
+        Checks to see if the user is an admin
+        :return: True if the current user is an admin, false otherwise
+        """
+        return self.access_level == constants.USER_ACCESS_LEVEL_ADMIN
+
     def __repr__(self):
         """String representation of the user"""
 

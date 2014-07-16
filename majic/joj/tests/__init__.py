@@ -57,7 +57,7 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         TestCase.__init__(self, *args, **kwargs)
 
-    def login(self, username = "test"):
+    def login(self, username="test", access_level=constants.USER_ACCESS_LEVEL_EXTERNAL):
         """
         Setup the request as if the user has already logged in as a non admin user
 
@@ -68,7 +68,7 @@ class TestController(TestCase):
         user_service = UserService()
         user = user_service.get_user_by_username(self.login_username)
         if user is None:
-            user_service.create(self.login_username, 'test', 'testerson', 'test@ceh.ac.uk', '')
+            user_service.create(self.login_username, 'test', 'testerson', 'test@ceh.ac.uk', access_level)
             user = user_service.get_user_by_username(self.login_username)
 
         self.app.extra_environ['REMOTE_USER'] = str(user.username)
@@ -243,3 +243,21 @@ class TestController(TestCase):
                 .one()
             assert_that(result.status.name, is_(status))
             return result
+
+    def create_run_model(self, storage, name, user, status=constants.MODEL_RUN_STATUS_COMPLETED):
+        """
+        Create a model run
+        :param storage: storage for the model
+        :param name: name of the model run
+        :param user: user who has created the model run
+        :param status: the staus, default to complete
+        :return:the model run
+        """
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run(user, name, 1)
+        with model_run_service.transaction_scope() as session:
+            model_run = model_run_service.get_model_run_being_created_or_default(user)
+            model_run.storage_in_mb = storage
+            model_run.change_status(session, status)
+
+        return model_run

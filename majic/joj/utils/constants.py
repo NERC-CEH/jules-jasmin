@@ -11,7 +11,7 @@ DB_URL_STRING_SIZE = 1000  # Default size (chars) to use when creating urls
 DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
 
 #Username for the core user, The core user will have scientific configurations and model runs
-CORE_USERNAME = 'core'
+CORE_USERNAME = 'system'
 
 USER_ACCESS_LEVEL_ADMIN = "Admin"
 USER_ACCESS_LEVEL_CEH = "CEH"

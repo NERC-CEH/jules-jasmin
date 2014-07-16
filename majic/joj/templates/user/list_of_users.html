@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="../layout.html" />
+<head>
+    <title>Users List</title>
+</head>
+<body id="admin">
+    <h1>All Users</h1>
+
+    <div class="well">
+        <div class="span2" >Group space <i class="fa fa-info-circle" data-toggle="tooltip" title="Group Space Storage Quota" data-trigger="click | hover"
+                                         data-content="There is a limited storage allocated for the group space. The space used is the sum of all the model runs
+                                         and the driving data sets. The system user represents data not owned by any user. His quota is the size of the group space"></i></div>
+        <div class="progress span8" style="margin-bottom: 0px;">
+            <div class="bar bar-${c.bar_class}"
+                 style="width: ${min(100, max(c.total_storage_percent_used, 8))}%;"
+                 title="Total storage ${int(round(c.total_storage_percent_used, 0))}%">
+                    ${round(c.storage_total_used_in_gb,1)}GB
+            </div>
+        </div>
+        <div class="span1">${c.core_user.storage_quota_in_gb}GB</div>
+    </div>
+    <div>
+        <table class="table table-striped">
+            <thead>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Access Level</th>
+                <th>Quota <br/>(GB)</th>
+                <th>Used <br/>(GB)</th>
+                <th>Published <br/>(GB)</th>
+                <th></th>
+            </thead>
+            <tbody>
+                <tr py:for="user in c.all_users" class="${user.quota_status}">
+                    <td>
+                        ${user.name}
+                    </td>
+                    <td>
+                        ${user.username}
+                    </td>
+                    <td>
+                        ${user.email}
+                    </td>
+                    <td>
+                        ${user.access_level}
+                    </td>
+                    <td>
+                        ${user.storage_quota_in_gb}
+                    </td>
+                    <td>
+                        ${h.utils.convert_mb_to_gb_and_round(user.storage_in_mb)}
+                    </td>
+                    <td>
+                        ${h.utils.convert_mb_to_gb_and_round(user.published_storage_in_mb)}
+                    </td>
+                    <td>
+                        <a href="${url(controller='user', action='edit', id=user.id) }" class="btn btn-mini"><i class="icon-edit"></i> Edit</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <form action="${url(controller='user', action='create')}">
+        <div class="controls">
+            <input type="submit" class="btn btn-primary pull-right control-group" value="Create New User" />
+        </div>
+    </form>
+</body>
+</html>
+

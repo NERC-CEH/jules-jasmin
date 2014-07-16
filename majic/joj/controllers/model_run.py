@@ -29,6 +29,7 @@ from joj.utils import extents_controller_helper
 from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY_PERIOD, JULES_YEARLY_PERIOD
 
 # The prefix given to parameter name in html elements
+from joj.utils import utils
 
 PARAMETER_NAME_PREFIX = 'param'
 
@@ -63,14 +64,12 @@ class ModelRunController(BaseController):
         c.model_runs = [model
                         for model in self._model_run_service.get_models_for_user(self.current_user)
                         if model.status.name != constants.MODEL_RUN_STATUS_CREATED]
-        c.storage_total_used_in_gb = sum([model.storage_in_mb for model in c.model_runs]) / 1024.0
+        c.storage_total_used_in_gb = utils.convert_mb_to_gb_and_round(
+            sum([model.storage_in_mb
+                 for model in c.model_runs
+                 if model.status.name != constants.MODEL_RUN_STATUS_PUBLISHED]))
         c.storage_percent_used = round(c.storage_total_used_in_gb / c.user.storage_quota_in_gb * 100.0, 0)
-        if c.storage_percent_used < constants.QUOTA_WARNING_LIMIT_PERCENT:
-            c.bar_class = "success"
-        elif c.storage_percent_used < constants.QUOTA_ABSOLUTE_LIMIT_PERCENT:
-            c.bar_class = "warning"
-        else:
-            c.bar_class = "danger"
+        c.bar_class = helpers.get_progress_bar_class_name(c.storage_percent_used)
         c.showing = "mine"
 
         return render("model_run/catalogue.html")
