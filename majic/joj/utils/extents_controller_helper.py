@@ -7,25 +7,6 @@ from joj.model.non_database.temporal_extent import InvalidTemporalExtent, Tempor
 from joj.utils import constants
 
 
-def add_selected_extents_to_template_context(template_context, model_run, driving_data):
-    """
-    Get the extents from the database if already set or default them to dataset boundaries if not
-    :param template_context: Pylons template context to add selected output variable lists to
-    :param model_run: The model run currently being used
-    :param driving_data: The driving data selected for the model_run
-    """
-    template_context.lat_s, template_context.lat_n = model_run.get_python_parameter_value(
-        constants.JULES_PARAM_LAT_BOUNDS) \
-        or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
-    template_context.lon_w, template_context.lon_e = model_run.get_python_parameter_value(
-        constants.JULES_PARAM_LON_BOUNDS) \
-        or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-    template_context.run_start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START) \
-        or driving_data.time_start
-    template_context.run_end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END) \
-        or driving_data.time_end
-
-
 def create_values_dict_from_database(model_run, driving_data):
     """
     Create a dictionary of values corresponding to the form elements on the page and the values they should have, based

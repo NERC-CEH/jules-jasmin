@@ -212,10 +212,6 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='driving_data'))
         errors = {}
 
-        # Get the driving data extents so we can validate
-        spatial_extent = self._dataset_service.get_spatial_extent(driving_data.id)
-        temporal_extent = self._dataset_service.get_temporal_extent(driving_data.id)
-
         if not request.POST:
             values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
 
@@ -341,10 +337,12 @@ class ModelRunController(BaseController):
         if not request.POST:
 
             c.model_run = model_run
+            driving_data = model_run.driving_dataset
             c.science_config = self._model_run_service.get_science_configuration_by_id(
                 model_run.science_configuration_id)
 
-            extents_controller_helper.add_selected_extents_to_template_context(c, model_run, None)
+            c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
+            #extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
 
             c.driving_data_name = model_run.driving_dataset.name
 
