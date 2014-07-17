@@ -11,6 +11,7 @@ from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, D
 from joj.utils import constants
 from joj.utils.utils import KeyNotFound, find_by_id_in_dict
 from joj.services.dap_client_factory import DapClientFactory
+from dateutil.parser import parse
 
 log = logging.getLogger(__name__)
 
@@ -142,6 +143,19 @@ Majic
 
             try:
                 job_status = find_by_id_in_dict(job_statuses, model_run.id)
+                if constants.JSON_STATUS_STORAGE in job_status:
+                    model_run.storage_in_mb = job_status[constants.JSON_STATUS_STORAGE]
+                else:
+                    model_run.storage_in_mb = 0
+
+                model_run.date_started = None
+                model_run.time_elapsed_secs = 0
+                if constants.JSON_STATUS_START_TIME in job_status:
+                    model_run.date_started = parse(job_status[constants.JSON_STATUS_START_TIME])
+                    if constants.JSON_STATUS_END_TIME in job_status:
+                        end = parse(job_status[constants.JSON_STATUS_END_TIME])
+                        model_run.time_elapsed_secs = int((end - model_run.date_started).total_seconds())
+
                 model_run.change_status(session, job_status['status'], job_status['error_message'])
                 if job_status['status'] == constants.MODEL_RUN_STATUS_COMPLETED:
                     self._update_datasets(model_run, session)

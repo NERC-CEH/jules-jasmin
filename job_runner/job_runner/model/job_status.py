@@ -32,7 +32,10 @@ class JobStatus(object):
         return {
             'id': self.model_run_id,
             'status': self.status,
-            'error_message': self.error_message}
+            'error_message': self.error_message,
+            'start_time': self.start_time.strftime(constants.DATA_FORMAT_WITH_TZ),
+            'end_time': self.end_time.strftime(constants.DATA_FORMAT_WITH_TZ),
+            'storage_in_mb': self.storage_in_mb}
 
     def check(self, job_service, bjobs_list):
         """

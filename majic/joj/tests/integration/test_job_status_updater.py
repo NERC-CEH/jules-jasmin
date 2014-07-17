@@ -1,7 +1,9 @@
 # header
+from datetime import datetime
 from hamcrest import assert_that, is_
 from mock import Mock
 from pylons import config
+import pytz
 
 from joj.tests import TestController
 from joj.model import session_scope, Session, ModelRun, Dataset
@@ -136,3 +138,23 @@ class TestJobDataUpdater(TestController):
 
         self.assert_model_run_status_and_return(model_run.id, constants.MODEL_RUN_STATUS_UNKNOWN)
         assert_that(self.email_service.send_email.called, is_(True), "An email has been sent")
+
+    def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_THEN_model_runs_start_time_end_time_and_storage_are_set(self):
+        model_run = self.create_model(constants.MODEL_RUN_STATUS_PENDING)
+        expected_storage = 10
+
+        self.running_job_client.get_run_model_statuses = Mock(
+            return_value=[{'id': model_run.id,
+                           'status': constants.MODEL_RUN_STATUS_COMPLETED,
+                           'error_message': '',
+                           'start_time': "2014-07-16 16:33:30",
+                           'end_time': "2014-07-17 12:07:46",
+                           'storage_in_mb': expected_storage
+                           }])
+
+        self.job_status_updater.update()
+
+        model_run = self.assert_model_run_status_and_return(model_run.id, constants.MODEL_RUN_STATUS_COMPLETED)
+        assert_that(model_run.storage_in_mb, is_(expected_storage), "storage")
+        assert_that(model_run.date_started, is_(datetime(2014, 7, 16, 16, 33, 30)), "start time")
+        assert_that(model_run.time_elapsed_secs, is_(70456), "time elapsed in s")

@@ -44,3 +44,6 @@ ERROR_MESSAGE_UNKNOWN_JULES_ERROR = 'Jules did not complete successfully'
 #filename for the file containg the bsub id
 FILENAME_BSUB_ID = 'bsub_id'
 FILENAME_OUTPUT_LOG = 'out.log'
+
+
+DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%m:%S %z'

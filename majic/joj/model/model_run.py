@@ -53,8 +53,9 @@ class ModelRun(Base):
         status = session.query(ModelRunStatus) \
             .filter(ModelRunStatus.name == new_status) \
             .one()
-        self.status = status
-        self.last_status_change = datetime.datetime.now()
+        if self.status is None or self.status.id != status.id:
+            self.last_status_change = datetime.datetime.now()
+            self.status = status
         self.error_message = error_message
         if new_status == constants.MODEL_RUN_STATUS_PENDING:
             self.date_submitted = datetime.datetime.now()
