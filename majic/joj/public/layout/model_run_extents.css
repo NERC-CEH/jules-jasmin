@@ -10,12 +10,7 @@
     color:darkgrey;
 }
 
-.select-icon {
-    cursor: pointer;
-    font-size: 1.5em;
-}
-
-.checkbox {
+.select-icon, .checkbox {
     cursor: pointer;
     font-size: 1.5em;
 }
@@ -39,3 +34,6 @@
     cursor:pointer;
 }
 
+.controls-row, .fieldset {
+    width:900px;
+}

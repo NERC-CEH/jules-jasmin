@@ -8,20 +8,13 @@ var click_selectors = '.select-div, .description-div';
 $(document).ready(function() {
     EcomapsGeneral.initialise_custom_checkboxes(id_attr, radio_button_id_prefix, click_selectors);
 
-    var page_load = true;
-
     var chooseMultiCell = function () {
         var singleCell = $('#single-cell');
         var multiCell = $('#multi-cell')
         singleCell.find('input').prop('disabled', true);
-        if (page_load) {
-            singleCell.hide();
-        } else {
-            singleCell.slideUp()
-        }
+        singleCell.hide();
         multiCell.find('input').prop('disabled', false);
         multiCell.show();
-        page_load = false;
     }
 
     var chooseSingleCell = function () {
@@ -30,12 +23,7 @@ $(document).ready(function() {
         singleCell.find('input').prop('disabled', false);
         singleCell.show();
         multiCell.find('input').prop('disabled', true);
-        if (page_load) {
-            multiCell.hide();
-        } else {
-            multiCell.slideUp()
-        }
-        page_load = false;
+        multiCell.hide();
     }
 
     var updatePageFromSelect = function() {

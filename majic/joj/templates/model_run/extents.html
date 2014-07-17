@@ -20,12 +20,8 @@
     <h3>Spatial Extent</h3>
     <label for="scientific_configuration" class="control-label">
         Type of extent
-        <!--<p class="label-explain">-->
-        <!--You can run JULES in a continuous region or in one single location.-->
-        <!--</p>-->
     </label>
     <div class="controls">
-        <!--<br/>-->
         <div class="site-option">
             <div site="multi" class="select-div">
                 ${h.html_tags.radio('site', 'multi', True, style='display:none')}
@@ -60,7 +56,7 @@
                 boundaries of your chosen driving data.
             </p>
         </label>
-        <div class="controls container">
+        <div class="controls">
             <fieldset class="fieldset">
                 <div class="controls-row">
                     <div class="span2">
@@ -119,10 +115,10 @@
 <div id="multi-cell" class="control-group">
     <label class="control-label">
         Spatial Extent
-        <p class="label-explain">Specify the spatial area you wish to run your model over. The selected area must fall completely within the
+        <p class="label-explain">The spatial area you wish to run your model over. This must fall completely within the
             boundaries of your chosen driving data.</p>
     </label>
-    <div class="controls container">
+    <div class="controls">
         <fieldset class="fieldset">
             <div class="controls-row">
                 <div class="span2">
@@ -181,51 +177,55 @@
 
 <div>
     <h3>Temporal Extent</h3>
-    <p>Specify the time line you wish to run your model over. The selected dates must fall completely within the
-        boundaries of your chosen driving data.</p>
 </div>
+
 <div class="control-group">
-    <div class="row">
-        <div class="span2">
-            <h5></h5>
-        </div>
-        <div class="span2">
-            <h5>Driving Data</h5>
-        </div>
-        <div class="span8">
-            <h5>Model Run</h5>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="span2">
-            <p>Start date</p>
-        </div>
-        <div class="span2">${c.dataset.time_start.date()}</div>
-        <div class="span8">
-            <div class="controls" style="margin-left:0px">
-                ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                <br/><br/>
+    <label class="control-label">
+        Timeline
+        <p class="label-explain">
+            The time line you wish to run your model over. This must fall completely within the
+            boundaries of your chosen driving data.
+        </p>
+    </label>
+    <div class="controls">
+        <fieldset class="fieldset">
+            <div class="controls-row">
+                <div class="span2">
+                    <h5>Time</h5>
+                </div>
+                <div class="span2">
+                    <h5>Driving Data Value</h5>
+                </div>
+                <div class="span7">
+                    <h5>This Model Run</h5>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="span2">
-            <p>End date</p>
-        </div>
-        <div class="span2">${c.dataset.time_end.date()}</div>
-        <div class="span8">
-            <div class="controls" style="margin-left:0px">
-                ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                <br/>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>Start Date</p>
+                </div>
+                <div class="span2">${c.dataset.time_start.date()}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
+                </div>
             </div>
-        </div>
+            <br/>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>End Date</p>
+                </div>
+                <div class="span2">${c.dataset.time_end.date()}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
     </div>
-
-
 </div>
-
 
 <div class="controls">
     <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
