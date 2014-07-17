@@ -18,13 +18,13 @@ class JobRunnerClient(object):
     def __init__(self, config):
         self._config = config
 
-    def submit(self, model):
+    def submit(self, model, parameters):
         """
         Submit the model to the job_runner service
         :param model: the run model including parameters
         :return: status the model run is in and a message
         """
-        data = self.convert_model_to_dictionary(model)
+        data = self.convert_model_to_dictionary(model, parameters)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
             response = requests.post(url=url, data=json.dumps(data))
@@ -59,7 +59,7 @@ class JobRunnerClient(object):
             raise ServiceException("Job status call returned with non ok status code. Status code {} content {}"
                                    .format(str(response.status_code), response.text))
 
-    def convert_model_to_dictionary(self, run_model):
+    def convert_model_to_dictionary(self, run_model, parameters):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
         :param run_model: the run model
@@ -67,7 +67,7 @@ class JobRunnerClient(object):
         """
         namelist_files = []
 
-        for parameter in run_model.code_version.parameters:
+        for parameter in parameters:
             namelist_file = self._find_or_create_namelist_file(namelist_files,
                                                                parameter.namelist.namelist_file.filename)
             if len(parameter.parameter_values) == 0:
