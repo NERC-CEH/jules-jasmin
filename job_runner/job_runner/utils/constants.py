@@ -11,6 +11,9 @@ OUTPUT_DIR = 'output'
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'
 JULES_FATAL_ERROR_PREFIX = "[FATAL ERROR]"
+JULES_START_TIME_PREFIX = 'Start Time:'
+JULES_END_TIME_PREFIX = 'End Time:'
+JULES_STORAGE_PREFIX = 'Storage MB:'
 
 # Constants for the names of the dictionary values in the json submitted
 JSON_MODEL_RUN_ID = 'model_run_id'

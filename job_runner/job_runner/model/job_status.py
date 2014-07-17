@@ -17,6 +17,9 @@ class JobStatus(object):
         :param model_run_id: the model runs id
         :return:nothing
         """
+        self.storage_in_mb = None
+        self.end_time = None
+        self.start_time = None
         self.model_run_id = model_run_id
         self.status = ''
         self.error_message = ''
@@ -57,6 +60,9 @@ class JobStatus(object):
         try:
             log_file_parser = job_service.get_output_log_result(run_dir)
             self.status = log_file_parser.status
+            self.start_time = log_file_parser.start_time
+            self.end_time = log_file_parser.end_time
+            self.storage_in_mb = log_file_parser.storage_in_mb
             if self.status == constants.MODEL_RUN_STATUS_FAILED:
                 self.error_message = log_file_parser.error_message
         except ServiceError, ex:

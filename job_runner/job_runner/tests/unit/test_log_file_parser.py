@@ -1,6 +1,6 @@
 # header
-from formencode import Invalid
-
+from datetime import datetime
+import pytz
 
 from hamcrest import *
 from mock import Mock
@@ -58,3 +58,44 @@ class TestJulesLogFileParser(TestController):
         assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
         assert_that(self.parser.error_message, is_("Jules error:" + expected_error1 + ' \n' + expected_error2), "error message")
 
+    def test_GIVEN_file_contains_start_time_WHEN_parse_THEN_start_time_included(self):
+        self.lines.extend(['random line', 'blah', 'Start Time: 2014-07-16 16:33:30 +0000', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.start_time, is_(datetime(2014, 07, 16, 16, 33, 30, tzinfo=pytz.utc)), "start time")
+
+    def test_GIVEN_file_contains_invalid_start_time_WHEN_parse_THEN_start_time_is_none(self):
+        self.lines.extend(['random line', 'blah', 'Start Time: 2014-blah-16 16:33:30 +0000', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.start_time, is_(None), "start time")
+
+    def test_GIVEN_file_contains_end_time_WHEN_parse_THEN_start_time_included(self):
+        self.lines.extend(['random line', 'blah', 'End Time: 2014-07-16 16:33:30 +0000', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.end_time, is_(datetime(2014, 07, 16, 16, 33, 30, tzinfo=pytz.utc)), "end time")
+
+    def test_GIVEN_file_contains_invalid_end_time_WHEN_parse_THEN_start_time_is_none(self):
+        self.lines.extend(['random line', 'blah', 'End Time: 2014-blah-16 16:33:30 +0000', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.end_time, is_(None), "end time")
+
+    def test_GIVEN_file_contains_storage_WHEN_parse_THEN_storage_set(self):
+        self.lines.extend(['random line', 'blah', 'Storage MB: 256   .', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.storage_in_mb, is_(256), "storage")
+
+    def test_GIVEN_file_contains_invalid_storage_WHEN_parse_THEN_storage_is_0(self):
+        self.lines.extend(['random line', 'blah', 'Storage MB: nan   .', 'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.storage_in_mb, is_(0), "storage")
