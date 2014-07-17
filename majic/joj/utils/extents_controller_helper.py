@@ -41,25 +41,34 @@ def create_values_dict_from_database(model_run, driving_data):
 
     if multicell:
         values['site'] = 'multi'
-        values['lat_s'], values['lat_n'] = model_run.get_python_parameter_value(
-            constants.JULES_PARAM_LAT_BOUNDS) \
-            or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
-        values['lon_w'], values['lon_e'] = model_run.get_python_parameter_value(
-            constants.JULES_PARAM_LON_BOUNDS) \
-            or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
     else:
         values['site'] = 'single'
-        values['lat'], values['lon'] = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE) \
-            or [None, None]
-        point_value = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA)
-        if point_value is None:
-            point_value = False
-        if not point_value:
-            values['average_over_cell'] = 1
-    values['start_date'] = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START) \
-        or driving_data.time_start.date()
-    values['end_date'] = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END) \
-        or driving_data.time_end.date()
+    values['lat'], values['lon'] = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE) \
+        or [None, None]
+    point_value = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA)
+    if point_value is None:
+        point_value = False
+    if not point_value:
+        values['average_over_cell'] = 1
+
+    values['lat_s'], values['lat_n'] = model_run.get_python_parameter_value(
+        constants.JULES_PARAM_LAT_BOUNDS) \
+        or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
+    values['lon_w'], values['lon_e'] = model_run.get_python_parameter_value(
+        constants.JULES_PARAM_LON_BOUNDS) \
+        or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
+
+    start_date = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START)
+    if start_date is not None:
+        values['start_date'] = start_date.date()
+    else:
+        values['start_date'] = driving_data.time_start.date()
+
+    end_date = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
+    if end_date is not None:
+        values['end_date'] = end_date.date()
+    else:
+        values['end_date'] = driving_data.time_end.date()
 
     return values
 
