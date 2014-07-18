@@ -27,7 +27,7 @@ class SystemAlertEmail(Base):
         return "<SystemAlertEmail(code=%s)>" % self.code
 
     @staticmethod
-    def check_email_needs_sending(session, code):
+    def check_email_needs_sending(code, session):
         """
         Check whether the system email needs sending, it will not be sent if it was sent within the last sent frequency
         :param code: the email code to look for
