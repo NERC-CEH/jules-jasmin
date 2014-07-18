@@ -63,6 +63,7 @@ class JobRunnerClient(object):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
         :param run_model: the run model
+        :param parameters: Model run parameters
         :return: dictionary for the run model
         """
         namelist_files = []
