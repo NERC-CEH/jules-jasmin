@@ -56,7 +56,7 @@ class TestJulesLogFileParser(TestController):
         self.parser.parse()
 
         assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
-        assert_that(self.parser.error_message, is_("Jules error:" + expected_error1 + ' \n' + expected_error2), "error message")
+        assert_that(self.parser.error_message, is_("Jules error:" + expected_error1 + ', ' + expected_error2), "error message")
 
     def test_GIVEN_file_contains_start_time_WHEN_parse_THEN_start_time_included(self):
         self.lines.extend(['random line', 'blah', 'Start Time: 2014-07-16 16:33:30 +0000', 'foo again'])
@@ -99,3 +99,13 @@ class TestJulesLogFileParser(TestController):
         self.parser.parse()
 
         assert_that(self.parser.storage_in_mb, is_(0), "storage")
+
+    def test_GIVEN_file_does_not_contain_success_and_has_multiple_fatal_errors_from_different_processors_WHEN_parse_THEN_job_status_failed_error_message_is_fatal_error(self):
+        expected_error = 'init_output'
+        self.lines.extend(['random line', '{MPI Task 1}[FATAL ERROR] ' + expected_error,
+                           '{MPI Task 0}[FATAL ERROR] ' + expected_error,'foo again'])
+
+        self.parser.parse()
+
+        assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
+        assert_that(self.parser.error_message, is_("Jules error:" + expected_error + ', ' + expected_error), "error message")

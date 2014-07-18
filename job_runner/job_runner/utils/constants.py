@@ -5,6 +5,9 @@
 # The code versions and the script used to submit those code versions
 VALID_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_3_4_1.sh'}
 
+# The code versions and the script used to submit those code versions on a single processor
+VALID_SINGLE_PROCESSOR_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_single_proc_3_4_1.sh'}
+
 # Set the name of the output directory (if changed copy to joj)
 OUTPUT_DIR = 'output'
 
@@ -50,3 +53,4 @@ DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%m:%S %z'
 
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_POINTS_FILE = [JULES_NML_MODEL_GRID, "points_file"]
+JULES_PARAM_LATLON_REGION = [JULES_NML_MODEL_GRID, "latlon_region"]

@@ -202,6 +202,6 @@ class TestJobsControllerNew(TestController):
             params=self.valid_job_submission,
             expect_errors=True)
 
-        assert_that(response.status_code, is_(200), "invalid request")
+        assert_that(response.status_code, is_(200), "valid request")
         job_id = re.search("(\d*)", response.normal_body).group(1)
         assert_that(job_id, greater_than(0), "pid")
