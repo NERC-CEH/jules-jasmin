@@ -10,6 +10,8 @@ import re
 from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
+from joj.utils.constants import JULES_PARAM_POINTS_FILE
+from joj.utils.f90_helper import python_to_f90_str
 
 
 class ServiceError(Exception):
@@ -112,6 +114,8 @@ class JobService(object):
         for src in glob.glob(os.path.join(config['jules_files_to_softlink_dir'], '*')):
             os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
 
+        self._create_parameter_files(run_directory, model_run)
+
         for namelist_file in model_run[JSON_MODEL_NAMELIST_FILES]:
             self._create_namelist_file(namelist_file, run_directory)
 
@@ -189,3 +193,37 @@ class JobService(object):
             raise ServiceError('When getting running jobs, failed with non-zero error code. "%s"' % ex.output)
         except Exception, ex:
             raise ServiceError('Problem getting running jobs. "%s"' % ex.message)
+
+    def _create_parameter_files(self, run_directory, model_run):
+        """
+        Create any parameter files needed for the run
+        :param run_directory: Directory for the run
+        :param model_run: Model run dictionary
+        :return:
+        """
+        parameter_files = [[JULES_PARAM_POINTS_FILE, "points.dat"]]
+        for parameter_name, filename in parameter_files:
+            points_file_namelist = self._get_namelist(model_run, parameter_name[0])
+            param_value = points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]]
+
+            # Create the file with the parameter value
+            param_file = open(os.path.join(run_directory, filename), 'w')
+            param_file.write(param_value)
+            param_file.close()
+
+            # Save the filename as the parameter value
+            points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]] = python_to_f90_str(filename)
+
+    def _get_namelist(self, model_run, namelist_name):
+        """
+        Get a specified namelist dictionary
+        :param model_run: Model run dictionary
+        :param namelist_name: The name of the namelist to return
+        :return: Requested namelist dictionary
+        """
+        nml_files = model_run[JSON_MODEL_NAMELIST_FILES]
+        for nml_file in nml_files:
+            namelists = nml_file[JSON_MODEL_NAMELISTS]
+            for namelist in namelists:
+                if namelist[JSON_MODEL_NAMELIST_NAME] == namelist_name:
+                    return namelist

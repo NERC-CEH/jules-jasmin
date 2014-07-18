@@ -5,6 +5,7 @@ import datetime
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent, SpatialExtent
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent, TemporalExtent
 from joj.utils import constants
+from joj.services.lat_lon_service import LatLonService
 
 
 def create_values_dict_from_database(model_run, driving_data):
@@ -81,7 +82,9 @@ def save_extents_against_model_run(values, driving_data, model_run_service, user
     else:
         params_to_save.append([constants.JULES_PARAM_LATLON_REGION, False])
         params_to_save.append([constants.JULES_PARAM_NPOINTS, 1])
-        params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [values['lat'], values['lon']]])
+        lat_lon_service = LatLonService()
+        lat, lon = lat_lon_service.get_nearest_cell_center(values['lat'], values['lon'], driving_data.id)
+        params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [lat, lon]])
         params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'average_over_cell' not in values])
     run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
     run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
