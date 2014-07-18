@@ -3,7 +3,7 @@ header
 """
 from hamcrest import assert_that, is_
 from joj.services.tests.base import BaseTest
-from services.lat_lon_service import LatLonService
+from joj.services.lat_lon_service import LatLonService
 
 
 class TestLatLonService(BaseTest):
