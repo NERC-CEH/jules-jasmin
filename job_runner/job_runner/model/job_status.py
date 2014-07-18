@@ -29,12 +29,18 @@ class JobStatus(object):
         How to represent this model as json
         :return: the json representation
         """
+        start_time = None
+        if self.start_time is not None:
+            start_time = self.start_time.strftime(constants.DATA_FORMAT_WITH_TZ)
+        end_time = None
+        if self.end_time is not None:
+            end_time = self.end_time.strftime(constants.DATA_FORMAT_WITH_TZ)
         return {
             'id': self.model_run_id,
             'status': self.status,
             'error_message': self.error_message,
-            'start_time': self.start_time.strftime(constants.DATA_FORMAT_WITH_TZ),
-            'end_time': self.end_time.strftime(constants.DATA_FORMAT_WITH_TZ),
+            'start_time': start_time,
+            'end_time': end_time,
             'storage_in_mb': self.storage_in_mb}
 
     def check(self, job_service, bjobs_list):

@@ -19,12 +19,17 @@ class TestJobsControllerNew(TestController):
                 {'filename': 'file1',
                  JSON_MODEL_NAMELISTS:
                      [
-                         {'name':'a name',
+                         {'name': 'a name',
                           JSON_MODEL_NAMELIST_INDEX: 1,
                           'parameters':
                               {
                                   'time_lens': '1'
                               }
+                         },
+                         {
+                             'name': JULES_PARAM_POINTS_FILE[0],
+                             JSON_MODEL_NAMELIST_INDEX: 2,
+                             'parameters': {}
                          }
                      ]
                  }
@@ -50,7 +55,6 @@ class TestJobsControllerNew(TestController):
             expect_errors=True)
 
         assert_that(response.status_code, is_(400), "invalid request")
-
 
     def test_GIVEN_code_version_is_unknown_WHEN_post_new_job_THEN_error(self):
         self.valid_job_submission['code_version'] = 'not a valid code version'
@@ -131,7 +135,6 @@ class TestJobsControllerNew(TestController):
 
         assert_that(response.status_code, is_(400), "invalid request")
         assert_that(response.normal_body, contains_string('filename'), "invalid request")
-
 
     def test_GIVEN_namelist_set_is_empty_WHEN_post_new_job_THEN_error(self):
         self.valid_job_submission['namelist_files'][0][JSON_MODEL_NAMELISTS] = []

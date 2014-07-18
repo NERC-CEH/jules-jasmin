@@ -10,8 +10,7 @@ import re
 from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
-from joj.utils.constants import JULES_PARAM_POINTS_FILE
-from joj.utils.f90_helper import python_to_f90_str
+from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
 
 
 class ServiceError(Exception):
@@ -204,15 +203,16 @@ class JobService(object):
         parameter_files = [[JULES_PARAM_POINTS_FILE, "points.dat"]]
         for parameter_name, filename in parameter_files:
             points_file_namelist = self._get_namelist(model_run, parameter_name[0])
-            param_value = points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]]
+            if points_file_namelist is not None and parameter_name[1] in points_file_namelist[JSON_MODEL_PARAMETERS]:
+                param_value = points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]]
 
-            # Create the file with the parameter value
-            param_file = open(os.path.join(run_directory, filename), 'w')
-            param_file.write(param_value)
-            param_file.close()
+                # Create the file with the parameter value
+                param_file = open(os.path.join(run_directory, filename), 'w')
+                param_file.write(param_value)
+                param_file.close()
 
-            # Save the filename as the parameter value
-            points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]] = python_to_f90_str(filename)
+                # Save the filename as the parameter value
+                points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]] = "'{}'".format(filename)
 
     def _get_namelist(self, model_run, namelist_name):
         """
@@ -227,3 +227,4 @@ class JobService(object):
             for namelist in namelists:
                 if namelist[JSON_MODEL_NAMELIST_NAME] == namelist_name:
                     return namelist
+        return None
