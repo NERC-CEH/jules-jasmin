@@ -261,6 +261,7 @@ class TestModelRunExtents(TestController):
             url(controller='model_run', action='extents'),
             params={
                 'submit': u'Next',
+                'site': u'multi',
                 'lat_n': 25,
                 'lat_s': 20,
                 'lon_e': 40,
