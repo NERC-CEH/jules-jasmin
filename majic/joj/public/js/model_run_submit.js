@@ -13,24 +13,9 @@ $(document).ready(function() {
             edit_div.height(height);
         });
 
-       /**
-         * Function to use on hover over a row
-         */
-        editHoverOn = function () {
-            $(this).find('.edit').addClass('edit-hover');
-            $(this).find('.page-group').addClass('page-group-hover');
-        }
-
-        /**
-         * Function to use on hover off of a row
-         */
-        editHoverOff = function () {
-            $(this).find('.edit').removeClass('edit-hover');
-            $(this).find('.page-group').removeClass('page-group-hover');
-        }
-
-        /**
-         * Add the hover on, hover off effects to the rows
-         */
-        $('.row').hover(editHoverOn, editHoverOff);
+    // Set the click handler for the rows
+    $('.summary').click(function() {
+        var url = $(this).find('a').attr('href');
+        window.location = (url);
+    });
 });

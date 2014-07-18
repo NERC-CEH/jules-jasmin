@@ -166,7 +166,6 @@ class ModelRunController(BaseController):
         """
         Select a driving data set
         """
-
         model_run = None
         try:
             model_run = \
@@ -243,29 +242,13 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='driving_data'))
         errors = {}
 
-        # Get the driving data extents so we can validate
-        spatial_extent = self._dataset_service.get_spatial_extent(driving_data.id)
-        temporal_extent = self._dataset_service.get_temporal_extent(driving_data.id)
-
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "extents")
-            extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
-
-            # Set the values to display in the form
-            values = {
-                'lat_n': c.lat_n,
-                'lat_s': c.lat_s,
-                'lon_w': c.lon_w,
-                'lon_e': c.lon_e,
-                'start_date': c.run_start.date(),
-                'end_date': c.run_end.date()
-            }
+            values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
 
             # We need to check that saved values for user selected spatial extent are consistent with the chosen
             # driving data (e.g. in case the user has gone back and changed their driving data).
-            extents_controller_helper.validate_spatial_extents(spatial_extent, errors,
-                                                               c.lat_n, c.lat_s, c.lon_e, c.lon_w)
-            extents_controller_helper.validate_temporal_extents(temporal_extent, errors, c.run_start, c.run_end)
+            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
 
             # Finally in our GET we render the page with any errors and values we have
             return htmlfill.render(
@@ -278,14 +261,7 @@ class ModelRunController(BaseController):
         else:
             values = self.form_result
 
-            # Set the start and end times to be the times at which the driving data starts and ends.
-            run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
-            run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
-
-            extents_controller_helper.validate_spatial_extents(spatial_extent, errors,
-                                                               values['lat_n'], values['lat_s'],
-                                                               values['lon_e'], values['lon_w'])
-            extents_controller_helper.validate_temporal_extents(temporal_extent, errors, run_start, run_end)
+            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
 
             if len(errors) > 0:
                 return htmlfill.render(
@@ -294,20 +270,9 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
 
-            # Save to DB
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LATLON_REGION,
-                                                   True, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_USE_SUBGRID,
-                                                   True, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LAT_BOUNDS,
-                                                   spatial_extent.get_lat_bounds(), self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_LON_BOUNDS,
-                                                   spatial_extent.get_lon_bounds(), self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_START,
-                                                   run_start, self.current_user)
-            self._model_run_service.save_parameter(constants.JULES_PARAM_RUN_END,
-                                                   run_end, self.current_user)
-            # get the action to perform
+            extents_controller_helper.save_extents_against_model_run(values, driving_data,
+                                                                     self._model_run_service, self.current_user)
+            # Get the action to perform
             self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
                 action = values['submit']
@@ -406,26 +371,25 @@ class ModelRunController(BaseController):
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "submit")
             c.model_run = model_run
+            driving_data = model_run.driving_dataset
             c.science_config = self._model_run_service.get_science_configuration_by_id(
                 model_run.science_configuration_id)
 
-            extents_controller_helper.add_selected_extents_to_template_context(c, model_run, None)
+            c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
+            #extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
 
             c.driving_data_name = model_run.driving_dataset.name
 
+            output_variables = self._model_run_service.get_output_variables()
+            output_variable_dict = dict((x.name, x.description) for x in output_variables)
             selected_vars = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
             selected_output_periods = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
-
-            hourly = []
-            daily = []
-            monthly = []
-            yearly = []
 
             outputs = {}
 
             # Each group contains one output variable and one output period
             for selected_var in selected_vars:
-                var_name = selected_var.get_value_as_python()
+                var_name = output_variable_dict[selected_var.get_value_as_python()]
                 if var_name not in outputs:
                     outputs[var_name] = []
                 for output_period in selected_output_periods:
@@ -442,23 +406,7 @@ class ModelRunController(BaseController):
             c.outputs = []
             for output in outputs:
                 c.outputs.append(output + ' - ' + ', '.join(map(str, outputs[output])) + '')
-
-            if len(hourly) == 0:
-                c.hourly = 'None'
-            else:
-                c.hourly = ', '.join(map(str, hourly))
-            if len(daily) == 0:
-                c.daily = 'None'
-            else:
-                c.daily = ', '.join(map(str, daily))
-            if len(monthly) == 0:
-                c.monthly = 'None'
-            else:
-                c.monthly = ', '.join(map(str, monthly))
-            if len(yearly) == 0:
-                c.yearly = 'None'
-            else:
-                c.yearly = ', '.join(map(str, yearly))
+            c.outputs.sort()
 
         else:
             self._model_run_controller_helper.check_user_quota(self.current_user)

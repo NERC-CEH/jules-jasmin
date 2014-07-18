@@ -6,9 +6,7 @@ from pylons import url
 from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
-from joj.utils.constants import JULES_PARAM_LON_BOUNDS, JULES_PARAM_LAT_BOUNDS, JULES_PARAM_LATLON_REGION, \
-    JULES_PARAM_USE_SUBGRID, MODEL_RUN_STATUS_CREATED, JULES_PARAM_RUN_START, JULES_PARAM_RUN_END
-
+from joj.utils.constants import *
 
 class TestModelRunExtents(TestController):
 
@@ -74,9 +72,11 @@ class TestModelRunExtents(TestController):
         assert_that(response.normal_body, contains_string(self.driving_data.time_start.strftime("%Y-%m-%d")))
         assert_that(response.normal_body, contains_string(self.driving_data.time_end.strftime("%Y-%m-%d")))
 
-    def test_GIVEN_spatial_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
+    def test_GIVEN_multi_cell_spatial_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [12.3, 35.5], self.user)
         self.model_run_service.save_parameter(JULES_PARAM_LAT_BOUNDS, [50, 70], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, True, self.user)
         response = self.app.get(
             url(controller='model_run', action='extents'))
         assert_that(response.normal_body, contains_string("12.3"))
@@ -84,7 +84,21 @@ class TestModelRunExtents(TestController):
         assert_that(response.normal_body, contains_string("50"))
         assert_that(response.normal_body, contains_string("70"))
 
+    def test_GIVEN_single_cell_spatial_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, False, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_NPOINTS, 1, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_POINTS_FILE, [55, 12.3], self.user)
+        response = self.app.get(
+            url(controller='model_run', action='extents'))
+        assert_that(response.normal_body, contains_string("55"))
+        assert_that(response.normal_body, contains_string("12.3"))
+
     def test_GIVEN_temporal_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
+        self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [12.3, 35.5], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LAT_BOUNDS, [50, 70], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, True, self.user)
         start_time = datetime.datetime(1935, 3, 5, 17, 12, 11)
         end_time = datetime.datetime(1969, 7, 21, 20, 17, 00)
         self.model_run_service.save_parameter(JULES_PARAM_RUN_START, start_time, self.user)
@@ -94,14 +108,29 @@ class TestModelRunExtents(TestController):
         assert_that(response.normal_body, contains_string(start_time.strftime("%Y-%m-%d")))
         assert_that(response.normal_body, contains_string(end_time.strftime("%Y-%m-%d")))
 
-    def test_GIVEN_invalid_spatial_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
+    def test_GIVEN_invalid_multi_cell_spatial_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [40, 500], self.user)
         self.model_run_service.save_parameter(JULES_PARAM_LAT_BOUNDS, [20, 25], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, True, self.user)
+        response = self.app.get(
+            url(controller='model_run', action='extents'))
+        assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
+
+    def test_GIVEN_invalid_single_cell_spatial_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, False, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_NPOINTS, 1, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_POINTS_FILE, [55, 593], self.user)
         response = self.app.get(
             url(controller='model_run', action='extents'))
         assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
 
     def test_GIVEN_invalid_temporal_extents_already_chosen_WHEN_page_get_THEN_errors_shown(self):
+        self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [12.3, 35.5], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LAT_BOUNDS, [50, 70], self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_USE_SUBGRID, True, self.user)
+        self.model_run_service.save_parameter(JULES_PARAM_LATLON_REGION, True, self.user)
         start_time = datetime.datetime(1900, 10, 14, 17, 12, 11)
         end_time = datetime.datetime(1969, 7, 21, 20, 17, 00)
         self.model_run_service.save_parameter(JULES_PARAM_RUN_START, start_time, self.user)
@@ -110,11 +139,12 @@ class TestModelRunExtents(TestController):
             url(controller='model_run', action='extents'))
         assert_that(response.normal_body, contains_string("Start date cannot be earlier than 1901-01-01"))
 
-    def test_GIVEN_invalid_spatial_extents_WHEN_post_THEN_errors_rendered(self):
+    def test_GIVEN_invalid_multi_cell_spatial_extents_WHEN_post_THEN_errors_rendered(self):
         response = self.app.post(
             url(controller='model_run', action='extents'),
             params={
                 'submit': u'Next',
+                'site': u'multi',
                 'lat_n': 25,
                 'lat_s': 20,
                 'lon_e': 40,
@@ -124,11 +154,25 @@ class TestModelRunExtents(TestController):
             })
         assert_that(response.normal_body, contains_string("Longitude must be between -180 and 180"))
 
+    def test_GIVEN_invalid_single_cell_spatial_extents_WHEN_post_THEN_errors_rendered(self):
+        response = self.app.post(
+            url(controller='model_run', action='extents'),
+            params={
+                'submit': u'Next',
+                'site': u'single',
+                'lat': -88,
+                'lon': 40,
+                'start_date': '1940-10-13',
+                'end_date': '1950-10-13'
+            })
+        assert_that(response.normal_body, contains_string("Latitude (-88 deg N) cannot be south of 13.8 deg N"))
+
     def test_GIVEN_invalid_temporal_extents_WHEN_post_THEN_errors_rendered(self):
         response = self.app.post(
             url(controller='model_run', action='extents'),
             params={
                 'submit': u'Next',
+                'site': u'multi',
                 'lat_n': 25,
                 'lat_s': 20,
                 'lon_e': 40,
@@ -138,11 +182,12 @@ class TestModelRunExtents(TestController):
             })
         assert_that(response.normal_body, contains_string("Start date cannot be earlier than 1901-01-01"))
 
-    def test_GIVEN_valid_extents_WHEN_post_THEN_extents_saved(self):
-        response = self.app.post(
+    def test_GIVEN_valid_multi_cell_extents_WHEN_post_THEN_extents_saved(self):
+        self.app.post(
             url(controller='model_run', action='extents'),
             params={
                 'submit': u'Next',
+                'site': u'multi',
                 'lat_n': 25,
                 'lat_s': 20,
                 'lon_e': 40,
@@ -164,11 +209,40 @@ class TestModelRunExtents(TestController):
         assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
         assert_that(str(end_run), is_("'1950-10-13 00:00:00'"))
 
+    def test_GIVEN_valid_single_cell_extents_WHEN_post_THEN_extents_saved(self):
+        self.app.post(
+            url(controller='model_run', action='extents'),
+            params={
+                'submit': u'Next',
+                'site': u'single',
+                'lat': 25,
+                'lon': 40,
+                'start_date': '1940-10-13',
+                'end_date': '1950-10-13',
+                'average_over_cell': 1
+            })
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        pointfile = model_run.get_parameter_values(JULES_PARAM_POINTS_FILE)[0].value
+        n_points = model_run.get_parameter_values(JULES_PARAM_NPOINTS)[0].value
+        use_subgrid = model_run.get_parameter_values(JULES_PARAM_USE_SUBGRID)[0].value
+        latlon_region = model_run.get_parameter_values(JULES_PARAM_LATLON_REGION)[0].value
+        l_point_data = model_run.get_parameter_values(JULES_PARAM_SWITCHES_L_POINT_DATA)[0].value
+        start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
+        end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
+        assert_that(pointfile, is_("25, 40"))
+        assert_that(n_points, is_("1"))
+        assert_that(use_subgrid, is_(".true."))
+        assert_that(latlon_region, is_(".false."))
+        assert_that(l_point_data, is_(".false."))
+        assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
+        assert_that(str(end_run), is_("'1950-10-13 00:00:00'"))
+
     def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_output(self):
         response = self.app.post(
             url(controller='model_run', action='extents'),
             params={
                 'submit': u'Next',
+                'site': u'multi',
                 'lat_n': 25,
                 'lat_s': 20,
                 'lon_e': 40,

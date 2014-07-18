@@ -6,7 +6,7 @@ import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, asc
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
@@ -143,8 +143,7 @@ class ModelRunService(DatabaseService):
         # Add CHESS defaults:
         chess_defaults = ['surf_roff', 'sub_surf_roff', 'fqw_gb', 'rad_net', 'ftl_gb', 'gpp_gb', 'resp_p_gb',
                           'tstar_gb', 'snow_mass_gb', 't_soil', 'smc_tot', 'smcl', 'swet_liq_tot']
-        chess_periods = [(JULES_YEARLY_PERIOD, "_yearly"), (JULES_MONTHLY_PERIOD, "_monthly"),
-                         (JULES_DAILY_PERIOD, "_daily")]
+        chess_periods = [(JULES_MONTHLY_PERIOD, "_monthly")]
 
         group_id = 0
         for output_variable in chess_defaults:
@@ -321,6 +320,26 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             parameter = self._get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
+
+    def save_new_parameters(self, params_values, params_to_delete, user):
+        """
+        Save a list of parameters against the model currently being created and delete old parameters
+        in the same transaction.
+        :param params_values: List of parameter namelist / name pair and value
+        in the form [[[parameter namelist, name], value]]
+        :param params_to_delete: List of parameter namelist / name pairs to delete
+        :param user: The currently logged in user
+        """
+        with self.transaction_scope() as session:
+            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            param_values_to_delete = []
+            # Delete any parameters we've been asked to delete
+            for parameter in params_to_delete:
+                param_values_to_delete += model_run.get_parameter_values(parameter)
+            self._remove_parameter_set_from_model(param_values_to_delete, model_run, session)
+            # And save new parameters
+            for parameter in params_values:
+                self._save_parameter(model_run, parameter[0], parameter[1], session)
 
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """

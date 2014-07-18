@@ -13,7 +13,7 @@
 <h1>Submit Model Run</h1>
 <p>Your model run is ready to submit. Below is a summary of your choices for this model run - review them and then submit your run.</p>
 <div class="edit-rows">
-    <div class="row">
+    <div class="row summary">
         <div id="edit-create-page" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='create')}" class="edit">
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row summary">
         <div id="edit-driving-page" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='driving_data')}" class="edit">
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row summary">
         <div id="edit-extents" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='extents')}" class="edit">
@@ -55,12 +55,25 @@
         </div>
         <div class="span11">
             <div id="extents" class="page-group">
-                <p><b>Spatial Extents - </b>${c.lat_s}&deg;N to ${c.lat_n}&deg;N; ${c.lon_w}&deg;E to ${c.lon_e}&deg;E</p>
-                <p><b>Temporal Extents - </b>${c.run_start.date()} to ${c.run_end.date()}</p>
+                <py:choose>
+                    <py:when test="c.extents_values['site'] == 'single'">
+                        <p><b>Site Location - </b>${c.extents_values['lat']}&deg;N, ${c.extents_values['lon']}&deg;E
+                        <py:if test="'average_over_cell' in c.extents_values">
+                            <br/><small>Using Cell average</small>
+                        </py:if>
+                        </p>
+                    </py:when>
+                    <py:otherwise>
+                        <p><b>Spatial Extents - </b>${c.extents_values['lat_s']}&deg;N to ${c.extents_values['lat_n']}&deg;N;
+                            ${c.extents_values['lon_w']}&deg;E to ${c.extents_values['lon_e']}&deg;E</p>
+                    </py:otherwise>
+                </py:choose>
+                <p><b>Temporal Extents - </b>${c.extents_values['start_date']} to ${c.extents_values['end_date']}</p>
             </div>
         </div>
     </div>
-    <div class="row">
+
+    <div class="row summary">
         <div id="edit-output" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='output')}" class="edit">

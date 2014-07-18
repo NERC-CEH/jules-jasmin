@@ -189,6 +189,7 @@ class TestModelRunSummaryController(TestController):
         self.app.post(url(controller='model_run', action='extents'),
                       params={
                           'submit': u'Next',
+                          'site': u'multi',
                           'lat_n': self.lat_n,
                           'lat_s': self.lat_s,
                           'lon_e': self.lon_e,
@@ -239,10 +240,9 @@ class TestModelRunSummaryController(TestController):
         self.app.post(url(controller='model_run', action='extents'),
                       params={
                           'submit': u'Next',
-                          'lat_n': self.lat_n,
-                          'lat_s': self.lat_s,
-                          'lon_e': self.lon_e,
-                          'lon_w': self.lon_w,
+                          'site': u'single',
+                          'lat': self.lat_n,
+                          'lon': self.lon_e,
                           'start_date': self.date_start.strftime("%Y-%m-%d"),
                           'end_date': self.date_end.strftime("%Y-%m-%d")
                       })
