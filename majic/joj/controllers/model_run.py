@@ -376,7 +376,6 @@ class ModelRunController(BaseController):
                 model_run.science_configuration_id)
 
             c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
-            #extents_controller_helper.add_selected_extents_to_template_context(c, model_run, driving_data)
 
             c.driving_data_name = model_run.driving_dataset.name
 

@@ -34,7 +34,7 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [parameter]
 
-        result = job_runner_client.convert_model_to_dictionary(model_run)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
 
         assert_that(result[constants.JSON_MODEL_RUN_ID], is_(model_run.id), "value is correct")
         assert_that(result[constants.JSON_MODEL_CODE_VERSION], is_(model_run.code_version.name), "value is correct")
@@ -80,7 +80,7 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [param_profile_name, param_var, param_nprofiles]
 
-        result = job_runner_client.convert_model_to_dictionary(model_run)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
 
         # Check the result dictionary has the correct run ID and code version
         assert_that(result[constants.JSON_MODEL_RUN_ID], is_(model_run.id), "value is correct")
@@ -140,7 +140,7 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [parameter]
 
-        result = job_runner_client.convert_model_to_dictionary(model_run)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
 
         namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
         assert_that(namelist_file_result[constants.JSON_MODEL_NAMELIST_FILE_FILENAME],

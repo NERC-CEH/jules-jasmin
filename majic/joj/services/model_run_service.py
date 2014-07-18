@@ -271,9 +271,16 @@ class ModelRunService(DatabaseService):
         :param user: the logged in user
         :return:new status of the job
         """
+        with self.readonly_scope() as session:
+            model = self._get_model_run_being_created(session, user)
+
+            paraneters =self._get_parameters_for_creating_model(session, user)
+
+            status_name, message = self._job_runner_client.submit(model, paraneters)
+
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
-            status_name, message = self._job_runner_client.submit(model)
+
             if status_name == constants.MODEL_RUN_STATUS_SUBMITTED:
                 status = model.change_status(session, status_name)
             else:
