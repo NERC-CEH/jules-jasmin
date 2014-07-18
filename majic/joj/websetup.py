@@ -13,6 +13,7 @@ from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, Mode
     DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation
 from joj.model.meta import Base, Session
 from joj.utils import constants
+from model.system_alert_email import SystemAlertEmail
 from websetup_jules_output_variables import JulesOutputVariableParser
 from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
@@ -72,7 +73,7 @@ def setup_app(command, conf, vars):
         core_user.last_name = 'System'
         core_user.username = constants.CORE_USERNAME
         core_user.email = ''
-        core_user.storage_quota_in_gb = 1000000  #This is the total storage for the group workspace
+        core_user.storage_quota_in_gb = conf['storage_quota_total_GB']  # Total storage for the group workspace
 
         session.add(core_user)
 
@@ -105,6 +106,10 @@ def setup_app(command, conf, vars):
 
         map(session.add, [stat_created, stat_submitted, stat_pending, stat_running, stat_completed, stat_published,
                           stat_failed, stat_submit_failed, stat_unknown])
+
+        session.add(SystemAlertEmail(
+            code=SystemAlertEmail.GROUP_SPACE_FULL_ALERT,
+            sent_frequency_in_s=conf['alert_email_frequency_in_s']))
 
         default_code_version = CodeVersion()
         default_code_version.name = conf.local_conf['default_code_version']

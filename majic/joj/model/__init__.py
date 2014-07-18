@@ -21,6 +21,7 @@ from joj.model.ecomaps_models import *
 from joj.model.driving_dataset_location import DrivingDatasetLocation
 from joj.model.driving_dataset import DrivingDataset
 from joj.model.driving_dataset_parameter_value import DrivingDatasetParameterValue
+from joj.model.system_alert_email import SystemAlertEmail
 
 
 def initialise_session(config, manual_connection_string=None):

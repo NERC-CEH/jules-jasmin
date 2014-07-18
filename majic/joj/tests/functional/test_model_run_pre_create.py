@@ -28,7 +28,7 @@ class TestModelRunControllerPreCreate(TestController):
     def test_GIVEN_user_over_quota_WHEN_navigate_to_precreate_THEN_index_shown(self):
 
         user = self.login()
-        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+        self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
         response = self.app.get(
             url(controller='model_run', action='pre_create'))
@@ -39,7 +39,7 @@ class TestModelRunControllerPreCreate(TestController):
     def test_GIVEN_model_created_and_user_not_seen_page_WHEN_navigate_to_create_or_redirect_THEN_create_run_page_shown(self):
 
         user = self.login()
-        self.create_run_model(storage=0, name="big_run", user=user, status=constants.MODEL_RUN_STATUS_CREATED)
+        self.create_run_model(storage_in_mb=0, name="big_run", user=user, status=constants.MODEL_RUN_STATUS_CREATED)
 
         response = self.app.get(
             url(controller='model_run', action='pre_create'))
@@ -52,7 +52,7 @@ class TestModelRunControllerPreCreate(TestController):
         user = self.login()
         user_service = UserService()
         user_service.set_current_model_run_creation_action(user, "driving_data")
-        self.create_run_model(storage=0, name="big_run", user=user, status=constants.MODEL_RUN_STATUS_CREATED)
+        self.create_run_model(storage_in_mb=0, name="big_run", user=user, status=constants.MODEL_RUN_STATUS_CREATED)
 
         response = self.app.get(
             url(controller='model_run', action='pre_create'))

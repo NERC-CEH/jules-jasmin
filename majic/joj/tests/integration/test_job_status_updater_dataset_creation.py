@@ -26,17 +26,12 @@ class TestJobDataUpdaterCreation(TestModelRunSummaryController):
         self.running_job_client = JobRunnerClient(None)
         self.email_service = EmailService()
         self.email_service.send_email = Mock()
-        self.dap_client = Mock()
-        self.dap_client.get_longname = Mock(return_value="long_name")
-        self.dap_client.get_data_range = Mock(return_value=[10, 12])
-        dap_client_factory = DapClientFactory()
-        dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
-        
+
         self.job_status_updater = JobStatusUpdaterService(
             job_runner_client=self.running_job_client,
             config=config,
             email_service=self.email_service,
-            dap_client_factory=dap_client_factory)
+            dap_client_factory=self.create_mock_dap_factory_client())
 
     def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_THEN_model_run_data_is_in_datasets(self):
 

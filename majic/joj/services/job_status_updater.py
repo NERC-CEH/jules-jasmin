@@ -3,13 +3,16 @@
 """
 
 import logging
+from datetime import datetime
 from sqlalchemy.orm import subqueryload
 from joj.services.model_run_service import ModelRunService
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
-from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, DrivingDatasetLocation
+from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, DrivingDatasetLocation, \
+    SystemAlertEmail, User
 from joj.utils import constants
 from joj.utils.utils import KeyNotFound, find_by_id_in_dict
+from joj.utils import email_messages, utils
 from joj.services.dap_client_factory import DapClientFactory
 from dateutil.parser import parse
 
@@ -20,56 +23,6 @@ class JobStatusUpdaterService(DatabaseService):
     """
     Service to update the job status in the database based on the status returned by the job runner
     """
-
-    COMPLETED_SUBJECT_TEMPLATE = "Majic: {name} has completed"
-    COMPLETED_MESSAGE_TEMPLATE = \
-        """
-Hi {users_name},
-
-Majic has successfully finished your model run.
-
-   Name: {name}
-   Description: {description}
-   Link: {url}
-
-Regards,
-
-Majic
-"""
-
-    FAILED_SUBJECT_TEMPLATE = "Majic: {name} has encountered an error"
-    FAILED_MESSAGE_TEMPLATE = \
-        """
-Hi {users_name},
-
-Majic has encountered an error when running your model run.
-
-   Name: {name}
-   Description: {description}
-   Link: {url}
-   Error: {error_message}
-
-Regards,
-
-Majic
-"""
-
-    UNKNOWN_SUBJECT_TEMPLATE = "Majic: {name} has encountered an unexpected problem"
-    UNKNOWN_MESSAGE_TEMPLATE = \
-        """
-Hi {users_name},
-
-Majic has encountered an unexpected problem when running your model run.
-
-   Name: {name}
-   Description: {description}
-   Link: {url}
-   Unknown problem: {error_message}
-
-Regards,
-
-Majic
-"""
 
     def __init__(
             self,
@@ -112,6 +65,8 @@ Majic
         for model_id in model_ids:
             run_model = self._update_model_run_status(job_statuses, model_id)
             self._send_email(run_model)
+
+        self._check_total_allocation_and_alert()
 
     def _get_ids_for_submitted_model_runs(self):
         """
@@ -174,32 +129,32 @@ Majic
 
         if model_run.status.name == constants.MODEL_RUN_STATUS_COMPLETED:
 
-            msg = self.COMPLETED_MESSAGE_TEMPLATE.format(
+            msg = email_messages.COMPLETED_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
                 url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name)
-            subject = self.COMPLETED_SUBJECT_TEMPLATE.format(name=model_run.name)
+            subject = email_messages.COMPLETED_SUBJECT_TEMPLATE.format(name=model_run.name)
 
         elif model_run.status.name == constants.MODEL_RUN_STATUS_FAILED:
 
-            msg = self.FAILED_MESSAGE_TEMPLATE.format(
+            msg = email_messages.FAILED_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
                 url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name,
                 error_message=model_run.error_message)
-            subject = self.FAILED_SUBJECT_TEMPLATE.format(name=model_run.name)
+            subject = email_messages.FAILED_SUBJECT_TEMPLATE.format(name=model_run.name)
 
         elif model_run.status.name == constants.MODEL_RUN_STATUS_UNKNOWN:
 
-            msg = self.UNKNOWN_MESSAGE_TEMPLATE.format(
+            msg = email_messages.UNKNOWN_MESSAGE_TEMPLATE.format(
                 name=model_run.name,
                 description=model_run.description,
                 url=self._config['model_run_summary_url_template'].format(model_run_id=model_run.id),
                 users_name=model_run.user.name,
                 error_message=model_run.error_message)
-            subject = self.UNKNOWN_SUBJECT_TEMPLATE.format(name=model_run.name)
+            subject = email_messages.UNKNOWN_SUBJECT_TEMPLATE.format(name=model_run.name)
         else:
             return
 
@@ -279,3 +234,57 @@ Majic
         dataset.name = dap_client.get_longname()
         dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
         session.add(dataset)
+
+    def _check_total_allocation_and_alert(self):
+        """
+        Check the total storage use and send an alert email if it is too high
+        :return: nothing
+        """
+
+        with self.readonly_scope() as session:
+            if not SystemAlertEmail.check_email_needs_sending(SystemAlertEmail.GROUP_SPACE_FULL_ALERT, session):
+                return
+
+        storage_quota_in_gb, storage_total_used_in_gb, total_storage_percent_used = self._find_storage_use()
+
+        if total_storage_percent_used >= constants.QUOTA_WARNING_LIMIT_PERCENT:
+            self._send_alert_email(storage_quota_in_gb, storage_total_used_in_gb)
+
+    def _send_alert_email(self, storage_quota_in_gb, storage_total_used_in_gb):
+        """
+        Send the alert email and records this in the database
+        :param storage_quota_in_gb: the total storage quota
+        :param storage_total_used_in_gb: the total space used
+        :return: nothing
+        """
+        msg = email_messages.GROUP_SPACE_FULL_ALERT_MESSAGE.format(current_quota=storage_quota_in_gb,
+                                                                   used_space=storage_total_used_in_gb)
+        self._email_service.send_email(
+            self._config['email.from_address'],
+            self._config['email.admin_address'],
+            email_messages.GROUP_SPACE_FULL_ALERT_SUBJECT,
+            msg)
+        with self.transaction_scope() as session:
+            email = session.query(SystemAlertEmail) \
+                .filter(SystemAlertEmail.code == SystemAlertEmail.GROUP_SPACE_FULL_ALERT) \
+                .one()
+
+            email.last_sent = datetime.now()
+
+    def _find_storage_use(self):
+        """
+        Find the total storage use
+        :return: tuple of quota, total used, percent used
+        """
+
+        with self.readonly_scope() as session:
+            core_user = session.query(User).filter(User.username == constants.CORE_USERNAME).one()
+
+        storage_total_used_in_gb = 0
+        for user_id, status, storage_mb in self._model_run_service.get_storage_used():
+            storage_total_used_in_gb += int(storage_mb)
+        storage_total_used_in_gb = utils.convert_mb_to_gb_and_round(storage_total_used_in_gb)
+
+        total_storage_percent_used = storage_total_used_in_gb / core_user.storage_quota_in_gb * 100.0
+
+        return core_user.storage_quota_in_gb, storage_total_used_in_gb, total_storage_percent_used

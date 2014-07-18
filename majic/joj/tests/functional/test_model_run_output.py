@@ -113,7 +113,7 @@ class TestModelRunOutput(TestController):
                     is_(url(controller='model_run', action='submit')), "url")
 
     def test_GIVEN_selected_outputs_and_user_over_quota_WHEN_post_THEN_redirected_to_catalogue(self):
-        self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
         response = self.app.post(
             url(controller='model_run', action='output'),
             params=self.valid_params)

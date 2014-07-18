@@ -10,6 +10,7 @@ setup-app`) and provides the base testing objects.
 from unittest import TestCase
 import datetime
 from hamcrest import assert_that, is_
+from mock import Mock
 import os
 import sys
 
@@ -25,11 +26,12 @@ from webtest import TestApp
 
 from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation
+    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail
 from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
 from joj.model import session_scope, Session, ModelRun
+from joj.services.dap_client_factory import DapClientFactory
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -110,6 +112,11 @@ class TestController(TestCase):
                 .delete()
 
             session.query(AccountRequest).delete()
+
+            emails = session\
+                .query(SystemAlertEmail).all()
+            for email in emails:
+                email.last_sent = None
             
     def assert_model_definition(self, expected_username, expected_science_configuration, expected_name, expected_description):
         """
@@ -244,10 +251,10 @@ class TestController(TestCase):
             assert_that(result.status.name, is_(status))
             return result
 
-    def create_run_model(self, storage, name, user, status=constants.MODEL_RUN_STATUS_COMPLETED):
+    def create_run_model(self, storage_in_mb, name, user, status=constants.MODEL_RUN_STATUS_COMPLETED):
         """
         Create a model run
-        :param storage: storage for the model
+        :param storage_in_mb: storage_in_mb for the model
         :param name: name of the model run
         :param user: user who has created the model run
         :param status: the status, default to complete
@@ -263,7 +270,7 @@ class TestController(TestCase):
             model_run.code_version = science_configuration.code_version
             model_run.description = "testing"
             model_run_service._copy_parameter_set_into_model(science_configuration.parameter_values, model_run, session)
-            model_run.storage_in_mb = storage
+            model_run.storage_in_mb = storage_in_mb
             model_run.change_status(session, status)
 
         return model_run
@@ -278,3 +285,15 @@ class TestController(TestCase):
         with session_scope(Session) as session:
             modified_user = session.query(User).filter(User.id == user.id).one()
             assert_that(modified_user.model_run_creation_action, is_(expected_action), "model run creation action")
+
+    def create_mock_dap_factory_client(self):
+        """
+        Create a mock for the dap client
+        :return:
+        """
+        self.dap_client = Mock()
+        self.dap_client.get_longname = Mock(return_value="long_name")
+        self.dap_client.get_data_range = Mock(return_value=[10, 12])
+        dap_client_factory = DapClientFactory()
+        dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
+        return dap_client_factory

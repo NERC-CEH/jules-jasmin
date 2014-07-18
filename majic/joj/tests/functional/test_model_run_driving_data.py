@@ -81,7 +81,7 @@ class TestModelRunDrivingData(TestController):
         On a post of data the quota should not be checked, he data should just be saved as normal
         """
         user = self.login()
-        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+        self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
         self._add_model_run_being_created()
         self.create_two_driving_datasets()

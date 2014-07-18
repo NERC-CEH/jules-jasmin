@@ -42,7 +42,7 @@ class TestModelRunSummaryController(TestController):
                     is_(url(controller='model_run', action='output')), "url")
 
     def test_GIVEN_select_previous_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page(self):
-        self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
         self.model_run_service.update_model_run(self.user, "test", 1)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
@@ -84,7 +84,7 @@ class TestModelRunSummaryController(TestController):
         assert_that(row.name, is_(constants.MODEL_RUN_STATUS_SUBMIT_FAILED), "model run status")
 
     def test_GIVEN_select_submit_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page_job_not_submitted(self):
-        big_model_run = self.create_run_model(storage=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
+        big_model_run = self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
         self.model_run_service.update_model_run(self.user, "test", 1)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
 

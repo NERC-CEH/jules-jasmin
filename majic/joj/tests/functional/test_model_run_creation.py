@@ -32,7 +32,7 @@ class TestModelRunController(TestController):
     def test_GIVEN_model_run_has_no_name_WHEN_post_THEN_error_thrown(self):
 
         user = self.login()
-        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+        self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
         response = self.app.post(
             url=url(controller='model_run', action='create'),
@@ -138,7 +138,7 @@ class TestModelRunController(TestController):
     def test_GIVEN_user_quota_exceeded_WHEN_post_THEN_save_redirect_to_error_page_shown(self):
 
         user = self.login()
-        self.create_run_model(storage=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
+        self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
         expected_name = u'name'
         expected_science_configuration = 1
