@@ -46,4 +46,7 @@ def convert_mb_to_gb_and_round(value_in_mb):
     :param value_in_mb: value in MB
     :return: value in GB to 1dp
     """
-    return round(int(value_in_mb) / 1024.0, 1)
+    if value_in_mb is not None:
+        return round(int(value_in_mb) / 1024.0, 1)
+    else:
+        return 0

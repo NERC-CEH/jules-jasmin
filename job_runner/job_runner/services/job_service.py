@@ -2,7 +2,7 @@
 # Header
 """
 import glob
-
+import logging
 import os
 from pylons import config
 import subprocess
@@ -11,6 +11,8 @@ from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
 from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
+
+log = logging.getLogger(__name__)
 
 
 class ServiceError(Exception):
@@ -62,8 +64,15 @@ class JobService(object):
         :return: the id or None if the file can not be read
         """
         file_path = os.path.join(model_run_dir, FILENAME_BSUB_ID)
+        if not os.path.exists(file_path):
+            return None
         f = open(file_path, 'r')
-        return int(f.read())
+        id = f.read()
+        if id.isdigit():
+            log.error("bsub id file for model run is empty. At {}".format(file_path))
+            return int(id)
+        else:
+            return None
 
     def write_bsub_id(self, model_run_dir, bsub_id):
         """

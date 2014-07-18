@@ -105,9 +105,11 @@ class JobStatusUpdaterService(DatabaseService):
 
                 model_run.date_started = None
                 model_run.time_elapsed_secs = 0
-                if constants.JSON_STATUS_START_TIME in job_status:
+                if constants.JSON_STATUS_START_TIME in job_status \
+                        and job_status[constants.JSON_STATUS_START_TIME] is not None:
                     model_run.date_started = parse(job_status[constants.JSON_STATUS_START_TIME])
-                    if constants.JSON_STATUS_END_TIME in job_status:
+                    if constants.JSON_STATUS_END_TIME in job_status\
+                            and job_status[constants.JSON_STATUS_END_TIME] is not None:
                         end = parse(job_status[constants.JSON_STATUS_END_TIME])
                         model_run.time_elapsed_secs = int((end - model_run.date_started).total_seconds())
 
@@ -282,7 +284,8 @@ class JobStatusUpdaterService(DatabaseService):
 
         storage_total_used_in_gb = 0
         for user_id, status, storage_mb in self._model_run_service.get_storage_used():
-            storage_total_used_in_gb += int(storage_mb)
+            if storage_mb is not None:
+                storage_total_used_in_gb += int(storage_mb)
         storage_total_used_in_gb = utils.convert_mb_to_gb_and_round(storage_total_used_in_gb)
 
         total_storage_percent_used = storage_total_used_in_gb / core_user.storage_quota_in_gb * 100.0

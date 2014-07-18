@@ -57,7 +57,7 @@ class ModelRun(Base):
             self.last_status_change = datetime.datetime.now()
             self.status = status
         self.error_message = error_message
-        if new_status == constants.MODEL_RUN_STATUS_PENDING:
+        if new_status == constants.MODEL_RUN_STATUS_SUBMITTED:
             self.date_submitted = datetime.datetime.now()
         elif new_status == constants.MODEL_RUN_STATUS_CREATED:
             self.date_created = datetime.datetime.now()
