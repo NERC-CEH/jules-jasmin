@@ -3,12 +3,10 @@ header
 """
 
 import logging
-import datetime
 from formencode import htmlfill
 
 from pylons import url
-
-from pylons.decorators import validate
+from pylons.decorators import validate, jsonify
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -29,8 +27,10 @@ from joj.utils import extents_controller_helper
 from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY_PERIOD, JULES_YEARLY_PERIOD
 from joj.utils import utils
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
+from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 
 # The prefix given to parameter name in html elements
+
 PARAMETER_NAME_PREFIX = 'param'
 
 # Message to show when the submission has failed
@@ -421,3 +421,20 @@ class ModelRunController(BaseController):
                 redirect(url(controller='model_run', action='output'))
 
         return render('model_run/submit.html')
+
+    @jsonify
+    def bng_to_latlon(self):
+        """
+        Allows AJAX call to convert BNG coordinates to lat / lon coordinates
+        :return: JSON lat/lon dictionary
+        """
+        bng_easting = request.params['bng_easting']
+        bng_northing = request.params['bng_northing']
+        json_response = {}
+        try:
+            lat, lon = OSGB36toWGS84(float(bng_easting), float(bng_northing))
+            json_response['lat'] = lat
+            json_response['lon'] = lon
+        except Exception:
+            json_response['is_error'] = True
+        return json_response
