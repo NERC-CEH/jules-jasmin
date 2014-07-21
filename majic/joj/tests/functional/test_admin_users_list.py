@@ -69,3 +69,14 @@ class TestAdminUsersList(TestController):
             assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(failed_storage1 + failed_storage2))))
             assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(pub_storage1 + pub_storage2))))
             assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round((pub_storage1 + pub_storage2 + failed_storage1 + failed_storage2)))))
+
+    def test_GIVEN_null_storage_WHEN_list_THEN_returns_current_storages_corectly_added_up(self):
+            user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+            self.create_run_model(None, "test1", user, constants.MODEL_RUN_STATUS_PUBLISHED)
+
+            response = self.app.get(
+                url=url(controller='user', action=''),
+                expect_errors=True
+            )
+            assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(0))))

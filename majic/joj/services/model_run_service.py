@@ -6,7 +6,7 @@ import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
-from sqlalchemy import and_, desc, asc
+from sqlalchemy import and_, desc
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
 from joj.services.general import DatabaseService
@@ -15,7 +15,7 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
-from joj.utils.output_controller_helper import JULES_YEARLY_PERIOD, JULES_DAILY_PERIOD, JULES_MONTHLY_PERIOD
+from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD
 from sqlalchemy.sql.expression import false
 
 log = logging.getLogger(__name__)
@@ -274,9 +274,9 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             model = self._get_model_run_being_created(session, user)
 
-            paraneters =self._get_parameters_for_creating_model(session, user)
+            parameters = self._get_parameters_for_creating_model(session, user)
 
-            status_name, message = self._job_runner_client.submit(model, paraneters)
+            status_name, message = self._job_runner_client.submit(model, parameters)
 
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
@@ -586,11 +586,11 @@ class ModelRunService(DatabaseService):
         """
         Get the storage used by model runs for a user or all users
         :param user: the user
-        :return: a tuple of user id, model run status name, sum of storage in mb
+        :return: a tuple of user id, model run status name, sum of storage in mb (if null returns 0)
         """
         with self.readonly_scope() as session:
             query = session\
-                .query(ModelRun.user_id, ModelRunStatus.name, func.sum(ModelRun.storage_in_mb))\
+                .query(ModelRun.user_id, ModelRunStatus.name, func.coalesce(func.sum(ModelRun.storage_in_mb), 0))\
                 .join(ModelRunStatus)\
                 .group_by(ModelRun.user_id, ModelRunStatus.name)
             if user is not None:
