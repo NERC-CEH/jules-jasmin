@@ -88,7 +88,7 @@ class DapClient(object):
         :return: milliseconds since the Unix epoch
         """
         epoch = datetime.datetime.utcfromtimestamp(0)
-        time_units = self._dataset[NETCDF_TIME].units
+        time_units = self._dataset[self._get_key(NETCDF_TIME)].units
         # The time axis does not start from the Unix epoch but from some other datetime specified
         # in the units which we find with a regex.
         start_date = re.findall(r'(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)', time_units)[0]
