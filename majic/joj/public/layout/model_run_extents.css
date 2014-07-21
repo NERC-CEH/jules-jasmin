@@ -19,10 +19,6 @@
     color:green
 }
 
-.site-option {
-    //padding-top:5px
-}
-
 .select-div {
     width:50px;
     float:left;
@@ -36,4 +32,19 @@
 
 .controls-row, .fieldset {
     width:900px;
+}
+
+.accordion {
+    margin-bottom:0;
+    display:inline-block;
+}
+
+.accordion-group {
+    background-color: #F7F7F7
+}
+
+#bng-error {
+    margin-top:10px;
+    margin-bottom:0px;
+    display:none;
 }

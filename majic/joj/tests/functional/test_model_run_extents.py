@@ -1,15 +1,17 @@
+"""
 #header
+"""
 from urlparse import urlparse
 import datetime
-from hamcrest import assert_that, is_, contains_string
+from hamcrest import assert_that, is_, contains_string, close_to
 from pylons import url
 from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import *
 
-class TestModelRunExtents(TestController):
 
+class TestModelRunExtents(TestController):
     def setUp(self):
         super(TestModelRunExtents, self).setUp()
         self.clean_database()
@@ -272,3 +274,30 @@ class TestModelRunExtents(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='index')), "url")
+
+    def test_GIVEN_bng_WHEN_bng_to_latlon_service_called_THEN_correct_latlon_returned(self):
+        # BNG test values are from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+        bng_easting = 429157
+        bng_northing = 623009
+        lat = 55.5
+        lon = -1.54
+        delta = 0.00001
+        response = self.app.post(
+            url(controller='model_run', action='bng_to_latlon'),
+            params={
+                'bng_easting': bng_easting,
+                'bng_northing': bng_northing
+            })
+        json = response.json_body
+        assert_that(json['lat'], is_(close_to(lat, delta)))
+        assert_that(json['lon'], is_(close_to(lon, delta)))
+
+    def test_GIVEN_invalid_bng_WHEN_bng_to_latlon_service_called_THEN_error_returned(self):
+        response = self.app.post(
+            url(controller='model_run', action='bng_to_latlon'),
+            params={
+                'bng_easting': u'asd',
+                'bng_northing': u'1.1,23413'
+            })
+        json = response.json_body
+        assert_that(json['is_error'], is_(True))

@@ -47,6 +47,7 @@
 
     </div>
 </div>
+
 <div id="single-cell">
     <div class="control-group">
         <label for="lat" class="control-label">
@@ -58,6 +59,33 @@
         </label>
         <div class="controls">
             <fieldset class="fieldset">
+                <div class="controls-row">
+                    <div class="span11">
+                        <div class="accordion" id="accordion">
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"
+                                       href="#collapseOne">
+                                        I want to enter this in British National Grid coordinates
+                                    </a>
+                                </div>
+                                <div id="collapseOne" class="accordion-body collapse">
+                                    <div class="accordion-inner">
+                                        <p>Enter site location as all-numeric eastings / northings
+                                            <br/><small>e.g. 451246 / 206416 (Oxford)</small></p>
+                                        ${h.html_tags.text('bng_e', style='width:60px', placeholder='Eastings')}
+                                        &nbsp;/&nbsp;
+                                        ${h.html_tags.text('bng_n', style='width:60px', placeholder='Northings')}
+                                        <a class="btn btn-info pull-right" href="#!" id="convert-bng">Convert</a>
+                                        <div id="bng-error" class="alert alert-danger">
+                                            Couldn't convert these coordinates
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="controls-row">
                     <div class="span2">
                         <h5>Boundary</h5>
@@ -93,8 +121,10 @@
                     </div>
                 </div>
                 <br/>
-                <div class="alert alert-info" style="display:inline-block"><strong>Note: </strong>Majic will automatically adjust
-                    this site location to align with the JULES model grid.
+                <div class="span11">
+                    <div class="alert alert-info" style="display:inline-block"><strong>Note: </strong>Majic will automatically adjust
+                        this site location to align with the JULES model grid.
+                    </div>
                 </div>
             </fieldset>
         </div>
