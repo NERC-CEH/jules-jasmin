@@ -37,10 +37,11 @@ class LogFileParser(object):
         errors = []
         for line in self._lines:
             found_a_line = True
+            error_line = line.split(constants.JULES_FATAL_ERROR_PREFIX)
             if constants.JULES_RUN_COMPLETED_MESSAGE in line:
                 self.status = constants.MODEL_RUN_STATUS_COMPLETED
-            elif line.startswith(constants.JULES_FATAL_ERROR_PREFIX):
-                errors.append(line[len(constants.JULES_FATAL_ERROR_PREFIX):].strip())
+            elif len(error_line) > 1:
+                errors.append(error_line[1].strip())
             elif line.startswith(constants.JULES_START_TIME_PREFIX):
                 time = line[len(constants.JULES_START_TIME_PREFIX):].strip()
                 try:
@@ -70,4 +71,4 @@ class LogFileParser(object):
             if len(errors) == 0:
                 self.error_message = constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR
             else:
-                self.error_message = "Jules error:" + " \n".join(errors)
+                self.error_message = "Jules error:" + ", ".join(errors)

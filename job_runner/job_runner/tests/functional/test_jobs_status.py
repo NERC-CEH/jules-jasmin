@@ -39,7 +39,7 @@ class TestJobsControllerStatus(TestController):
         assert_that(response.status_code, is_(400), "invalid request")
 
     def test_GIVEN_run_folder_not_created_WHEN_get_job_status_THEN_job_status_failed(self):
-        model_run_id = 12
+        model_run_id = 1000
         response = self.app.post_json(
             url(controller='jobs', action='status'),
             params=[model_run_id]

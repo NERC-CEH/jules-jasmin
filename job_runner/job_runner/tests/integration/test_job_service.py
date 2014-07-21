@@ -74,4 +74,3 @@ class TestJobService(TestController):
             self.model_run['code_version'] = 'invalid_script'
 
             local_job_service.submit(self.model_run)
-

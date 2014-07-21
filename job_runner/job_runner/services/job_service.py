@@ -2,7 +2,7 @@
 # Header
 """
 import glob
-
+import logging
 import os
 from pylons import config
 import subprocess
@@ -10,8 +10,9 @@ import re
 from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
-from joj.utils.constants import JULES_PARAM_POINTS_FILE
-from joj.utils.f90_helper import python_to_f90_str
+from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
+
+log = logging.getLogger(__name__)
 
 
 class ServiceError(Exception):
@@ -28,19 +29,23 @@ class JobService(object):
     Service for managing job queries
     """
 
-    def __init__(self, valid_code_versions=VALID_CODE_VERSIONS):
+    def __init__(self, valid_code_versions=VALID_CODE_VERSIONS,
+                 valid_single_processor_code_version=VALID_SINGLE_PROCESSOR_CODE_VERSIONS):
         """
         Constructor setups up valid code versions
 
+        :param valid_single_processor_code_version: a dictionary of valid code versions and
+        script files for single processor runs, defaults to constants
         :param valid_code_versions: a dictionary of valid code versions and script files, defaults to constants
         """
         self._valid_code_version = valid_code_versions
+        self._valid_single_processor_code_version = valid_single_processor_code_version
 
     def exists_run_dir(self, model_run_id):
         """
         Checks that the model run directory exists
         :param model_run_id: the model run id
-        :return:treu if it exists, false otherwise
+        :return:true if it exists, false otherwise
         """
         return os.path.exists(self.get_run_dir(model_run_id))
 
@@ -63,8 +68,15 @@ class JobService(object):
         :return: the id or None if the file can not be read
         """
         file_path = os.path.join(model_run_dir, FILENAME_BSUB_ID)
+        if not os.path.exists(file_path):
+            return None
         f = open(file_path, 'r')
-        return int(f.read())
+        id = f.read()
+        if id.isdigit():
+            log.error("bsub id file for model run is empty. At {}".format(file_path))
+            return int(id)
+        else:
+            return None
 
     def write_bsub_id(self, model_run_dir, bsub_id):
         """
@@ -119,22 +131,28 @@ class JobService(object):
         for namelist_file in model_run[JSON_MODEL_NAMELIST_FILES]:
             self._create_namelist_file(namelist_file, run_directory)
 
-        bsub_id = self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory)
+        single_processor = self._is_single_site_run(model_run)
+
+        bsub_id = self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory, single_processor)
 
         self.write_bsub_id(run_directory, bsub_id)
 
         return bsub_id
 
-    def _submit_job(self, code_version, run_directory):
+    def _submit_job(self, code_version, run_directory, single_processor):
         """
         Submit the job
         :param code_version: the code version
         :param run_directory: the run directory to use
+        :param single_processor: true if this is a single processor run
         :return: the job id
         :exception ServiceError: when there is a problem submiting the job
         """
         try:
-            script = os.path.join(run_directory, self._valid_code_version[code_version])
+            if single_processor:
+                script = os.path.join(run_directory, self._valid_single_processor_code_version[code_version])
+            else:
+                script = os.path.join(run_directory, self._valid_code_version[code_version])
             output = subprocess.check_output([script], stderr=subprocess.STDOUT, cwd=run_directory)
             #Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)
@@ -204,15 +222,16 @@ class JobService(object):
         parameter_files = [[JULES_PARAM_POINTS_FILE, "points.dat"]]
         for parameter_name, filename in parameter_files:
             points_file_namelist = self._get_namelist(model_run, parameter_name[0])
-            param_value = points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]]
+            if points_file_namelist is not None and parameter_name[1] in points_file_namelist[JSON_MODEL_PARAMETERS]:
+                param_value = points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]]
 
-            # Create the file with the parameter value
-            param_file = open(os.path.join(run_directory, filename), 'w')
-            param_file.write(param_value)
-            param_file.close()
+                # Create the file with the parameter value
+                param_file = open(os.path.join(run_directory, filename), 'w')
+                param_file.write(param_value)
+                param_file.close()
 
-            # Save the filename as the parameter value
-            points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]] = python_to_f90_str(filename)
+                # Save the filename as the parameter value
+                points_file_namelist[JSON_MODEL_PARAMETERS][parameter_name[1]] = "'{}'".format(filename)
 
     def _get_namelist(self, model_run, namelist_name):
         """
@@ -227,3 +246,21 @@ class JobService(object):
             for namelist in namelists:
                 if namelist[JSON_MODEL_NAMELIST_NAME] == namelist_name:
                     return namelist
+        return None
+
+    def _is_single_site_run(self, model_run):
+        """
+        Find out if this is a single site run
+        :param model_run: Model run dictionary
+        :return: true if it is false otherwise
+        """
+
+        points_file_namelist = self._get_namelist(model_run, JULES_PARAM_LATLON_REGION[0])
+
+        if points_file_namelist is not None \
+                and JULES_PARAM_LATLON_REGION[1] in points_file_namelist[JSON_MODEL_PARAMETERS]:
+            param_value = points_file_namelist[JSON_MODEL_PARAMETERS][JULES_PARAM_LATLON_REGION[1]]
+
+            return str(param_value).lower() == '.false.'
+
+        return False

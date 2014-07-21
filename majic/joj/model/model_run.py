@@ -56,8 +56,8 @@ class ModelRun(Base):
         if self.status is None or self.status.id != status.id:
             self.last_status_change = datetime.datetime.now()
             self.status = status
-        self.error_message = error_message
-        if new_status == constants.MODEL_RUN_STATUS_PENDING:
+        self.error_message = error_message[:constants.DB_LONG_STRING_SIZE]
+        if new_status == constants.MODEL_RUN_STATUS_SUBMITTED:
             self.date_submitted = datetime.datetime.now()
         elif new_status == constants.MODEL_RUN_STATUS_CREATED:
             self.date_created = datetime.datetime.now()
