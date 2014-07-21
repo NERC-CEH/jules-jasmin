@@ -167,7 +167,7 @@ def _validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon):
 
     lon_w, lon_e = spatial_extent.get_lon_bounds()
     if not (-180 <= lon <= 180):
-        errors['lat'] = "Longitude must be between -180 and 180"
+        errors['lon'] = "Longitude must be between -180 and 180"
     elif lon < lon_w:
         errors['lon'] = "Longitude (%s deg E) cannot be west of %s deg E" % (lon, lon_w)
     elif lon > lon_e:
