@@ -56,6 +56,7 @@ class ModelRunService(DatabaseService):
                     .filter(ModelRun.user == user) \
                     .order_by(desc(ModelRun.date_created)) \
                     .options(joinedload('user')) \
+                    .options(joinedload(ModelRun.datasets)) \
                     .all()
             except NoResultFound:
                 return []
@@ -67,9 +68,14 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             try:
-                return session.query(ModelRun).join(ModelRun.status) \
+                return session\
+                    .query(ModelRun)\
+                    .join(ModelRun.status) \
                     .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
-                    .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
+                    .order_by(desc(ModelRun.date_created))\
+                    .options(joinedload('user'))\
+                    .options(joinedload(ModelRun.datasets)) \
+                    .all()
             except NoResultFound:
                 return []
 

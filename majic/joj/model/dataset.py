@@ -28,7 +28,7 @@ class Dataset(Base):
     model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     dataset_type = relationship("DatasetType", backref="datasets", lazy="joined")
 
-    model_run = relationship("ModelRun", backref=backref('datasets', order_by=id), lazy="joined")
+    model_run = relationship("ModelRun", backref=backref('datasets', order_by=id))
 
     def __init__(self, id=None):
 
