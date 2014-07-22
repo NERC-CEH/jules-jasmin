@@ -11,16 +11,17 @@ from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
 from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
+import shutil
 
 log = logging.getLogger(__name__)
 
 
-class ServiceError(Exception):
+class ServiceException(Exception):
     """
     Exception class for when the service has a problem
     """
     def __init__(self, message):
-        super(ServiceError, self).__init__()
+        super(ServiceException, self).__init__()
         self.message = message
 
 
@@ -98,7 +99,7 @@ class JobService(object):
         """
         file_path = os.path.join(run_dir, FILENAME_OUTPUT_LOG)
         if not os.path.exists(file_path):
-            raise ServiceError(ERROR_MESSAGE_NO_LOG_FILE)
+            raise ServiceException(ERROR_MESSAGE_NO_LOG_FILE)
         f = open(file_path, 'r')
         log_file_parser = LogFileParser(f)
         log_file_parser.parse()
@@ -112,7 +113,7 @@ class JobService(object):
         :exception ServiceError: if there is a problem submitting the job
         """
         if self.exists_run_dir(model_run[JSON_MODEL_RUN_ID]):
-            raise ServiceError("Run directory already exists for model run")
+            raise ServiceException("Run directory already exists for model run")
 
         run_directory = self.get_run_dir(model_run[JSON_MODEL_RUN_ID])
 
@@ -157,13 +158,13 @@ class JobService(object):
             #Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)
             if match is None:
-                raise ServiceError('Problem in job script. "%s"' % output)
+                raise ServiceException('Problem in job script. "%s"' % output)
             return match.group(1)
 
         except subprocess.CalledProcessError, ex:
-            raise ServiceError('Problem running job script. "%s"' % ex.output)
+            raise ServiceException('Problem running job script. "%s"' % ex.output)
         except Exception, ex:
-            raise ServiceError('Problem submitting job script. "%s"' % ex.message)
+            raise ServiceException('Problem submitting job script. "%s"' % ex.message)
 
     def _create_namelist_file(self, namelist_file, run_directory):
         """
@@ -208,9 +209,9 @@ class JobService(object):
             return bjobs_parser.parse()
 
         except subprocess.CalledProcessError, ex:
-            raise ServiceError('When getting running jobs, failed with non-zero error code. "%s"' % ex.output)
+            raise ServiceException('When getting running jobs, failed with non-zero error code. "%s"' % ex.output)
         except Exception, ex:
-            raise ServiceError('Problem getting running jobs. "%s"' % ex.message)
+            raise ServiceException('Problem getting running jobs. "%s"' % ex.message)
 
     def _create_parameter_files(self, run_directory, model_run):
         """
@@ -264,3 +265,18 @@ class JobService(object):
             return str(param_value).lower() == '.false.'
 
         return False
+
+    def delete(self, model_run_id):
+        """
+        Delete a model run directory
+        :param model_run_id: the model run id
+        :return: nothing
+        """
+
+        if self.exists_run_dir(model_run_id):
+            run_dir = self.get_run_dir(model_run_id)
+            try:
+                shutil.rmtree(run_dir)
+            except OSError, ex:
+                log.exception("Error when deleting the model run directory %s" % run_dir)
+                raise ServiceException('Can not delete the model run directory - %s' % ex.strerror)

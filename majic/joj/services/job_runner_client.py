@@ -59,6 +59,25 @@ class JobRunnerClient(object):
             raise ServiceException("Job status call returned with non ok status code. Status code {} content {}"
                                    .format(str(response.status_code), response.text))
 
+    def delete(self, model_run):
+        """
+        Delete the run model directory
+        :param model_run: the model run to delete
+        :return: nothing throws a service exception if there is a problem
+        """
+        try:
+            url = self._config['job_runner_url'] + 'jobs/delete'
+            response = requests.post(url=url, data=json.dumps({constants.JSON_MODEL_RUN_ID: model_run.id}))
+
+        except Exception, ex:
+            log.exception("Job runner service error on delete")
+            raise ServiceException("The job runner service is not responding")
+
+        if response.status_code == 200:
+            return
+        else:
+            raise ServiceException(response.text)
+
     def convert_model_to_dictionary(self, run_model, parameters):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
@@ -137,6 +156,3 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_PARAMETERS: {}}
         namelists.append(namelist)
         return namelist
-
-    def delete(self, model_run):
-        pass

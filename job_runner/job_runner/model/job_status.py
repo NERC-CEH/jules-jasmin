@@ -3,7 +3,7 @@ header
 """
 
 from job_runner.utils import constants
-from job_runner.services.job_service import ServiceError
+from job_runner.services.job_service import ServiceException
 
 
 class JobStatus(object):
@@ -74,6 +74,6 @@ class JobStatus(object):
             self.storage_in_mb = log_file_parser.storage_in_mb
             if self.status == constants.MODEL_RUN_STATUS_FAILED:
                 self.error_message = log_file_parser.error_message
-        except ServiceError, ex:
+        except ServiceException, ex:
             self.status = constants.MODEL_RUN_STATUS_FAILED
             self.error_message = ex.message

@@ -126,8 +126,7 @@ class ModelRunController(BaseController):
             helpers.error_flash("The model run you are trying to delete has been published. "
                                 "Only admins can delete published model runs.")
         except ServiceException, ex:
-            helpers.error_flash("Model run can not be deleted "
-                                "because there is an error in the job runner server: %s", ex.message)
+            helpers.error_flash("Model run can not be deleted: {}".format(ex.message))
             log.exception("Problem deleting model run %s" % id)
 
         redirect(url(controller='model_run', action='index'))
