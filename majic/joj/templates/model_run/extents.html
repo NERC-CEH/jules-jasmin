@@ -16,6 +16,56 @@
 </p>
 
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='extents')}">
+
+<div class="control-group">
+    <h3>Temporal Extent</h3>
+    <label class="control-label">
+        Timeline
+        <p class="label-explain">
+            The time line you wish to run your model over. This must fall completely within the
+            boundaries of your chosen driving data.
+        </p>
+    </label>
+    <div class="controls">
+        <fieldset class="fieldset">
+            <div class="controls-row">
+                <div class="span2">
+                    <h5>Time</h5>
+                </div>
+                <div class="span2">
+                    <h5>Driving Data Value</h5>
+                </div>
+                <div class="span7">
+                    <h5>This Model Run</h5>
+                </div>
+            </div>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>Start Date</p>
+                </div>
+                <div class="span2">${c.dataset.time_start.date()}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>End Date</p>
+                </div>
+                <div class="span2">${c.dataset.time_end.date()}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
 <div class="control-group">
     <h3>Spatial Extent</h3>
     <label for="scientific_configuration" class="control-label">
@@ -44,7 +94,6 @@
                 </p>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -88,7 +137,6 @@
                 </div>
                 <div class="controls-row">
                     <div class="span2">
-                        <h5>Boundary</h5>
                     </div>
                     <div class="span2">
                         <h5>Driving Data Range</h5>
@@ -208,57 +256,139 @@
         </fieldset>
     </div>
 </div>
-
-<div>
-    <h3>Temporal Extent</h3>
-</div>
-
+<div id="upload-single-cell">
 <div class="control-group">
+    <h3>Upload Single Cell Driving Data</h3>
+
     <label class="control-label">
-        Timeline
-        <p class="label-explain">
-            The time line you wish to run your model over. This must fall completely within the
-            boundaries of your chosen driving data.
-        </p>
+        Upload my own data
+        <p class="label-explain">Text to explain optional upload of driving data</p>
     </label>
     <div class="controls">
-        <fieldset class="fieldset">
-            <div class="controls-row">
-                <div class="span2">
-                    <h5>Time</h5>
-                </div>
-                <div class="span2">
-                    <h5>Driving Data Value</h5>
-                </div>
-                <div class="span7">
-                    <h5>This Model Run</h5>
-                </div>
+        <div id="upload_no">
+            <div class="select-div">
+                <i class="fa fa-check-circle-o fa-2x select-icon"></i>
             </div>
-            <div class="controls-row">
-                <div class="span2">
-                    <p>Start Date</p>
-                </div>
-                <div class="span2">${c.dataset.time_start.date()}</div>
-                <div class="span7">
-                    <div class="" style="margin-left:0px">
-                        ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    </div>
-                </div>
+            <div class="description-div">
+                <p>
+                    <strong>No - </strong>I'm happy to leave the driving data as it is.
+                </p>
             </div>
-            <br/>
-            <div class="controls-row">
-                <div class="span2">
-                    <p>End Date</p>
-                </div>
-                <div class="span2">${c.dataset.time_end.date()}</div>
-                <div class="span7">
-                    <div class="" style="margin-left:0px">
-                        ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    </div>
-                </div>
+        </div>
+        <div id="upload_yes">
+            <div class="select-div">
+                <i class="fa fa-check-circle-o fa-2x select-icon"></i>
             </div>
-        </fieldset>
+            <div class="description-div">
+                <p>
+                    <strong>Yes - </strong>I'd like to include my own measurements as driving data for my chosen site.
+                </p>
+            </div>
+        </div>
     </div>
+</div>
+
+<div id="upload_driving_data">
+    <div class="control-group">
+        <label class="control-label">
+            Download data
+            <p class="label-explain">Download the selected driving data for this location as a template to insert
+                your own data into.</p>
+        </label>
+        <div class="controls well">
+            <fieldset class="fieldset">
+                <div class="controls-row">
+                </div>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>Start date time</p>
+                    </div>
+                    <div class="span7">
+                        <div class="" style="margin-left:0px">
+                            ${h.html_tags.text('dl_start', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div><br/>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>End date time</p>
+                    </div>
+                    <div class="span7">
+                        <div class="" style="margin-left:0px">
+                            ${h.html_tags.text('dl_end', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div><br/>
+                <div class="controls-row">
+                    <div class="span2">
+
+                        <a href="#!" class="btn btn-info"><i class="fa fa-download"></i>&nbsp;&nbsp;Download</a>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+
+    <div class="control-group">
+        <label class="control-label">
+            Upload data
+            <p class="label-explain">Download the selected driving data for this location as a template to insert
+                your own data into.</p>
+        </label>
+        <div class="controls well">
+            <fieldset class="fieldset">
+                <div class="controls-row">
+                    <div class="span2">
+                    </div>
+                    <div class="span7">
+                    </div>
+                </div>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>Start date time</p>
+                    </div>
+                    <div class="span7">
+                        <div class="" style="margin-left:0px">
+                            ${h.html_tags.text('dl_start', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div><br/>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>End date time</p>
+                    </div>
+                    <div class="span7">
+                        <div class="" style="margin-left:0px">
+                            ${h.html_tags.text('dl_end', style='width:140px', placeholder='YYY-MM-DD HH:MM')}<br/>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls-row">
+                    <div class="span2">
+
+                        <a href="#!" class="btn btn-info"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload</a>
+                    </div>
+                </div>
+
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+         <div class="controls-row">
+                    <div class="span11">
+                            <div class="alert alert-success" style="display:inline-block">119 rows of data uploaded from 2010-01-01 00:00 to 2010-01-15 21:00
+    </div>
+    <a href="#!" class="btn btn-danger"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;Clear</a>
+
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <div class="controls">
@@ -266,8 +396,6 @@
     <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="previous" value="Previous" />
 </div>
 </form>
-
-<div class="modal fade hide" id="dataset-preview"></div>
 
 </body>
 </html>

@@ -22,7 +22,8 @@
 .select-div {
     width:50px;
     float:left;
-    text-align: center
+    text-align: center;
+    cursor:pointer;
 }
 
 .description-div {
@@ -47,4 +48,12 @@
     margin-top:10px;
     margin-bottom:0px;
     display:none;
+}
+
+#upload_yes:hover i, #upload_no:hover i {
+    color:green;
+}
+
+.well {
+    width:400px;
 }
