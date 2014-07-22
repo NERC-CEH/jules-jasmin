@@ -43,6 +43,21 @@ class ModelRunStatus(Base):
         """
         return self.name == constants.MODEL_RUN_STATUS_COMPLETED or self.name == constants.MODEL_RUN_STATUS_PUBLISHED
 
+    def allow_delete(self, user_is_admin):
+        """
+        Can a model run with this status be deleted
+        :param user_is_admin: True if the user is an admin
+        :return:True if run can be deleted, false otherwise
+        """
+
+        if self.name == constants.MODEL_RUN_STATUS_PUBLISHED:
+            return user_is_admin
+
+        return not (
+            self.name == constants.MODEL_RUN_STATUS_PENDING or
+            self.name == constants.MODEL_RUN_STATUS_SUBMITTED or
+            self.name == constants.MODEL_RUN_STATUS_RUNNING)
+
     def get_display_color(self):
         """
         Gets the appropriate display color for the ModelRunStatus to be used on the User Interface

@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
 from pylons import config
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -26,6 +26,12 @@ class DuplicateName(Exception):
     Exception thrown when the name of the run is a duplicate
     """
     pass
+
+
+class ModelPublished(Exception):
+    """
+    Exception thrown when something is done which is not allowed to a published model, e.g. delete it
+    """
 
 
 class ModelRunService(DatabaseService):
@@ -596,3 +602,40 @@ class ModelRunService(DatabaseService):
             if user is not None:
                 query = query.filter(ModelRun.user_id == user.id)
             return query.all()
+
+    def delete_run_model(self, model_id, user):
+        """
+        Delete a model run. If the model does not belong to the user and he is a non admin
+        or model doesn't exist thrown exception
+        :param model_id: model id to delete
+        :param user: the user deleteing the model
+        :return: deleted model runs name throw exception if there is trouble
+        """
+        with self.readonly_scope() as session:
+            model_run = session\
+                .query(ModelRun)\
+                .join(ModelRunStatus)\
+                .filter(ModelRun.id == model_id) \
+                .one()
+
+        if not user.is_admin():
+            if user.id != model_run.user_id:
+                raise NoResultFound()
+            if model_run.status.name == constants.MODEL_RUN_STATUS_PUBLISHED:
+                raise ModelPublished()
+
+        model_run_name = model_run.name
+
+        self._job_runner_client.delete(model_run)
+
+        with self.transaction_scope() as session:
+            model_run = session\
+                .query(ModelRun)\
+                .join(ModelRunStatus)\
+                .outerjoin(Dataset)\
+                .filter(ModelRun.id == model_id) \
+                .one()
+
+            session.delete(model_run)
+
+        return model_run_name

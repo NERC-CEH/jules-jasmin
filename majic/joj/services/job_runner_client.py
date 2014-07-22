@@ -137,3 +137,6 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_PARAMETERS: {}}
         namelists.append(namelist)
         return namelist
+
+    def delete(self, model_run):
+        pass

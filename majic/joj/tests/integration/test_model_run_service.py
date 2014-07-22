@@ -1,5 +1,8 @@
+"""
 # header
+"""
 from datetime import datetime
+from mock import Mock
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -12,14 +15,15 @@ from joj.tests import TestController
 from pylons import config
 from joj.utils import constants
 from joj.model.non_database.spatial_extent import SpatialExtent
+from joj.services.job_runner_client import JobRunnerClient
 
 
 class ModelRunServiceTest(TestController):
     def setUp(self):
         super(ModelRunServiceTest, self).setUp()
-        self.model_run_service = ModelRunService()
+        self.job_runner_client = JobRunnerClient(config)
+        self.model_run_service = ModelRunService(job_runner_client=self.job_runner_client)
         self.clean_database()
-
 
     def test_GIVEN_no_model_runs_WHEN_get_model_runs_for_user_THEN_empty_list(self):
         # Add a user who doesn't have any model runs
@@ -222,8 +226,7 @@ class ModelRunServiceTest(TestController):
 
     def test_GIVEN_no_defining_model_run_WHEN_get_defining_model_run_THEN_error_returned(self):
         user = self.login()
-        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
-            self.model_run_service.get_parameters_for_model_being_created(user)
+        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):self.model_run_service.get_parameters_for_model_being_created(user)
 
     def test_GIVEN_incomplete_model_WHEN_publish_model_THEN_ServiceException_raised(self):
         # Add a user and give them a model
@@ -398,3 +401,62 @@ class ModelRunServiceTest(TestController):
                 .filter(ModelRun.user == user) \
                 .count()
         return parameter_values
+
+    def test_GIVEN_model_doesnot_exist_WHEN_delete_THEN_not_found(self):
+        # Add a user who doesn't have any model runs
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'Has No Model Runs'
+            session.add(user)
+
+        # Get the users model runs
+        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
+            model_runs = self.model_run_service.delete_run_model(10000, user)
+
+    def test_GIVEN_model_belongs_to_someone_else_WHEN_delete_THEN_not_found(self):
+        # Add a user who doesn't have any model runs
+        other_user = self.login("other_user")
+        model = self.create_run_model(10, "test", other_user)
+
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'Has No Model Runs'
+            session.add(user)
+
+        # Get the users model runs
+        with self.assertRaises(NoResultFound, msg="Should have thrown a NoResultFound exception"):
+            self.model_run_service.delete_run_model(model.id, user)
+
+    def test_GIVEN_model_WHEN_delete_THEN_model_delete_job_runner_called(self):
+        # Add a user who doesn't have any model runs
+        user = self.login()
+        model = self.create_run_model(10, "test", user)
+        self.job_runner_client.delete = Mock()
+
+        self.model_run_service.delete_run_model(model.id, user)
+
+        assert_that(self.job_runner_client.delete.called, is_(True), "Job runner called")
+        with self.assertRaises(NoResultFound):
+            self.model_run_service.get_model_by_id(user, model.id)
+
+    def test_GIVEN_model_belongs_to_someone_else_and_user_is_an_admin_WHEN_delete_THEN_delete_model(self):
+        # Add a user who doesn't have any model runs
+        other_user = self.login("other_user")
+        model = self.create_run_model(10, "test", other_user)
+        user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        self.model_run_service.delete_run_model(model.id, user)
+
+        with self.assertRaises(NoResultFound):
+            self.model_run_service.get_model_by_id(user, model.id)
+
+    def test_GIVEN_model_belongs_to_someone_else_and_is_published_and_user_is_an_admin_WHEN_delete_THEN_delete_model(self):
+        # Add a user who doesn't have any model runs
+        other_user = self.login("other_user")
+        model = self.create_run_model(10, "test", other_user, constants.MODEL_RUN_STATUS_PUBLISHED)
+        user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        self.model_run_service.delete_run_model(model.id, user)
+
+        with self.assertRaises(NoResultFound):
+            self.model_run_service.get_model_by_id(user, model.id)
