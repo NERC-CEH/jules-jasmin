@@ -285,10 +285,9 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             model = self._get_model_run_being_created(session, user)
-
             parameters = self._get_parameters_for_creating_model(session, user)
 
-            status_name, message = self._job_runner_client.submit(model, parameters)
+        status_name, message = self._job_runner_client.submit(model, parameters)
 
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
@@ -478,7 +477,7 @@ class ModelRunService(DatabaseService):
             .outerjoin(ParameterValue,
                        and_(Parameter.id == ParameterValue.parameter_id, ParameterValue.model_run == model_run)) \
             .options(contains_eager(Parameter.parameter_values)) \
-            .options(subqueryload(Parameter.namelist)) \
+            .options(subqueryload(Parameter.namelist).subqueryload(Namelist.namelist_file)) \
             .filter(Parameter.code_versions.contains(code_version)) \
             .all()
 
@@ -494,6 +493,7 @@ class ModelRunService(DatabaseService):
             .join(User) \
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
             .filter(ModelRun.user == user) \
+            .options(subqueryload(ModelRun.code_version)) \
             .one()
 
     def remove_parameter_set_from_model_being_created(self, parameter_values, user):

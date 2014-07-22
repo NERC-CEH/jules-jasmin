@@ -22,6 +22,7 @@ class JobRunnerClient(object):
         """
         Submit the model to the job_runner service
         :param model: the run model including parameters
+        :param parameters: the parameters and thier values to submit
         :return: status the model run is in and a message
         """
         data = self.convert_model_to_dictionary(model, parameters)
@@ -69,7 +70,7 @@ class JobRunnerClient(object):
             url = self._config['job_runner_url'] + 'jobs/delete'
             response = requests.post(url=url, data=json.dumps({constants.JSON_MODEL_RUN_ID: model_run.id}))
 
-        except Exception, ex:
+        except Exception:
             log.exception("Job runner service error on delete")
             raise ServiceException("The job runner service is not responding")
 
