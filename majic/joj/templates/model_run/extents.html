@@ -257,137 +257,129 @@
     </div>
 </div>
 <div id="upload-single-cell">
-<div class="control-group">
-    <h3>Upload Single Cell Driving Data</h3>
-
-    <label class="control-label">
-        Upload my own data
-        <p class="label-explain">Text to explain optional upload of driving data</p>
-    </label>
-    <div class="controls">
-        <div id="upload_no">
-            <div class="select-div">
-                <i class="fa fa-check-circle-o fa-2x select-icon"></i>
-            </div>
-            <div class="description-div">
-                <p>
-                    <strong>No - </strong>I'm happy to leave the driving data as it is.
-                </p>
-            </div>
-        </div>
-        <div id="upload_yes">
-            <div class="select-div">
-                <i class="fa fa-check-circle-o fa-2x select-icon"></i>
-            </div>
-            <div class="description-div">
-                <p>
-                    <strong>Yes - </strong>I'd like to include my own measurements as driving data for my chosen site.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="upload_driving_data">
     <div class="control-group">
+        <h3>Upload Single Cell Driving Data</h3>
+
         <label class="control-label">
-            Download data
-            <p class="label-explain">Download the selected driving data for this location as a template to insert
-                your own data into.</p>
+            Upload my own data
+            <p class="label-explain">Optionally you can choose to use your own site measurements as part of your driving data</p>
         </label>
-        <div class="controls well">
-            <fieldset class="fieldset">
-                <div class="controls-row">
-                </div>
-                <div class="controls-row">
-                    <div class="span2">
-                        <p>Start date time</p>
-                    </div>
-                    <div class="span7">
-                        <div class="" style="margin-left:0px">
-                            ${h.html_tags.text('dl_start', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div><br/>
-                <div class="controls-row">
-                    <div class="span2">
-                        <p>End date time</p>
-                    </div>
-                    <div class="span7">
-                        <div class="" style="margin-left:0px">
-                            ${h.html_tags.text('dl_end', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div><br/>
-                <div class="controls-row">
-                    <div class="span2">
-
-                        <a href="#!" class="btn btn-info"><i class="fa fa-download"></i>&nbsp;&nbsp;Download</a>
-                    </div>
-                </div>
-            </fieldset>
-        </div>
-    </div>
-
-
-    <div class="control-group">
-        <label class="control-label">
-            Upload data
-            <p class="label-explain">Download the selected driving data for this location as a template to insert
-                your own data into.</p>
-        </label>
-        <div class="controls well">
-            <fieldset class="fieldset">
-                <div class="controls-row">
-                    <div class="span2">
-                    </div>
-                    <div class="span7">
-                    </div>
-                </div>
-                <div class="controls-row">
-                    <div class="span2">
-                        <p>Start date time</p>
-                    </div>
-                    <div class="span7">
-                        <div class="" style="margin-left:0px">
-                            ${h.html_tags.text('dl_start', style='width:140px', placeholder='YYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div><br/>
-                <div class="controls-row">
-                    <div class="span2">
-                        <p>End date time</p>
-                    </div>
-                    <div class="span7">
-                        <div class="" style="margin-left:0px">
-                            ${h.html_tags.text('dl_end', style='width:140px', placeholder='YYY-MM-DD HH:MM')}<br/>
-                        </div>
-                    </div>
-                </div>
-                <div class="controls-row">
-                    <div class="span2">
-
-                        <a href="#!" class="btn btn-info"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload</a>
-                    </div>
-                </div>
-
-            </fieldset>
-        </div>
-    </div>
-
-    <div class="control-group">
         <div class="controls">
-         <div class="controls-row">
-                    <div class="span11">
-                            <div class="alert alert-success" style="display:inline-block">119 rows of data uploaded from 2010-01-01 00:00 to 2010-01-15 21:00
-    </div>
-    <a href="#!" class="btn btn-danger"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;Clear</a>
-
-                    </div>
+            <div id="upload_no">
+                <div class="select-div">
+                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
                 </div>
+                <div class="description-div">
+                    <p>
+                        <strong>No - </strong>I'm happy to leave the driving data as it is.
+                    </p>
+                </div>
+            </div>
+            <div id="upload_yes">
+                <div class="select-div">
+                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
+                </div>
+                <div class="description-div">
+                    <p>
+                        <strong>Yes - </strong>I'd like to include my own measurements as driving data for my chosen site.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+    <div id="upload_driving_data">
+        <ul class="nav nav-tabs" id="driving-data-tabs">
+            <li id="tab-upload" class="active"><a href="#upload" data-toggle="tab">Upload</a></li>
+            <li><a href="#download" data-toggle="tab">Download</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="upload">
+                <p>Upload a driving data text file. If you're not sure what the format of the file should be you should
+                first download some driving data and use that as a template to insert your data into.</p>
+                <div class="control-group">
+
+                    <label class="control-label">
+                        Start date/time
+                        <p class="label-explain">Date / time of the first row in your uploaded driving data.</p>
+                    </label>
+                    <div class="controls">
+                        <div class="controls-row">
+                            ${h.html_tags.text('ul_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">
+                        End date/time
+                        <p class="label-explain">Date / time of the last row in your uploaded driving data.</p>
+                    </label>
+                    <div class="controls">
+                        <div class="controls-row">
+                            ${h.html_tags.text('ul_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">
+                        Driving Data file
+                        <p class="label-explain">Upload a text file containing your driving data</p>
+                    </label>
+                    <div class="controls">
+                        <div class="controls-row">
+                            <input name="driving-file" type="file"/>
+                            <br/><br/>
+                            <a href="#!" class="btn btn-info" onclick="$('#upload-success').show()"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload Driving Data</a>
+
+                        </div>
+                    </div>
+                </div>
+                <div id="upload-success" class="alert alert-success" style="display:inline-block; display:none">119 rows of data uploaded from 2010-01-01 00:00 to 2010-01-15 21:00</div>
+
+            </div>
+
+
+
+            <div class="tab-pane" id="download">
+                <p>Download driving data for your chosen site location as a text-file. You can then use this as a template to edit or insert your own data into.</p>
+                <div class="control-group">
+
+                    <label class="control-label">
+                        Start date/time
+                        <p class="label-explain">Download only data points after this time</p>
+                    </label>
+                    <div class="controls">
+                        <div class="controls-row">
+                            ${h.html_tags.text('dl_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">
+                        End date/time
+                        <p class="label-explain">Download only data points before this time</p>
+                    </label>
+                    <div class="controls">
+                        <div class="controls-row">
+                            ${h.html_tags.text('dl_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="controls">
+                        <div class="controls-row" style="margin-top:-30px">
+                            <a href="#!" class="btn btn-info"><i class="fa fa-download"></i>&nbsp;&nbsp;Download Driving Data</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </div>
 

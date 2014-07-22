@@ -163,4 +163,8 @@ $(document).ready(function() {
     $('#upload_no').click(chooseNotUploadDrivingData);
     $('#upload_yes').click(chooseUploadDrivingData);
     chooseNotUploadDrivingData();
+
+    // Set Up tabs
+    $('#driving-data-tabs').tab('show');
+    $('#tab-upload').addClass('active');
 });

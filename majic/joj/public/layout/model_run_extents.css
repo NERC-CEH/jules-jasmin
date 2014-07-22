@@ -57,3 +57,13 @@
 .well {
     width:400px;
 }
+
+#upload_driving_data {
+    margin-left: 180px;
+    margin-top: -80px;
+}
+
+#driving-data-tabs {
+    height:37px
+}
+.tab-content {overflow-x: hidden;}
