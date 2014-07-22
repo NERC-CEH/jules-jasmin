@@ -1,10 +1,20 @@
 """
 # header
 """
+import logging
 import datetime
 import re
 from pydap.client import open_url
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
+
+log = logging.getLogger(__name__)
+
+
+class DapClientException(Exception):
+    """
+    Exception for when there is a problem in the dap client
+    """
+    pass
 
 
 class DapClient(object):
@@ -17,13 +27,21 @@ class DapClient(object):
         Create a new DapClient for a specified dataset
         :param url: The URL of the OpenDAP dataset to look for
         """
-        self._dataset = open_url(url)
+        try:
+            self._dataset = open_url(url)
+        except Exception:
+            log.exception("Can not open the dataset URL '%s'." % url)
+            raise DapClientException("Can not open the dataset URL.")
 
-        self._lat = self._dataset[self._get_key(NETCDF_LATITUDE)][:]
-        self._lon = self._dataset[self._get_key(NETCDF_LONGITUDE)][:]
-        self._time = self._dataset[self._get_key(NETCDF_TIME)][:]
-        self.variable_names = []
-        self._variable = self._get_variable_to_plot()
+        try:
+            self._lat = self._dataset[self._get_key(NETCDF_LATITUDE)][:]
+            self._lon = self._dataset[self._get_key(NETCDF_LONGITUDE)][:]
+            self._time = self._dataset[self._get_key(NETCDF_TIME)][:]
+            self.variable_names = []
+            self._variable = self._get_variable_to_plot()
+        except Exception:
+            log.exception("Can not read dataset '%s'." % url)
+            raise DapClientException("Problems reading the dataset.")
 
     def get_graph_data(self, lat, lon):
         """

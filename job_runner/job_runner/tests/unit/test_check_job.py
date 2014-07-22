@@ -7,7 +7,7 @@ from mock import Mock
 from job_runner.model.job_status import JobStatus
 from job_runner.tests import TestController
 from job_runner.utils import constants
-from job_runner.services.job_service import JobService, ServiceError
+from job_runner.services.job_service import JobService, ServiceException
 from job_runner.model.log_file_parser import LogFileParser
 from datetime import datetime
 import pytz
@@ -98,7 +98,7 @@ class TestJobRunnerClient(TestController):
         bjobs_list = {}
         self.job_service.exists_run_dir = Mock(return_value=True)
         self.job_service.get_bsub_id = Mock(return_value=bsub_id)
-        self.job_service.get_output_log_result = Mock(side_effect=ServiceError(expected_error_msg))
+        self.job_service.get_output_log_result = Mock(side_effect=ServiceException(expected_error_msg))
 
         self.job_status.check(self.job_service, bjobs_list)
 

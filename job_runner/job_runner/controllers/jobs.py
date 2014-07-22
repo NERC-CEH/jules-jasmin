@@ -11,7 +11,7 @@ from simplejson import JSONDecodeError
 
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
-from job_runner.services.job_service import JobService, ServiceError
+from job_runner.services.job_service import JobService, ServiceException
 from job_runner.model.job_status import JobStatus
 
 log = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class JobsController(BaseController):
 
         try:
             return self._job_service.submit(json)
-        except ServiceError, ex:
+        except ServiceException, ex:
             abort(400, ex.message)
 
     @jsonify
@@ -121,3 +121,26 @@ class JobsController(BaseController):
                 abort(400, "Job ids must all be integers")
 
         return job_statuses
+
+    @jsonify
+    def delete(self):
+        """
+        Delete a model run directory
+        """
+
+        json = self.get_json_abort_on_error()
+
+        log.debug("Delete with parameters %s" % json)
+
+        if JSON_MODEL_RUN_ID not in json:
+            abort(400, "Model run id must be included")
+        try:
+            model_run_id = int(json[JSON_MODEL_RUN_ID])
+            self._job_service.delete(model_run_id)
+        except ValueError:
+            abort(400, "Model run id must be an integer")
+        except ServiceException, ex:
+            abort(400, ex.message)
+        except Exception:
+            log.exception("Unknown error when trying to delete model run directory")
+            abort(400, "Unknown error when trying to delete model run directory")

@@ -294,6 +294,6 @@ class TestController(TestCase):
         self.dap_client = Mock()
         self.dap_client.get_longname = Mock(return_value="long_name")
         self.dap_client.get_data_range = Mock(return_value=[10, 12])
-        dap_client_factory = DapClientFactory()
-        dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
-        return dap_client_factory
+        self.dap_client_factory = DapClientFactory()
+        self.dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
+        return self.dap_client_factory

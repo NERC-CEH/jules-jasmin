@@ -3,7 +3,7 @@ import unittest
 import shutil
 from job_runner.tests import *
 from hamcrest import *
-from job_runner.services.job_service import JobService, ServiceError
+from job_runner.services.job_service import JobService, ServiceException
 from pylons import config
 from job_runner.utils.constants import *
 
@@ -52,7 +52,7 @@ class TestJobService(TestController):
             self.job_service.submit(self.model_run)
 
     def test_GIVEN_code_version_script_doesnt_submit_job_but_runs_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceError):
+        with self.assertRaises(ServiceException):
             VALID_CODE_VERSIONS['invalid_script'] = 'invalid_script.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'
@@ -60,7 +60,7 @@ class TestJobService(TestController):
             local_job_service.submit(self.model_run)
 
     def test_GIVEN_code_version_script_doesnt_exist_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceError):
+        with self.assertRaises(ServiceException):
             VALID_CODE_VERSIONS['invalid_script'] = 'doesnt exist.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'
@@ -68,7 +68,7 @@ class TestJobService(TestController):
             local_job_service.submit(self.model_run)
 
     def test_GIVEN_code_version_script_errors_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceError):
+        with self.assertRaises(ServiceException):
             VALID_CODE_VERSIONS['invalid_script'] = 'error_submit.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'

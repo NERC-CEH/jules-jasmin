@@ -20,7 +20,7 @@ class TestModelRunCatalogue(TestController):
         user = self.login()
         model1_storage = 10101
         model2_storage = 6400
-        total = 16.1  # 16501/1024
+        total = 16.1  # 16501/1024l
         percent_used = 16  # 16.1 / 100 (storage for user) rounded
         self.create_run_model(model1_storage, "test", user)
         self.create_run_model(model2_storage, "test2", user)

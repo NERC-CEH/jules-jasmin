@@ -2,7 +2,7 @@
 # Header
 """
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Float
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from joj.model.meta import Base
 
 
@@ -27,6 +27,8 @@ class Dataset(Base):
     is_input = Column(Boolean, default=False)
     model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     dataset_type = relationship("DatasetType", backref="datasets", lazy="joined")
+
+    model_run = relationship("ModelRun", backref=backref('datasets', order_by=id))
 
     def __init__(self, id=None):
 

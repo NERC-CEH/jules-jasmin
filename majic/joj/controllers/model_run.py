@@ -13,7 +13,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
-from joj.services.model_run_service import ModelRunService, DuplicateName
+from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
+from joj.services.general import ServiceException
 from joj.services.dataset import DatasetService
 from joj.lib import helpers
 from joj.utils import constants
@@ -84,6 +85,7 @@ class ModelRunController(BaseController):
         Controller providing access to the catalogue of published model runs
         :return: Rendered catalogue page
         """
+        c.user = self.current_user
         c.model_runs = self._model_run_service.get_published_models()
         c.showing = "published"
         return render("model_run/catalogue.html")
@@ -102,12 +104,40 @@ class ModelRunController(BaseController):
             elif came_from == 'summary':
                 redirect(url(controller='model_run', action='summary', id=id))
 
+    def delete(self, id):
+        """
+        Action to delete a model run for a user or admin
+        :param id: the id of the model to delete
+        :return: redirect to catalgue with flash message
+        """
+
+        if not request.method == 'POST':
+            helpers.error_flash("Model run deletion must be a post")
+            redirect(url(controller='model_run', action='index'))
+
+        try:
+            model_run_name = self._model_run_service.delete_run_model(int(id), self.current_user)
+            helpers.success_flash("Model run %s deleted" % model_run_name)
+        except ValueError:
+            helpers.error_flash("Model run id not a number can not delete it")
+        except NoResultFound:
+            helpers.error_flash("Model run can not be deleted, it does not exist")
+        except ModelPublished:
+            helpers.error_flash("The model run you are trying to delete has been published. "
+                                "Only admins can delete published model runs.")
+        except ServiceException, ex:
+            helpers.error_flash("Model run can not be deleted: {}".format(ex.message))
+            log.exception("Problem deleting model run %s" % id)
+
+        redirect(url(controller='model_run', action='index'))
+
     def summary(self, id):
         """
         Controller providing a detailed summary of a single model run
         :param id: the id of the model run to display
         :return: Rendered summary page of requested model run
         """
+        c.user = self.current_user
         c.model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         return render("model_run/summary.html")
 

@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
 from pylons import config
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -26,6 +26,12 @@ class DuplicateName(Exception):
     Exception thrown when the name of the run is a duplicate
     """
     pass
+
+
+class ModelPublished(Exception):
+    """
+    Exception thrown when something is done which is not allowed to a published model, e.g. delete it
+    """
 
 
 class ModelRunService(DatabaseService):
@@ -50,6 +56,7 @@ class ModelRunService(DatabaseService):
                     .filter(ModelRun.user == user) \
                     .order_by(desc(ModelRun.date_created)) \
                     .options(joinedload('user')) \
+                    .options(joinedload(ModelRun.datasets)) \
                     .all()
             except NoResultFound:
                 return []
@@ -61,9 +68,14 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             try:
-                return session.query(ModelRun).join(ModelRun.status) \
+                return session\
+                    .query(ModelRun)\
+                    .join(ModelRun.status) \
                     .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
-                    .order_by(desc(ModelRun.date_created)).options(joinedload('user')).all()
+                    .order_by(desc(ModelRun.date_created))\
+                    .options(joinedload('user'))\
+                    .options(joinedload(ModelRun.datasets)) \
+                    .all()
             except NoResultFound:
                 return []
 
@@ -273,10 +285,9 @@ class ModelRunService(DatabaseService):
         """
         with self.readonly_scope() as session:
             model = self._get_model_run_being_created(session, user)
-
             parameters = self._get_parameters_for_creating_model(session, user)
 
-            status_name, message = self._job_runner_client.submit(model, parameters)
+        status_name, message = self._job_runner_client.submit(model, parameters)
 
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)
@@ -466,7 +477,7 @@ class ModelRunService(DatabaseService):
             .outerjoin(ParameterValue,
                        and_(Parameter.id == ParameterValue.parameter_id, ParameterValue.model_run == model_run)) \
             .options(contains_eager(Parameter.parameter_values)) \
-            .options(subqueryload(Parameter.namelist)) \
+            .options(subqueryload(Parameter.namelist).subqueryload(Namelist.namelist_file)) \
             .filter(Parameter.code_versions.contains(code_version)) \
             .all()
 
@@ -482,6 +493,7 @@ class ModelRunService(DatabaseService):
             .join(User) \
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
             .filter(ModelRun.user == user) \
+            .options(subqueryload(ModelRun.code_version)) \
             .one()
 
     def remove_parameter_set_from_model_being_created(self, parameter_values, user):
@@ -596,3 +608,40 @@ class ModelRunService(DatabaseService):
             if user is not None:
                 query = query.filter(ModelRun.user_id == user.id)
             return query.all()
+
+    def delete_run_model(self, model_id, user):
+        """
+        Delete a model run. If the model does not belong to the user and he is a non admin
+        or model doesn't exist thrown exception
+        :param model_id: model id to delete
+        :param user: the user deleteing the model
+        :return: deleted model runs name throw exception if there is trouble
+        """
+        with self.readonly_scope() as session:
+            model_run = session\
+                .query(ModelRun)\
+                .join(ModelRunStatus)\
+                .filter(ModelRun.id == model_id) \
+                .one()
+
+        if not user.is_admin():
+            if user.id != model_run.user_id:
+                raise NoResultFound()
+            if model_run.status.name == constants.MODEL_RUN_STATUS_PUBLISHED:
+                raise ModelPublished()
+
+        model_run_name = model_run.name
+
+        self._job_runner_client.delete(model_run)
+
+        with self.transaction_scope() as session:
+            model_run = session\
+                .query(ModelRun)\
+                .join(ModelRunStatus)\
+                .outerjoin(Dataset)\
+                .filter(ModelRun.id == model_id) \
+                .one()
+
+            session.delete(model_run)
+
+        return model_run_name

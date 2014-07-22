@@ -15,6 +15,7 @@ from joj.utils.utils import KeyNotFound, find_by_id_in_dict
 from joj.utils import email_messages, utils
 from joj.services.dap_client_factory import DapClientFactory
 from dateutil.parser import parse
+from joj.services.dap_client import DapClientException
 
 log = logging.getLogger(__name__)
 
@@ -63,8 +64,11 @@ class JobStatusUpdaterService(DatabaseService):
         job_statuses = self._job_runner_client.get_run_model_statuses(model_ids)
 
         for model_id in model_ids:
-            run_model = self._update_model_run_status(job_statuses, model_id)
-            self._send_email(run_model)
+            try:
+                run_model = self._update_model_run_status(job_statuses, model_id)
+                self._send_email(run_model)
+            except DapClientException, ex:
+                log.exception("DAP client threw an exception: %s", ex.message)
 
         self._check_total_allocation_and_alert()
 
@@ -120,6 +124,7 @@ class JobStatusUpdaterService(DatabaseService):
                 log.error("No status returned from job runner for model run %s", model_id)
                 model_run.change_status(session, constants.MODEL_RUN_STATUS_UNKNOWN,
                                         constants.ERROR_MESSAGE_NO_STATUS_RETURNED)
+
         return model_run
 
     def _send_email(self, model_run):
@@ -232,6 +237,7 @@ class JobStatusUpdaterService(DatabaseService):
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)
+
         dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
         dataset.name = dap_client.get_longname()
         dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
