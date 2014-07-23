@@ -15,7 +15,7 @@
     time period you can use.
 </p>
 
-<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='extents')}">
+<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='extents')}" enctype="multipart/form-data">
 
 <div class="control-group">
     <h3>Temporal Extent</h3>
@@ -73,22 +73,22 @@
     </label>
     <div class="controls">
         <div class="site-option">
-            <div site="multi" class="select-div">
+            <div site="multi" class="site-select select-div">
                 ${h.html_tags.radio('site', 'multi', True, style='display:none')}
                 <i site="multi" class="fa fa-check-circle-o fa-2x select-icon"></i>
             </div>
-            <div site="multi" class="description-div">
+            <div site="multi" class="site-select description-div">
                 <p>
                     <strong>Continuous Region - </strong>JULES will model across a large spatial area.
                 </p>
             </div>
         </div>
         <div class="site-option">
-            <div site="single" class="select-div">
+            <div site="single" class="site-select select-div">
                 ${h.html_tags.radio('site', 'single', True, style='display:none')}
                 <i site="single" class="fa fa-check-circle-o fa-2x select-icon"></i>
             </div>
-            <div site="single" class="description-div">
+            <div site="single" class="site-select description-div">
                 <p>
                     <strong>Single Location - </strong>JULES will only model at one specific location
                 </p>
@@ -267,7 +267,7 @@
         <div class="controls">
             <div id="upload_no">
                 <div class="select-div">
-                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
+                    <i class="fa fa-check-circle-o fa-2x checkbox"></i>
                 </div>
                 <div class="description-div">
                     <p>
@@ -277,7 +277,7 @@
             </div>
             <div id="upload_yes">
                 <div class="select-div">
-                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
+                    <i class="fa fa-check-circle-o fa-2x checkbox"></i>
                 </div>
                 <div class="description-div">
                     <p>
@@ -329,10 +329,9 @@
                     </label>
                     <div class="controls">
                         <div class="controls-row">
-                            <input name="driving-file" type="file"/>
+                            ${h.html_tags.file('driving-file')}
                             <br/><br/>
-                            <a href="#!" class="btn btn-info" onclick="$('#upload-success').show()"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload Driving Data</a>
-
+                            <button type="submit" name="upload" class="btn btn-info" onclick="$('#upload-success').show()"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload Driving Data</button>
                         </div>
                     </div>
                 </div>

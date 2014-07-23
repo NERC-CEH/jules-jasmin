@@ -25,12 +25,12 @@ class SpatialExtent(object):
         :param lon_e: The eastern boundary latitude
         :return: a SpatialExtent instance with specified boundaries
         """
-        if not lat_n > lat_s:
+        if not lat_n >= lat_s:
             raise InvalidSpatialExtent("Northern bounding latitude (%s deg N) must be north of southern "
                                        "bounding latitude (%s deg N)" % (lat_n, lat_s))
         if not (-90 <= lat_n <= 90 and -90 <= lat_s <= 90):
             raise InvalidSpatialExtent("Latitude must be between -90 and 90")
-        if not lon_e > lon_w:
+        if not lon_e >= lon_w:
             raise InvalidSpatialExtent("Eastern bounding longitude (%s deg E) must be east of western "
                                        "bounding longitude (%s deg E)" % (lon_e, lon_w))
         if not (-180 <= lon_e <= 180 and -180 <= lon_w <= 180):

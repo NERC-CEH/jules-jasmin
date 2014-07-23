@@ -1,7 +1,7 @@
 // These are used for the custom radio buttons
 var id_attr = 'site';
 var radio_button_id_prefix = '#site_';
-var click_selectors = '.select-div, .description-div';
+var click_selectors = '.site-select';
 
 /*
  * This is called when the user has chosen to use multi-cell extents.
