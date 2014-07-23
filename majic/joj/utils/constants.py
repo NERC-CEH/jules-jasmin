@@ -65,6 +65,8 @@ NETCDF_LONGITUDE = ['Longitude', 'lon']
 NETCDF_TIME = ['Time']
 NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
+#The name of the driving dataset which represents the 'upload your own driving dataset' option
+USER_UPLOAD_DRIVING_DATASET_NAME = "Upload My Own Driving Data"
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',

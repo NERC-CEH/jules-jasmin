@@ -191,6 +191,7 @@ class ModelRunController(BaseController):
                 driving_dataset_id = driving_datasets[0].id
             values = {'driving_dataset': driving_dataset_id}
             c.driving_datasets = driving_datasets
+            c.user_upload_ds_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
             html = render('model_run/driving_data.html')
             return htmlfill.render(
                 html,

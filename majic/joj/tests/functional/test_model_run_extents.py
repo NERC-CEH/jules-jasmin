@@ -19,6 +19,7 @@ class TestModelRunExtents(TestController):
         self.model_run_service = ModelRunService()
         with session_scope(Session) as session:
             self.driving_data = DrivingDataset()
+            self.driving_data.name = "d1"
             self.driving_data.boundary_lat_north = 47.5
             self.driving_data.boundary_lat_south = 13.8
             self.driving_data.boundary_lon_east = 123.1

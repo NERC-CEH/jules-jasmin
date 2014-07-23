@@ -7,6 +7,7 @@ from pylons import url
 from joj.tests import TestController
 from joj.services.dataset import DatasetService
 from joj.services.model_run_service import ModelRunService
+from joj.utils import constants
 
 
 class TestModelRunDrivingData(TestController):
@@ -44,6 +45,13 @@ class TestModelRunDrivingData(TestController):
             url(controller='model_run', action='driving_data'))
         assert_that(response.normal_body, contains_string("driving1"))
         assert_that(response.normal_body, contains_string("driving2"))
+
+    def test_GIVEN_driving_dataset_for_user_upload_WHEN_get_THEN_driving_dataset_rendered(self):
+        self._add_model_run_being_created()
+
+        response = self.app.get(
+            url(controller='model_run', action='driving_data'))
+        assert_that(response.normal_body, contains_string(constants.USER_UPLOAD_DRIVING_DATASET_NAME))
 
     def test_GIVEN_invalid_driving_data_chosen_WHEN_post_THEN_error_returned(self):
         self._add_model_run_being_created()
@@ -99,7 +107,6 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='index')), "url")
-
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_go_back_THEN_create_page_rendered(self):
         self._add_model_run_being_created()

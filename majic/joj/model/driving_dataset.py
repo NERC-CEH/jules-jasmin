@@ -26,6 +26,7 @@ class DrivingDataset(Base):
     boundary_lon_west = Column(Float)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
+    order_by_id = Column(Integer)
 
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name

@@ -346,6 +346,7 @@ def setup_app(command, conf, vars):
         driving_ds_1.boundary_lon_east = 10
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
         driving_ds_1.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
+        driving_ds_1.order_by_id = 100
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"
@@ -362,6 +363,7 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
+        driving_ds_2.order_by_id = 200
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -376,6 +378,13 @@ def setup_app(command, conf, vars):
         driving_ds_3.boundary_lon_east = 180
         driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
+        driving_ds_3.order_by_id = 300
+
+        driving_ds_upload = DrivingDataset()
+        driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
+        driving_ds_upload.description = "Choose this option if you wish to upload your own driving data for a " \
+                                        "single cell site"
+        driving_ds_upload.order_by_id = 1000
 
         parameters = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
@@ -444,4 +453,4 @@ def setup_app(command, conf, vars):
             location.base_url = file_template.format(name)
             location.driving_dataset = driving_ds_3
 
-        session.add_all([driving_ds_1, driving_ds_2, driving_ds_3])
+        session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
