@@ -7,6 +7,7 @@ from job_runner.tests import *
 from hamcrest import *
 from job_runner.utils.constants import *
 
+
 class TestJobsControllerDelete(TestController):
 
     def setUp(self):
@@ -63,7 +64,7 @@ class TestJobsControllerDelete(TestController):
         assert_that(response.status_code, is_(200), "valid request")
         assert_that(os.path.exists(self.run_dir), is_(True), "Run dir should not be deleted: %s" % self.run_dir)
 
-    def test_GIVEN_non_existant_model_run_id_WHEN_delete_THEN_appears_directory_is_deleted(self):
+    def test_GIVEN_non_deleteable_model_run_directory_WHEN_delete_THEN_error(self):
         os.chmod(self.run_dir, stat.S_IREAD)
         response = self.app.post_json(
             url(controller='jobs', action='delete'),
