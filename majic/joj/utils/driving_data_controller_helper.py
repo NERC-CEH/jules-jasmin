@@ -15,10 +15,14 @@ def create_values_dict_from_database(model_run):
     :param model_run:
     """
     values = {}
+    values['driving_dataset'] = model_run.driving_dataset_id
+    # If this isn't the user uploaded driving dataset, then this is the only value we want to show:
+    if model_run.driving_dataset_id != DatasetService().get_id_for_user_upload_driving_dataset():
+        return values
+
     start_date = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_START)
     end_date = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_END)
 
-    values['driving_dataset'] = model_run.driving_dataset_id
     values['lat'] = model_run.driving_data_lat
     values['lon'] = model_run.driving_data_lon
     if start_date is not None:

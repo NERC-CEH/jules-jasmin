@@ -168,7 +168,7 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
-    @validate(schema=ModelRunDrivingDataSchema(), form='extents', post_only=False, on_get=False, prefix_error=False,
+    @validate(schema=ModelRunDrivingDataSchema(), form='driving_data', post_only=False, on_get=False, prefix_error=False,
               auto_error_formatter=BaseController.error_formatter)
     def driving_data(self):
         """
@@ -186,6 +186,10 @@ class ModelRunController(BaseController):
         user_upload_ds_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
         errors = {}
 
+        c.driving_datasets = driving_datasets
+        c.user_upload_ds_id = user_upload_ds_id
+        c.driving_data_rows = model_run.driving_data_rows
+
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "driving_data")
 
@@ -197,10 +201,6 @@ class ModelRunController(BaseController):
             # If the chosen driving dataset value is None, set it to the first in the list
             if values['driving_dataset'] is None:
                 values['driving_dataset'] = driving_datasets[0].id
-
-            c.driving_datasets = driving_datasets
-            c.user_upload_ds_id = user_upload_ds_id
-            c.driving_data_rows = model_run.driving_data_rows
 
             html = render('model_run/driving_data.html')
             return htmlfill.render(

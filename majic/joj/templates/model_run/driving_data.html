@@ -28,7 +28,8 @@
             <py:for each="driving_dataset in c.driving_datasets">
                 <tr class="driving-data" dsid="${driving_dataset.id}">
                     <td class="select">
-                        ${h.html_tags.radio('driving_dataset', driving_dataset.id, True, style='display:none')}
+                        <input id="driving_dataset_${driving_dataset.id}" name="driving_dataset" type="radio"
+                               value="${driving_dataset.id}" style="display:none" py:attrs="{'user_upload' : 'true'} if driving_dataset.id == c.user_upload_ds_id else {}"/>
                         <i dsid="${driving_dataset.id}" class="fa fa-check-circle-o fa-2x select-icon"></i>
                     </td>
                     <td class="name"><h4>${driving_dataset.name}</h4><p class="description">${driving_dataset.description}</p></td>
@@ -50,20 +51,20 @@
             </py:for>
         </table>
 
-    <div>
+    <div id="upload-input">
     Lat
-    ${h.html_tags.text('lat', style='width:80px')}<br/>
+    ${h.html_tags.text('lat', style='width:80px')}<br/><br/>
     Lon
-    ${h.html_tags.text('lon', style='width:80px')}<br/>
+    ${h.html_tags.text('lon', style='width:80px')}<br/><br/>
     Start
-    ${h.html_tags.text('dt_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/>
+    ${h.html_tags.text('dt_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/><br/>
     End
-    ${h.html_tags.text('dt_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/>
+    ${h.html_tags.text('dt_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/><br/>
     Driving Data File
-    ${h.html_tags.file('driving-file')}<br/>
+    ${h.html_tags.file('driving-file')}<br/><br/>
 
-        <input type="button" name="download" value="Download"/>
-        <input type="button" name="upload" value="Upload"/>
+        <input type="submit" name="submit" value="Download"/>
+        <input type="submit" name="submit" value="Upload"/>
         <p py:if="c.driving_data_rows">${c.driving_data_rows} rows of driving data successfully uploaded</p>
 </div>
 
