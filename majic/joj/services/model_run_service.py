@@ -313,6 +313,9 @@ class ModelRunService(DatabaseService):
         with self.transaction_scope() as session:
             model_run = self._get_model_run_being_created(session, user)
             model_run.driving_dataset_id = driving_dataset.id
+            model_run.driving_data_lat = driving_dataset.driving_data_lat
+            model_run.driving_data_lon = driving_dataset.driving_data_lon
+            model_run.driving_data_rows = driving_dataset.driving_data_rows
             if old_driving_dataset is not None:
                 self._remove_parameter_set_from_model(old_driving_dataset.parameter_values, model_run, session)
             self._copy_parameter_set_into_model(driving_dataset.parameter_values, model_run, session)

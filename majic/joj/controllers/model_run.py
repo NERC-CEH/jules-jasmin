@@ -28,6 +28,8 @@ from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY
 from joj.utils import utils
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
+from joj.utils import driving_data_controller_helper
+from joj.model.model_run_driving_data_schema import ModelRunDrivingDataSchema
 
 # The prefix given to parameter name in html elements
 
@@ -166,6 +168,8 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
+    @validate(schema=ModelRunDrivingDataSchema(), form='extents', post_only=False, on_get=False, prefix_error=False,
+              auto_error_formatter=BaseController.error_formatter)
     def driving_data(self):
         """
         Select a driving data set
@@ -179,19 +183,25 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='create'))
 
         driving_datasets = self._dataset_service.get_driving_datasets()
+        user_upload_ds_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
         errors = {}
 
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "driving_data")
-            # Get all the driving data-sets and render the page
+
+            values = driving_data_controller_helper.create_values_dict_from_database(model_run)
+
             if len(driving_datasets) == 0:
                 abort_with_error("There are no driving datasets available - cannot create a new model run")
-            driving_dataset_id = model_run.driving_dataset_id
-            if driving_dataset_id is None:
-                driving_dataset_id = driving_datasets[0].id
-            values = {'driving_dataset': driving_dataset_id}
+
+            # If the chosen driving dataset value is None, set it to the first in the list
+            if values['driving_dataset'] is None:
+                values['driving_dataset'] = driving_datasets[0].id
+
             c.driving_datasets = driving_datasets
-            c.user_upload_ds_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
+            c.user_upload_ds_id = user_upload_ds_id
+            c.driving_data_rows = model_run.driving_data_rows
+
             html = render('model_run/driving_data.html')
             return htmlfill.render(
                 html,
@@ -199,38 +209,76 @@ class ModelRunController(BaseController):
                 errors=errors,
                 auto_error_formatter=BaseController.error_formatter)
         else:
-            values = dict(request.params)
+            # This is a post
+            values = self.form_result
 
-            # get the action to perform and remove it from the dictionary
-            action = request.params.getone('submit')
+            # Get the action to perform and remove it from the dictionary
+            action = values['submit']
             del values['submit']
-
-            try:
-                driving_dataset = find_by_id(driving_datasets, int(values['driving_dataset']))
-            except (KeyNotFound, KeyError):
-                html = render('model_run/driving_data.html')
-                errors['driving_dataset'] = 'Driving data not recognised'
-                return htmlfill.render(
-                    html,
-                    defaults=values,
-                    errors=errors,
-                    auto_error_formatter=BaseController.error_formatter)
 
             old_driving_dataset = None
             if model_run.driving_dataset_id is not None:
                 old_driving_dataset = find_by_id(driving_datasets, model_run.driving_dataset_id)
 
-            self._model_run_service.save_driving_dataset_for_new_model(
-                driving_dataset,
-                old_driving_dataset,
-                self.current_user)
+            if action == u'Upload':
+                # This is a request to to upload a driving data file
+                driving_data_controller_helper.validate_uploaded_driving_data(values, errors)
+                if len(errors) == 0:
+                    driving_data_controller_helper.save_uploaded_driving_data(values,
+                                                                              self._model_run_service,
+                                                                              old_driving_dataset,
+                                                                              self.current_user)
+                    # Reload the current page
+                    redirect(url(controller='model_run', action='driving_data'))
 
-            self._model_run_controller_helper.check_user_quota(self.current_user)
-
-            if action == u'Next':
-                redirect(url(controller='model_run', action='extents'))
+                else:
+                    html = render('model_run/driving_data.html')
+                    return htmlfill.render(
+                        html,
+                        defaults=values,
+                        errors=errors,
+                        auto_error_formatter=BaseController.error_formatter)
+            elif action == u'Download':
+                # This is a request to to download driving data
+                pass
             else:
-                redirect(url(controller='model_run', action='create'))
+
+                try:
+                    driving_dataset = find_by_id(driving_datasets, int(values['driving_dataset']))
+                except (KeyNotFound, KeyError):
+                    errors['driving_dataset'] = 'Driving data not recognised'
+                    html = render('model_run/driving_data.html')
+                    return htmlfill.render(
+                        html,
+                        defaults=values,
+                        errors=errors,
+                        auto_error_formatter=BaseController.error_formatter)
+                # If the new selected driving dataset is NOT a user uploaded dataset:
+                if driving_dataset.id != user_upload_ds_id:
+                    self._model_run_service.save_driving_dataset_for_new_model(
+                        driving_dataset,
+                        old_driving_dataset,
+                        self.current_user)
+                else:
+                    # If the selected driving dataset is the user uploaded dataset we can't proceed if the driving
+                    # data has not already been uploaded:
+                    if not model_run.driving_data_rows:
+                        errors['driving-file'] = 'You must upload a driving data file'
+                        html = render('model_run/driving_data.html')
+                        return htmlfill.render(
+                            html,
+                            defaults=values,
+                            errors=errors,
+                            auto_error_formatter=BaseController.error_formatter)
+
+                    # If the chosen ds_id is 'upload' and they have already uploaded data then we need do nothing
+
+                self._model_run_controller_helper.check_user_quota(self.current_user)
+
+                if action == u'Next':
+                    redirect(url(controller='model_run', action='extents'))
+                else:
+                    redirect(url(controller='model_run', action='create'))
 
     @validate(schema=ModelRunExtentSchema(), form='extents', post_only=False, on_get=False, prefix_error=False,
               auto_error_formatter=BaseController.error_formatter)

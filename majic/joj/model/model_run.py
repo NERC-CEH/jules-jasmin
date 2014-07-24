@@ -5,7 +5,7 @@ header
 import datetime
 
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey, Float
 from joj.model.meta import Base
 from joj.utils import constants
 from joj.model import ModelRunStatus
@@ -30,6 +30,9 @@ class ModelRun(Base):
     code_version_id = Column(SmallInteger, ForeignKey('code_versions.id'))
     science_configuration_id = Column(Integer, ForeignKey('model_runs.id'))
     driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
+    driving_data_lat = Column(Float)
+    driving_data_lon = Column(Float)
+    driving_data_rows = Column(Integer)
 
     # amount of storage the run takes up excluding the common driving data sets,
     # only set when a run is failed or complete

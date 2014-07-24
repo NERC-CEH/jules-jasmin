@@ -28,5 +28,9 @@ class DrivingDataset(Base):
     time_end = Column(DateTime)
     order_by_id = Column(Integer)
 
+    driving_data_lat = None
+    driving_data_lon = None
+    driving_data_rows = None
+
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name
