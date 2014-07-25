@@ -137,3 +137,15 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_PARAMETERS: {}}
         namelists.append(namelist)
         return namelist
+
+    def open_file(self, model_run_id, filename):
+        pass
+
+    def append_to_file(self, model_run_id, filename, line):
+        pass
+
+    def delete_file(self, model_run_id, filename):
+        pass
+
+    def close_file(self, model_run_id, filename):
+        pass

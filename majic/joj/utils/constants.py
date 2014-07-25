@@ -68,6 +68,11 @@ NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 #The name of the driving dataset which represents the 'upload your own driving dataset' option
 USER_UPLOAD_DRIVING_DATASET_NAME = "Upload My Own Driving Data"
 USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in
+USER_UPLOAD_DATE_FORMAT = "%Y-%m-%d %H:%M"
+USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 'lw_net', 'sw_net', 'diff_rad',
+                            'precip', 'tot_rain', 'tot_snow', 'ls_rain', 'con_rain', 'ls_snow', 'con_snow',
+                            'wind', 'u', 'v']
+USER_UPLOAD_ALLOWED_INTERPS = ['a', 'b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',

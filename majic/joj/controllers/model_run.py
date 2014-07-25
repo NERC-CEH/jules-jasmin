@@ -28,8 +28,8 @@ from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY
 from joj.utils import utils
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
-from joj.utils import driving_data_controller_helper
 from joj.model.model_run_driving_data_schema import ModelRunDrivingDataSchema
+from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 
 # The prefix given to parameter name in html elements
 
@@ -168,12 +168,14 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
-    @validate(schema=ModelRunDrivingDataSchema(), form='driving_data', post_only=False, on_get=False, prefix_error=False,
-              auto_error_formatter=BaseController.error_formatter)
+    @validate(schema=ModelRunDrivingDataSchema(), form='driving_data', post_only=False, on_get=False,
+              prefix_error=False, auto_error_formatter=BaseController.error_formatter)
     def driving_data(self):
         """
         Select a driving data set
         """
+        driving_data_controller_helper = DrivingDataControllerHelper()
+
         model_run = None
         try:
             model_run = \
@@ -222,14 +224,14 @@ class ModelRunController(BaseController):
 
             if action == u'Upload':
                 # This is a request to to upload a driving data file
-                driving_data_controller_helper.validate_uploaded_driving_data(values, errors)
+                driving_data_controller_helper.save_uploaded_driving_data(values, errors,
+                                                                          self._model_run_service,
+                                                                          old_driving_dataset,
+                                                                          self.current_user)
                 if len(errors) == 0:
-                    driving_data_controller_helper.save_uploaded_driving_data(values,
-                                                                              self._model_run_service,
-                                                                              old_driving_dataset,
-                                                                              self.current_user)
                     # Reload the current page
                     redirect(url(controller='model_run', action='driving_data'))
+                    return
 
                 else:
                     html = render('model_run/driving_data.html')
@@ -271,7 +273,7 @@ class ModelRunController(BaseController):
                             errors=errors,
                             auto_error_formatter=BaseController.error_formatter)
 
-                    # If the chosen ds_id is 'upload' and they have already uploaded data then we need do nothing
+                        # If the chosen ds_id is 'upload' and they have already uploaded data then we need do nothing
 
                 self._model_run_controller_helper.check_user_quota(self.current_user)
 

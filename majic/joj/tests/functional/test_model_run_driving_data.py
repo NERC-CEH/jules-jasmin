@@ -16,6 +16,8 @@ class TestModelRunDrivingData(TestController):
         self.clean_database()
         self.user = self.login()
         self.sample_file_contents = "# solar   long  rain  snow    temp   wind     press      humid\n" \
+                                    "# sw_down   lw_down  tot_rain  tot_snow    t   wind     pstar      q\n" \
+                                    "# i   i  i  i    i   i     i      i\n" \
                                     "3.3  187.8   0.0   0.0  259.10  3.610  102400.5  1.351E-03\n" \
                                     "89.5  185.8   0.0   0.0  259.45  3.140  102401.9  1.357E-03\n" \
                                     "142.3  186.4   0.0   0.0  259.85  2.890  102401.0  1.369E-03\n" \
@@ -241,12 +243,6 @@ class TestModelRunDrivingData(TestController):
         self.upload_valid_user_driving_data()
         self.check_valid_user_driving_data_params_stored()
 
-    def test_GIVEN_valid_user_driving_data_WHEN_upload_data_THEN_file_stored_in_correct_location(self):
-        self._add_model_run_being_created()
-        self.upload_valid_user_driving_data()
-        # TODO actually check the file is where it should be - probably requires job runner to do this
-        assert_that(1, is_(2))
-
     def test_GIVEN_user_driving_data_previously_selected_WHEN_get_THEN_user_driving_data_rendered(self):
         self._add_model_run_being_created()
         self.upload_valid_user_driving_data()
@@ -278,7 +274,8 @@ class TestModelRunDrivingData(TestController):
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='extents')), "url")
 
-    def test_GIVEN_user_driving_data_previously_selected_then_changed_on_page_WHEN_page_submit_THEN_data_not_changed(self):
+    def test_GIVEN_user_driving_data_previously_selected_then_changed_on_page_WHEN_page_submit_THEN_data_not_changed(
+            self):
         # This is understood to be the correct action - unless the 'upload' button is clicked, the user
         # driving data does not get processed.
         self._add_model_run_being_created()
