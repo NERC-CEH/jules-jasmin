@@ -12,15 +12,14 @@ from joj.utils.driving_data_controller_helper import DrivingDataParsingException
 class TestDrivingDataHelper(BaseTest):
     def setUp(self):
         super(TestDrivingDataHelper, self).setUp()
-        self.driving_data_helper = DrivingDataControllerHelper()
-        self.start_date = datetime.datetime(2012, 1, 1, 0, 0, 0)
-        self.end_date = datetime.datetime(2012, 1, 1, 2, 0, 0)
         self.mock_job_runner_client = Mock(JobRunnerClient)
         self.mock_job_runner_client.open_file = Mock()
         self.mock_job_runner_client.append_to_file = Mock()
         self.mock_job_runner_client.delete_file = Mock()
         self.mock_job_runner_client.close_file = Mock()
-        self.driving_data_helper.job_runner_client = self.mock_job_runner_client
+        self.driving_data_helper = DrivingDataControllerHelper(job_runner_client=self.mock_job_runner_client)
+        self.start_date = datetime.datetime(2012, 1, 1, 0, 0, 0)
+        self.end_date = datetime.datetime(2012, 1, 1, 2, 0, 0)
 
     def test_GIVEN_valid_file_WHEN_parse_THEN_accepted_and_properties_correct(self):
         file_content = ["# solar   long  rain  snow    temp   wind     press      humid\n",

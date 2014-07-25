@@ -29,6 +29,9 @@ class DrivingDataControllerHelper(object):
     period = None
     job_runner_client = None
 
+    def __init__(self, job_runner_client=JobRunnerClient(config)):
+        self.job_runner_client = job_runner_client
+
     def create_values_dict_from_database(self, model_run):
         """
         Create a form element values dictionary for rendering on page load
@@ -68,8 +71,6 @@ class DrivingDataControllerHelper(object):
         # Only proceed if we have no errors up to this stage
         if len(errors) != 0:
             return
-
-        self.job_runner_client = JobRunnerClient(config)
 
         model_run = model_run_service.get_model_being_created_with_non_default_parameter_values(user)
         model_run_id = model_run.id
