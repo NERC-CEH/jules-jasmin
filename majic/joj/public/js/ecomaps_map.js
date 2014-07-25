@@ -295,7 +295,7 @@ var EcomapsMap = (function() {
 
             map = new OpenLayers.Map('map');
             wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-                "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'});
+                "/dataset/base", {layers: 'basic'});
         }
 
         // Add the custom loading panel here...

@@ -3,7 +3,6 @@
 #BSUB –e %J.e
 #BSUB –q lotus
 #BSUB -n procs_template
-#BSUB -W 05:00
 #BSUB -m lotusr620
 
 JULES=/group_workspaces/jasmin2/jules_bd/jules_build/jules-vn3.4.1/build/bin/jules.exe
