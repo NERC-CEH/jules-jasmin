@@ -66,11 +66,6 @@ class CrowdClient(object):
             app_name: Application login name for Crowd server
             app_pwd: Application password for Crowd server
         """
-        # Load up the config from file
-        from ConfigParser import SafeConfigParser
-
-        #config = SafeConfigParser()
-        #config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.ini'))
 
         self.crowd_user = app_name or config.get('crowd', 'app_name')
         self.crowd_password = app_pwd or config.get('crowd', 'app_password')
