@@ -54,6 +54,10 @@ JSON_MODEL_NAMELIST_NAME = 'name'
 JSON_MODEL_NAMELIST_INDEX = 'index'
 JSON_MODEL_NAMELIST_GROUP_ID = 'group_id'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
+# These are used for transferring files from the web app to the job runner (e.g. user uploaded driving datasets)
+JSON_MODEL_FILENAME = 'filename'
+JSON_MODEL_FILE_LINE = 'line'
+JOB_RUNNER_CLIENT_FILE_CHUNK_BYTES = 100*1024
 
 JSON_STATUS_STORAGE = 'storage_in_mb'
 JSON_STATUS_START_TIME = 'start_time'

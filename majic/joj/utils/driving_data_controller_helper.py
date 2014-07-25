@@ -148,7 +148,7 @@ class DrivingDataControllerHelper(object):
         prevline = None
         left_header = False  # Indicates that we have left the header
         n_line = 0
-        self.job_runner_client.open_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
+        self.job_runner_client.start_new_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
         for line in file:
             self.job_runner_client.append_to_file(model_run_id, constants.USER_UPLOAD_FILE_NAME, line)
             line = line.strip()

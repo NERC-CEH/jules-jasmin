@@ -37,7 +37,7 @@ class TestDrivingDataHelper(BaseTest):
         assert_that(self.driving_data_helper.n_lines, is_(3))
         assert_that(self.driving_data_helper.interp_list, is_(8 * ['i']))
 
-        assert self.driving_data_helper.job_runner_client.open_file.called
+        assert self.driving_data_helper.job_runner_client.start_new_file.called
         assert self.driving_data_helper.job_runner_client.append_to_file.called
         assert self.driving_data_helper.job_runner_client.close_file.called
 

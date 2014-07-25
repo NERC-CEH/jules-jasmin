@@ -27,6 +27,9 @@ JSON_MODEL_NAMELIST_INDEX = 'index'
 JSON_MODEL_PARAMETERS = 'parameters'
 JSON_MODEL_NAMELIST_NAME = 'name'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
+# These are used for transferring files from the web app to the job runner (e.g. user uploaded driving datasets)
+JSON_MODEL_FILENAME = 'filename'
+JSON_MODEL_FILE_LINE = 'line'
 
 # Model run statuses
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'

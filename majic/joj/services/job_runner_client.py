@@ -4,6 +4,7 @@
 import logging
 import json
 import requests
+import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
 
@@ -17,11 +18,13 @@ class JobRunnerClient(object):
 
     def __init__(self, config):
         self._config = config
+        self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
     def submit(self, model, parameters):
         """
         Submit the model to the job_runner service
         :param model: the run model including parameters
+        :param parameters: List of parameters to submit
         :return: status the model run is in and a message
         """
         data = self.convert_model_to_dictionary(model, parameters)
@@ -138,14 +141,78 @@ class JobRunnerClient(object):
         namelists.append(namelist)
         return namelist
 
-    def open_file(self, model_run_id, filename):
-        pass
+    def start_new_file(self, model_run_id, filename):
+        """
+        Create a new file in the model run directory
+        :param model_run_id: Model run ID
+        :param filename: Filename to create
+        :return:
+        """
+        self._file_lines_store = ''
+        data = {constants.JSON_MODEL_RUN_ID: model_run_id,
+                constants.JSON_MODEL_FILENAME: filename}
+        try:
+            url = self._config['job_runner_url'] + '/job_file/new'
+            requests.post(url, data=json.dumps(data))
+        except Exception, ex:
+            log.error("Job Runner client failed to open file: %s" % ex.message)
+            raise ServiceException("Could not contact job runner: %s" % ex.message)
 
     def append_to_file(self, model_run_id, filename, line):
-        pass
+        """
+        Append a line of text to an existing file in the model run directory. This will save
+        text until the size of the stored text is greater than the chunk size defined in the constants
+        class and will then send it all to the job runner.
+        :param model_run_id: Model run ID
+        :param filename: Filename to append to
+        :param line: Text to append
+        :return:
+        """
+        self._file_lines_store += line
+        if sys.getsizeof(self._file_lines_store, 0) > constants.JOB_RUNNER_CLIENT_FILE_CHUNK_BYTES:
+
+            data = {constants.JSON_MODEL_RUN_ID: model_run_id,
+                    constants.JSON_MODEL_FILENAME: filename,
+                    constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
+            try:
+                url = self._config['job_runner_url'] + '/job_file/append'
+                requests.post(url, data=json.dumps(data))
+                self._file_lines_store = ''
+            except Exception, ex:
+                log.error("Job Runner client failed to append to a file: %s" % ex.message)
+                raise ServiceException("Could not contact job runner: %s" % ex.message)
 
     def delete_file(self, model_run_id, filename):
-        pass
+        """
+        Delete a file in the model_run directory
+        :param model_run_id: Model run ID
+        :param filename: Filename to delete
+        :return:
+        """
+        data = {constants.JSON_MODEL_RUN_ID: model_run_id,
+                constants.JSON_MODEL_FILENAME: filename}
+        try:
+            url = self._config['job_runner_url'] + '/job_file/delete'
+            requests.post(url, data=json.dumps(data))
+        except Exception, ex:
+            log.error("Job Runner client failed to delete file: %s" % ex.message)
+            raise ServiceException("Could not contact job runner: %s" % ex.message)
 
     def close_file(self, model_run_id, filename):
-        pass
+        """
+        Close a file that has been appended to. This writes to the file any remaining text that was
+        not sent to the job runner in the last text chunk.
+        :param model_run_id: Model run ID
+        :param filename: Filename to close
+        :return:
+        """
+        data = {constants.JSON_MODEL_RUN_ID: model_run_id,
+                constants.JSON_MODEL_FILENAME: filename,
+                constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
+        try:
+            url = self._config['job_runner_url'] + '/job_file/append'
+            requests.post(url, data=json.dumps(data))
+            self._file_lines_store = ''
+        except Exception, ex:
+            log.error("Job Runner client failed to close file: %s" % ex.message)
+            raise ServiceException("Could not contact job runner: %s" % ex.message)

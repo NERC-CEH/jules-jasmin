@@ -111,8 +111,6 @@ class JobService(object):
         :return: job id
         :exception ServiceError: if there is a problem submitting the job
         """
-        if self.exists_run_dir(model_run[JSON_MODEL_RUN_ID]):
-            raise ServiceError("Run directory already exists for model run")
 
         run_directory = self.get_run_dir(model_run[JSON_MODEL_RUN_ID])
 
@@ -264,3 +262,43 @@ class JobService(object):
             return str(param_value).lower() == '.false.'
 
         return False
+
+    def create_file(self, model_run_id, filename):
+        """
+        Create a new file in the model run directory
+        :param model_run_id: Model run ID
+        :param filename: Filename to create
+        :return:
+        """
+        directory = self.get_run_dir(model_run_id)
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+        path = os.path.join(directory, filename)
+        f = open(path, 'w+')
+        f.close()
+
+    def delete_file(self, model_run_id, filename):
+        """
+        Delete a file in the model run directory
+        :param model_run_id: Model run ID
+        :param filename: Filename to delete
+        :return:
+        """
+        directory = self.get_run_dir(model_run_id)
+        path = os.path.join(directory, filename)
+        if os.path.exists(path):
+            os.remove(path)
+
+    def append_to_file(self, model_run_id, filename, text):
+        """
+        Append text to an existing file
+        :param model_run_id: Model run ID
+        :param filename: Filename to append to
+        :param text: Text to append
+        :return:
+        """
+        directory = self.get_run_dir(model_run_id)
+        path = os.path.join(directory, filename)
+        f = open(path, 'a')
+        f.write(text)
+        f.close()
