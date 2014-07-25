@@ -17,6 +17,9 @@ class JobRunnerClient(object):
 
     def __init__(self, config):
         self._config = config
+        self._verify = True
+        if 'job_runner_certificate' in config :
+            self._verify = config['job_runner_certificate']
 
     def submit(self, model, parameters):
         """
@@ -28,7 +31,7 @@ class JobRunnerClient(object):
         data = self.convert_model_to_dictionary(model, parameters)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
-            response = requests.post(url=url, data=json.dumps(data))
+            response = requests.post(url=url, data=json.dumps(data), verify=self._verify)
             # auth=('user', 'password'))
         except Exception, ex:
             log.error("Failed to submit job %s" % ex.message)
@@ -48,7 +51,7 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/status'
-            response = requests.post(url=url, data=json.dumps(model_ids))
+            response = requests.post(url=url, data=json.dumps(model_ids), verify=self._verify)
             # auth=('user', 'password'))
 
         except Exception, ex:
@@ -68,7 +71,10 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/delete'
-            response = requests.post(url=url, data=json.dumps({constants.JSON_MODEL_RUN_ID: model_run.id}))
+            response = requests.post(
+                url=url,
+                data=json.dumps({constants.JSON_MODEL_RUN_ID: model_run.id}),
+                verify=self._verify)
 
         except Exception:
             log.exception("Job runner service error on delete")
