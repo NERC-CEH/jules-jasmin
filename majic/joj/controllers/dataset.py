@@ -10,6 +10,7 @@ from joj.services.netcdf import NetCdfService
 from joj.services.user import UserService
 from joj.model.add_dataset_form import AddDatasetForm, UpdateDatasetForm
 from formencode import htmlfill
+from joj.lib import wmc_util
 
 
 __author__ = 'Phil Jenkins (Tessella)'
@@ -69,16 +70,16 @@ class DatasetController(BaseController):
         redirect_url = "%s?%s" % (ds.wms_url.split('?')[0], request.query_string)
 
         log.debug("Redirecting to %s" % redirect_url)
-        return urllib2.urlopen(redirect_url).read()
+        return wmc_util.openURL(redirect_url, external=False).read()
 
     def base(self):
-        """ Indirection layer to enable a base map wms service to be wrapped up in our domain
+        """
+        Indirection layer to enable a base map wms service to be wrapped up in our domain
         """
 
         redirect_url = "http://vmap0.tiles.osgeo.org/wms/vmap0?%s" % request.query_string
-        #return urllib2.urlopen(redirect_url).read()
-        return Response(body=urllib2.urlopen(redirect_url).read(), content_type='image/jpeg')
-
+        map_request = wmc_util.openURL(redirect_url, external=True)
+        return Response(body=map_request.read(), content_type='image/jpeg')
 
     def preview(self, id):
         """ Renders a preview view of the first 10 rows of a dataset (currently point data only!)

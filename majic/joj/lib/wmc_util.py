@@ -187,9 +187,26 @@ except KeyError:
     # no certificate specified so do not install opener
     pass
 
-def openURL(req):
+try:
+    externalOpener = urllib2.build_opener(
+        urllib2.ProxyHandler({'http': config['external_http_proxy']})
+    )
+except KeyError:
+    externalOpener = urllib2.build_opener()
+
+def openURL(req, external=False):
+    """
+    Open a URL, if it is external use the exteral setting including an external proxy
+    If it is internal work out whether it needs a proxy (always use client certificate authentication)
+    :param req: the request url
+    :param external: True if it is external, false for internal (default)
+    :return: the open request
+    """
     log.info("Making request: %s "%(req.get_full_url(),))
-    if _shouldUseProxy(req.get_full_url()):
+    if external:
+        log.debug("using external link")
+        fh = externalOpener.urlopen(req)
+    elif _shouldUseProxy(req.get_full_url()):
         log.debug("using proxy")
         fh = urllib2.urlopen(req)
     else:
