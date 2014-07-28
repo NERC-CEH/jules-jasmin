@@ -70,7 +70,7 @@ class DatasetController(BaseController):
         redirect_url = "%s?%s" % (ds.wms_url.split('?')[0], request.query_string)
 
         log.debug("Redirecting to %s" % redirect_url)
-        return wmc_util.openURL(redirect_url, external=False).read()
+        return wmc_util.create_request_and_open_url(redirect_url, external=False).read()
 
     def base(self):
         """
@@ -78,7 +78,7 @@ class DatasetController(BaseController):
         """
 
         redirect_url = "http://vmap0.tiles.osgeo.org/wms/vmap0?%s" % request.query_string
-        map_request = wmc_util.openURL(redirect_url, external=True)
+        map_request = wmc_util.create_request_and_open_url(redirect_url, external=True)
         return Response(body=map_request.read(), content_type='image/jpeg')
 
     def preview(self, id):

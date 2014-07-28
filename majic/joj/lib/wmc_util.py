@@ -192,11 +192,24 @@ try:
         urllib2.ProxyHandler({'http': config['external_http_proxy']})
     )
 except KeyError:
-    externalOpener = urllib2.build_opener()
+    externalOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+
+
+def create_request_and_open_url(url_string, external=False):
+    """
+    Create a request object and open a url, if it is external use the external setting including an external proxy
+    If it is internal work out whether it needs a proxy (always use client certificate authentication)
+    :param url_string: the url string
+    :param external: True if it is external, false for internal (default)
+    :return: the open request
+    """
+    req = urllib2.Request(url_string)
+    return openURL(req, external)
+
 
 def openURL(req, external=False):
     """
-    Open a URL, if it is external use the exteral setting including an external proxy
+    Open a URL, if it is external use the external setting including an external proxy
     If it is internal work out whether it needs a proxy (always use client certificate authentication)
     :param req: the request url
     :param external: True if it is external, false for internal (default)
@@ -205,7 +218,7 @@ def openURL(req, external=False):
     log.info("Making request: %s "%(req.get_full_url(),))
     if external:
         log.debug("using external link")
-        fh = externalOpener.urlopen(req)
+        fh = externalOpener.open(req)
     elif _shouldUseProxy(req.get_full_url()):
         log.debug("using proxy")
         fh = urllib2.urlopen(req)
