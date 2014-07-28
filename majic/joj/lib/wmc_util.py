@@ -191,8 +191,10 @@ try:
     externalOpener = urllib2.build_opener(
         urllib2.ProxyHandler({'http': config['external_http_proxy']})
     )
+    log.info("installed proxed external opener")
 except KeyError:
     externalOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+    log.info("installed non-proxed external opener")
 
 
 def create_request_and_open_url(url_string, external=False):
