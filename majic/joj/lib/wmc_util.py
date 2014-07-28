@@ -110,7 +110,7 @@ def GetWebMapCapabilities(endpoint):
     urlstring = parseEndpointString(endpoint, {'REQUEST':'GetCapabilities',
                                                'SERVICE':'WMS',
                                                'VERSION':'1.3.0'} )
-    log.debug("urlstring = %s" % (urlstring,))
+    log.info("urlstring = %s" % (urlstring,))
     req = urllib2.Request(urlstring)
     try:
         req.add_header('Cookie', request.headers.get('Cookie', ''))
