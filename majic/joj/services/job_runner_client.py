@@ -17,9 +17,6 @@ class JobRunnerClient(object):
 
     def __init__(self, config):
         self._config = config
-        self._verify = True
-        if 'job_runner_certificate' in config :
-            self._verify = config['job_runner_certificate']
 
     def submit(self, model, parameters):
         """
@@ -31,7 +28,7 @@ class JobRunnerClient(object):
         data = self.convert_model_to_dictionary(model, parameters)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
-            response = requests.post(url=url, data=json.dumps(data), verify=self._verify)
+            response = self._post_securely(data, url)
             # auth=('user', 'password'))
         except Exception, ex:
             log.error("Failed to submit job %s" % ex.message)
@@ -51,7 +48,7 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/status'
-            response = requests.post(url=url, data=json.dumps(model_ids), verify=self._verify)
+            response = self._post_securely(model_ids, url)
             # auth=('user', 'password'))
 
         except Exception, ex:
@@ -71,10 +68,7 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/delete'
-            response = requests.post(
-                url=url,
-                data=json.dumps({constants.JSON_MODEL_RUN_ID: model_run.id}),
-                verify=self._verify)
+            response = self._post_securely({constants.JSON_MODEL_RUN_ID: model_run.id}, url)
 
         except Exception:
             log.exception("Job runner service error on delete")
@@ -163,3 +157,19 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_PARAMETERS: {}}
         namelists.append(namelist)
         return namelist
+
+    def _post_securely(self, data, url):
+        """
+        Use the ssl certificates to post some fata
+        :param data: the data to post
+        :param url: the url to post to
+        :return: the response
+        """
+        verify = True
+        if self._config and 'job_runner_certificate' in self._config:
+            verify = self._config['job_runner_certificate']
+        cert = None
+        if self._config and 'majic_certificate_path' in self._config:
+            cert = (self._config['majic_certificate_path'], self._config['majic_certificate_key_path'])
+
+        return requests.post(url=url, data=json.dumps(data), verify=verify, cert=cert)

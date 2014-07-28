@@ -19,7 +19,7 @@ class TestWithFullModelRun(TestController):
 
     def setUp(self):
         super(TestWithFullModelRun, self).setUp()
-        self.running_job_client = JobRunnerClient(None)
+        self.running_job_client = JobRunnerClient([])
         self.email_service = EmailService()
         self.email_service.send_email = Mock()
 

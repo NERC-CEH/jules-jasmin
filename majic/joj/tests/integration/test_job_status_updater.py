@@ -22,7 +22,7 @@ class TestJobDataUpdater(TestController):
     def setUp(self):
         super(TestJobDataUpdater, self).setUp()
         self.clean_database()
-        self.running_job_client = JobRunnerClient(None)
+        self.running_job_client = JobRunnerClient([])
         self.email_service = EmailService()
         self.email_service.send_email = Mock()
 
