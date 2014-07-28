@@ -15,7 +15,7 @@ import urllib2, urllib
 import os
 import logging
 import urlparse
-from utils.https_client_auth_handler import HTTPSClientAuthHandler
+from joj.utils.https_client_auth_handler import HTTPSClientAuthHandler
 from pylons import config
 
 log = logging.getLogger(__name__)
