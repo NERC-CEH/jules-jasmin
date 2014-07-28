@@ -15,6 +15,9 @@ import urllib2, urllib
 import os
 import logging
 import urlparse
+from utils.https_client_auth_handler import HTTPSClientAuthHandler
+from pylons import config
+
 log = logging.getLogger(__name__)
 
 
@@ -175,6 +178,14 @@ def GetResponse(url):
     
 
 noProxyOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+try:
+    auth = HTTPSClientAuthHandler(config['majic_certificate_key_path'], config['majic_certificate_path'])
+    ssl_opener = urllib2.build_opener(auth)
+    log.debug("installed client certificate opener")
+    urllib2.install_opener(ssl_opener)
+except KeyError:
+    # no certificate specified so do not install opener
+    pass
 
 def openURL(req):
     log.info("Making request: %s "%(req.get_full_url(),))
