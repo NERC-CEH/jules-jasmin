@@ -219,14 +219,14 @@ def openURL(req, external=False):
     """
     log.info("Making request: %s "%(req.get_full_url(),))
     if external:
-        log.debug("using external link")
+        log.info("using external link")
         fh = externalOpener.open(req)
     elif _shouldUseProxy(req.get_full_url()):
-        log.debug("using proxy")
-        fh = urllib2.urlopen(req)
+        log.info("using proxy")
+        fh = ssl_opener.open(req)
     else:
-        log.debug("not using proxy")
-        fh = noProxyOpener.open(req)
+        log.info("not using proxy")
+        fh = ssl_opener.open(req)
         
     return fh
 
