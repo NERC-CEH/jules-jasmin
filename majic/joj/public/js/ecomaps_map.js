@@ -292,7 +292,7 @@ var EcomapsMap = (function() {
 
         }
         else {
-
+            OpenLayers.IMAGE_RELOAD_ATTEMPTS = 10;
             map = new OpenLayers.Map('map');
             wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
                 "/dataset/base", {layers: 'basic'});

@@ -28,6 +28,7 @@ class DapClient(object):
         :param url: The URL of the OpenDAP dataset to look for
         """
         try:
+            # this is a modified open url. See pydap factory
             self._dataset = open_url(url)
         except Exception:
             log.exception("Can not open the dataset URL '%s'." % url)
