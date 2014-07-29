@@ -9,6 +9,7 @@ from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dap_client import DapClient
 from joj.services.dataset import DatasetService
+from joj.services.dap_client_factory import DapClientFactory
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class MapController(BaseController):
     _dataset_service = None
 
     def __init__(self, user_service=UserService(), model_run_service=ModelRunService(),
-                 dataset_service=DatasetService()):
+                 dataset_service=DatasetService(), dap_factory=DapClientFactory()):
         """
         Constructor
         :param user_service: Service to access user data
@@ -36,6 +37,7 @@ class MapController(BaseController):
         self._user_service = user_service
         self._model_run_service = model_run_service
         self._dataset_service = dataset_service
+        self._dap_factory = dap_factory
 
     def view(self, id):
         """
@@ -70,7 +72,7 @@ class MapController(BaseController):
         lon = float(request.params['lon'])
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
         url = dataset.netcdf_url
-        dap_client = DapClient(url)
+        dap_client = self._dap_factory.get_dap_client(url)
         return dap_client.get_graph_data(lat, lon)
 
     @jsonify
