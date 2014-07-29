@@ -115,7 +115,8 @@ class JobService(object):
         run_directory = self.get_run_dir(model_run[JSON_MODEL_RUN_ID])
 
         #create run directory
-        os.mkdir(run_directory)
+        if not os.path.exists(run_directory):
+            os.mkdir(run_directory)
 
         #create output dir
         os.mkdir(os.path.join(run_directory, OUTPUT_DIR))

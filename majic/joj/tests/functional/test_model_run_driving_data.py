@@ -252,7 +252,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string('45'))
         assert_that(response.normal_body, contains_string('2000-01-01 00:00'))
         assert_that(response.normal_body, contains_string('2000-01-01 02:00'))
-        assert_that(response.normal_body, contains_string('3 rows of driving data successfully uploaded'))
+        assert_that(response.normal_body, contains_string('3 rows of driving data currently uploaded'))
 
     def test_GIVEN_valid_user_driving_data_selected_WHEN_page_submit_THEN_proceeds_to_next_page(self):
         self._add_model_run_being_created()

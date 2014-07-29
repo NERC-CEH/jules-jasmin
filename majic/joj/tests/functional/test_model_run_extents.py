@@ -5,7 +5,7 @@ from urlparse import urlparse
 import datetime
 from hamcrest import assert_that, is_, contains_string, close_to
 from pylons import url
-from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
+from joj.model import DrivingDataset, Session, session_scope, ModelRun, User, ParameterValue
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import *
@@ -34,7 +34,20 @@ class TestModelRunExtents(TestController):
             self.model_run.status = self._status(MODEL_RUN_STATUS_CREATED)
             self.model_run.driving_dataset_id = self.driving_data.id
             self.model_run.user = self.user
+
+            param1 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_INTERP)
+            pv1 = ParameterValue()
+            pv1.parameter_id = param1.id
+            pv1.set_value_from_python(8 * ['nf'])
+
+            param2 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_DATA_PERIOD)
+            pv2 = ParameterValue()
+            pv2.parameter_id = param2.id
+            pv2.set_value_from_python(60 * 60)
+
+            self.model_run.parameter_values = [pv1, pv2]
             session.add(self.model_run)
+
 
     def test_GIVEN_no_created_model_WHEN_page_get_THEN_redirect_to_create(self):
         self.clean_database()

@@ -6,6 +6,7 @@ from joj.model.non_database.spatial_extent import InvalidSpatialExtent, SpatialE
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent, TemporalExtent
 from joj.utils import constants
 from joj.services.lat_lon_service import LatLonService
+from joj.services.dataset import DatasetService
 
 
 def create_values_dict_from_database(model_run, driving_data):
@@ -16,50 +17,158 @@ def create_values_dict_from_database(model_run, driving_data):
     :param driving_data: The driving data selected for the model_run
     :return: Dictionary of form input names -> values
     """
+    # if driving_data.id == dataset_service.get_id_for_user_upload_driving_dataset():
+    #     return _create_values_dict_for_user_driving_data(model_run)
+    # else:
     values = {}
+    is_user_data = _is_user_driving_data(driving_data)
+
+    # Defaults to true unless it's user uploaded single site data
     multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
     if multicell is None:
-        multicell = True
+        multicell = not is_user_data
+    values['site'] = 'multi' if multicell else 'single'
 
-    if multicell:
-        values['site'] = 'multi'
-    else:
-        values['site'] = 'single'
-    values['lat'], values['lon'] = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE) \
-        or [None, None]
-    point_value = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA)
-    if point_value is None:
-        point_value = False
+    values['lat'], values['lon'] = _get_lat_lon(model_run, is_user_data)
+
+    values['lat_s'], values['lat_n'] = _get_lat_bounds(model_run, driving_data, is_user_data)
+    values['lon_w'], values['lon_e'] = _get_lon_bounds(model_run, driving_data, is_user_data)
+
+    point_value = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA) or False
     if not point_value:
         values['average_over_cell'] = 1
 
-    values['lat_s'], values['lat_n'] = model_run.get_python_parameter_value(
-        constants.JULES_PARAM_LAT_BOUNDS) \
-        or (driving_data.boundary_lat_south, driving_data.boundary_lat_north)
-    values['lon_w'], values['lon_e'] = model_run.get_python_parameter_value(
-        constants.JULES_PARAM_LON_BOUNDS) \
-        or (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-
-    start_date = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START)
-    if start_date is not None:
-        values['start_date'] = start_date.date()
-    else:
-        values['start_date'] = driving_data.time_start.date()
-
-    end_date = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
-    if end_date is not None:
-        values['end_date'] = end_date.date()
-    else:
-        values['end_date'] = driving_data.time_end.date()
+    values['start_date'] = _get_start_datetime(model_run, driving_data, is_user_data).date()
+    values['end_date'] = _get_end_datetime(model_run, driving_data, is_user_data).date()
 
     return values
 
 
-def save_extents_against_model_run(values, driving_data, model_run_service, user):
+def _get_lat_lon(model_run, is_user_data):
+    latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE)
+    return latlon if latlon is not None else _get_default_lat_lon(model_run, is_user_data)
+
+
+def _get_default_lat_lon(model_run, is_user_data):
+    if is_user_data:
+        return model_run.driving_data_lat, model_run.driving_data_lon
+    else:
+        return None, None
+
+
+def _get_lat_bounds(model_run, driving_data, is_user_data):
+    lat_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS)
+    return lat_bounds if lat_bounds is not None else _get_default_lat_bounds(model_run, driving_data, is_user_data)
+
+
+def _get_default_lat_bounds(model_run, driving_data, is_user_data):
+    if is_user_data:
+        return model_run.driving_data_lat, model_run.driving_data_lat
+    else:
+        return driving_data.boundary_lat_north, driving_data.boundary_lat_south
+
+
+def _get_lon_bounds(model_run, driving_data, is_user_data):
+    lon_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS)
+    return lon_bounds if lon_bounds is not None else _get_default_lon_bounds(model_run, driving_data, is_user_data)
+
+
+def _get_default_lon_bounds(model_run, driving_data, is_user_data):
+    if is_user_data:
+        return model_run.driving_data_lon, model_run.driving_data_lon
+    else:
+        return (driving_data.boundary_lon_west, driving_data.boundary_lon_east)
+
+
+def _get_start_datetime(model_run, driving_data, is_user_data):
+    start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START)
+    return start if start is not None else _get_acceptable_start_datetime(model_run, driving_data, is_user_data)
+
+
+def _get_end_datetime(model_run, driving_data, is_user_data):
+    end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
+    return end if end is not None else _get_acceptable_end_datetime(model_run, driving_data, is_user_data)
+
+
+def _get_acceptable_start_datetime(model_run, driving_data, is_user_data):
+    """
+    Get the earliest acceptable run start time - taking into account the needs of the various
+    interpolation flags to have spare driving data points at the beginning and / or end of the run
+    :param model_run: The model run being used.
+    :return:
+    """
+
+    if is_user_data:
+        start_datetime = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_START)
+    else:
+        start_datetime = driving_data.time_start
+
+    period = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
+    interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP)
+
+    extra_time = []
+    for interp in interps:
+        if interp in constants.INTERPS_EXTRA_STEPS_RUN_END:
+            extra_time.append(constants.INTERPS_EXTRA_STEPS_RUN_END[interp])
+    if len(extra_time) > 0:
+        n_steps = max(extra_time)
+    else:
+        n_steps = 0
+
+    delta = datetime.timedelta(seconds=(period * n_steps))
+    return start_datetime + delta
+
+
+def _get_acceptable_end_datetime(model_run, driving_data, is_user_data):
+    """
+    Get the latest acceptable run end time - taking into account the needs of the various
+    interpolation flags to have spare driving data points at the beginning and / or end of the run
+    :param model_run: The model run being used.
+    :return:
+    """
+
+    if is_user_data:
+        end_datetime = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_END)
+    else:
+        end_datetime = driving_data.time_end
+
+    period = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
+    interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP)
+
+    extra_time = []
+    for interp in interps:
+        if interp in constants.INTERPS_EXTRA_STEPS_RUN_END:
+            extra_time.append(constants.INTERPS_EXTRA_STEPS_RUN_END[interp])
+    if len(extra_time) > 0:
+        n_steps = max(extra_time)
+    else:
+        n_steps = 0
+
+    delta = datetime.timedelta(seconds=(period * n_steps))
+    return end_datetime - delta
+
+
+def set_template_context_fields(tmpl_context, model_run, driving_data):
+    """
+    Add any required values to the template context object
+    :param tmpl_context: Template context object
+    :param model_run: The model run currently being used
+    :param driving_data: The currently selected driving data
+    :return:
+    """
+    is_user_data = _is_user_driving_data(driving_data)
+    tmpl_context.boundary_lat_n, tmpl_context.boundary_lat_s = _get_lat_bounds(model_run, driving_data, is_user_data)
+    tmpl_context.boundary_lon_w, tmpl_context.boundary_lon_e = _get_lon_bounds(model_run, driving_data, is_user_data)
+    tmpl_context.start_date = _get_acceptable_start_datetime(model_run, driving_data, is_user_data).date()
+    tmpl_context.end_date = _get_acceptable_end_datetime(model_run, driving_data, is_user_data).date()
+
+
+def save_extents_against_model_run(values, driving_data, model_run, model_run_service, user):
     """
     Save spatial and temporal extents against the model run currently being created
     :param values: The extents page POST values
     :param driving_data: Chosen driving data
+    :param model_run: The model run currently being used
     :param model_run_service: Model run service to use
     :param user: Currently logged in user
     :return: Nothing
@@ -86,27 +195,39 @@ def save_extents_against_model_run(values, driving_data, model_run_service, user
         lat, lon = lat_lon_service.get_nearest_cell_center(values['lat'], values['lon'], driving_data.id)
         params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [lat, lon]])
         params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'average_over_cell' not in values])
-    run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
-    run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
+
+    is_user_data = _is_user_driving_data(driving_data)
+    run_start = datetime.datetime.combine(values['start_date'],
+                                          _get_acceptable_start_datetime(model_run, driving_data, is_user_data).time())
+    run_end = datetime.datetime.combine(values['end_date'],
+                                        _get_acceptable_end_datetime(model_run, driving_data, is_user_data).time())
     params_to_save.append([constants.JULES_PARAM_RUN_START, run_start])
     params_to_save.append([constants.JULES_PARAM_RUN_END, run_end])
     model_run_service.save_new_parameters(params_to_save, params_to_delete, user)
 
 
-def validate_extents_form_values(values, driving_data, errors):
+def validate_extents_form_values(values, model_run, driving_data, errors):
     """
     Validate extents values dictionary and add errors to an errors object if needed
     :param values: Dictionary of form element names : values
+    :param model_run: Current model run
     :param driving_data: Chosen driving data
     :param errors: Object to add errors to
     :return: nothing
     """
     # Set the start and end times to be the times at which the driving data starts and ends.
-    run_start = datetime.datetime.combine(values['start_date'], driving_data.time_start.time())
-    run_end = datetime.datetime.combine(values['end_date'], driving_data.time_end.time())
-    spatial_extent = SpatialExtent(driving_data.boundary_lat_north, driving_data.boundary_lat_south,
-                                   driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-    temporal_extent = TemporalExtent(driving_data.time_start, driving_data.time_end)
+    is_user_data = _is_user_driving_data(driving_data)
+
+    run_start = datetime.datetime.combine(values['start_date'],
+                                          _get_acceptable_start_datetime(model_run, driving_data, is_user_data).time())
+    run_end = datetime.datetime.combine(values['end_date'],
+                                        _get_acceptable_end_datetime(model_run, driving_data, is_user_data).time())
+    temporal_extent = TemporalExtent(_get_acceptable_start_datetime(model_run, driving_data, is_user_data),
+                                     _get_acceptable_end_datetime(model_run, driving_data, is_user_data))
+
+    lat_bounds = _get_default_lat_bounds(model_run, driving_data, is_user_data)
+    lon_bounds = _get_default_lon_bounds(model_run, driving_data, is_user_data)
+    spatial_extent = SpatialExtent(lat_bounds[0], lat_bounds[1], lon_bounds[0], lon_bounds[1])
 
     if values['site'] == 'multi':
         _validate_multicell_spatial_extents(spatial_extent, errors,
@@ -193,3 +314,8 @@ def validate_temporal_extents(temporal_extent, errors, run_start, run_end):
             temporal_extent.set_end(run_end)
         except InvalidTemporalExtent as e:
             errors['end_date'] = e.message
+
+
+def _is_user_driving_data(driving_data):
+    dataset_service = DatasetService()
+    return driving_data.id == dataset_service.get_id_for_user_upload_driving_dataset()

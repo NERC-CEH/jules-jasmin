@@ -1,14 +1,14 @@
 // These are used for the custom radio buttons
 var id_attr = 'site';
 var radio_button_id_prefix = '#site_';
-var click_selectors = '.site-select';
+var click_selectors = '.select-div, .description-div';
 
 /*
  * This is called when the user has chosen to use multi-cell extents.
  * Show the multi-cell area of the page and hide the single cell area.
  */
 var chooseMultiCell = function () {
-    var singleCell = $('#single-cell, #upload-single-cell');
+    var singleCell = $('#single-cell');
     var multiCell = $('#multi-cell')
     singleCell.find('input').prop('disabled', true);
     singleCell.hide();
@@ -21,7 +21,7 @@ var chooseMultiCell = function () {
  * Show the single-cell area of the page and hide the multi cell area.
  */
 var chooseSingleCell = function () {
-    var singleCell = $('#single-cell, #upload-single-cell');
+    var singleCell = $('#single-cell');
     var multiCell = $('#multi-cell')
     singleCell.find('input').prop('disabled', false);
     singleCell.show();
@@ -108,39 +108,6 @@ var displayBngError = function() {
     $('#bng-error').show();
 }
 
-var chooseUploadDrivingData = function () {
-    // Select the right option and deselect the other:
-    var yes = $('#upload_yes i');
-    yes.removeClass('grey');
-    yes.addClass('green');
-    yes.removeClass('fa-circle-o');
-    yes.addClass('fa-check-circle-o');
-    var no = $('#upload_no i');
-    no.addClass('grey');
-    no.removeClass('green');
-    no.addClass('fa-circle-o');
-    no.removeClass('fa-check-circle-o');
-
-    // Show the relevant div
-    $('#upload_driving_data').show();
-}
-
-var chooseNotUploadDrivingData = function () {
-    // Select the right option and deselect the other:
-    var no = $('#upload_no i');
-    no.removeClass('grey');
-    no.addClass('green');
-    no.removeClass('fa-circle-o');
-    no.addClass('fa-check-circle-o');
-    var yes = $('#upload_yes i');
-    yes.addClass('grey');
-    yes.removeClass('green');
-    yes.addClass('fa-circle-o');
-    yes.removeClass('fa-check-circle-o');
-
-    // Show the relevant div
-    $('#upload_driving_data').hide();
-}
 
 /*
  * Prepare the Extents page (extents.html).
@@ -159,12 +126,4 @@ $(document).ready(function() {
 
     // Add click handler for the BNG to Lat/Lon button
     $('#convert-bng').click(bngToLatLon);
-
-    $('#upload_no').click(chooseNotUploadDrivingData);
-    $('#upload_yes').click(chooseUploadDrivingData);
-    chooseNotUploadDrivingData();
-
-    // Set Up tabs
-    $('#driving-data-tabs').tab('show');
-    $('#tab-upload').addClass('active');
 });

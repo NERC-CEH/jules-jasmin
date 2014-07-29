@@ -29,8 +29,9 @@ class DrivingDataControllerHelper(object):
     period = None
     job_runner_client = None
 
-    def __init__(self, job_runner_client=JobRunnerClient(config)):
+    def __init__(self, job_runner_client=JobRunnerClient(config), dataset_service=DatasetService()):
         self.job_runner_client = job_runner_client
+        self.dataset_service = dataset_service
 
     def create_values_dict_from_database(self, model_run):
         """
@@ -87,12 +88,29 @@ class DrivingDataControllerHelper(object):
             self.job_runner_client.delete_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
             return
 
+        # Save the fractional file
+        self._save_fractional_file_to_job_runner(model_run, model_run_id)
+
         # Do database stuff
-        new_driving_dataset = self._create_uploaded_driving_dataset(start_date, end_date, lat, lon,
-                                                                    file, model_run_service)
+        new_driving_dataset = self._create_uploaded_driving_dataset(start_date, end_date, lat, lon, model_run_service)
+
+        user_upload_id = self.dataset_service.get_id_for_user_upload_driving_dataset()
+        if old_driving_dataset is not None and old_driving_dataset.id == user_upload_id:
+            old_driving_dataset = self._create_uploaded_driving_dataset(
+                start_date, end_date, lat, lon, model_run_service)
+
         model_run_service.save_driving_dataset_for_new_model(new_driving_dataset, old_driving_dataset, user)
 
-    def _create_uploaded_driving_dataset(self, start_date, end_date, lat, lon, file, model_run_service):
+    def _save_fractional_file_to_job_runner(self, model_run, model_run_id):
+
+        # TODO this properly by reading from the fractional netCDF file
+        frac = "0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0"
+
+        self.job_runner_client.start_new_file(model_run_id, constants.FRACTIONAL_FILENAME)
+        self.job_runner_client.append_to_file(model_run, constants.FRACTIONAL_FILENAME, frac)
+        self.job_runner_client.close_file(model_run_id, constants.FRACTIONAL_FILENAME)
+
+    def _create_uploaded_driving_dataset(self, start_date, end_date, lat, lon, model_run_service):
         class UploadedDrivingDataset(object):
             """
             An uploaded driving dataset
@@ -108,29 +126,34 @@ class DrivingDataControllerHelper(object):
         driving_dataset.driving_data_lat = lat
         driving_dataset.driving_data_lon = lon
         driving_dataset.driving_data_rows = self.n_lines
-
         driving_dataset.parameter_values = []
 
-        period = self.period
-        filename = constants.USER_UPLOAD_FILE_NAME
-        file_vars = self.var_list
-        interp_list = self.interp_list
         params_to_save = [[constants.JULES_PARAM_DRIVE_DATA_START, start_date],
                           [constants.JULES_PARAM_DRIVE_DATA_END, end_date],
-                          [constants.JULES_PARAM_DRIVE_DATA_PERIOD, period],
-                          [constants.JULES_PARAM_DRIVE_FILE, filename],
-                          [constants.JULES_PARAM_DRIVE_NVARS, len(file_vars)],
-                          [constants.JULES_PARAM_DRIVE_VAR, file_vars],
-                          [constants.JULES_PARAM_DRIVE_INTERP, interp_list]]
-        param_values = []
+                          [constants.JULES_PARAM_DRIVE_DATA_PERIOD, self.period],
+                          [constants.JULES_PARAM_DRIVE_FILE, constants.USER_UPLOAD_FILE_NAME],
+                          [constants.JULES_PARAM_DRIVE_NVARS, len(self.var_list)],
+                          [constants.JULES_PARAM_DRIVE_VAR, self.var_list],
+                          [constants.JULES_PARAM_DRIVE_INTERP, self.interp_list],
+                          [constants.JULES_PARAM_LATLON_LATITUDE, lat],
+                          [constants.JULES_PARAM_LATLON_LONGITUDE, lon],
+                          [constants.JULES_PARAM_FRAC_FILE, constants.FRACTIONAL_FILENAME]]
+
         for param in params_to_save:
             parameter = model_run_service.get_parameter_by_constant(param[0])
             param_val = ParameterValue()
             param_val.set_value_from_python(param[1])
             param_val.parameter_id = parameter.id
 
-            param_values.append(param_val)
-        driving_dataset.parameter_values = param_values
+            driving_dataset.parameter_values.append(param_val)
+
+        user_upload_id = self.dataset_service.get_id_for_user_upload_driving_dataset()
+        ds = self.dataset_service.get_driving_dataset_by_id(user_upload_id)
+        for pv in ds.parameter_values:
+            parameter_value = ParameterValue()
+            parameter_value.parameter_id = pv.parameter_id
+            parameter_value.value = pv.value
+            driving_dataset.parameter_values.append(parameter_value)
         return driving_dataset
 
     def _process_driving_data_file(self, file, start_date, end_date, model_run_id):

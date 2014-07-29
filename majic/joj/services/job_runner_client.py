@@ -148,15 +148,19 @@ class JobRunnerClient(object):
         :param filename: Filename to create
         :return:
         """
+        if self._config['job_runner_mode'] == 'test':
+            return
         self._file_lines_store = ''
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
                 constants.JSON_MODEL_FILENAME: filename}
         try:
-            url = self._config['job_runner_url'] + '/job_file/new'
-            requests.post(url, data=json.dumps(data))
+            url = self._config['job_runner_url'] + 'job_file/new'
+            response = requests.post(url, data=json.dumps(data))
+            if not response.status_code == 200:
+                raise ServiceException(response.text)
         except Exception, ex:
             log.error("Job Runner client failed to open file: %s" % ex.message)
-            raise ServiceException("Could not contact job runner: %s" % ex.message)
+            raise ServiceException("Error storing file on job runner: %s" % ex.message)
 
     def append_to_file(self, model_run_id, filename, line):
         """
@@ -168,6 +172,8 @@ class JobRunnerClient(object):
         :param line: Text to append
         :return:
         """
+        if self._config['job_runner_mode'] == 'test':
+            return
         self._file_lines_store += line
         if sys.getsizeof(self._file_lines_store, 0) > constants.JOB_RUNNER_CLIENT_FILE_CHUNK_BYTES:
 
@@ -175,12 +181,14 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_FILENAME: filename,
                     constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
             try:
-                url = self._config['job_runner_url'] + '/job_file/append'
-                requests.post(url, data=json.dumps(data))
+                url = self._config['job_runner_url'] + 'job_file/append'
+                response = requests.post(url, data=json.dumps(data))
                 self._file_lines_store = ''
+                if not response.status_code == 200:
+                    raise ServiceException(response.text)
             except Exception, ex:
                 log.error("Job Runner client failed to append to a file: %s" % ex.message)
-                raise ServiceException("Could not contact job runner: %s" % ex.message)
+                raise ServiceException("Error storing file on job runner: %s" % ex.message)
 
     def delete_file(self, model_run_id, filename):
         """
@@ -189,14 +197,18 @@ class JobRunnerClient(object):
         :param filename: Filename to delete
         :return:
         """
+        if self._config['job_runner_mode'] == 'test':
+            return
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
                 constants.JSON_MODEL_FILENAME: filename}
         try:
-            url = self._config['job_runner_url'] + '/job_file/delete'
-            requests.post(url, data=json.dumps(data))
+            url = self._config['job_runner_url'] + 'job_file/delete'
+            response = requests.post(url, data=json.dumps(data))
+            if not response.status_code == 200:
+                raise ServiceException(response.text)
         except Exception, ex:
             log.error("Job Runner client failed to delete file: %s" % ex.message)
-            raise ServiceException("Could not contact job runner: %s" % ex.message)
+            raise ServiceException("Error storing file on job runner: %s" % ex.message)
 
     def close_file(self, model_run_id, filename):
         """
@@ -206,13 +218,17 @@ class JobRunnerClient(object):
         :param filename: Filename to close
         :return:
         """
+        if self._config['job_runner_mode'] == 'test':
+            return
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
                 constants.JSON_MODEL_FILENAME: filename,
                 constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
         try:
-            url = self._config['job_runner_url'] + '/job_file/append'
-            requests.post(url, data=json.dumps(data))
+            url = self._config['job_runner_url'] + 'job_file/append'
+            response = requests.post(url, data=json.dumps(data))
             self._file_lines_store = ''
+            if not response.status_code == 200:
+                raise ServiceException(response.text)
         except Exception, ex:
             log.error("Job Runner client failed to close file: %s" % ex.message)
-            raise ServiceException("Could not contact job runner: %s" % ex.message)
+            raise ServiceException("Error storing file on job runner: %s" % ex.message)

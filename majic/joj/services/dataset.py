@@ -167,6 +167,18 @@ class DatasetService(DatabaseService):
                 .order_by(DrivingDataset.order_by_id)\
                 .all()
 
+    def get_driving_dataset_by_id(self, id):
+        """
+        Get a driving dataset specified by an ID
+        :param id: Driving dataset ID
+        :return: DrivingDataset
+        """
+        with self.readonly_scope() as session:
+            return session.query(DrivingDataset)\
+                .options(joinedload(DrivingDataset.parameter_values))\
+                .filter(DrivingDataset.id == id)\
+                .one()
+
     def get_spatial_extent(self, driving_dataset_id):
         """
         Returns a SpatialExtent representing the available lat/long boundaries for the dataset

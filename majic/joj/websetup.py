@@ -380,12 +380,6 @@ def setup_app(command, conf, vars):
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
         driving_ds_3.order_by_id = 300
 
-        driving_ds_upload = DrivingDataset()
-        driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
-        driving_ds_upload.description = "Choose this option if you wish to upload your own driving data for a " \
-                                        "single cell site"
-        driving_ds_upload.order_by_id = 1000
-
         parameters = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
             [constants.JULES_PARAM_DRIVE_DATA_END, "'2009-12-31 21:00:00'"],
@@ -452,5 +446,37 @@ def setup_app(command, conf, vars):
             location = DrivingDatasetLocation()
             location.base_url = file_template.format(name)
             location.driving_dataset = driving_ds_3
+
+        driving_ds_upload = DrivingDataset()
+        driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
+        driving_ds_upload.description = "Choose this option if you wish to upload your own driving data for a " \
+                                        "single cell site"
+        driving_ds_upload.order_by_id = 1000
+
+        parameters = [
+
+            [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
+            [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
+
+            [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
+            [constants.JULES_PARAM_SOIL_PROPS_VAR,
+                "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
+            [constants.JULES_PARAM_SOIL_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
+                                                  ".false. .false."],
+            [constants.JULES_PARAM_SOIL_CONST_VALS,
+             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+
+            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
+            [constants.JULES_PARAM_INITIAL_VAR,
+                "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+            [constants.JULES_PARAM_INITIAL_USE_FILE,
+                ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+            [constants.JULES_PARAM_INITIAL_CONST_VAL,
+                "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+        ]
+
+        for constant, value in parameters:
+            ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_upload, constant, value)
+            driving_ds_upload.parameter_values.append(ddpv)
 
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])

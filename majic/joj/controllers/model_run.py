@@ -30,6 +30,7 @@ from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.model.model_run_driving_data_schema import ModelRunDrivingDataSchema
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
+from joj.services.general import ServiceException
 
 # The prefix given to parameter name in html elements
 
@@ -224,15 +225,19 @@ class ModelRunController(BaseController):
 
             if action == u'Upload':
                 # This is a request to to upload a driving data file
-                driving_data_controller_helper.save_uploaded_driving_data(values, errors,
-                                                                          self._model_run_service,
-                                                                          old_driving_dataset,
-                                                                          self.current_user)
+                try:
+                    driving_data_controller_helper.save_uploaded_driving_data(values, errors,
+                                                                              self._model_run_service,
+                                                                              old_driving_dataset,
+                                                                              self.current_user)
+                except ServiceException as e:
+                    helpers.error_flash(e.message)
+                    #redirect(url(controller='model_run', action='index'))
                 if len(errors) == 0:
                     # Reload the current page
+                    helpers.success_flash("Your driving data file has been successfully uploaded.")
                     redirect(url(controller='model_run', action='driving_data'))
                     return
-
                 else:
                     html = render('model_run/driving_data.html')
                     return htmlfill.render(
@@ -291,6 +296,7 @@ class ModelRunController(BaseController):
 
         # First we need to check that we are allowed to be on this page
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
+        c.model_run = model_run
         c.dataset = driving_data = model_run.driving_dataset
         if driving_data is None:
             helpers.error_flash(u"You must select a driving data set before you can set the extents")
@@ -300,10 +306,11 @@ class ModelRunController(BaseController):
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "extents")
             values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
+            extents_controller_helper.set_template_context_fields(c, model_run, driving_data)
 
             # We need to check that saved values for user selected spatial extent are consistent with the chosen
             # driving data (e.g. in case the user has gone back and changed their driving data).
-            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
+            extents_controller_helper.validate_extents_form_values(values, model_run, driving_data, errors)
 
             # Finally in our GET we render the page with any errors and values we have
             return htmlfill.render(
@@ -315,8 +322,9 @@ class ModelRunController(BaseController):
         # This is a POST
         else:
             values = self.form_result
+            extents_controller_helper.set_template_context_fields(c, model_run, driving_data)
 
-            extents_controller_helper.validate_extents_form_values(values, driving_data, errors)
+            extents_controller_helper.validate_extents_form_values(values, model_run, driving_data, errors)
 
             if len(errors) > 0:
                 return htmlfill.render(
@@ -325,7 +333,7 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
 
-            extents_controller_helper.save_extents_against_model_run(values, driving_data,
+            extents_controller_helper.save_extents_against_model_run(values, driving_data, model_run,
                                                                      self._model_run_service, self.current_user)
             # Get the action to perform
             self._model_run_controller_helper.check_user_quota(self.current_user)

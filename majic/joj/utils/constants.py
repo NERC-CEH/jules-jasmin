@@ -78,6 +78,13 @@ USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 
                             'wind', 'u', 'v']
 USER_UPLOAD_ALLOWED_INTERPS = ['a', 'b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
 
+# These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
+# or end of a run. Flags not stored in these are assumed not to require any additional time steps
+INTERPS_EXTRA_STEPS_RUN_END = {'i': 1}
+INTERPS_EXTRA_STEPS_RUN_START = {}
+
+FRACTIONAL_FILENAME = 'fractional.dat'
+
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
                     'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
@@ -124,11 +131,15 @@ JULES_PARAM_INPUT_GRID_DIM_NAME = [JULES_NML_INPUT, "grid_dim_name"]
 JULES_PARAM_INPUT_NPOINTS = [JULES_NML_INPUT, "npoints"]
 JULES_PARAM_INPUT_TIME_DIM_NAME = [JULES_NML_INPUT, "time_dim_name"]
 JULES_PARAM_INPUT_TYPE_DIM_NAME = [JULES_NML_INPUT, "type_dim_name"]
+JULES_PARAM_INPUT_GRID_NX = [JULES_NML_INPUT, "nx"]
+JULES_PARAM_INPUT_GRID_NY = [JULES_NML_INPUT, "ny"]
 
 JULES_NML_LATLON = "JULES_LATLON"
 JULES_PARAM_LATLON_FILE = [JULES_NML_LATLON, "file"]
 JULES_PARAM_LATLON_LAT_NAME = [JULES_NML_LATLON, "lat_name"]
 JULES_PARAM_LATLON_LON_NAME = [JULES_NML_LATLON, "lon_name"]
+JULES_PARAM_LATLON_LATITUDE = [JULES_NML_LATLON, "latitude"]
+JULES_PARAM_LATLON_LONGITUDE = [JULES_NML_LATLON, "longitude"]
 
 JULES_NML_LAND_FRAC = "JULES_LAND_FRAC"
 JULES_PARAM_LAND_FRAC_FILE = [JULES_NML_LAND_FRAC, "file"]
@@ -164,6 +175,8 @@ JULES_PARAM_SOIL_PROPS_FILE = [JULES_NML_SOIL_PROPS, "file"]
 JULES_PARAM_SOIL_PROPS_NVARS = [JULES_NML_SOIL_PROPS, "nvars"]
 JULES_PARAM_SOIL_PROPS_VAR = [JULES_NML_SOIL_PROPS, "var"]
 JULES_PARAM_SOIL_PROPS_VAR_NAME = [JULES_NML_SOIL_PROPS, "var_name"]
+JULES_PARAM_SOIL_USE_FILE = [JULES_NML_SOIL_PROPS, "use_file"]
+JULES_PARAM_SOIL_CONST_VALS = [JULES_NML_SOIL_PROPS, "const_val"]
 
 #initial namelist file
 JULES_NML_INITIAL = "JULES_INITIAL"
