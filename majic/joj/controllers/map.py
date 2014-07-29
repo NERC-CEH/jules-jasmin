@@ -1,15 +1,16 @@
+"""
 # header
+"""
 
 import logging
-import urllib2
 from pylons import config, request
 from pylons.decorators import jsonify
 from joj.lib.base import BaseController, render, c
 from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
-from joj.services.dap_client import DapClient
 from joj.services.dataset import DatasetService
 from joj.services.dap_client_factory import DapClientFactory
+from joj.lib.wmc_util import create_request_and_open_url
 
 log = logging.getLogger(__name__)
 
@@ -23,13 +24,17 @@ class MapController(BaseController):
     _model_run_service = None
     _dataset_service = None
 
-    def __init__(self, user_service=UserService(), model_run_service=ModelRunService(),
-                 dataset_service=DatasetService(), dap_factory=DapClientFactory()):
+    def __init__(self,
+                 user_service=UserService(),
+                 model_run_service=ModelRunService(),
+                 dataset_service=DatasetService(),
+                 dap_factory=DapClientFactory()):
         """
         Constructor
         :param user_service: Service to access user data
         :param model_run_service: Service to access model runs
         :param dataset_service: Service to access datasets
+        :param dap_factory: Factory to create a dap client
         """
 
         super(MapController, self).__init__()
@@ -81,7 +86,9 @@ class MapController(BaseController):
             Tests the connection to the map server
         """
         try:
-            response = urllib2.urlopen(config['thredds.server_url'], timeout=int(config['thredds.server_timeout'])).read()
+            create_request_and_open_url(
+                config['thredds.server_url'],
+                timeout=int(config['thredds.server_timeout'])).read()
             return True
         except:
             return False

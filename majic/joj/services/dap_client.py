@@ -6,6 +6,7 @@ import datetime
 import re
 from pydap.client import open_url
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
+from joj.lib.wmc_util import create_request_and_open_url
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,26 @@ class DapClient(object):
         Create a new DapClient for a specified dataset
         :param url: The URL of the OpenDAP dataset to look for
         """
+
+        def new_request(url):
+            """
+            Create a new dap request
+            :param url: the url
+            :return: headers and body tuple
+            """
+            log = logging.getLogger('pydap')
+            log.info('Opening %s' % url)
+
+            f = create_request_and_open_url(url.rstrip('?&'))
+            headers = dict(f.info().items())
+            body = f.read()
+            return headers, body
+
+        from pydap import client
+        client.request = new_request
+        from pydap import proxy
+        proxy.request = new_request
+
         try:
             # this is a modified open url. See pydap factory
             self._dataset = open_url(url)
