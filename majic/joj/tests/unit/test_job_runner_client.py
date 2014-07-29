@@ -2,7 +2,7 @@
 # header
 """
 from hamcrest import *
-from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist
+from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests import TestController
@@ -34,10 +34,19 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [parameter]
 
+        user = User()
+        user.id = 1
+        user.email = "email"
+        user.username = "username"
+        model_run.user = user
+
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
 
         assert_that(result[constants.JSON_MODEL_RUN_ID], is_(model_run.id), "value is correct")
         assert_that(result[constants.JSON_MODEL_CODE_VERSION], is_(model_run.code_version.name), "value is correct")
+        assert_that(result[constants.JSON_USER_ID], is_(user.id), "user id")
+        assert_that(result[constants.JSON_USER_NAME], is_(user.username), "user name")
+        assert_that(result[constants.JSON_USER_EMAIL], is_(user.email), "user email")
         namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
         assert_that(namelist_file_result[constants.JSON_MODEL_NAMELIST_FILE_FILENAME],
                     is_(namelist_file.filename), "value is correct")
@@ -76,6 +85,12 @@ class TestJobRunnerClient(TestController):
         model_run = ModelRun()
         model_run.id = 101
         code_version = CodeVersion(name='Jules v3.4.1')
+
+        user = User()
+        user.id = 1
+        user.email = "email"
+        user.username = "username"
+        model_run.user = user
 
         model_run.code_version = code_version
         code_version.parameters = [param_profile_name, param_var, param_nprofiles]
@@ -136,6 +151,12 @@ class TestJobRunnerClient(TestController):
         model_run = ModelRun()
         model_run.id = 101
         code_version = CodeVersion(name='Jules v3.4.1')
+
+        user = User()
+        user.id = 1
+        user.email = "email"
+        user.username = "username"
+        model_run.user = user
 
         model_run.code_version = code_version
         code_version.parameters = [parameter]

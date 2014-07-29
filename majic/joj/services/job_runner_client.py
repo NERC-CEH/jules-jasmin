@@ -110,7 +110,10 @@ class JobRunnerClient(object):
             {
                 constants.JSON_MODEL_RUN_ID: run_model.id,
                 constants.JSON_MODEL_CODE_VERSION: run_model.code_version.name,
-                constants.JSON_MODEL_NAMELIST_FILES: namelist_files
+                constants.JSON_MODEL_NAMELIST_FILES: namelist_files,
+                constants.JSON_USER_ID: run_model.user.id,
+                constants.JSON_USER_NAME: run_model.user.username,
+                constants.JSON_USER_EMAIL: run_model.user.email
             }
 
     def _find_or_create_namelist_file(self, namelist_files, namelist_filename):
@@ -160,7 +163,7 @@ class JobRunnerClient(object):
 
     def _post_securely(self, data, url):
         """
-        Use the ssl certificates to post some fata
+        Use the ssl certificates to post some data
         :param data: the data to post
         :param url: the url to post to
         :return: the response

@@ -494,6 +494,7 @@ class ModelRunService(DatabaseService):
             .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
             .filter(ModelRun.user == user) \
             .options(subqueryload(ModelRun.code_version)) \
+            .options(subqueryload(ModelRun.user)) \
             .one()
 
     def remove_parameter_set_from_model_being_created(self, parameter_values, user):

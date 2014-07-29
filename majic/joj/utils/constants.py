@@ -55,6 +55,10 @@ JSON_MODEL_NAMELIST_INDEX = 'index'
 JSON_MODEL_NAMELIST_GROUP_ID = 'group_id'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
 
+JSON_USER_NAME = 'user_name'
+JSON_USER_ID = 'user_id'
+JSON_USER_EMAIL = 'user_email'
+
 JSON_STATUS_STORAGE = 'storage_in_mb'
 JSON_STATUS_START_TIME = 'start_time'
 JSON_STATUS_END_TIME = 'end_time'
