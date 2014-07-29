@@ -1,3 +1,6 @@
+"""
+# header
+"""
 import os
 from pylons import config
 import re
@@ -5,6 +8,7 @@ import shutil
 from job_runner.tests import *
 from hamcrest import *
 from job_runner.utils.constants import *
+
 
 class TestJobsControllerNew(TestController):
 
@@ -21,10 +25,9 @@ class TestJobsControllerNew(TestController):
                      [
                          {'name': 'a name',
                           JSON_MODEL_NAMELIST_INDEX: 1,
-                          'parameters':
-                              {
-                                  'time_lens': '1'
-                              }
+                          'parameters': {
+                                            'time_lens': '1'
+                                        }
                          },
                          {
                              'name': JULES_PARAM_POINTS_FILE[0],
@@ -37,7 +40,10 @@ class TestJobsControllerNew(TestController):
         self.valid_job_submission = {
             'code_version': 'Jules v3.4.1',
             'model_run_id': model_run_id,
-            'namelist_files': namelist_files
+            'namelist_files': namelist_files,
+            JSON_USER_NAME: 'name',
+            JSON_USER_ID: 2,
+            JSON_USER_EMAIL: 'email'
         }
 
     def test_GIVEN_nothing_WHEN_get_new_job_THEN_error(self):
@@ -195,6 +201,36 @@ class TestJobsControllerNew(TestController):
 
         assert_that(response.status_code, is_(400), "invalid request")
         assert_that(response.normal_body, contains_string('parameter name'), "invalid request")
+
+    def test_GIVEN_user_id_is_not_present_WHEN_post_new_job_THEN_error(self):
+        del self.valid_job_submission['user_id']
+        response = self.app.post_json(
+            url(controller='jobs', action='new'),
+            params=self.valid_job_submission,
+            expect_errors=True)
+
+        assert_that(response.status_code, is_(400), "invalid request")
+        assert_that(response.normal_body, contains_string('user id'), "invalid request")
+
+    def test_GIVEN_user_name_is_not_present_WHEN_post_new_job_THEN_error(self):
+        del self.valid_job_submission['user_name']
+        response = self.app.post_json(
+            url(controller='jobs', action='new'),
+            params=self.valid_job_submission,
+            expect_errors=True)
+
+        assert_that(response.status_code, is_(400), "invalid request")
+        assert_that(response.normal_body, contains_string('user name'), "invalid request")
+
+    def test_GIVEN_user_id_email_not_present_WHEN_post_new_job_THEN_error(self):
+        del self.valid_job_submission['user_email']
+        response = self.app.post_json(
+            url(controller='jobs', action='new'),
+            params=self.valid_job_submission,
+            expect_errors=True)
+
+        assert_that(response.status_code, is_(400), "invalid request")
+        assert_that(response.normal_body, contains_string('user email address'), "invalid request")
 
     def test_GIVEN_valid_job_submission_WHEN_post_new_job_THEN_returns_job_id(self):
         response = self.app.post_json(

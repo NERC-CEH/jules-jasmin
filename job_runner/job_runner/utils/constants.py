@@ -27,6 +27,9 @@ JSON_MODEL_NAMELIST_INDEX = 'index'
 JSON_MODEL_PARAMETERS = 'parameters'
 JSON_MODEL_NAMELIST_NAME = 'name'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
+JSON_USER_NAME = 'user_name'
+JSON_USER_ID = 'user_id'
+JSON_USER_EMAIL = 'user_email'
 
 # Model run statuses
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'
@@ -47,7 +50,7 @@ ERROR_MESSAGE_UNKNOWN_JULES_ERROR = 'Jules did not complete successfully'
 #filename for the file containg the bsub id
 FILENAME_BSUB_ID = 'bsub_id'
 FILENAME_OUTPUT_LOG = 'out.log'
-
+FILENAME_JOBS_RUN_LOG = 'jobs_run.log'
 
 DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%m:%S %z'
 

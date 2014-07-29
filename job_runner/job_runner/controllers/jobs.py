@@ -78,17 +78,20 @@ class JobsController(BaseController):
         """
 
         json = self.get_json_abort_on_error()
+
         log.debug("New Model with parameters %s" % json)
-        if not JSON_MODEL_CODE_VERSION in json or json[JSON_MODEL_CODE_VERSION] not in VALID_CODE_VERSIONS:
+
+        self._check_field_exists_in_json("code version", json, JSON_MODEL_CODE_VERSION)
+        if json[JSON_MODEL_CODE_VERSION] not in VALID_CODE_VERSIONS:
             abort(400, "Invalid code version")
 
-        if not JSON_MODEL_RUN_ID in json or json[JSON_MODEL_RUN_ID] is None:
-            abort(400, "Invalid model run id")
+        self._check_field_exists_in_json("model run id", json, JSON_MODEL_RUN_ID, is_int=True)
+        self._check_field_exists_in_json("user id", json, JSON_USER_ID, is_int=True)
+        self._check_field_exists_in_json("user name", json, JSON_USER_NAME)
+        self._check_field_exists_in_json("user email address", json, JSON_USER_EMAIL)
 
-        if not isinstance(json[JSON_MODEL_RUN_ID], (int, long)):
-            abort(400, "Invalid model run id")
-
-        if not JSON_MODEL_NAMELIST_FILES in json or len(json[JSON_MODEL_NAMELIST_FILES]) == 0:
+        self._check_field_exists_in_json("namelist files", json, JSON_MODEL_NAMELIST_FILES)
+        if len(json[JSON_MODEL_NAMELIST_FILES]) == 0:
             abort(400, "Invalid namelist files")
 
         namelist = []
@@ -144,3 +147,18 @@ class JobsController(BaseController):
         except Exception:
             log.exception("Unknown error when trying to delete model run directory")
             abort(400, "Unknown error when trying to delete model run directory")
+
+    def _check_field_exists_in_json(self, field_name_description, json, json_field_name, is_int=False):
+        """
+        Check that an entry in the json dictionary exists and is not none. If it is an int check it is an int
+        :param field_name_description: the field description for the error message
+        :param json: the json to check
+        :param json_field_name: the field name to look for
+        :param is_int: True if validate it is an integer
+        :return: nothing throw abort if validation fails
+        """
+        if not json_field_name in json or json[json_field_name] is None:
+            abort(400, "Invalid %s" % field_name_description)
+
+        if is_int and not isinstance(json[json_field_name], (int, long)):
+            abort(400, "Invalid %s, not a number" % field_name_description)

@@ -180,10 +180,8 @@ def GetResponse(url):
 noProxyOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
 try:
     auth = HTTPSClientAuthHandler(config['majic_certificate_key_path'], config['majic_certificate_path'])
-    #proxyhandler = urllib2.ProxyHandler({'http': config['external_http_proxy'], 'https': config['external_http_proxy']})
     ssl_opener = urllib2.build_opener(auth)
     log.debug("installed client certificate opener")
-    #urllib2.install_opener(ssl_opener)
 except KeyError:
     # no certificate specified so do not install opener
     ssl_opener = urllib2.build_opener()

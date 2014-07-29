@@ -11,8 +11,11 @@ from job_runner.utils.constants import *
 class TestJobService(TestController):
 
     def setUp(self):
-        model_run_id = 201
+        self.model_run_id = 201
         self.run_dir = config['run_dir'] + '/run201'
+        self.user_id = 1
+        self.user_name = "test"
+        self.user_email = "email@test.ac.uk"
         if os.path.exists(self.run_dir):
             shutil.rmtree(self.run_dir)
 
@@ -20,8 +23,11 @@ class TestJobService(TestController):
 
         self.model_run = \
             {
-                'model_run_id': model_run_id,
+                'model_run_id': self.model_run_id,
                 'code_version': 'Jules v3.4.1',
+                JSON_USER_ID: self.user_id,
+                JSON_USER_EMAIL: self.user_email,
+                JSON_USER_NAME: self.user_name,
                 'namelist_files':
                     [
                         {'filename': 'timesteps.nml',
@@ -45,6 +51,16 @@ class TestJobService(TestController):
         assert_that(os.path.exists(self.run_dir + '/submit_jules_3_4_1.sh'), is_(True), 'submit_jules_3_4_1.sh in run directory')
         assert_that(os.path.exists(self.run_dir + '/timesteps.nml'), is_(True), 'timesteps.nml in run directory')
         assert_that(result, greater_than(0), "PID is greater than 0")
+
+        last_line = ""
+        f = file(os.path.join(config['run_dir'], 'jobs_run.log'))
+        for line in f:
+            last_line = line
+        assert_that(last_line, contains_string(str(result)))
+        assert_that(last_line, contains_string(str(self.user_id)))
+        assert_that(last_line, contains_string(self.user_name))
+        assert_that(last_line, contains_string(str(self.model_run_id)))
+        assert_that(last_line, contains_string(self.user_email))
 
     def test_GIVEN_model_id_is_not_an_integer_WHEN_submit_job_is_submitted_THEN_exception(self):
         self.model_run['model_run_id'] = '../201'

@@ -1,6 +1,7 @@
 """
 # Header
 """
+from datetime import datetime
 import glob
 import logging
 import os
@@ -91,6 +92,30 @@ class JobService(object):
         f.write(bsub_id)
         f.close()
 
+    def _write_job_log(self, bsub_id, model_run):
+        """
+        Write the job submitted to the job log
+        :param bsub_id: the bsub id used
+        :param model_run: the model run
+        :return:nothing
+        """
+        file_path = os.path.join(config['run_dir'], FILENAME_JOBS_RUN_LOG)
+        if os.path.exists(file_path):
+            f = open(file_path, 'a')
+        else:
+            f = open(file_path, 'w')
+            f.writelines("Time  BsubId  ModelRunId  UserId  UserName  UserEmail\n")
+
+        line = "{time}  {bsub}  {model_run_id}  {user_id}  {user_name}  {user_email}\n".format(
+            time=str(datetime.now()),
+            bsub=bsub_id,
+            model_run_id=model_run[JSON_MODEL_RUN_ID],
+            user_id=model_run[JSON_USER_ID],
+            user_name=model_run[JSON_USER_NAME],
+            user_email=model_run[JSON_USER_EMAIL])
+        f.writelines(line)
+        f.close()
+
     def get_output_log_result(self, run_dir):
         """
         Get the result of the Jules by looking at the log
@@ -136,6 +161,7 @@ class JobService(object):
 
         bsub_id = self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory, single_processor)
 
+        self._write_job_log(bsub_id, model_run)
         self.write_bsub_id(run_directory, bsub_id)
 
         return bsub_id
