@@ -46,8 +46,10 @@ class UserService(DatabaseService):
         """
         Gets a single user by their username
         :param username: Login name of the user to retrieve
-        :return: user object or None if there is no match
+        :return: user object or None if there is no match or username was None
         """
+        if username is None:
+            return None
 
         with self.readonly_scope() as session:
 

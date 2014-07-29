@@ -14,6 +14,7 @@ import formencode
 from joj.model.create_new_user_form import CreateUserForm, UpdateUserForm
 from joj.utils import constants, utils
 from joj.services.model_run_service import ModelRunService
+from joj.services.account_request_service import AccountRequestService
 
 __author__ = 'Chirag Mistry'
 
@@ -26,15 +27,22 @@ class UserController(BaseController):
     _user_service = None
     _dataset_service = None
 
-    def __init__(self, user_service=UserService(), dataset_service=DatasetService()):
-        """Constructor for the user controller, takes in any services required
-            Params:
-                user_service: User service to use within the controller
+    def __init__(self,
+                 user_service=UserService(),
+                 dataset_service=DatasetService(),
+                 account_request_service=AccountRequestService()):
+        """
+        Constructor for the user controller, takes in any services required
+        :param user_service: User service to use within the controller
+        :param dataset_service: dataset service
+        :param account_request_service: accoun requests service
+        :return: nothing
         """
         super(UserController, self).__init__(user_service)
 
         self._dataset_service = dataset_service
         self._model_run_service = ModelRunService()
+        self._account_request_service = account_request_service
 
     def index(self):
         """Allow admin-user to see all users of the system. If user is non-admin, redirect to page not found.
@@ -193,3 +201,16 @@ class UserController(BaseController):
                                           c.form_result.get('storage_quota'))
 
                 return redirect(url(controller="user"))
+
+    def requests(self):
+        """
+        List the account requests for approval
+        :return: nothing
+        """
+
+        if self.current_user is None or not self.current_user.is_admin():
+            return render('not_found.html')
+
+        c.account_requests = self._account_request_service.get_account_requests()
+
+        return render('user/requests.html')

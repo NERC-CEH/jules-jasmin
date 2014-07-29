@@ -28,49 +28,7 @@
 <body id="explore">
 <div id="selected_id" style="display: none">${c.id}</div>
 <div id="wrap">
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container">
-                <a class="btn pull-right" href="${h.url(controller='account', action='logout')}">Log out</a>
-                <p id="status" class="navbar-text pull-right">
-                    Map server status <span id="status-message" class="label">Testing...</span>
-                </p>
-                <a class="brand" href="${h.url(controller='home')}">Majic</a>
-
-                <ul class="nav">
-                    <li>
-                        <a id="nav-explore" href="${h.url(controller='map', action='view')}">Explore</a>
-                    </li>
-                    <li>
-                        <a id="nav-create" href="${h.url(controller='model_run', action='pre_create')}">New Model Run</a>
-                    </li>
-                    <li>
-                        <a id="nav-catalogue" href="${h.url(controller='model_run')}">Model Runs</a>
-                    </li>
-                    <li>
-                        <a id="nav-about" href="${h.url(controller='home', action='about')}">About</a>
-                    </li>
-                    <py:if test="c.admin_user">
-                        <li class="dropdown">
-                            <a id="nav-admin" data-toggle="dropdown" class="dropdown-toggle">
-                                Admin Options
-                                <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="${h.url(controller='user')}">Users</a>
-                                </li>
-                                <li>
-                                    <a href="${h.url(controller='dataset')}">Datasets</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </py:if>
-                </ul>
-            </div>
-
-        </div>
-    </div>
+    <xi:include href="nav_bar.html" />
 
     <div class="container-fluid">
         <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>

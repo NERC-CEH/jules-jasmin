@@ -77,6 +77,14 @@ class AccountRequestService(DatabaseService):
         Check if the number of account requests in the database has reached a preset limit
         :return: True if database has reached limit, False otherwise
         """
-        with self.transaction_scope() as session:
+        with self.readonly_scope() as session:
             account_requests_in_database = session.query(AccountRequest).count()
         return account_requests_in_database >= int(config['max_request_accounts'])
+
+    def get_account_requests(self):
+        """
+        Get all the account requests
+        :return: account requests
+        """
+        with self.readonly_scope() as session:
+            return session.query(AccountRequest).all()

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="../layout.html" />
+<head>
+    <title>Account Requests</title>
+</head>
+<body id="admin">
+    <h1>Account Requests</h1>
+
+
+    <div>
+        <table class="table table-striped">
+            <thead>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Institution</th>
+                <th>Usage</th>
+                <th>Approve?</th>
+            </thead>
+            <tbody>
+                <tr py:if="len(c.account_requests) == 0">
+                    <td colspan="5">
+                        No requests outstanding
+                    </td>
+                </tr>
+                <tr py:if="len(c.account_requests) != 0" py:for="account_request in c.account_requests">
+                    <td>
+                        ${account_request.name}
+                    </td>
+                    <td>
+                        ${account_request.email}
+                    </td>
+                    <td>
+                        ${account_request.institution}
+                    </td>
+                    <td>
+                        ${account_request.usage}
+                    </td>
+                    <td>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
+
