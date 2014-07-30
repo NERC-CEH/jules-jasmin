@@ -70,7 +70,7 @@ NETCDF_TIME = ['Time']
 NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
 #The name of the driving dataset which represents the 'upload your own driving dataset' option
-USER_UPLOAD_DRIVING_DATASET_NAME = "Upload My Own Driving Data"
+USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"
 USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in
 USER_UPLOAD_DATE_FORMAT = "%Y-%m-%d %H:%M"
 USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 'lw_net', 'sw_net', 'diff_rad',

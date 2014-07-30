@@ -65,7 +65,7 @@ def _get_default_lat_bounds(model_run, driving_data, is_user_data):
     if is_user_data:
         return model_run.driving_data_lat, model_run.driving_data_lat
     else:
-        return driving_data.boundary_lat_north, driving_data.boundary_lat_south
+        return driving_data.boundary_lat_south, driving_data.boundary_lat_north
 
 
 def _get_lon_bounds(model_run, driving_data, is_user_data):
@@ -148,8 +148,10 @@ def set_template_context_fields(tmpl_context, model_run, driving_data):
     :return:
     """
     is_user_data = _is_user_driving_data(driving_data)
-    tmpl_context.boundary_lat_n, tmpl_context.boundary_lat_s = _get_lat_bounds(model_run, driving_data, is_user_data)
-    tmpl_context.boundary_lon_w, tmpl_context.boundary_lon_e = _get_lon_bounds(model_run, driving_data, is_user_data)
+    tmpl_context.boundary_lat_s, tmpl_context.boundary_lat_n = _get_default_lat_bounds(model_run,
+                                                                                       driving_data, is_user_data)
+    tmpl_context.boundary_lon_w, tmpl_context.boundary_lon_e = _get_default_lon_bounds(model_run,
+                                                                                       driving_data, is_user_data)
     tmpl_context.start_date = _get_acceptable_start_datetime(model_run, driving_data, is_user_data).date()
     tmpl_context.end_date = _get_acceptable_end_datetime(model_run, driving_data, is_user_data).date()
 
@@ -218,7 +220,7 @@ def validate_extents_form_values(values, model_run, driving_data, errors):
 
     lat_bounds = _get_default_lat_bounds(model_run, driving_data, is_user_data)
     lon_bounds = _get_default_lon_bounds(model_run, driving_data, is_user_data)
-    spatial_extent = SpatialExtent(lat_bounds[0], lat_bounds[1], lon_bounds[0], lon_bounds[1])
+    spatial_extent = SpatialExtent(lat_bounds[1], lat_bounds[0], lon_bounds[0], lon_bounds[1])
 
     if values['site'] == 'multi':
         _validate_multicell_spatial_extents(spatial_extent, errors,

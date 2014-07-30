@@ -13,7 +13,7 @@
 <h1>Select Driving Data</h1>
 <p>Choose a set of meteorological data for JULES to use as input for this model run.</p>
 
-<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='driving_data')}" enctype="multipart/form-data">
+<form id="form-driving-data" class="form-horizontal" method="POST" action="${url(controller='model_run', action='driving_data')}" enctype="multipart/form-data">
 
         <table class="driving-data">
             <tr>
@@ -32,7 +32,17 @@
                                value="${driving_dataset.id}" style="display:none" py:attrs="{'user_upload' : 'true'} if driving_dataset.id == c.user_upload_ds_id else {}"/>
                         <i dsid="${driving_dataset.id}" class="fa fa-check-circle-o fa-2x select-icon"></i>
                     </td>
-                    <td class="name"><h4>${driving_dataset.name}</h4><p class="description">${driving_dataset.description}</p></td>
+                    <td class="name"><h4>${driving_dataset.name}</h4><p class="description">${driving_dataset.description}</p>
+                            <div py:if="driving_dataset.id == c.user_upload_ds_id"><py:choose>
+                                <py:when test="c.driving_data_rows">
+                                    <p class="alert alert-success">${c.driving_data_rows} rows of driving data currently uploaded</p>
+                                </py:when>
+                                <py:otherwise>
+                                    <p class="alert alert-warning">You'll need to upload some driving data (below) before you can use this.</p>
+                                </py:otherwise>
+                            </py:choose>
+                            </div>
+                    </td>
                     <py:choose>
                         <py:when test="driving_dataset.id == c.user_upload_ds_id">
                             <td class="geog">-</td>
@@ -51,22 +61,117 @@
             </py:for>
         </table>
 
-    <div id="upload-input">
-    Lat
-    ${h.html_tags.text('lat', style='width:80px')}<br/><br/>
-    Lon
-    ${h.html_tags.text('lon', style='width:80px')}<br/><br/>
-    Start
-    ${h.html_tags.text('dt_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/><br/>
-    End
-    ${h.html_tags.text('dt_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}<br/><br/>
-    Driving Data File
-    ${h.html_tags.file('driving-file')}<br/><br/>
+    <div class="accordion" id="accordion1">
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion1"
+               href="#collapse1">
+                <h4>Upload / Download Single Cell Driving Data</h4>
+            </a>
+        </div>
+        <div id="collapse1" class="accordion-body collapse">
+            <div class="accordion-inner">
+               <p>Optionally, upload your own single cell driving data to use for your JULES run (you can still run single cell
+    calculations using the driving data already supplied by Majic).</p>
+    <p>You can also download data from the driving dataset selected above for the a specified location and time frame.
+        This can then be used as a template for your own data. </p>
 
-        <input type="submit" name="submit" value="Download"/>
-        <input type="submit" name="submit" value="Upload"/>
-        <p py:if="c.driving_data_rows">${c.driving_data_rows} rows of driving data currently uploaded</p>
+    <div class="control-group">
+        <label class="control-label">
+            Location
+            <p class="label-explain">Specify the location of the single cell site you wish to upload or download for.</p>
+        </label>
+        <div class="controls">
+            <fieldset class="fieldset">
+                <div class="controls-row">
+                    <xi:include href="../bng-convert.html"/>
+                </div>
+                <br/>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>Latitude <small>(&deg;N)</small></p>
+                    </div>
+                    <div class="span5">${h.html_tags.text('lat', style='width:80px')}</div>
+                </div>
+                <br/>
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>Longitude <small>(&deg;E)</small></p>
+                    </div>
+                    <div class="span5">${h.html_tags.text('lon', style='width:80px')}</div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">
+            Time span
+            <p class="label-explain">Specify the start and end date-times for the first and last rows of driving data you wish
+            to upload or download.
+                <!--Note that for downloads these times are boundaries and the actual first and last rows of data might not be at these times.-->
+            </p>
+        </label>
+        <br/>
+        <div class="controls">
+        <fieldset class="fieldset">
+            <div class="controls-row">
+                <div class="span2">
+                    <p>Start date-time</p>
+                </div>
+                <div class="span5"> ${h.html_tags.text('dt_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}</div>
+            </div>
+        </fieldset>
+        </div>
+        <br/>
+        <div class="controls">
+            <fieldset class="fieldset">
+                <div class="controls-row">
+                    <div class="span2">
+                        <p>End date-time</p>
+                    </div>
+                    <div class="span5"> ${h.html_tags.text('dt_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}</div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">
+            Driving data file
+            <p class="label-explain">Upload a driving data file. TODO explain format etc
+            </p>
+        </label>
+        <br/>
+        <div class="controls">
+        <fieldset class="fieldset">
+            <div class="controls-row">
+            ${h.html_tags.file('driving-file')}
+            </div>
+        </fieldset>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <div class="controls-row">
+                <button type="submit" class="btn btn-info" name="submit" value="Upload" form="form-driving-data">
+                    <i class="fa fa-upload"></i>&nbsp;&nbsp;Upload
+                </button>
+                <button id="downloadBtn" type="submit" class="btn btn-info" name="submit" value="Download" form="form-driving-data">
+                    <i class="fa fa-download"></i>&nbsp;&nbsp;Download
+                </button>
+            </div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
 </div>
+    <br/><br/>
+
+
+
 
     <div class="controls">
         <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
