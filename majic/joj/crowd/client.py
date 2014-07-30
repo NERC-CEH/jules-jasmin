@@ -2,10 +2,10 @@ import base64
 import datetime
 import logging
 import os
-from pylons import config
 from joj.crowd.models import UserRequest
 import urllib2, simplejson
 from simplejson import JSONDecodeError
+from pylons import config
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -80,11 +80,13 @@ class CrowdClient(object):
         :param kwargs:
         :return:nothing
         """
-        self.crowd_user = self.crowd_user or config['crowd_app_name']
-        self.crowd_password = self.crowd_password or config['crowd_app_password']
-        self.crowd_api = self.crowd_api or config['crowd_api_url']
+
+        self.crowd_user = self.crowd_user or '' #or config['crowd_app_name']
+        self.crowd_password = self.crowd_password or '' #config['crowd_app_password']
+        self.crowd_api = self.crowd_api or '' #config['crowd_api_url']
         if self.use_crowd is None:
-            self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
+            #self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
+            self.use_crowd = False
 
     def check_authenticated(self, user_name, password):
         """Checks if the user in question is in the crowd system
