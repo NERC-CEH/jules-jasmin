@@ -37,10 +37,30 @@
                         ${account_request.institution}
                     </td>
                     <td>
-                        ${account_request.usage}
+                        <i class="fa fa-info-circle" data-toggle="tooltip" title="Usage" data-trigger="click | hover"
+                                         data-content="${account_request.usage}"></i>
+
                     </td>
                     <td>
+                        <form action="${h.url(controller='user', action='requests', id=account_request.id)}"
+                              method="post"
+                              style="margin:0"
+                              class="form-inline">
 
+                            <button type="submit" name="action" value="accept" class="btn btn-success"> <i class="icon-ok icon-white" /> Accept </button>
+                            <div class="input-append">
+                                <input type="text" name="reason" value="" title="Rejection reason which will be emailed to the requester." />
+
+                                <button
+                                        type="submit"
+                                        name="action"
+                                        value="reject"
+                                        class="btn btn-danger"
+                                        data-confirm="You can not undo rejecting a request and the reject reason will be EMAILED to the user. Are you sure you want to reject the request?">
+                                            <i class=" icon-remove icon-white" /> Reject
+                                </button>
+                            </div>
+                        </form>
                     </td>
                 </tr>
             </tbody>

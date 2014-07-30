@@ -88,3 +88,29 @@ class AccountRequestService(DatabaseService):
         """
         with self.readonly_scope() as session:
             return session.query(AccountRequest).all()
+
+    def reject_account_request(self, id, reason):
+        """
+        Reject the account request
+        :param reason: reason for account rejection
+        :param id: id of account request to reject
+        :return:nothing
+        """
+
+        with self.transaction_scope() as session:
+            account_request = session.\
+                query(AccountRequest)\
+                .filter(AccountRequest.id == id)\
+                .one()
+
+            msg = email_messages.ACCOUNT_REQUEST_REJECTED_MESSAGE.format(
+                name=account_request.name,
+                reason=reason
+            )
+            self._email_service.send_email(
+                config['email.from_address'],
+                account_request.email,
+                email_messages.ACCOUNT_REQUEST_REJECTED_SUBJECT,
+                msg)
+
+            session.delete(account_request)

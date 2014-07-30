@@ -72,7 +72,15 @@ var EcomapsGeneral = (function() {
      *  which shows a confirm box with the text given in the attribute
      */
     var confirmSubmit = function () {
-        $("[data-confirm]").submit(
+        $("form[data-confirm]").submit(
+            function(event) {
+                message = $(this).attr('data-confirm')
+                answer = confirm(message);
+                if (!answer) {
+                    event.preventDefault();
+                }
+            });
+        $("button[data-confirm]").click(
             function(event) {
                 message = $(this).attr('data-confirm')
                 answer = confirm(message);

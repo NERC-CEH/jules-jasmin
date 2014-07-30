@@ -86,3 +86,16 @@ ACCOUNT_REQUESTED_ADMIN = "Dear Majic admin,\r\n\r\nThe following request for a 
 ACCOUNT_REQUEST_FULL = "Dear %s,\r\n\r\n" \
                        "Unfortunately we are unable to accept any more account requests for today. We're " \
                        "sorry for the inconvenience, please try again tomorrow."
+
+ACCOUNT_REQUEST_REJECTED_SUBJECT = "Rejection of your Majic account request"
+ACCOUNT_REQUEST_REJECTED_MESSAGE = """
+Dear {name},
+
+Sorry your request for a Majic account has been rejected. The reason for reject was:
+
+    {reason}
+
+Regards,
+
+Majic Admin Team
+"""

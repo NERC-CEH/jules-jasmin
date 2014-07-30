@@ -1,6 +1,7 @@
 """
 # header
 """
+from urlparse import urlparse
 from hamcrest import *
 from joj.tests import *
 from joj.utils import constants, utils
@@ -13,15 +14,6 @@ class TestAdminUserCreatedFromRequest(TestController):
     def setUp(self):
         super(TestAdminUserCreatedFromRequest, self).setUp()
         self.clean_database()
-
-    def _create_account_request(self):
-        with session_scope() as session:
-            self.account_request = AccountRequest()
-            self.account_request.email = "test@test.com"
-            self.account_request.institution = "institution"
-            self.account_request.name = "name"
-            self.account_request.usage = "usage"
-            session.add(self.account_request)
 
     def test_GIVEN_not_logged_in_WHEN_edit_THEN_redirects(self):
         response = self.app.get(
@@ -51,7 +43,7 @@ class TestAdminUserCreatedFromRequest(TestController):
 
     def test_GIVEN_admin_and_one_requests_WHEN_view_THEN_page_shows_request(self):
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
-        self._create_account_request()
+        self.create_account_request()
 
 
         response = self.app.get(
@@ -63,3 +55,99 @@ class TestAdminUserCreatedFromRequest(TestController):
         assert_that(response.normal_body, contains_string(self.account_request.name))
         assert_that(response.normal_body, contains_string(self.account_request.institution))
         assert_that(response.normal_body, contains_string(self.account_request.email))
+
+    def test_GIVEN_admin_and_post_reject_no_id_WHEN_view_THEN_redirect_nothing_changes(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        self.create_account_request()
+        response = self.app.post(
+            url=url(controller='user', action='requests'),
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).count(), is_(1), "Number of user accounts")
+
+    def test_GIVEN_admin_and_post_reject_with_id_no_accept_or_reject_WHEN_view_THEN_redirect_nothing_changes(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id = self.create_account_request()
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id),
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).count(), is_(1), "Number of user accounts")
+
+    def test_GIVEN_admin_and_post_id_but_not_accept_or_reject_WHEN_view_THEN_redirect_nothing_changes(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id = self.create_account_request()
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id),
+            expect_errors=True,
+            params={'action': 'not accept'}
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).count(), is_(1), "Number of user accounts")
+
+    def test_GIVEN_admin_and_post_reject_WHEN_view_THEN_redirect_user_account_not_setup_request_deleted(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id_to_keep = self.create_account_request()
+        request_id = self.create_account_request()
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id),
+            expect_errors=True,
+            params={
+                'action': u'reject',
+                'reason': u'a reason'}
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).one().id, is_(request_id_to_keep), "Id left is one to keep")
+            assert_that(session.query(User).count(), is_(2), "Only two users core and test in the users table")
+
+    def test_GIVEN_admin_and_post_reject_with_no_reason_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id = self.create_account_request()
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id),
+            expect_errors=True,
+            params={
+                'action': u'reject',
+                'reason': u''}
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).one().id, is_(request_id), "Request is kept")
+            assert_that(session.query(User).count(), is_(2), "Only two users core and test in the users table")
+
+    def test_GIVEN_admin_and_post_reject_with_non_existant_id_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id = self.create_account_request()
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id + 200),
+            expect_errors=True,
+            params={
+                'action': u'reject',
+                'reason': u'A valid reason'}
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).one().id, is_(request_id), "Request is kept")

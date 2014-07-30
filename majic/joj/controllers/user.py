@@ -3,6 +3,7 @@
 """
 import logging
 from pylons.controllers.util import redirect
+from sqlalchemy.orm.exc import NoResultFound
 
 from joj.lib.base import BaseController, request, render
 from joj.lib import helpers
@@ -202,15 +203,41 @@ class UserController(BaseController):
 
                 return redirect(url(controller="user"))
 
-    def requests(self):
+    def requests(self, id):
         """
         List the account requests for approval
+        :param id: id to accept or reject or None on get
         :return: nothing
         """
 
         if self.current_user is None or not self.current_user.is_admin():
             return render('not_found.html')
 
-        c.account_requests = self._account_request_service.get_account_requests()
+        if not request.method == 'POST':
+            c.account_requests = self._account_request_service.get_account_requests()
 
-        return render('user/requests.html')
+            return render('user/requests.html')
+
+        else:
+            if id is None:
+                helpers.error_flash("Request not accepted or rejected. No id included with reject or accept")
+            try:
+                action = request.params.getone('action')
+                if action == u'accept':
+                    pass
+                elif action == u'reject':
+                    reason_for_rejection = request.params.getone('reason')
+                    if len(reason_for_rejection.strip()) == 0:
+                        helpers.error_flash(
+                            "Request not rejected: A reason must be given to the user for why they are being rejected")
+                    else:
+                        self._account_request_service.reject_account_request(id, reason_for_rejection)
+                        helpers.success_flash("User account request has been rejected and an email has been sent.")
+                else:
+                    raise KeyError()
+            except KeyError:
+                helpers.error_flash("Request not accepted or rejected. No action included with reject or accept")
+            except NoResultFound:
+                helpers.error_flash("Request could not be found, no action taken")
+
+            return redirect(url(controller="user", action="requests"))

@@ -26,7 +26,8 @@ from webtest import TestApp
 
 from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail
+    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
+    AccountRequest
 from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
@@ -108,7 +109,7 @@ class TestController(TestCase):
 
             session\
                 .query(User)\
-                .filter(User.username != constants.CORE_USERNAME)\
+                .filter(or_(User.username != constants.CORE_USERNAME, User.username.is_(None)))\
                 .delete()
 
             session.query(AccountRequest).delete()
@@ -297,3 +298,20 @@ class TestController(TestCase):
         self.dap_client_factory = DapClientFactory()
         self.dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
         return self.dap_client_factory
+
+    def create_account_request(self):
+        """
+        Create an account request
+        :return: id of account request
+        """
+        with session_scope() as session:
+            self.account_request = AccountRequest()
+            self.account_request.email = "test@test.com"
+            self.account_request.institution = "institution"
+            self.account_request.name = "a very unique name for the user " + str(datetime.datetime.now())
+            self.account_request.usage = "usage"
+            session.add(self.account_request)
+
+        with session_scope() as session:
+            ac = session.query(AccountRequest).filter(AccountRequest.name == self.account_request.name).one()
+            return ac.id
