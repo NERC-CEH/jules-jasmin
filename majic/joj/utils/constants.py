@@ -76,12 +76,12 @@ USER_UPLOAD_DATE_FORMAT = "%Y-%m-%d %H:%M"
 USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 'lw_net', 'sw_net', 'diff_rad',
                             'precip', 'tot_rain', 'tot_snow', 'ls_rain', 'con_rain', 'ls_snow', 'con_snow',
                             'wind', 'u', 'v']
-USER_UPLOAD_ALLOWED_INTERPS = ['a', 'b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
+USER_UPLOAD_ALLOWED_INTERPS = ['b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
 
 # These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
-# or end of a run. Flags not stored in these are assumed not to require any additional time steps
-INTERPS_EXTRA_STEPS_RUN_END = {'i': 1}
-INTERPS_EXTRA_STEPS_RUN_START = {}
+# or end of a run.
+INTERPS_EXTRA_STEPS_RUN_START = {'b': 0, 'c': 1, 'f': 1, 'i': 0, 'nb': 0, 'nc': 0, 'nf': 0}
+INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 0}
 
 FRACTIONAL_FILENAME = 'fractional.dat'
 

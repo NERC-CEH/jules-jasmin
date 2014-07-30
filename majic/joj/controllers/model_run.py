@@ -230,21 +230,22 @@ class ModelRunController(BaseController):
                                                                               self._model_run_service,
                                                                               old_driving_dataset,
                                                                               self.current_user)
+                    if len(errors) == 0:
+                        # Reload the current page
+                        helpers.success_flash("Your driving data file has been successfully uploaded.")
+                        redirect(url(controller='model_run', action='driving_data'))
+                        return
+                    else:
+                        html = render('model_run/driving_data.html')
+                        return htmlfill.render(
+                            html,
+                            defaults=values,
+                            errors=errors,
+                            auto_error_formatter=BaseController.error_formatter)
                 except ServiceException as e:
                     helpers.error_flash(e.message)
-                    #redirect(url(controller='model_run', action='index'))
-                if len(errors) == 0:
-                    # Reload the current page
-                    helpers.success_flash("Your driving data file has been successfully uploaded.")
                     redirect(url(controller='model_run', action='driving_data'))
                     return
-                else:
-                    html = render('model_run/driving_data.html')
-                    return htmlfill.render(
-                        html,
-                        defaults=values,
-                        errors=errors,
-                        auto_error_formatter=BaseController.error_formatter)
             elif action == u'Download':
                 # This is a request to to download driving data
                 pass

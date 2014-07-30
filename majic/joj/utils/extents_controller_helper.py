@@ -103,19 +103,7 @@ def _get_acceptable_start_datetime(model_run, driving_data, is_user_data):
     else:
         start_datetime = driving_data.time_start
 
-    period = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
-    interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP)
-
-    extra_time = []
-    for interp in interps:
-        if interp in constants.INTERPS_EXTRA_STEPS_RUN_END:
-            extra_time.append(constants.INTERPS_EXTRA_STEPS_RUN_END[interp])
-    if len(extra_time) > 0:
-        n_steps = max(extra_time)
-    else:
-        n_steps = 0
-
-    delta = datetime.timedelta(seconds=(period * n_steps))
+    delta = _get_delta_for_interpolation_flags(model_run, constants.INTERPS_EXTRA_STEPS_RUN_START)
     return start_datetime + delta
 
 
@@ -132,20 +120,23 @@ def _get_acceptable_end_datetime(model_run, driving_data, is_user_data):
     else:
         end_datetime = driving_data.time_end
 
+    delta = _get_delta_for_interpolation_flags(model_run, constants.INTERPS_EXTRA_STEPS_RUN_END)
+    return end_datetime - delta
+
+
+def _get_delta_for_interpolation_flags(model_run, interpolation_dict):
     period = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
     interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP)
-
     extra_time = []
     for interp in interps:
-        if interp in constants.INTERPS_EXTRA_STEPS_RUN_END:
-            extra_time.append(constants.INTERPS_EXTRA_STEPS_RUN_END[interp])
+        if interp in interpolation_dict:
+            extra_time.append(interpolation_dict[interp])
     if len(extra_time) > 0:
         n_steps = max(extra_time)
     else:
         n_steps = 0
-
     delta = datetime.timedelta(seconds=(period * n_steps))
-    return end_datetime - delta
+    return delta
 
 
 def set_template_context_fields(tmpl_context, model_run, driving_data):

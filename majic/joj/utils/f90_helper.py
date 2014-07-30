@@ -51,8 +51,6 @@ def _is_list(value):
     :param value: Value to test
     :return: True if a Python list, false otherwise
     """
-    if _is_string(value):
-        return False
     list_candidate = value.split(',')
     return len(list_candidate) > 1
 
