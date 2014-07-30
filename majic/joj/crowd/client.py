@@ -4,8 +4,8 @@ import logging
 import os
 from pylons import config
 from joj.crowd.models import UserRequest
-
 import urllib2, simplejson
+from simplejson import JSONDecodeError
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -67,24 +67,24 @@ class CrowdClient(object):
             app_pwd: Application password for Crowd server
         """
 
-        self.crowd_user = app_name or config.get('crowd', 'app_name')
-        self.crowd_password = app_pwd or config.get('crowd', 'app_password')
-        self.use_crowd = config.get('crowd', 'use_crowd') == 'True'
+        self.crowd_user = app_name
+        self.crowd_password = app_pwd
+        self.crowd_api = api_url
+        self.use_crowd = None
 
-
-        # Fall back to the config value if we haven't explicitly specified a URL
-        # for the REST API, do the same for the application user and password too
-        self.crowd_api = api_url or config.get('crowd', 'api_url')
-        #password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        #password_mgr.add_password(None,
-        #                          self.crowd_api,
-        #                          app_name or config.get('crowd', 'app_name'),
-        #                          app_pwd or config.get('crowd', 'app_password'))
-
-        # Use this credentials for subsequent urllib2 requests to crowd
-        #handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        #self.opener = urllib2.build_opener(handler)
-        #self.opener_installed = False
+    def _load_config(self, *args, **kwargs):
+        """
+        Make sure that crowd config values are set if not already set before any call
+        Config is not available at init so this is why it is in call
+        :param args:
+        :param kwargs:
+        :return:nothing
+        """
+        self.crowd_user = self.crowd_user or config['crowd_app_name']
+        self.crowd_password = self.crowd_password or config['crowd_app_password']
+        self.crowd_api = self.crowd_api or config['crowd_api_url']
+        if self.use_crowd is None:
+            self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
 
     def check_authenticated(self, user_name, password):
         """Checks if the user in question is in the crowd system
@@ -229,6 +229,7 @@ class CrowdClient(object):
         # Make sure we specify that we're sending JSON, otherwise Crowd
         # assumes XML
         log.debug("Making a request for %s" % resource)
+        self._load_config()
 
         if data:
             # Request implicitly becomes a POST if data is attached
@@ -294,16 +295,26 @@ class CrowdClient(object):
         except urllib2.HTTPError as h_ex:
 
             if hasattr(h_ex, "read"):
-                # Interrogate the error response...
-                err_response = simplejson.loads(h_ex.read())
-
-                # Use this info to look up the exception we should raise
-                reason = err_response['reason']
-
+                response_text = "<None>"
                 try:
+                    # Interrogate the error response...
+                    response_text = h_ex.read()
+                    err_response = simplejson.loads(response_text)
+
+                    # Use this info to look up the exception we should raise
+                    reason = err_response['reason']
                     raise self._errorMap[reason]()
+                except JSONDecodeError:
+                    log.exception("Failure to json decode error crowd response '%s'" % response_text)
+                    raise ClientException
                 except:
                     raise ClientException
             else:
                 log.error("CROWD ERROR: %s" % h_ex)
                 raise h_ex
+        except JSONDecodeError as ex:
+            log.exception("Failure to json decode crowd response")
+            raise ex
+        except Exception as ex:
+            log.exception("Failure to get crowd response")
+            raise ex
