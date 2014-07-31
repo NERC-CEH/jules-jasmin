@@ -5,7 +5,6 @@ import os
 from joj.crowd.models import UserRequest
 import urllib2, simplejson
 from simplejson import JSONDecodeError
-from pylons import config
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -272,7 +271,7 @@ class CrowdClient(object):
             if self.use_crowd:
                 # We're finally ready to make the request...
 
-                f = self.external_opener.urlopen(request)
+                f = self.external_opener.open(request)
 
                 # 204 is officially "No Content", so we won't have
                 # any JSON to load! This is expected for 'DELETE'
