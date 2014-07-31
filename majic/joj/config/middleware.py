@@ -56,6 +56,12 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
                                app_conf['who.log_file'],
                                app_conf['who.log_level'])
 
+    # configure the crowd authenticators that who.is setup
+    for plugins in [app.api_factory.authenticators, app.api_factory.identifiers, app.api_factory.mdproviders]:
+        for authenticator_name, authenticator in plugins:
+            if authenticator_name == 'joj.crowd.repoze_plugin:CrowdRepozePlugin':
+                authenticator.config(app_conf)
+
     if asbool(full_stack):
         # Handle Python exceptions
         app = ErrorHandler(app, global_conf, **config['pylons.errorware'])

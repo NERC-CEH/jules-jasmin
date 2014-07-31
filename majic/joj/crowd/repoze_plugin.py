@@ -25,6 +25,14 @@ class CrowdRepozePlugin(object):
         self._client = CrowdClient()
         self._cookie_name = 'gwgj9gj38g9d'
 
+    def config(self, config):
+        """
+        Cnfigure the crowd client
+        :param config: config
+        :return: nothing
+        """
+        self._client.config(config)
+
     def authenticate(self, environ, identity):
         """Authenticates the user supplied against Crowd
             Params:

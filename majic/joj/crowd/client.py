@@ -72,21 +72,16 @@ class CrowdClient(object):
         self.crowd_api = api_url
         self.use_crowd = None
 
-    def _load_config(self, *args, **kwargs):
+    def config(self, config):
         """
-        Make sure that crowd config values are set if not already set before any call
-        Config is not available at init so this is why it is in call
-        :param args:
-        :param kwargs:
+        Configure the crowd client
+        :param config:
         :return:nothing
         """
-
-        self.crowd_user = self.crowd_user or '' #or config['crowd_app_name']
-        self.crowd_password = self.crowd_password or '' #config['crowd_app_password']
-        self.crowd_api = self.crowd_api or '' #config['crowd_api_url']
-        if self.use_crowd is None:
-            #self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
-            self.use_crowd = False
+        self.crowd_user = config['crowd_app_name']
+        self.crowd_password = config['crowd_app_password']
+        self.crowd_api = config['crowd_api_url']
+        self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
 
     def check_authenticated(self, user_name, password):
         """Checks if the user in question is in the crowd system
@@ -231,7 +226,6 @@ class CrowdClient(object):
         # Make sure we specify that we're sending JSON, otherwise Crowd
         # assumes XML
         log.debug("Making a request for %s" % resource)
-        self._load_config()
 
         if data:
             # Request implicitly becomes a POST if data is attached
