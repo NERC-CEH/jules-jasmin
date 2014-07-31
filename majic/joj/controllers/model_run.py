@@ -5,7 +5,7 @@ header
 import logging
 from formencode import htmlfill
 
-from pylons import url
+from pylons import url, response
 from pylons.decorators import validate, jsonify
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -248,7 +248,20 @@ class ModelRunController(BaseController):
                     return
             elif action == u'Download':
                 # This is a request to to download driving data
-                pass
+                try:
+                    file_generator = driving_data_controller_helper.download_driving_data(values, errors, response)
+
+                    if len(errors) > 0:
+                        return htmlfill.render(
+                            render('model_run/driving_data.html'),
+                            defaults=values,
+                            errors=errors,
+                            auto_error_formatter=BaseController.error_formatter)
+                    # This will stream the file to the browser without loading it all in memory
+                    # BUT only if the .ini file does not have 'debug=true' enabled
+                    return file_generator
+                except ServiceException:
+                    pass
             else:
 
                 try:

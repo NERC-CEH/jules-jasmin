@@ -8,6 +8,9 @@ from joj.utils import constants
 from joj.model import ParameterValue
 from joj.services.dataset import DatasetService
 from joj.services.job_runner_client import JobRunnerClient
+from joj.model.non_database.spatial_extent import SpatialExtent
+from joj.utils.extents_controller_helper import _validate_singlecell_spatial_extents
+from joj.utils.ascii_download_helper import AsciiDownloadHelper
 
 
 class DrivingDataParsingException(Exception):
@@ -29,7 +32,9 @@ class DrivingDataControllerHelper(object):
     period = None
     job_runner_client = None
 
-    def __init__(self, job_runner_client=JobRunnerClient(config), dataset_service=DatasetService()):
+    def __init__(self, job_runner_client=JobRunnerClient(config), dataset_service=DatasetService(),
+                 ascii_download_helper=AsciiDownloadHelper()):
+        self.ascii_download_helper = ascii_download_helper
         self.job_runner_client = job_runner_client
         self.dataset_service = dataset_service
 
@@ -67,7 +72,7 @@ class DrivingDataControllerHelper(object):
         :param user: Currently logged in user
         """
 
-        self._validate_values(values, errors)
+        self._validate_upload_values(values, errors)
 
         # Only proceed if we have no errors up to this stage
         if len(errors) != 0:
@@ -101,6 +106,42 @@ class DrivingDataControllerHelper(object):
 
         model_run_service.save_driving_dataset_for_new_model(new_driving_dataset, old_driving_dataset, user)
 
+    def download_driving_data(self, values, errors, response):
+        """
+        Download driving data for driving dataset, position and time specified in POST values dict
+        :param values: POST values dictionary
+        :param errors: Object to add errors to
+        :return:
+        """
+
+        driving_id = values['driving_dataset']
+        driving_data = self.dataset_service.get_driving_dataset_by_id(driving_id)
+
+        start = self._validate_date(errors, 'dt_start', values)
+        end = self._validate_date(errors, 'dt_end', values)
+
+        lat = values['lat']
+        lon = values['lon']
+
+        spatial_extent = SpatialExtent(driving_data.boundary_lat_north, driving_data.boundary_lat_south,
+                                       driving_data.boundary_lon_west, driving_data.boundary_lon_east)
+
+        _validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon)
+
+        if len(errors) > 0:
+            return
+
+        filename = self.ascii_download_helper.get_driving_data_filename(driving_data, lat, lon, start, end)
+        filesize = self.ascii_download_helper.get_driving_data_filesize(driving_data, start, end)
+
+        response.headers['Content-Type'] = 'text/plain'
+        response.headers['Content-Disposition'] = 'attachment; filename="%s"' % filename
+        response.headers['Content-Length'] = str(filesize)
+
+        file_generator = self.ascii_download_helper.get_driving_data_file_gen(driving_data, lat, lon, start, end)
+
+        return file_generator
+
     def _save_fractional_file_to_job_runner(self, model_run, model_run_id):
 
         # TODO this properly by reading from the fractional netCDF file
@@ -115,6 +156,7 @@ class DrivingDataControllerHelper(object):
             """
             An uploaded driving dataset
             """
+
             def __init__(self):
                 self.id = DatasetService().get_id_for_user_upload_driving_dataset()
                 self.driving_data_lat = None
@@ -226,7 +268,7 @@ class DrivingDataControllerHelper(object):
                                                   "JULES interpolation flag" % interp)
         self.interp_list = interps
 
-    def _validate_values(self, values, errors):
+    def _validate_upload_values(self, values, errors):
         """
         Validate uploaded driving data and add any errors to an errors object
         :param values: POST values dictionary
