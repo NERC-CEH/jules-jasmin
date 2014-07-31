@@ -2,10 +2,9 @@ import base64
 import datetime
 import logging
 import os
-from pylons import config
 from joj.crowd.models import UserRequest
-
 import urllib2, simplejson
+from simplejson import JSONDecodeError
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -67,24 +66,31 @@ class CrowdClient(object):
             app_pwd: Application password for Crowd server
         """
 
-        self.crowd_user = app_name or config.get('crowd', 'app_name')
-        self.crowd_password = app_pwd or config.get('crowd', 'app_password')
-        self.use_crowd = config.get('crowd', 'use_crowd') == 'True'
+        self.crowd_user = app_name
+        self.crowd_password = app_pwd
+        self.crowd_api = api_url
+        self.use_crowd = None
+        self.external_opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
 
-
-        # Fall back to the config value if we haven't explicitly specified a URL
-        # for the REST API, do the same for the application user and password too
-        self.crowd_api = api_url or config.get('crowd', 'api_url')
-        #password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        #password_mgr.add_password(None,
-        #                          self.crowd_api,
-        #                          app_name or config.get('crowd', 'app_name'),
-        #                          app_pwd or config.get('crowd', 'app_password'))
-
-        # Use this credentials for subsequent urllib2 requests to crowd
-        #handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        #self.opener = urllib2.build_opener(handler)
-        #self.opener_installed = False
+    def config(self, config):
+        """
+        Configure the crowd client
+        :param config:
+        :return:nothing
+        """
+        self.crowd_user = config['crowd_app_name']
+        self.crowd_password = config['crowd_app_password']
+        self.crowd_api = config['crowd_api_url']
+        self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
+        try:
+            self.external_opener = urllib2.build_opener(
+                urllib2.ProxyHandler({'http': config['external_http_proxy'],
+                                      'https': config['external_https_proxy']})
+            )
+            log.info("installed proxed external opener for crowd client")
+        except KeyError:
+            self.external_opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+            log.info("installed non-proxed external opener for crowd client")
 
     def check_authenticated(self, user_name, password):
         """Checks if the user in question is in the crowd system
@@ -265,7 +271,7 @@ class CrowdClient(object):
             if self.use_crowd:
                 # We're finally ready to make the request...
 
-                f = urllib2.urlopen(request)
+                f = self.external_opener.open(request)
 
                 # 204 is officially "No Content", so we won't have
                 # any JSON to load! This is expected for 'DELETE'
@@ -294,16 +300,26 @@ class CrowdClient(object):
         except urllib2.HTTPError as h_ex:
 
             if hasattr(h_ex, "read"):
-                # Interrogate the error response...
-                err_response = simplejson.loads(h_ex.read())
-
-                # Use this info to look up the exception we should raise
-                reason = err_response['reason']
-
+                response_text = "<None>"
                 try:
+                    # Interrogate the error response...
+                    response_text = h_ex.read()
+                    err_response = simplejson.loads(response_text)
+
+                    # Use this info to look up the exception we should raise
+                    reason = err_response['reason']
                     raise self._errorMap[reason]()
+                except JSONDecodeError:
+                    log.exception("Failure to json decode error crowd response '%s'" % response_text)
+                    raise ClientException
                 except:
                     raise ClientException
             else:
                 log.error("CROWD ERROR: %s" % h_ex)
                 raise h_ex
+        except JSONDecodeError as ex:
+            log.exception("Failure to json decode crowd response")
+            raise ex
+        except Exception as ex:
+            log.exception("Failure to get crowd response")
+            raise ex
