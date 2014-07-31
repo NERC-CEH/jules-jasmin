@@ -123,7 +123,7 @@ class AccountController(BaseController):
             render('login.html', extra_vars={'came_from': came_from, 'message': message}),
             defaults=c.form_result,
             errors=c.form_errors,
-            auto_error_formatter=custom_formatter
+            auto_error_formatter=_custom_formatter
         )
 
     def logout(self):
@@ -134,7 +134,7 @@ class AccountController(BaseController):
 
         return HTTPFound(location='/account/login', headers=headers)
 
-def custom_formatter(error):
+def _custom_formatter(error):
     """Custom error formatter"""
     return '<span class="help-inline">%s</span>' % (
         htmlfill.html_quote(error)

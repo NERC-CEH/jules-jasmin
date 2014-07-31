@@ -1,8 +1,11 @@
 """
 # header
 """
+import random
+import string
 from pylons import config
 import logging
+from crowd.client import CrowdClient
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
@@ -18,7 +21,11 @@ class AccountRequestService(DatabaseService):
     Service for persistence and retrieval of AccountRequests
     """
 
-    def __init__(self, session=Session, email_service=EmailService(), user_service=UserService()):
+    def __init__(self,
+                 session=Session,
+                 email_service=EmailService(),
+                 user_service=UserService(),
+                 crowd_client=CrowdClient()):
         """
 
         :param session: session to use
@@ -28,6 +35,8 @@ class AccountRequestService(DatabaseService):
         super(AccountRequestService, self).__init__(session)
         self._email_service = email_service
         self._user_service = user_service
+        self._crowd_client = crowd_client
+        self._crowd_client.config(config)
 
     def _add_account_request(self, account_request):
         """
@@ -120,29 +129,48 @@ class AccountRequestService(DatabaseService):
 
             session.delete(account_request)
 
-    def accept_account_request(self, id):
+    def accept_account_request(self, account_request_id):
+        """
+        Accept the account request, make a user account, add to crowd send email
+        :param account_request_id: the account request account_request_id to accept
+        :return:nothing
+        """
         with self.transaction_scope() as session:
-            account_request = session.\
-                query(AccountRequest)\
-                .filter(AccountRequest.id == id)\
-                .one()
+            account_request = session.query(AccountRequest).get(account_request_id)
+            new_username = account_request.email
 
-            self._user_service.create(
-                account_request.email,
-                account_request.first_name,
-                account_request.last_name,
-                account_request.email,
-                constants.USER_ACCESS_LEVEL_EXTERNAL,
-                account_request.institution)
+            user = self._user_service.get_user_by_username_in_session(session, new_username)
 
-            #msg = email_messages.ACCOUNT_REQUEST_ACCEPTED_MESSAGE.format(
-            #    name=account_request.name,
-            #    reason=reason
-            #)
-            #self._email_service.send_email(
-            #    config['email.from_address'],
-            #    account_request.email,
-            #    email_messages.ACCOUNT_REQUEST_REJECTED_SUBJECT,
-            #    msg)
+            if user is None:
+                user = self._user_service.create_in_session(
+                    session,
+                    new_username,
+                    account_request.first_name,
+                    account_request.last_name,
+                    account_request.email,
+                    constants.USER_ACCESS_LEVEL_EXTERNAL,
+                    account_request.institution)
+
+                random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
+                self._crowd_client.create_user(
+                    account_request.email,
+                    account_request.first_name,
+                    account_request.last_name,
+                    account_request.email,
+                    random_password)
+
+            link = self._user_service.set_forgot_password_in_session(session, user)
+
+            msg = email_messages.ACCOUNT_REQUEST_ACCEPTED_MESSAGE.format(
+                first_name=account_request.first_name,
+                last_name=account_request.last_name,
+                link=link
+            )
+
+            self._email_service.send_email(
+                config['email.from_address'],
+                account_request.email,
+                email_messages.ACCOUNT_REQUEST_ACCEPTED_SUBJECT,
+                msg)
 
             session.delete(account_request)

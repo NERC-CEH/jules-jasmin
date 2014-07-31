@@ -156,3 +156,11 @@ class TestAccountRequestController(TestController):
             account_requests = session.query(AccountRequest).all()
         assert_that(len(account_requests), is_(1))
         assert_that(account_requests[0].first_name, is_('name'))
+
+    def test_GIVEN_nothing_WHEN_password_reset_THEN_page_with_error(self):
+
+        response = self.app.get(
+            url=url(controller='request_account', action='password_reset')
+        )
+        assert_that(response.normal_body, contains_string("Password reset"), "Correct page")
+        assert_that(response.normal_body, contains_string("Password reset"), "Not known")

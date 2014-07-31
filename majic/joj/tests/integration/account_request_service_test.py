@@ -2,6 +2,7 @@
 from hamcrest import *
 from mock import Mock
 from pylons import config
+from joj.crowd.client import CrowdClient
 from joj.tests import TestController
 from joj.services.account_request_service import AccountRequestService
 from joj.model.account_request import AccountRequest
@@ -15,7 +16,8 @@ class AccountRequestServiceTest(TestController):
     def setUp(self):
         super(AccountRequestServiceTest, self).setUp()
         self.email_service = Mock(EmailService)
-        self.account_request_service = AccountRequestService(email_service=self.email_service)
+        self.crowd_client = Mock(CrowdClient)
+        self.account_request_service = AccountRequestService(email_service=self.email_service, crowd_client=self.crowd_client)
         self.clean_database()
 
     def test_WHEN_account_request_submitted_THEN_account_request_ends_in_database(self):
@@ -64,7 +66,7 @@ class AccountRequestServiceTest(TestController):
             assert_that(session.query(User).count(), is_(1), "Only one user core in the users table")
         assert_that(self.email_service.send_email.called, is_(True), "Rejection email sent")
 
-    def test_GIVEN_account_request_WHEN_accept_THEN_request_deleted_email_sent_account_created_user_created(self):
+    def test_GIVEN_account_request_WHEN_accept_THEN_request_deleted_and_email_sent_and_crowd_account_created_and_user_created(self):
         request_id = self.create_account_request()
 
         self.account_request_service.accept_account_request(request_id)
@@ -72,9 +74,26 @@ class AccountRequestServiceTest(TestController):
         with session_scope() as session:
             assert_that(session.query(AccountRequest).filter(AccountRequest.id == request_id).count(), is_(0), "Request has been deleted")
             assert_that(session.query(User).count(), is_(2), "Total user count (should be core and new user)")
-            session.query(User).filter(User.email == self.account_request.email).one()
+            user = session.query(User).filter(User.username == self.account_request.email).one()
+            assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
+            assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
 
         assert_that(self.crowd_client.create_user.called, is_(True), "User was created in crowd")
         assert_that(self.email_service.send_email.called, is_(True), "Acceptance email sent")
 
+    def test_GIVEN_account_request_for_existing_account_WHEN_accept_THEN_request_deleted_and_email_sent_and_notcreate_crowd_account_and_set_forgotten_password_for_user(self):
+        request_id = self.create_account_request()
+        self.login(username=self.account_request.email)
+
+        self.account_request_service.accept_account_request(request_id)
+
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).filter(AccountRequest.id == request_id).count(), is_(0), "Request has been deleted")
+            assert_that(session.query(User).count(), is_(2), "Total user count (should be core and new user)")
+            user = session.query(User).filter(User.username == self.account_request.email).one()
+            assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
+            assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
+
+        assert_that(self.crowd_client.create_user.called, is_(False), "User was not created in crowd")
+        assert_that(self.email_service.send_email.called, is_(True), "Acceptance email sent")
 

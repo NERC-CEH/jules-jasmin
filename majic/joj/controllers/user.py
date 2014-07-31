@@ -4,20 +4,20 @@
 import logging
 from pylons.controllers.util import redirect
 from sqlalchemy.orm.exc import NoResultFound
+from pylons import tmpl_context as c, url
+from formencode import htmlfill
+import formencode
 
+from joj.crowd.client import ClientException
 from joj.lib.base import BaseController, request, render
 from joj.lib import helpers
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
-from pylons import tmpl_context as c, url
-from formencode import htmlfill
-import formencode
 from joj.model.create_new_user_form import CreateUserForm, UpdateUserForm
 from joj.utils import constants, utils
 from joj.services.model_run_service import ModelRunService
 from joj.services.account_request_service import AccountRequestService
-
-__author__ = 'Chirag Mistry'
+from joj.services.general import ServiceException
 
 log = logging.getLogger(__name__)
 
@@ -225,7 +225,7 @@ class UserController(BaseController):
                 action = request.params.getone('action')
                 if action == u'accept':
                     self._account_request_service.accept_account_request(id)
-                    helpers.error_flash("User account created and user emailed.")
+                    helpers.success_flash("User account created and user emailed.")
                 elif action == u'reject':
                     reason_for_rejection = request.params.getone('reason')
                     if len(reason_for_rejection.strip()) == 0:
@@ -240,5 +240,12 @@ class UserController(BaseController):
                 helpers.error_flash("Request not accepted or rejected. No action included with reject or accept")
             except NoResultFound:
                 helpers.error_flash("Request could not be found, no action taken")
+            except ClientException as ex:
+                log.exception("Trouble accepting account request because of CROWD")
+                helpers.error_flash(
+                    "User account could not be created, there is a problem with CROWD: %s" % ex.message)
+            except ServiceException as ex:
+                log.exception("Trouble accepting or rejecting account request because of a service error")
+                helpers.error_flash("User account could not be created %s" % ex.message)
 
             return redirect(url(controller="user", action="requests"))

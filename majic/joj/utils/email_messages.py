@@ -99,3 +99,20 @@ Regards,
 
 Majic Admin Team
 """
+
+ACCOUNT_REQUEST_ACCEPTED_SUBJECT = "Majic account creation"
+ACCOUNT_REQUEST_ACCEPTED_MESSAGE = """
+Dear {first_name} {last_name},
+
+We have created you an account in Majic. To access the account please follow this link:
+
+{link}
+
+This link is only valid for the next 24 hours but if you visit this page after that time a new link will be sent to you.
+
+We hope you enjoying using the system.
+
+Regards,
+
+Majic Admin Team
+"""

@@ -168,6 +168,8 @@ class CrowdClient(object):
                 token: Session identifier to invalidate
             Returns: Nothing
         """
+        if token in self._token_cache:
+            del[self._token_cache[token]]
         self._make_request('session/' + token, method='DELETE')
 
     def get_user_info(self, username):
@@ -179,15 +181,15 @@ class CrowdClient(object):
 
         return self._make_request('user?username=%s' % username)
 
-    def create_user(self, username, first_name, last_name,
-                    email, password):
-        """Asks the client to create a user with the given information
-            Params:
-                username - login name for the user
-                first_name - The name given to the user for use in an informal setting
-                last_name - The name of the user's family
-                email - Email address
-                password - User's desired password
+    def create_user(self, username, first_name, last_name, email, password):
+        """
+        Asks the client to create a user with the given information
+        :param username: login name for the user
+        :param first_name: The name given to the user for use in an informal setting
+        :param last_name: The name of the user's family
+        :param email: Email address
+        :param password: User's desired password
+        :return: nothing
         """
 
         req = UserRequest()
@@ -309,10 +311,13 @@ class CrowdClient(object):
                     # Use this info to look up the exception we should raise
                     reason = err_response['reason']
                     raise self._errorMap[reason]()
+                except ClientException as ex:
+                    raise ex
                 except JSONDecodeError:
                     log.exception("Failure to json decode error crowd response '%s'" % response_text)
                     raise ClientException
                 except:
+                    log.exception("Failure to get error in crowd request")
                     raise ClientException
             else:
                 log.error("CROWD ERROR: %s" % h_ex)

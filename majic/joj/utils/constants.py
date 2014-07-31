@@ -20,6 +20,9 @@ USER_ACCESS_LEVEL_EXTERNAL = "External"
 QUOTA_WARNING_LIMIT_PERCENT = 80
 QUOTA_ABSOLUTE_LIMIT_PERCENT = 100
 
+# Time in hours that a UUID for a forgotten password is valid for
+FORGOTTEN_PASSWORD_UUID_VALID_TIME = 24
+
 # The default science configuration to use
 DEFAULT_SCIENCE_CONFIGURATION = 1
 

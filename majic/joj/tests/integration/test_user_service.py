@@ -1,10 +1,19 @@
-from mock import MagicMock, ANY
+from hamcrest import *
+from joj.model import session_scope
+from mock import *
 from joj.model import User
 from joj.services.tests.base import BaseTest
 from joj.services.user import UserService
+from joj.tests import TestController
 
 
-class UserServiceTest(BaseTest):
+class UserServiceTest(TestController):
+
+    _mock_session = None
+
+    def setUp(self):
+        super(UserServiceTest, self).setUp()
+        self._mock_session = Mock
 
     def test_create_user(self):
 
@@ -19,6 +28,7 @@ class UserServiceTest(BaseTest):
         sample_user.access_level = 'External'
         sample_user.first_name = "first_name"
         sample_user.last_name = "last_name"
+        sample_user.storage_quota_in_gb = 89
 
         self._mock_session.add = MagicMock()
         self._mock_session.commit = MagicMock()
@@ -65,3 +75,16 @@ class UserServiceTest(BaseTest):
         user_service.get_all_users()
 
         self._mock_session.query.assert_called_once_with(User)
+
+    def test_GIVEN_user_WHEN_forget_password_THEN_password_forgotten_set(self):
+
+        user = self.login()
+        user_service = UserService()
+
+        link = user_service.set_forgot_password(user.id)
+
+        with session_scope() as session:
+            user = session.query(User).get(user.id)
+            assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
+            assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
+            assert_that(link, contains_string(user.forgotten_password_uuid), "UUID is in link")

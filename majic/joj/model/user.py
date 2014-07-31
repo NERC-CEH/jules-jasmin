@@ -3,7 +3,7 @@
 """
 
 from joj.model.meta import Base
-from sqlalchemy import Column, Integer, String, BigInteger
+from sqlalchemy import Column, Integer, String, BigInteger, DateTime
 from joj.utils import constants
 
 
@@ -19,8 +19,11 @@ class User(Base):
     access_level = Column(String(constants.DB_STRING_SIZE))
     first_name = Column(String(constants.DB_STRING_SIZE))
     last_name = Column(String(constants.DB_STRING_SIZE))
+    institution = Column(String(constants.DB_STRING_SIZE))
     storage_quota_in_gb = Column(BigInteger)
     model_run_creation_action = Column(String(constants.DB_STRING_SIZE))
+    forgotten_password_uuid = Column(String(constants.DB_STRING_SIZE))
+    forgotten_password_expiry_date = Column(DateTime)
 
     def is_admin(self):
         """

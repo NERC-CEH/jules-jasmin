@@ -2,11 +2,13 @@
 # header
 """
 import logging
-from pylons import config
+import datetime
+from pylons import config, url
 from sqlalchemy.orm.exc import NoResultFound
 from joj.model import User
 from joj.services.general import DatabaseService, ServiceException
 from joj.utils import constants
+import uuid
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +16,38 @@ log = logging.getLogger(__name__)
 class UserService(DatabaseService):
     """Provides operations on User objects"""
 
+    def create_in_session(self, session, username, first_name, last_name, email, access_level, institution=""):
+        """
+        Creates a user within a session
+
+        :param session: session to use
+        :param username: The login name of the user
+        :param first_name: User's first name
+        :param last_name: User's last name
+        :param email: User's email address
+        :param access_level: Set to 'Admin' for administrative functions
+        :param institution: users institution may be blank
+        :return: nothing
+        """
+
+        user = User()
+        user.username = username
+        user.name = " ".join([first_name, last_name])
+        user.email = email
+        user.access_level = access_level
+        user.first_name = first_name
+        user.last_name = last_name
+        user.institution = institution
+        if user.access_level == constants.USER_ACCESS_LEVEL_ADMIN:
+            user.storage_quota_in_gb = config['storage_quota_admin_GB']
+        else:
+            user.storage_quota_in_gb = config['storage_quota_user_GB']
+        session.add(user)
+        return user
+
     def create(self, username, first_name, last_name, email, access_level, institution=""):
         """
-        Creates a user (if the user doesn't already exist)
+        Creates a user
 
         :param username: The login name of the user
         :param first_name: User's first name
@@ -28,20 +59,7 @@ class UserService(DatabaseService):
         """
 
         with self.transaction_scope() as session:
-
-            user = User()
-            user.username = username
-            user.name = " ".join([first_name, last_name])
-            user.email = email
-            user.access_level = access_level
-            user.first_name = first_name
-            user.last_name = last_name
-            if user.access_level == constants.USER_ACCESS_LEVEL_ADMIN:
-                user.storage_quota_in_gb = config['storage_quota_admin_GB']
-            else:
-                user.storage_quota_in_gb = config['storage_quota_user_GB']
-
-            session.add(user)
+            self.create_in_session(session, username, first_name, last_name, email, access_level, institution)
 
     def get_user_by_username(self, username):
         """
@@ -53,19 +71,24 @@ class UserService(DatabaseService):
             return None
 
         with self.readonly_scope() as session:
+            return self.get_user_by_username_in_session(session, username)
 
-            try:
-                return session.query(User).filter(User.username == username).one()
-
-            except NoResultFound as e:
-                # We'll get an exception if the user can't be found
-
-                log.error("No user found: %s", e)
-                return None
-            except Exception as ex:
-
-                # A general error has occurred - pass this up
-                raise ServiceException(ex)
+    def get_user_by_username_in_session(self, session, username):
+        """
+        Get a user from their user name, or none if the user doesn't exist
+        :param session: session to use
+        :param username: username
+        :return:user
+        """
+        try:
+            return session.query(User).filter(User.username == username).one()
+        except NoResultFound as e:
+            # We'll get an exception if the user can't be found
+            log.info("No user found: %s", e)
+            return None
+        except Exception as ex:
+            # A general error has occurred - pass this up
+            raise ServiceException(ex)
 
     def get_user_by_email_address(self, email):
         """ Returns a user with the given email (which should be unique)
@@ -140,3 +163,25 @@ class UserService(DatabaseService):
         with self.transaction_scope() as session:
             user = session.merge(user)
             user.model_run_creation_action = action
+
+    def set_forgot_password_in_session(self, user):
+        """
+        Set that the user has forgotten their password in a session
+        :param user: the user who forgot their password
+        :return:link to reset their password
+        """
+
+        user.forgotten_password_uuid = str(uuid.uuid4().get_hex())
+        expiry_time = datetime.datetime.now() + datetime.timedelta(hours=constants.FORGOTTEN_PASSWORD_UUID_VALID_TIME)
+        user.forgotten_password_expiry_date = expiry_time
+        return url(controller="account", action="password_reset", id="user.forgotten_password_uuid")
+
+    def set_forgot_password(self, user_id):
+        """
+        Set that the user has forgotten their password
+        :param user_id: the id of the user who forgot their password
+        :return:link to reset their password
+        """
+        with self.transaction_scope() as session:
+            user = session.query(User).get(user_id)
+            return self.set_forgot_password_in_session(user)
