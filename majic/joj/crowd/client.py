@@ -1,20 +1,23 @@
+"""
+#header
+"""
 import base64
 import datetime
 import logging
-import os
 from joj.crowd.models import UserRequest
-import urllib2, simplejson
+import urllib2
+import simplejson
 from simplejson import JSONDecodeError
 
-__author__ = 'Phil Jenkins (Tessella)'
-
 log = logging.getLogger(__name__)
+
 
 class ClientException(Exception):
     """ Base exception for Crowd-based errors """
 
     def __init__(self):
         pass
+
 
 class SessionNotFoundException(ClientException):
     """Use this for:
@@ -24,6 +27,7 @@ class SessionNotFoundException(ClientException):
     def __init__(self):
         pass
 
+
 class AuthenticationFailedException(ClientException):
     """If the user has entered incorrect details,
     we'll use this exception type"""
@@ -31,16 +35,21 @@ class AuthenticationFailedException(ClientException):
     def __init__(self):
         pass
 
+
 class UserException(ClientException):
     """ Raised if a user already exists on create"""
 
     def __init__(self):
         pass
 
-class CrowdCommunicationExcpetion(ClientException):
 
+class CrowdCommunicationExcpetion(ClientException):
+    """
+    Raised if crowd can not be contacted
+    """
     def __init__(self):
         pass
+
 
 class CrowdClient(object):
     """Provides a simple interface to a crowd server"""
@@ -93,26 +102,23 @@ class CrowdClient(object):
             log.info("installed non-proxed external opener for crowd client")
 
     def check_authenticated(self, user_name, password):
-        """Checks if the user in question is in the crowd system
-            Params:
-                user_name: Login name of the user to check
-                password: That user's password
-            Returns:
-                User information as JSON if session valid,
+        """
+        Checks if the user in question is in the crowd system
+
+        :param user_name: Login name of the user to check
+        :param password: That user's password
+        :return: User information as JSON if session valid,
                 raises exception if not
         """
-        # We'll either get the user back, or
         return self._make_request('authentication?username=%s' % user_name, '{ "value": "%s" }' % password)
 
-
     def create_user_session(self, user_name, password, remote_addr):
-        """Asks the crowd provider for a user session token
-            Params:
-                user_name: Login name of the user
-                password: Password of the user
-                remote_addr: IP address the user is requesting from
-            Returns:
-                User object in JSON containing a 'token' from Crowd
+        """
+        Asks the crowd provider for a user session token
+        :param user_name: Login name of the user
+        :param password: Password of the user
+        :param remote_addr: IP address the user is requesting from
+        :return: User object in JSON containing a 'token' from Crowd
                 raises exception if invalid credentials
         """
 
@@ -126,11 +132,10 @@ class CrowdClient(object):
         return self._make_request('session', user.to_json())
 
     def verify_user_session(self, token):
-        """Checks the supplied token against active Crowd sessions
-            Params:
-                token: The Crowd session ID to verify
-            Returns:
-                User information as JSON if session valid,
+        """
+        Checks the supplied token against active Crowd sessions
+        :param token: The Crowd session ID to verify
+        :return: User information as JSON if session valid,
                 raises exception if not
         """
 
@@ -163,20 +168,22 @@ class CrowdClient(object):
         return self._make_request('session/' + token)
 
     def delete_session(self, token):
-        """Invalidates the specified session
-            Params:
-                token: Session identifier to invalidate
-            Returns: Nothing
+        """
+        Invalidates the specified session
+
+        :param token: Session identifier to invalidate
+        :return:Nothing
         """
         if token in self._token_cache:
             del[self._token_cache[token]]
         self._make_request('session/' + token, method='DELETE')
 
     def get_user_info(self, username):
-        """Gets a user object from Crowd
-            Params:
-                username: Name of user to get info for
-            Returns: User JSON
+        """
+        Gets a user object from Crowd
+
+        :param username: Name of user to get info for
+        :return: User JSON
         """
 
         return self._make_request('user?username=%s' % username)
@@ -201,9 +208,16 @@ class CrowdClient(object):
 
         return self._make_request('user', data=req.new_user_json())
 
-    def update_user(self, username, first_name, last_name,
-                    email, password):
-        """Asks the client to update the user record"""
+    def update_user(self, username, first_name, last_name, email, password):
+        """
+        Asks the client to update the user record
+        :param username: login name for the user
+        :param first_name: The name given to the user for use in an informal setting
+        :param last_name: The name of the user's family
+        :param email: Email address
+        :param password: User's desired password
+        :return: nothing
+        """
 
         req = UserRequest()
         req.username = username
@@ -214,23 +228,24 @@ class CrowdClient(object):
 
         return self._make_request('user?username=%s' % username, data=req.new_user_json(), method='PUT')
 
-
     def delete_user(self, username):
-        """ Performs a delete on a user
-            Params:
-                username: The login name of the user to delete
+        """
+        Performs a delete on a user
+
+        :param username: The login name of the user to delete
+        :return: nothing
         """
 
         self._make_request('user?username=%s' % username, method='DELETE')
 
     def _make_request(self, resource, data=None, method=None):
-        """Helper function for making requests to the Crowd REST API
-            Params:
-                resource: The REST resource to access
-                data: Optional JSON payload
-                method: The HTTP verb used for the request
-            Returns:
-                The JSON response from the Crowd server, or
+        """
+        Helper function for making requests to the Crowd REST API
+
+        :param resource: The REST resource to access
+        :param data: Optional JSON payload
+        :param method: The HTTP verb used for the request
+        :return: The JSON response from the Crowd server, or
                 raises an exception if a problem was encountered
         """
 
@@ -296,7 +311,7 @@ class CrowdClient(object):
                     'first-name': 'John',
                     'last-name': 'Holt',
                     'user': {'name': 'johhol'}
-                    }
+                }
             return response_object
 
         except urllib2.HTTPError as h_ex:

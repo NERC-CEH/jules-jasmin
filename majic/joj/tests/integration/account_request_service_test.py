@@ -2,7 +2,7 @@
 from hamcrest import *
 from mock import Mock
 from pylons import config
-from joj.crowd.client import CrowdClient
+from joj.crowd.client import CrowdClient, ClientException
 from joj.tests import TestController
 from joj.services.account_request_service import AccountRequestService
 from joj.model.account_request import AccountRequest
@@ -85,6 +85,7 @@ class AccountRequestServiceTest(TestController):
         request_id = self.create_account_request()
         self.login(username=self.account_request.email)
 
+
         self.account_request_service.accept_account_request(request_id)
 
         with session_scope() as session:
@@ -97,3 +98,15 @@ class AccountRequestServiceTest(TestController):
         assert_that(self.crowd_client.create_user.called, is_(False), "User was not created in crowd")
         assert_that(self.email_service.send_email.called, is_(True), "Acceptance email sent")
 
+    def test_GIVEN_account_request_WHEN_accept_and_exception_thrown_in_client_THEN_request_not_deleted_and_email_not_sent_and_user_account_not_created(self):
+        request_id = self.create_account_request()
+        self.crowd_client.create_user = Mock(side_effect=ClientException())
+
+        with self.assertRaises(ClientException, msg="Should have thrown a ClientException exception"):
+            self.account_request_service.accept_account_request(request_id)
+
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).filter(AccountRequest.id == request_id).count(), is_(1), "Request has not been deleted")
+            assert_that(session.query(User).count(), is_(1), "Total user count (should be core)")
+
+        assert_that(self.email_service.send_email.called, is_(False), "Acceptance email sent")
