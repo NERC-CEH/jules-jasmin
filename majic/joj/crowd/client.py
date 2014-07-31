@@ -71,6 +71,7 @@ class CrowdClient(object):
         self.crowd_password = app_pwd
         self.crowd_api = api_url
         self.use_crowd = None
+        self.external_opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
 
     def config(self, config):
         """
@@ -82,6 +83,15 @@ class CrowdClient(object):
         self.crowd_password = config['crowd_app_password']
         self.crowd_api = config['crowd_api_url']
         self.use_crowd = config['crowd_use_crowd'].lower() != 'false'
+        try:
+            self.external_opener = urllib2.build_opener(
+                urllib2.ProxyHandler({'http': config['external_http_proxy'],
+                                      'https': config['external_https_proxy']})
+            )
+            log.info("installed proxed external opener for crowd client")
+        except KeyError:
+            self.external_opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+            log.info("installed non-proxed external opener for crowd client")
 
     def check_authenticated(self, user_name, password):
         """Checks if the user in question is in the crowd system
@@ -262,7 +272,7 @@ class CrowdClient(object):
             if self.use_crowd:
                 # We're finally ready to make the request...
 
-                f = urllib2.urlopen(request)
+                f = self.external_opener.urlopen(request)
 
                 # 204 is officially "No Content", so we won't have
                 # any JSON to load! This is expected for 'DELETE'
