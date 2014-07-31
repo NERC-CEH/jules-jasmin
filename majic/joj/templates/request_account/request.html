@@ -36,9 +36,15 @@
                 </div>
                 <form class="form-horizontal" method="POST" action="${url(controller='request_account', action='request')}">
                     <div class="control-group">
-                        <label class="control-label" for="name">Full Name</label>
+                        <label class="control-label" for="first_name">First Name</label>
                         <div class="controls">
-                            ${h.html_tags.text('name', placeholder='Full Name')}
+                            ${h.html_tags.text('first_name', placeholder='First Name')}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="last_name">Last Name</label>
+                        <div class="controls">
+                            ${h.html_tags.text('last_name', placeholder='Last Name')}
                         </div>
                     </div>
                     <div class="control-group">
@@ -54,7 +60,7 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="email">
+                        <label class="control-label" for="usage">
                             How will you use Majic?<p style="font-size:12px; color:#808080; text-align: justify">
                             Give a brief but specific description of how you intend to use Majic in your research.</p>
                         </label>

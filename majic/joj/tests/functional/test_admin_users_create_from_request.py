@@ -52,7 +52,8 @@ class TestAdminUserCreatedFromRequest(TestController):
         )
 
         assert_that(response.normal_body, contains_string(self.account_request.usage))
-        assert_that(response.normal_body, contains_string(self.account_request.name))
+        assert_that(response.normal_body, contains_string(self.account_request.first_name))
+        assert_that(response.normal_body, contains_string(self.account_request.last_name))
         assert_that(response.normal_body, contains_string(self.account_request.institution))
         assert_that(response.normal_body, contains_string(self.account_request.email))
 
@@ -83,7 +84,7 @@ class TestAdminUserCreatedFromRequest(TestController):
         with session_scope() as session:
             assert_that(session.query(AccountRequest).count(), is_(1), "Number of user accounts")
 
-    def test_GIVEN_admin_and_post_id_but_not_accept_or_reject_WHEN_view_THEN_redirect_nothing_changes(self):
+    def test_GIVEN_admin_and_id_but_not_accept_or_reject_WHEN_view_THEN_redirect_nothing_changes(self):
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
         request_id = self.create_account_request()
 
@@ -98,7 +99,7 @@ class TestAdminUserCreatedFromRequest(TestController):
         with session_scope() as session:
             assert_that(session.query(AccountRequest).count(), is_(1), "Number of user accounts")
 
-    def test_GIVEN_admin_and_post_reject_WHEN_view_THEN_redirect_user_account_not_setup_request_deleted(self):
+    def test_GIVEN_admin_WHEN_reject_THEN_redirect_user_account_not_setup_request_deleted(self):
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
         request_id_to_keep = self.create_account_request()
         request_id = self.create_account_request()
@@ -117,7 +118,7 @@ class TestAdminUserCreatedFromRequest(TestController):
             assert_that(session.query(AccountRequest).one().id, is_(request_id_to_keep), "Id left is one to keep")
             assert_that(session.query(User).count(), is_(2), "Only two users core and test in the users table")
 
-    def test_GIVEN_admin_and_post_reject_with_no_reason_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
+    def test_GIVEN_admin_and_no_reason_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
         request_id = self.create_account_request()
 
@@ -126,7 +127,7 @@ class TestAdminUserCreatedFromRequest(TestController):
             expect_errors=True,
             params={
                 'action': u'reject',
-                'reason': u''}
+                'reason': u'  '}
         )
 
         assert_that(response.status_code, is_(302), "Response is redirect")
@@ -135,7 +136,7 @@ class TestAdminUserCreatedFromRequest(TestController):
             assert_that(session.query(AccountRequest).one().id, is_(request_id), "Request is kept")
             assert_that(session.query(User).count(), is_(2), "Only two users core and test in the users table")
 
-    def test_GIVEN_admin_and_post_reject_with_non_existant_id_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
+    def test_GIVEN_admin_and_non_existant_id_WHEN_reject_THEN_redirect_user_account_no_request_deleted(self):
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
         request_id = self.create_account_request()
 
@@ -151,3 +152,26 @@ class TestAdminUserCreatedFromRequest(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
         with session_scope() as session:
             assert_that(session.query(AccountRequest).one().id, is_(request_id), "Request is kept")
+
+    def test_GIVEN_admin_and_already_existing_account_WHEN_accept_THEN_redirect_user_account_exists(self):
+        user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        request_id = self.create_account_request(user.email)
+
+        response = self.app.post(
+            url=url(controller='user', action='requests', id=request_id),
+            expect_errors=True,
+            params={
+                'action': u'accept',
+                'reason': u'  '}
+        )
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).count(), is_(0), "Request is deleted")
+            user = session.query(User).filter(User.email == self.account_request.email).one()
+
+            assert_that(user.username, is_(self.account_request.email), "email address set")
+            assert_that(user.access_level, is_(constants.USER_ACCESS_LEVEL_EXTERNAL), "access level")
+            assert_that(user.name, is_(self.account_request.name), "name")
+            assert_that(user.storage_quota_in_gb, is_(100), "storage quota")

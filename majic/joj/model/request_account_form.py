@@ -1,4 +1,6 @@
+"""
 # header
+"""
 from formencode import Schema, validators
 from joj.utils import constants
 
@@ -11,9 +13,14 @@ class RequestAccountForm(Schema):
     allow_extra_fields = True
     filter_extra_fields = True
 
-    name = validators.String(not_empty=True, max=constants.DB_STRING_SIZE,
-                             messages={'empty': 'Please enter a name',
-                                       'missing': 'Please enter a name'})
+    first_name = validators.String(
+        not_empty=True,
+        max=constants.DB_STRING_SIZE,
+        messages={'empty': 'Please enter a first name', 'missing': 'Please enter a first name'})
+    last_name = validators.String(
+        not_empty=True,
+        max=constants.DB_STRING_SIZE,
+        messages={'empty': 'Please enter a last name', 'missing': 'Please enter a last name'})
     email = validators.Email(not_empty=True, max=constants.DB_STRING_SIZE,
                              messages={'empty': 'Please enter an email',
                                        'missing': 'Please enter an email',

@@ -1,7 +1,7 @@
+"""
 # header
-from formencode import htmlfill
+"""
 from pylons.decorators import validate
-import re
 from pylons import request
 from pylons import tmpl_context as c
 
@@ -46,7 +46,8 @@ class RequestAccountController(BaseController):
             return render('request_account/request.html')
 
         account_request = AccountRequest()
-        account_request.name = self.form_result['name']
+        account_request.first_name = self.form_result['first_name']
+        account_request.last_name = self.form_result['last_name']
         account_request.email = self.form_result['email']
         account_request.institution = self.form_result['institution']
         account_request.usage = self.form_result['usage']

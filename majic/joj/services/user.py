@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class UserService(DatabaseService):
     """Provides operations on User objects"""
 
-    def create(self, username, first_name, last_name, email, access_level):
+    def create(self, username, first_name, last_name, email, access_level, institution=""):
         """
         Creates a user (if the user doesn't already exist)
 
@@ -23,6 +23,7 @@ class UserService(DatabaseService):
         :param last_name: User's last name
         :param email: User's email address
         :param access_level: Set to 'Admin' for administrative functions
+        :param institution: users institution may be blank
         :return: nothing
         """
 

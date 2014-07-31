@@ -77,7 +77,7 @@ ACCOUNT_REQUESTED_USER = "Dear %s,\r\n\r\n" \
 
 ACCOUNT_REQUESTED_ADMIN = "Dear Majic admin,\r\n\r\nThe following request for a Majic " \
                           "account has been received:\r\n\r\n" \
-                          "Name: %s\r\n" \
+                          "Name: %s %s\r\n" \
                           "Email: %s\r\n" \
                           "Institution: %s\r\n" \
                           "Expected usage: %s\r\n\r\n" \
@@ -89,7 +89,7 @@ ACCOUNT_REQUEST_FULL = "Dear %s,\r\n\r\n" \
 
 ACCOUNT_REQUEST_REJECTED_SUBJECT = "Rejection of your Majic account request"
 ACCOUNT_REQUEST_REJECTED_MESSAGE = """
-Dear {name},
+Dear {first_name} {last_name},
 
 Sorry your request for a Majic account has been rejected. The reason for reject was:
 

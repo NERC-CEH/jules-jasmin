@@ -299,19 +299,20 @@ class TestController(TestCase):
         self.dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
         return self.dap_client_factory
 
-    def create_account_request(self):
+    def create_account_request(self, email_addess="test@test.ceh.ac.uk"):
         """
         Create an account request
         :return: id of account request
         """
         with session_scope() as session:
             self.account_request = AccountRequest()
-            self.account_request.email = "test@test.com"
+            self.account_request.email = email_addess
             self.account_request.institution = "institution"
-            self.account_request.name = "a very unique name for the user " + str(datetime.datetime.now())
+            self.account_request.first_name = "a very unique name for the user " + str(datetime.datetime.now())
+            self.account_request.last_name = "last name"
             self.account_request.usage = "usage"
             session.add(self.account_request)
 
         with session_scope() as session:
-            ac = session.query(AccountRequest).filter(AccountRequest.name == self.account_request.name).one()
+            ac = session.query(AccountRequest).filter(AccountRequest.first_name == self.account_request.first_name).one()
             return ac.id

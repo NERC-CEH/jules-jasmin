@@ -224,7 +224,8 @@ class UserController(BaseController):
             try:
                 action = request.params.getone('action')
                 if action == u'accept':
-                    pass
+                    self._account_request_service.accept_account_request(id)
+                    helpers.error_flash("User account created and user emailed.")
                 elif action == u'reject':
                     reason_for_rejection = request.params.getone('reason')
                     if len(reason_for_rejection.strip()) == 0:

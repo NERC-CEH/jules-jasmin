@@ -28,7 +28,7 @@
                 </tr>
                 <tr py:if="len(c.account_requests) != 0" py:for="account_request in c.account_requests">
                     <td>
-                        ${account_request.name}
+                        ${account_request.first_name} ${account_request.last_name}
                     </td>
                     <td>
                         ${account_request.email}
