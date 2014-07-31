@@ -55,8 +55,8 @@ class TestModelRunDrivingData(TestController):
         assert_that(data_period, is_("3600"))
         assert_that(file, is_("'" + constants.USER_UPLOAD_FILE_NAME + "'"))
         assert_that(nvars, is_("8"))
-        assert_that(var, is_("'sw_down', 'lw_down', 'tot_rain', 'tot_snow', 't', 'wind', 'pstar', 'q'"))
-        assert_that(interp, is_("'i', 'i', 'i', 'i', 'i', 'i', 'i', 'i'"))
+        assert_that(var, is_("'sw_down'    'lw_down'    'tot_rain'    'tot_snow'    't'    'wind'    'pstar'    'q'"))
+        assert_that(interp, is_("'i'    'i'    'i'    'i'    'i'    'i'    'i'    'i'"))
 
     def _add_model_run_being_created(self):
         model_run_service = ModelRunService()

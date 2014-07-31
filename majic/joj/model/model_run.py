@@ -80,15 +80,16 @@ class ModelRun(Base):
         param_vals.sort(key=lambda pv: pv.group_id)
         return param_vals
 
-    def get_python_parameter_value(self, parameter_namelist_name):
+    def get_python_parameter_value(self, parameter_namelist_name, is_list=False):
         """
         Gets the value of the first matching parameter value as a python object
         :param parameter_namelist_name: list containing [namelist, name] of parameter to find
+        :param is_list: Indicates whether the value is a lsit
         """
         for param_val in self.parameter_values:
             if param_val.parameter.name == parameter_namelist_name[1]:
                 if param_val.parameter.namelist.name == parameter_namelist_name[0]:
-                    return param_val.get_value_as_python()
+                    return param_val.get_value_as_python(is_list=is_list)
 
     def __repr__(self):
         """ String representation of the model run """

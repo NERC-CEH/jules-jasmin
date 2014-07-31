@@ -218,8 +218,8 @@ class TestModelRunExtents(TestController):
         latlon_region = model_run.get_parameter_values(JULES_PARAM_LATLON_REGION)[0].value
         start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
         end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
-        assert_that(lat_bounds, is_("20, 25"))
-        assert_that(lon_bounds, is_("35, 40"))
+        assert_that(lat_bounds, is_("20    25"))
+        assert_that(lon_bounds, is_("35    40"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".true."))
         assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
@@ -245,7 +245,7 @@ class TestModelRunExtents(TestController):
         l_point_data = model_run.get_parameter_values(JULES_PARAM_SWITCHES_L_POINT_DATA)[0].value
         start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
         end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
-        assert_that(pointfile, is_("25.25, 40.25"))
+        assert_that(pointfile, is_("25.25    40.25"))
         assert_that(n_points, is_("1"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".false."))

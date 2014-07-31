@@ -41,8 +41,11 @@ class Parameter(Base):
     namelist_id = Column(Integer, ForeignKey('namelists.id'))
 
     parameter_values = relationship("ParameterValue", backref=backref('parameter', order_by=id))
+    driving_data_parameter_values = relationship("DrivingDatasetParameterValue",
+                                                 backref=backref('parameter', order_by=id))
 
-    code_versions = relationship("CodeVersion", secondary=_parameter_code_version_association_table, backref="parameters")
+    code_versions = relationship("CodeVersion", secondary=_parameter_code_version_association_table,
+                                 backref="parameters")
 
     def __repr__(self):
         """String representation"""

@@ -45,7 +45,7 @@ def create_values_dict_from_database(model_run, driving_data):
 
 
 def _get_lat_lon(model_run, is_user_data):
-    latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE)
+    latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
     return latlon if latlon is not None else _get_default_lat_lon(model_run, is_user_data)
 
 
@@ -57,7 +57,7 @@ def _get_default_lat_lon(model_run, is_user_data):
 
 
 def _get_lat_bounds(model_run, driving_data, is_user_data):
-    lat_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS)
+    lat_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS, is_list=True)
     return lat_bounds if lat_bounds is not None else _get_default_lat_bounds(model_run, driving_data, is_user_data)
 
 
@@ -69,7 +69,7 @@ def _get_default_lat_bounds(model_run, driving_data, is_user_data):
 
 
 def _get_lon_bounds(model_run, driving_data, is_user_data):
-    lon_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS)
+    lon_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS, is_list=True)
     return lon_bounds if lon_bounds is not None else _get_default_lon_bounds(model_run, driving_data, is_user_data)
 
 
@@ -126,7 +126,7 @@ def _get_acceptable_end_datetime(model_run, driving_data, is_user_data):
 
 def _get_delta_for_interpolation_flags(model_run, interpolation_dict):
     period = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
-    interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP)
+    interps = model_run.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP, is_list=True)
     extra_time = []
     for interp in interps:
         if interp in interpolation_dict:

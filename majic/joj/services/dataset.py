@@ -3,7 +3,7 @@ header
 """
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, contains_eager, immediateload
-from joj.model import Dataset, DatasetType, Analysis, DrivingDataset
+from joj.model import Dataset, DatasetType, Analysis, DrivingDataset, DrivingDatasetParameterValue, Parameter
 from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
@@ -175,7 +175,10 @@ class DatasetService(DatabaseService):
         """
         with self.readonly_scope() as session:
             return session.query(DrivingDataset)\
-                .options(joinedload(DrivingDataset.parameter_values))\
+                .outerjoin(DrivingDataset.parameter_values, "parameter", "namelist") \
+                .options(contains_eager(DrivingDataset.parameter_values)
+                         .contains_eager(DrivingDatasetParameterValue.parameter)
+                         .contains_eager(Parameter.namelist))\
                 .filter(DrivingDataset.id == id)\
                 .one()
 

@@ -4,7 +4,7 @@
 from sqlalchemy import Integer, Column, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
 from joj.model import Base
-from joj.utils import constants
+from joj.utils import constants, f90_helper
 
 
 class DrivingDatasetParameterValue(Base):
@@ -30,3 +30,19 @@ class DrivingDatasetParameterValue(Base):
 
     def __repr__(self):
         return "<DrivingDatasetParameterValue(parameter_id=%s, value=%s>" % self.parameter_id, self.value
+
+    def set_value_from_python(self, value):
+        """
+        Set the Parameter value, converting a Python type to a Fortran namelist string
+        :param value: Value to set (Python type)
+        :return:
+        """
+        self.value = f90_helper.python_to_f90_str(value)
+
+    def get_value_as_python(self, is_list=False):
+        """
+        Get the Parameter value, converting a Fortran namelist string to a Python type
+        :return: Python type
+        :param is_list: Indicates whether this value is a list
+        """
+        return f90_helper.f90_str_to_python(self.value, is_list)

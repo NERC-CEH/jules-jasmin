@@ -38,12 +38,12 @@ class TestParameterValue(BaseTest):
 
     def test_GIVEN_nothing_WHEN_set_python_list_THEN_value_set_to_fortran_list(self):
         value_py = [123.4, True, 100, datetime.datetime(1969, 7, 21, 20, 17, 0)]
-        value_ft = "123.4, .true., 100, '1969-07-21 20:17:00'"
+        value_ft = "123.4    .true.    100    '1969-07-21 20:17:00'"
         self.param_val.set_value_from_python(value_py)
         assert_that(self.param_val.value, is_(value_ft))
 
     def test_GIVEN_value_is_fortran_list_WHEN_get_value_THEN_return_python_list(self):
-        value_py = [123.4, True, 100, datetime.datetime(1969, 7, 21, 20, 17, 0)]
-        value_ft = "123.4, .true., 100, '1969-07-21 20:17:00'"
+        value_py = [123.4, 3e4, 100]
+        value_ft = "123.4 3e4 100"
         self.param_val.value = value_ft
-        assert_that(self.param_val.get_value_as_python(), is_(value_py))
+        assert_that(self.param_val.get_value_as_python(True), is_(value_py))

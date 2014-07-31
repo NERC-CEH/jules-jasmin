@@ -30,3 +30,15 @@ class TestDatasetService(TestController):
         assert_that(spatial_extent._bound_lat_s, is_(-10))
         assert_that(spatial_extent._bound_lon_w, is_(-15))
         assert_that(spatial_extent._bound_lon_e, is_(30))
+
+    def test_GIVEN_driving_dataset_with_parameter_values_THEN_when_get_driving_dataset_by_id_THEN_namelist_parameters_loaded(self):
+        self.create_two_driving_datasets()
+        driving_datasets = self.dataset_service.get_driving_datasets()
+        id = driving_datasets[0].id
+        dataset = self.dataset_service.get_driving_dataset_by_id(id)
+        parameter_values = dataset.parameter_values
+        for param_val in parameter_values:
+            parameter = param_val.parameter
+            namelist = parameter.namelist
+
+
