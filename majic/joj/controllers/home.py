@@ -1,10 +1,13 @@
 """
 #header
 """
+from pylons import url
+from joj.lib import helpers
 from datetime import datetime
 import logging
 
-from joj.lib.base import BaseController, c, request, render
+from joj.lib.base import BaseController, c, request, render, redirect
+from joj.services.general import ServiceException
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +71,19 @@ class HomeController(BaseController):
 
         can_reset_password = self._valid_user_and_uuid(id)
         if can_reset_password == 'OK':
-            return render("user/forgotten_password_external.html")
+            if request.method == 'POST':
+                try:
+                    self._user_service.reset_password(
+                        c.user.id,
+                        request.params.getone('password_one'),
+                        request.params.getone('password_two'))
+                    helpers.success_flash("Password Reset Successful")
+                    redirect(url(controller='account', action='login'))
+                except ServiceException as ex:
+                    helpers.error_flash("Password not reset because %s" % ex.message)
+                    return render("user/forgotten_password_external.html")
+            else:
+                return render("user/forgotten_password_external.html")
         elif can_reset_password == 'EXPIRED':
             self._user_service.set_forgot_password(c.user.id, send_email=True)
             return render("user/expired_forgotten_password_external.html")

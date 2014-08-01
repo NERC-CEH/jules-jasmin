@@ -3,6 +3,7 @@ from hamcrest import *
 from mock import Mock
 from pylons import config
 from joj.crowd.client import CrowdClient, ClientException
+from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.tests import TestController
 from joj.services.account_request_service import AccountRequestService
 from joj.model.account_request import AccountRequest
@@ -17,7 +18,11 @@ class AccountRequestServiceTest(TestController):
         super(AccountRequestServiceTest, self).setUp()
         self.email_service = Mock(EmailService)
         self.crowd_client = Mock(CrowdClient)
-        self.account_request_service = AccountRequestService(email_service=self.email_service, crowd_client=self.crowd_client)
+        crowd_client_factory = CrowdClientFactory()
+        crowd_client_factory.get_client = Mock(return_value=self.crowd_client)
+        self.account_request_service = AccountRequestService(
+            email_service=self.email_service,
+            crowd_client_factory=crowd_client_factory)
         self.clean_database()
 
     def test_WHEN_account_request_submitted_THEN_account_request_ends_in_database(self):

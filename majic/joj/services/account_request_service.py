@@ -5,7 +5,7 @@ import random
 import string
 from pylons import config
 import logging
-from crowd.client import CrowdClient
+from crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
@@ -25,18 +25,18 @@ class AccountRequestService(DatabaseService):
                  session=Session,
                  email_service=EmailService(),
                  user_service=UserService(),
-                 crowd_client=CrowdClient()):
+                 crowd_client_factory=CrowdClientFactory()):
         """
 
         :param session: session to use
         :param email_service: the email service to use
+        :param crowd_client_factory: factory to make crowd clients
         :return:nothing
         """
         super(AccountRequestService, self).__init__(session)
         self._email_service = email_service
         self._user_service = user_service
-        self._crowd_client = crowd_client
-        self._crowd_client.config(config)
+        self._crowd_client_factory = crowd_client_factory
 
     def _add_account_request(self, account_request):
         """
@@ -152,7 +152,8 @@ class AccountRequestService(DatabaseService):
                     account_request.institution)
 
                 random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
-                self._crowd_client.create_user(
+                crowd_client = self._crowd_client_factory.get_client()
+                crowd_client.create_user(
                     account_request.email,
                     account_request.first_name,
                     account_request.last_name,

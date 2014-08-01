@@ -193,4 +193,3 @@ class TestModelRunController(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='driving_data')), "url")
 
         self.assert_model_definition(self.login_username, expected_science_configuration, expected_name,expected_description)
-

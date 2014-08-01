@@ -1,4 +1,6 @@
 from hamcrest import *
+from crowd.crowd_client_factory import CrowdClientFactory
+from joj.crowd.client import ClientException, CrowdClient
 from joj.model import session_scope
 from mock import *
 from joj.model import User
@@ -6,7 +8,7 @@ from joj.services.tests.base import BaseTest
 from joj.services.user import UserService
 from joj.tests import TestController
 from joj.services.email_service import EmailService
-
+from joj.services.general import ServiceException
 
 class UserServiceTest(TestController):
 
@@ -105,4 +107,62 @@ class UserServiceTest(TestController):
             assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
             assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
             assert_that(link, contains_string(user.forgotten_password_uuid), "UUID is in link")
+            assert_that(link, contains_string(str(user.id)), "user id")
             assert_that(email_service.send_email.called, is_(True), "email sent")
+
+    def test_GIVEN_user_and_non_matching_password_WHEN_password_set_THEN_error(self):
+
+        user = self.login()
+        user_service = UserService()
+
+        with self.assertRaises(ServiceException, msg="Should have thrown a ServiceException exception"):
+            user_service.reset_password(user.id, "password", "not password")
+
+    def test_GIVEN_no_user_and_matching_password_WHEN_password_set_THEN_error(self):
+
+        user_service = UserService()
+        password = "password long"
+
+        with self.assertRaises(ServiceException, msg="Should have thrown a ServiceException exception"):
+            user_service.reset_password(-90, password, password)
+
+    def test_GIVEN_user_and_short_password_WHEN_password_set_THEN_error(self):
+        user = self.login()
+        user_service = UserService()
+        password = "123456789"
+
+        with self.assertRaises(ServiceException, msg="Should have thrown a ServiceException exception"):
+            user_service.reset_password(user.id, password, password)
+
+    def test_GIVEN_user_and_password_WHEN_password_set_THEN_password_call_made_to_crowd_and_forgotten_password_blanked(self):
+        user = self.login()
+        crowd_client = Mock(CrowdClient)
+        crowd_client_factory = CrowdClientFactory()
+        crowd_client_factory.get_client = Mock(return_value=crowd_client)
+        user_service = UserService(crowd_client_factory=crowd_client_factory)
+        user_service.set_forgot_password(user.id)
+        password = "1234567890"
+
+        user_service.reset_password(user.id, password, password)
+
+        assert_that(crowd_client.update_users_password.called, is_(True), "Crowd called to update user")
+        user = user_service.get_user_by_id(user.id)
+        assert_that(user.forgotten_password_uuid, is_(None), "uuid")
+        assert_that(user.forgotten_password_expiry_date, is_(None), "expiry date")
+
+    def test_GIVEN_user_and_password_WHEN_password_set_and_crowd_client_raises_THEN_forgotten_password_not_blanked_error(self):
+        user = self.login()
+        crowd_client = Mock(CrowdClient)
+        crowd_client.update_users_password = Mock(side_effect=ClientException())
+        crowd_client_factory = CrowdClientFactory()
+        crowd_client_factory.get_client = Mock(return_value=crowd_client)
+        user_service = UserService(crowd_client_factory=crowd_client_factory)
+        user_service.set_forgot_password(user.id)
+        password = "1234567890"
+
+        with self.assertRaises(ServiceException, msg="Service exception not raise"):
+            user_service.reset_password(user.id, password, password)
+
+        user = user_service.get_user_by_id(user.id)
+        assert_that(user.forgotten_password_uuid, is_not(None), "uuid")
+        assert_that(user.forgotten_password_expiry_date, is_not(None), "expiry date")

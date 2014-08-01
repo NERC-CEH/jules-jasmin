@@ -155,7 +155,7 @@ class TestAdminUserCreatedFromRequest(TestController):
 
     def test_GIVEN_admin_and_already_existing_account_WHEN_accept_THEN_redirect_user_account_exists(self):
         user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
-        request_id = self.create_account_request(user.email)
+        request_id = self.create_account_request(user.username)
 
         response = self.app.post(
             url=url(controller='user', action='requests', id=request_id),
@@ -169,9 +169,4 @@ class TestAdminUserCreatedFromRequest(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='user', action='requests')), "url")
         with session_scope() as session:
             assert_that(session.query(AccountRequest).count(), is_(0), "Request is deleted")
-            user = session.query(User).filter(User.email == self.account_request.email).one()
-
-            assert_that(user.username, is_(self.account_request.email), "email address set")
-            assert_that(user.access_level, is_(constants.USER_ACCESS_LEVEL_EXTERNAL), "access level")
-            assert_that(user.name, is_(self.account_request.name), "name")
-            assert_that(user.storage_quota_in_gb, is_(100), "storage quota")
+            user = session.query(User).filter(User.username == self.account_request.email).one()

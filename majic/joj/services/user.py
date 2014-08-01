@@ -5,6 +5,8 @@ import logging
 import datetime
 from pylons import config, url
 from sqlalchemy.orm.exc import NoResultFound
+from joj.crowd.client import ClientException
+from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import User, Session
 from joj.services.general import DatabaseService, ServiceException
 from joj.utils import constants
@@ -18,9 +20,10 @@ log = logging.getLogger(__name__)
 class UserService(DatabaseService):
     """Provides operations on User objects"""
 
-    def __init__(self, session=Session, email_service=EmailService()):
+    def __init__(self, session=Session, email_service=EmailService(), crowd_client_factory=CrowdClientFactory()):
         super(UserService, self).__init__(session)
         self._email_service = email_service
+        self._crowd_client_factory = crowd_client_factory
 
     def create_in_session(self, session, username, first_name, last_name, email, access_level, institution=""):
         """
@@ -112,17 +115,14 @@ class UserService(DatabaseService):
                 return None
 
     def get_user_by_id(self, id):
-        """ Simply returns the user with the specified ID
+        """ Returns the user with the specified ID or None if they don't exist
 
-            @param id: ID of the user to get
+            :param id: ID of the user to get
+            :return; user or none if they don't exist
         """
 
         with self.readonly_scope() as session:
-
-            try:
-                return session.query(User).get(id)
-            except:
-                return None
+            return session.query(User).get(id)
 
     def get_all_users(self):
         """
@@ -148,7 +148,7 @@ class UserService(DatabaseService):
         """
         with self.transaction_scope() as session:
 
-            user = session.query(User).get(user_id)
+            user = session.query(User).filter(User.id == user_id).one()
 
             user.first_name = first_name
             user.last_name = last_name
@@ -180,7 +180,8 @@ class UserService(DatabaseService):
         user.forgotten_password_uuid = str(uuid.uuid4().get_hex())
         expiry_time = datetime.datetime.now() + datetime.timedelta(hours=constants.FORGOTTEN_PASSWORD_UUID_VALID_TIME)
         user.forgotten_password_expiry_date = expiry_time
-        return url(controller="home", action="password_reset", id=user.id, uuid=user.forgotten_password_uuid)
+        return config['serverurl'].rstrip('/') + '/' \
+            + url(controller="home", action="password_reset", id=user.id, uuid=user.forgotten_password_uuid)
 
     def set_forgot_password(self, user_id, send_email=False):
         """
@@ -190,7 +191,7 @@ class UserService(DatabaseService):
         :return:link to reset their password
         """
         with self.transaction_scope() as session:
-            user = session.query(User).get(user_id)
+            user = session.query(User).filter(User.id == user_id).one()
             link = self.set_forgot_password_in_session(user)
             if send_email:
                 msg = email_messages.PASSWORD_RESET_MESSAGE.format(
@@ -203,3 +204,32 @@ class UserService(DatabaseService):
                     email_messages.PASSWORD_RESET_SUBJECT,
                     msg)
             return link
+
+    def reset_password(self, user_id, password_one, password_two):
+        """
+        Reset a users password. Passwords must be the same and longer than the minimum length
+        :param user_id: user id
+        :param password_one: password, first entry
+        :param password_two: password, second entry
+        :return:nothing throws Service Exception on error
+        """
+
+        if password_one != password_two:
+            raise ServiceException("passwords are not the same.")
+        password = password_one
+        if len(password) < constants.PASSWORD_MINIMUM_LENGTH:
+            raise ServiceException("password must be at least %s characters long." % constants.PASSWORD_MINIMUM_LENGTH)
+
+        try:
+            with self.transaction_scope() as session:
+                user = session.query(User).filter(User.id == user_id).one()
+                crowd_client = self._crowd_client_factory.get_client()
+                crowd_client.update_users_password(user.username, password)
+                user.forgotten_password_expiry_date = None
+                user.forgotten_password_uuid = None
+        except NoResultFound:
+            raise ServiceException("user not found.")
+        except ClientException as ex:
+            log.exception("On password reset problem with crowd")
+            raise ServiceException("there is a problem with the crowd service: %s"
+                                   % ex.message)

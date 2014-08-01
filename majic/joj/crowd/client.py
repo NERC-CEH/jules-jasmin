@@ -228,6 +228,19 @@ class CrowdClient(object):
 
         return self._make_request('user?username=%s' % username, data=req.new_user_json(), method='PUT')
 
+    def update_users_password(self, username, password):
+        """
+        Update a users password
+        :param username: the username
+        :param password: the new password
+        :return:nothing
+        """
+        data = simplejson.dumps(
+            {
+                'value': password
+            })
+        return self._make_request('user/password?username=%s' % username, data=data, method='PUT')
+
     def delete_user(self, username):
         """
         Performs a delete on a user

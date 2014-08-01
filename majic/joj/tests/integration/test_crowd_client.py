@@ -4,6 +4,7 @@ from pylons import config
 from hamcrest import *
 from joj.tests import *
 from joj.crowd.client import CrowdClient, SessionNotFoundException, ClientException, AuthenticationFailedException
+from joj.crowd.crowd_client_factory import CrowdClientFactory
 import unittest
 
 
@@ -31,17 +32,23 @@ class CrowdClientTests(TestController):
             except ClientException:
                 pass
 
-
     def setUp(self):
-        self.client = CrowdClient()
-        self.client.config(config)
+        self.client = CrowdClientFactory().get_client()
         if not self.client.use_crowd:
-            unittest.skip("not configured to talk to crowd")
+            raise self.skipTest("Can not talk to crowd")
 
     def test_authentication_with_valid_credentials(self):
         self.create_user()
 
         self.client.check_authenticated(self.username, self.password)
+
+    def test_change_password_with_valid_credentials(self):
+        self.create_user()
+        new_password = "hard to guess and very long"
+
+        self.client.update_users_password(self.username, new_password)
+
+        self.client.check_authenticated(self.username, new_password)
 
     def test_user_session_control_with_valid_credentials(self):
         self.create_user()

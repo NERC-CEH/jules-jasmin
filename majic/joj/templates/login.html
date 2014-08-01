@@ -30,6 +30,19 @@
                 <div class="alert alert-error">${message}</div>
                 </py:if>
 
+                <py:with vars="success_messages = h.success_flash.pop_messages()">
+                    <div  py:if="success_messages" id="flash_success" class="alert alert-success">
+                        ${success_messages}
+                    </div>
+                </py:with>
+
+                <py:with vars="error_messages = h.error_flash.pop_messages()">
+                    <div  py:if="error_messages" id="flash_error" class="alert alert-danger">
+                            ${error_messages}
+                    </div>
+                </py:with>
+
+
                 <form class="form-horizontal" action="/account/dologin?came_from=${came_from}" method="POST">
                     <div class="control-group">
                         <label class="control-label" for="login">Username</label>

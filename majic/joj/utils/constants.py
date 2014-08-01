@@ -22,6 +22,7 @@ QUOTA_ABSOLUTE_LIMIT_PERCENT = 100
 
 # Time in hours that a UUID for a forgotten password is valid for
 FORGOTTEN_PASSWORD_UUID_VALID_TIME = 24
+PASSWORD_MINIMUM_LENGTH = 10
 
 # The default science configuration to use
 DEFAULT_SCIENCE_CONFIGURATION = 1

@@ -60,7 +60,7 @@ class JobsController(BaseController):
         """
         self._job_service = job_service
 
-    def get_json_abort_on_error(self):
+    def _get_json_abort_on_error(self):
         """
         raise a exception if this is not a post with a json body
         otherwise return the body
@@ -77,7 +77,7 @@ class JobsController(BaseController):
         Create a new job submission.
         """
 
-        json = self.get_json_abort_on_error()
+        json = self._get_json_abort_on_error()
 
         log.debug("New Model with parameters %s" % json)
 
@@ -109,7 +109,7 @@ class JobsController(BaseController):
         Return the statuses of the jobs requested
         """
 
-        json = self.get_json_abort_on_error()
+        json = self._get_json_abort_on_error()
 
         log.debug("Status with parameters %s" % json)
 
@@ -131,7 +131,7 @@ class JobsController(BaseController):
         Delete a model run directory
         """
 
-        json = self.get_json_abort_on_error()
+        json = self._get_json_abort_on_error()
 
         log.debug("Delete with parameters %s" % json)
 
