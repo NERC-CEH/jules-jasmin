@@ -5,7 +5,7 @@ import random
 import string
 from pylons import config
 import logging
-from crowd.crowd_client_factory import CrowdClientFactory
+from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
@@ -160,6 +160,9 @@ class AccountRequestService(DatabaseService):
                     account_request.email,
                     random_password)
 
+        #write user to database so they have an id
+        with self.transaction_scope() as session:
+            session.add(user)
             link = self._user_service.set_forgot_password_in_session(user)
 
             msg = email_messages.ACCOUNT_REQUEST_ACCEPTED_MESSAGE.format(

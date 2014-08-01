@@ -85,6 +85,9 @@ class AccountRequestServiceTest(TestController):
 
         assert_that(self.crowd_client.create_user.called, is_(True), "User was created in crowd")
         assert_that(self.email_service.send_email.called, is_(True), "Acceptance email sent")
+        assert_that(self.email_service.send_email.call_args[0][3], contains_string(str(user.id)), "user id in link")
+        assert_that(self.email_service.send_email.call_args[0][3], is_not(contains_string('t//')), "user id in link")
+
 
     def test_GIVEN_account_request_for_existing_account_WHEN_accept_THEN_request_deleted_and_email_sent_and_notcreate_crowd_account_and_set_forgotten_password_for_user(self):
         request_id = self.create_account_request()

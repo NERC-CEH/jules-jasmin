@@ -180,7 +180,7 @@ class UserService(DatabaseService):
         user.forgotten_password_uuid = str(uuid.uuid4().get_hex())
         expiry_time = datetime.datetime.now() + datetime.timedelta(hours=constants.FORGOTTEN_PASSWORD_UUID_VALID_TIME)
         user.forgotten_password_expiry_date = expiry_time
-        return config['serverurl'].rstrip('/') + '/' \
+        return config['serverurl'].rstrip('/') \
             + url(controller="home", action="password_reset", id=user.id, uuid=user.forgotten_password_uuid)
 
     def set_forgot_password(self, user_id, send_email=False):
