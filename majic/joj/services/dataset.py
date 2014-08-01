@@ -2,8 +2,8 @@
 header
 """
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload, contains_eager, immediateload
-from joj.model import Dataset, DatasetType, Analysis, DrivingDataset, DrivingDatasetParameterValue, Parameter
+from sqlalchemy.orm import joinedload, contains_eager, subqueryload
+from joj.model import Dataset, DatasetType, DrivingDataset, DrivingDatasetParameterValue, Parameter
 from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
@@ -179,6 +179,7 @@ class DatasetService(DatabaseService):
                 .options(contains_eager(DrivingDataset.parameter_values)
                          .contains_eager(DrivingDatasetParameterValue.parameter)
                          .contains_eager(Parameter.namelist))\
+                .options(subqueryload(DrivingDataset.locations))\
                 .filter(DrivingDataset.id == id)\
                 .one()
 

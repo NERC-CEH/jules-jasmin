@@ -77,6 +77,7 @@ USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 
                             'precip', 'tot_rain', 'tot_snow', 'ls_rain', 'con_rain', 'ls_snow', 'con_snow',
                             'wind', 'u', 'v']
 USER_UPLOAD_ALLOWED_INTERPS = ['b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
+USER_DOWNLOAD_DRIVING_DATA_FILE_EXTENSION = ".dat"
 
 # These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
 # or end of a run.

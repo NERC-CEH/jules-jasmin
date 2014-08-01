@@ -15,6 +15,7 @@ class DrivingDatasetLocation(Base):
 
     id = Column(Integer, primary_key=True)
     base_url = Column(String(255))
+    var_name = Column(String(255))
     driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
     driving_dataset = relationship("DrivingDataset", backref=backref('locations', order_by=id))
 
