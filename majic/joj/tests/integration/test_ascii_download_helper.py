@@ -31,10 +31,14 @@ class TestAsciiDownloadHelper(TestController):
             def _data(lat, lon, date):
                 return len(var_name) * lat * lon + date.hour + 24 * date.day
 
+            def _desc():
+                return var_name + "_desc"
+
             mock_dap_client = MagicMock()
             mock_dap_client.get_time_immediately_after = _gtia
             mock_dap_client.get_time_immediately_before = _gtib
             mock_dap_client.get_data_at = _data
+            mock_dap_client.get_longname = _desc
             return mock_dap_client
 
         def _create_dap_client(url):
@@ -107,10 +111,11 @@ class TestAsciiDownloadHelper(TestController):
         assert_that(text[0], contains_string("3600"))
         assert_that(text[0], contains_string("1900-01-02 22:00"))
 
-    def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_header_has_var_names_and_interps(self):
+    def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_header_has_var_names_interps_and_descs(self):
         text = self.get_download_text_lines()
         assert_that(text[0], contains_string("var1\tvar2"))
         assert_that(text[0], contains_string("i\tnf"))
+        assert_that(text[0], contains_string("variable1_desc\tv2_desc"))
 
     def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_file_has_expected_number_of_points(self):
         text = self.get_download_text_lines()

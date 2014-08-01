@@ -31,16 +31,15 @@ class AsciiDownloadHelper(object):
 # start and end times you requested - if you edit or re-upload this data you must use the
 # start and end times shown above, not those you requested.
 #
-# NOTE: In order to re-upload this data to Majic (e.g. after you have edited it) you must
-# meet the Majic header format requirements or your upload will be rejected. This requires
-# that the last two lines of the header should be whitespace separated lists of:
-# 	1) The names of the JULES forcing variables for each of the data columns, as given in
-# http://www.jchmr.org/jules/documentation/user_guide/vn3.4/namelists/drive.nml.html#list-of-jules-forcing-variables
-# 	2) The interpolation flags for each of the data columns, as given in
-# http://www.jchmr.org/jules/documentation/user_guide/vn3.4/input/temporal-interpolation.html
+# NOTE: The Majic driving data upload format requires that the last two lines of the header
+# should be whitespace separated lists of:
+# 	1) The names of the JULES forcing variables for each of the data columns
+# 	2) The interpolation flags for each of the data columns
+# both as given in the JULES manual. Majic downloads will also provide a description of the
+# variable in the line immediately preceding but this is not required for uploading.
 #
-# Here are the last two lines of the header:
-#
+# Here are the last three lines of the header:
+# {descs}
 # {vars}
 # {interps}
 """
@@ -71,6 +70,7 @@ class AsciiDownloadHelper(object):
         actual_end = self._get_actual_data_end(driving_data, end)
 
         period = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
+        descriptions = self._get_descriptions_string(driving_data)
         vars = self._get_vars_string(driving_data)
         interps = self._get_interps_string(driving_data)
         header = self.header.format(dd_name=driving_data.name,
@@ -79,6 +79,7 @@ class AsciiDownloadHelper(object):
                                     start=actual_start.strftime("%Y-%m-%d %X"),
                                     end=actual_end.strftime("%Y-%m-%d %X"),
                                     period=period,
+                                    descs=descriptions,
                                     vars=vars,
                                     interps=interps)
         yield header
@@ -128,6 +129,14 @@ class AsciiDownloadHelper(object):
     def _get_interps_string(self, driving_data):
         interps = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP, is_list=True)
         return "\t".join(interps)
+
+    def _get_descriptions_string(self, driving_data):
+        self._create_dap_clients_if_missing(driving_data)
+        descs = []
+        for dap_client in self._dap_clients:
+            desc = dap_client.get_longname()
+            descs.append(desc)
+        return "\t".join(descs)
 
     def _get_actual_data_start(self, driving_data, start):
         self._create_dap_clients_if_missing(driving_data)
