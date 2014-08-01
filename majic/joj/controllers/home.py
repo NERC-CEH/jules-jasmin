@@ -1,12 +1,10 @@
+"""
+#header
+"""
+from datetime import datetime
 import logging
 
-from joj.lib.base import BaseController, c, request, response, render, session, abort
-from joj.services.user import UserService
-
-#from pylons import request, response, session, tmpl_context as c, url
-#from pylons.controllers.util import abort, redirect
-
-__author__ = 'Phil Jenkins (Tessella)'
+from joj.lib.base import BaseController, c, request, render
 
 log = logging.getLogger(__name__)
 
@@ -14,12 +12,12 @@ log = logging.getLogger(__name__)
 class HomeController(BaseController):
     """
     Provides operations for home page actions
-    """
 
-    """
+    **********************************************************************************************
     NOTE: Access to the home controller is currently NOT restricted by the Repoze challenge decider.
     Any new actions added to this controller WILL be accessible without authentication and MUST check for
     a logged in user if needed.
+    **********************************************************************************************
     """
 
     _user_service = None
@@ -45,3 +43,61 @@ class HomeController(BaseController):
             return render("about/about-internal.html")
         else:
             return render("about/about-external.html")
+
+    def password(self, id=None):
+        """
+        Action for when the user selects password
+        :param id: users id
+        :return: html
+        """
+
+        # If the user is logged in then request the users password otherwise use the uuid in he query string
+        if self.current_user:
+            return render("not_found.html")
+        else:
+            return self._external_user_password(id)
+
+    def _external_user_password(self, id):
+        """
+        Code for password resets for an external user
+        :param id: user id
+        :return:html to render
+        """
+        c.password_one = ""
+        c.password_two = ""
+
+        can_reset_password = self._valid_user_and_uuid(id)
+        if can_reset_password == 'OK':
+            return render("user/forgotten_password_external.html")
+        elif can_reset_password == 'EXPIRED':
+            self._user_service.set_forgot_password(c.user.id, send_email=True)
+            return render("user/expired_forgotten_password_external.html")
+        else:
+            return render("user/invalid_forgotten_password_external.html")
+
+    def _valid_user_and_uuid(self, id):
+        """
+        Check if the user and uuid are valid
+        :param id: user id
+        :return: OK if both are fail, FAIL if not valid, and EXPIRED if valid but have expired
+        """
+
+        try:
+            if id is None:
+                return 'FAIL'
+
+            c.uuid = request.params.getone('uuid')
+
+            c.user = self._user_service.get_user_by_id(id)
+            if c.user is None:
+                return 'FAIL'
+            if c.user.forgotten_password_uuid != c.uuid:
+                return 'FAIL'
+            if c.user.forgotten_password_expiry_date < datetime.now():
+                return 'EXPIRED'
+            return 'OK'
+
+        except KeyError:
+            pass
+
+        return 'FAIL'

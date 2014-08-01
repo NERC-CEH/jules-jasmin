@@ -109,8 +109,25 @@ We have created you an account in Majic. To access the account please follow thi
 {link}
 
 This link is only valid for the next 24 hours but if you visit this page after that time a new link will be sent to you.
+If you did not request an account please ignore this email.
 
 We hope you enjoying using the system.
+
+Regards,
+
+Majic Admin Team
+"""
+
+PASSWORD_RESET_SUBJECT = "Majic account password reset request"
+PASSWORD_RESET_MESSAGE = """
+Dear {name},
+
+You may now reset your password in Majic. To do this please follow this link:
+
+{link}
+
+This link is only valid for the next 24 hours but if you visit this page after that time a new link will be sent to you.
+If you did not request a password reset for this account please ignore this email.
 
 Regards,
 

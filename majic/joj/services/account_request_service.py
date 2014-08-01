@@ -159,7 +159,7 @@ class AccountRequestService(DatabaseService):
                     account_request.email,
                     random_password)
 
-            link = self._user_service.set_forgot_password_in_session(session, user)
+            link = self._user_service.set_forgot_password_in_session(user)
 
             msg = email_messages.ACCOUNT_REQUEST_ACCEPTED_MESSAGE.format(
                 first_name=account_request.first_name,

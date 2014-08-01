@@ -5,16 +5,22 @@ import logging
 import datetime
 from pylons import config, url
 from sqlalchemy.orm.exc import NoResultFound
-from joj.model import User
+from joj.model import User, Session
 from joj.services.general import DatabaseService, ServiceException
 from joj.utils import constants
 import uuid
+from joj.services.email_service import EmailService
+from joj.utils import email_messages
 
 log = logging.getLogger(__name__)
 
 
 class UserService(DatabaseService):
     """Provides operations on User objects"""
+
+    def __init__(self, session=Session, email_service=EmailService()):
+        super(UserService, self).__init__(session)
+        self._email_service = email_service
 
     def create_in_session(self, session, username, first_name, last_name, email, access_level, institution=""):
         """
@@ -174,14 +180,26 @@ class UserService(DatabaseService):
         user.forgotten_password_uuid = str(uuid.uuid4().get_hex())
         expiry_time = datetime.datetime.now() + datetime.timedelta(hours=constants.FORGOTTEN_PASSWORD_UUID_VALID_TIME)
         user.forgotten_password_expiry_date = expiry_time
-        return url(controller="account", action="password_reset", id="user.forgotten_password_uuid")
+        return url(controller="home", action="password_reset", id=user.id, uuid=user.forgotten_password_uuid)
 
-    def set_forgot_password(self, user_id):
+    def set_forgot_password(self, user_id, send_email=False):
         """
         Set that the user has forgotten their password
         :param user_id: the id of the user who forgot their password
+        :param send_email: send an email to the user for password reset
         :return:link to reset their password
         """
         with self.transaction_scope() as session:
             user = session.query(User).get(user_id)
-            return self.set_forgot_password_in_session(user)
+            link = self.set_forgot_password_in_session(user)
+            if send_email:
+                msg = email_messages.PASSWORD_RESET_MESSAGE.format(
+                    name=user.name,
+                    link=link
+                )
+                self._email_service.send_email(
+                    config['email.from_address'],
+                    user.email,
+                    email_messages.PASSWORD_RESET_SUBJECT,
+                    msg)
+            return link

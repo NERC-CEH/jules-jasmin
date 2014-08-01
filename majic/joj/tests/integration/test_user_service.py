@@ -5,6 +5,7 @@ from joj.model import User
 from joj.services.tests.base import BaseTest
 from joj.services.user import UserService
 from joj.tests import TestController
+from joj.services.email_service import EmailService
 
 
 class UserServiceTest(TestController):
@@ -79,7 +80,8 @@ class UserServiceTest(TestController):
     def test_GIVEN_user_WHEN_forget_password_THEN_password_forgotten_set(self):
 
         user = self.login()
-        user_service = UserService()
+        email_service = Mock(EmailService)
+        user_service = UserService(email_service=email_service)
 
         link = user_service.set_forgot_password(user.id)
 
@@ -88,3 +90,19 @@ class UserServiceTest(TestController):
             assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
             assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
             assert_that(link, contains_string(user.forgotten_password_uuid), "UUID is in link")
+            assert_that(email_service.send_email.called, is_(False), "email sent")
+
+    def test_GIVEN_user_WHEN_forget_password_and_send_mail_THEN_password_forgotten_set_and_email_sent(self):
+
+        user = self.login()
+        email_service = Mock(EmailService)
+        user_service = UserService(email_service=email_service)
+
+        link = user_service.set_forgot_password(user.id, send_email=True)
+
+        with session_scope() as session:
+            user = session.query(User).get(user.id)
+            assert_that(user.forgotten_password_uuid, is_not(None), "forgotten password uuid set")
+            assert_that(user.forgotten_password_expiry_date, is_not(None), "forgotten password expiry date set")
+            assert_that(link, contains_string(user.forgotten_password_uuid), "UUID is in link")
+            assert_that(email_service.send_email.called, is_(True), "email sent")
