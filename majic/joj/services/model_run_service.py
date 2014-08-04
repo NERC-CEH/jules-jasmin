@@ -449,8 +449,6 @@ class ModelRunService(DatabaseService):
             .options(contains_eager(ModelRun.parameter_values)
                      .contains_eager(ParameterValue.parameter)
                      .contains_eager(Parameter.namelist))\
-            .options(subqueryload(ModelRun.driving_dataset).
-                     contains_eager(DrivingDataset.locations))\
             .one()
 
     def _get_parameters_for_creating_model(self, session, user):

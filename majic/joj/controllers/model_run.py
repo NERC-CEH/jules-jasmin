@@ -203,6 +203,7 @@ class ModelRunController(BaseController):
             if values['driving_dataset'] is None:
                 values['driving_dataset'] = driving_datasets[0].id
 
+            c.errors = errors
             html = render('model_run/driving_data.html')
             return htmlfill.render(
                 html,
@@ -234,6 +235,7 @@ class ModelRunController(BaseController):
                         redirect(url(controller='model_run', action='driving_data'))
                         return
                     else:
+                        c.errors = errors
                         html = render('model_run/driving_data.html')
                         return htmlfill.render(
                             html,
@@ -249,6 +251,7 @@ class ModelRunController(BaseController):
                     file_generator = driving_data_controller_helper.download_driving_data(values, errors, response)
 
                     if len(errors) > 0:
+                        c.errors = errors
                         return htmlfill.render(
                             render('model_run/driving_data.html'),
                             defaults=values,
@@ -283,6 +286,7 @@ class ModelRunController(BaseController):
                     # data has not already been uploaded:
                     if not model_run.driving_data_rows:
                         errors['driving-file'] = 'You must upload a driving data file'
+                        c.errors = errors
                         html = render('model_run/driving_data.html')
                         return htmlfill.render(
                             html,

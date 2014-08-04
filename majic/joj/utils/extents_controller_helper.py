@@ -184,9 +184,15 @@ def save_extents_against_model_run(values, driving_data, model_run, model_run_se
         params_to_save.append([constants.JULES_PARAM_LATLON_REGION, False])
         params_to_save.append([constants.JULES_PARAM_NPOINTS, 1])
 
-        url = config['thredds.server_url'] + driving_data.locations[0].base_url
-        dap_client = DapClient(url)
-        lat, lon = dap_client.get_closest_lat_lon(values['lat'], values['lon'])
+        # Convert the lat, lon to the closest point if needed
+        if _is_user_driving_data(driving_data):
+            lat, lon = values['lat'], values['lon']
+        else:
+            # We need the locations initialised
+            driving_data = DatasetService().get_driving_dataset_by_id(driving_data.id)
+            url = str(config['thredds.server_url'] + "dodsC/model_runs/" + driving_data.locations[0].base_url)
+            dap_client = DapClient(url)
+            lat, lon = dap_client.get_closest_lat_lon(values['lat'], values['lon'])
 
         params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [lat, lon]])
         params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'average_over_cell' not in values])

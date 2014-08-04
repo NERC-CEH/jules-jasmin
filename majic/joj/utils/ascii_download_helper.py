@@ -194,7 +194,7 @@ class AsciiDownloadHelper(object):
         return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\n"
 
     def _create_dap_clients_if_missing(self, driving_data):
-        if self._dap_clients is None:
+        if self._dap_clients is None or len(self._dap_clients) == 0:
             self._create_dap_clients(driving_data)
 
     def _create_dap_clients(self, driving_data):
@@ -202,6 +202,6 @@ class AsciiDownloadHelper(object):
         vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
         location_dict = {location.var_name: location.base_url for location in driving_data.locations}
         for var in vars:
-            url = config['thredds.server_url'] + location_dict[var]
+            url = config['thredds.server_url'] + "dodsC/model_runs/" + location_dict[var]
             dap_client = self._dap_client_factory.get_dap_client(url)
             self._dap_clients.append(dap_client)
