@@ -345,7 +345,7 @@ def setup_app(command, conf, vars):
         driving_ds_1.boundary_lon_west = -30
         driving_ds_1.boundary_lon_east = 10
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
-        driving_ds_1.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
+        driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.order_by_id = 100
 
         driving_ds_2 = DrivingDataset()
@@ -446,6 +446,16 @@ def setup_app(command, conf, vars):
             location = DrivingDatasetLocation()
             location.base_url = file_template.format(name)
             location.driving_dataset = driving_ds_3
+
+        file_template = 'dodsC/model_runs/data/WATCH_2D/{}_190101.nc'
+        for name, var in zip(['PSurf_WFD/PSurf_WFD', 'Tair_WFD/Tair_WFD', 'Qair_WFD/Qair_WFD', 'Wind_WFD/Wind_WFD',
+                              'LWdown_WFD/LWdown_WFD', 'SWdown_WFD/SWdown_WFD', 'Rainf_WFD/Rainf_WFD_GPCC',
+                              'Snowf_WFD/Snowf_WFD_GPCC'],
+                             ['pstar', 't', 'q', 'wind', 'lw_down', 'sw_down', 'tot_rain', 'tot_snow']):
+            location = DrivingDatasetLocation()
+            location.base_url = file_template.format(name)
+            location.var_name = var
+            location.driving_dataset = driving_ds_1
 
         driving_ds_upload = DrivingDataset()
         driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME

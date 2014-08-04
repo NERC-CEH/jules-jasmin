@@ -245,7 +245,6 @@ class ModelRunController(BaseController):
                 except ServiceException as e:
                     helpers.error_flash(e.message)
                     redirect(url(controller='model_run', action='driving_data'))
-                    return
             elif action == u'Download':
                 # This is a request to to download driving data
                 try:
@@ -260,8 +259,9 @@ class ModelRunController(BaseController):
                     # This will stream the file to the browser without loading it all in memory
                     # BUT only if the .ini file does not have 'debug=true' enabled
                     return file_generator
-                except ServiceException:
-                    pass
+                except ServiceException as e:
+                    helpers.error_flash("Couldn't download data: %s." % e.message)
+                    redirect(url(controller='model_run', action='driving_data'))
             else:
 
                 try:

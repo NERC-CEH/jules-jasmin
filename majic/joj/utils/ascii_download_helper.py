@@ -14,7 +14,7 @@ class AsciiDownloadHelper(object):
     """
     Class to manage the downloading of ASCII driving data files
     """
-
+    col_size = 8
     header = """# MAJIC SINGLE CELL DRIVING DATA DOWNLOAD
 #
 # This is a download of a subset of JULES driving data for a single location:
@@ -31,15 +31,16 @@ class AsciiDownloadHelper(object):
 # start and end times you requested - if you edit or re-upload this data you must use the
 # start and end times shown above, not those you requested.
 #
+# The forcing variables in this file are:
+{description}
+#
 # NOTE: The Majic driving data upload format requires that the last two lines of the header
 # should be whitespace separated lists of:
 # 	1) The names of the JULES forcing variables for each of the data columns
 # 	2) The interpolation flags for each of the data columns
-# both as given in the JULES manual. Majic downloads will also provide a description of the
-# variable in the line immediately preceding but this is not required for uploading.
+# both as given in the JULES manual.
 #
-# Here are the last three lines of the header:
-# {descs}
+# Here are the last two lines of the header:
 # {vars}
 # {interps}
 """
@@ -66,11 +67,11 @@ class AsciiDownloadHelper(object):
         :return: Contents of file as generator object
         """
         self._create_dap_clients(driving_data)
-        actual_start = self._get_actual_data_start(driving_data, start)
-        actual_end = self._get_actual_data_end(driving_data, end)
+        actual_start = self.get_actual_data_start(driving_data, start)
+        actual_end = self.get_actual_data_end(driving_data, end)
 
         period = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
-        descriptions = self._get_descriptions_string(driving_data)
+        description = self._get_description_string(driving_data)
         vars = self._get_vars_string(driving_data)
         interps = self._get_interps_string(driving_data)
         header = self.header.format(dd_name=driving_data.name,
@@ -78,8 +79,8 @@ class AsciiDownloadHelper(object):
                                     lon=lon,
                                     start=actual_start.strftime("%Y-%m-%d %X"),
                                     end=actual_end.strftime("%Y-%m-%d %X"),
+                                    description=description,
                                     period=period,
-                                    descs=descriptions,
                                     vars=vars,
                                     interps=interps)
         yield header
@@ -124,36 +125,60 @@ class AsciiDownloadHelper(object):
 
     def _get_vars_string(self, driving_data):
         vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
-        return "\t".join(vars)
+        return '\t'.join(('%-*s' % (self.col_size, x) for x in vars))
 
     def _get_interps_string(self, driving_data):
         interps = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP, is_list=True)
-        return "\t".join(interps)
+        return '\t'.join(('%-*s' % (self.col_size, x) for x in interps))
 
-    def _get_descriptions_string(self, driving_data):
+    def _get_description_string(self, driving_data):
         self._create_dap_clients_if_missing(driving_data)
+        vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
         descs = []
+        units = []
         for dap_client in self._dap_clients:
             desc = dap_client.get_longname()
             descs.append(desc)
-        return "\t".join(descs)
+            unit = dap_client.get_variable_units()
+            units.append(unit)
+        lines = []
+        for var, desc, units in zip(vars, descs, units):
+            line = "# {var}: {desc} ({units})".format(var=var, desc=desc, units=units)
+            lines.append(line)
+        return "\n".join(lines)
 
-    def _get_actual_data_start(self, driving_data, start):
+    def get_actual_data_start(self, driving_data, start):
+        """
+        Get the actual start date of the driving data download
+        :param driving_data: The driving data being downloaded
+        :param start: The requested start date
+        :return: :raise ServiceException: On error with the dates
+        """
         self._create_dap_clients_if_missing(driving_data)
         starts = []
         for dap_client in self._dap_clients:
             actual_start = dap_client.get_time_immediately_after(start)
+            if actual_start is None:
+                raise ServiceException("No datapoints found in the requested time range")
             starts.append(actual_start)
         if len(set(starts)) > 1:
             raise ServiceException("Driving dataset timesteps are not synchronised between variables. "
                                    "Cannot process download")
         return starts[0]
 
-    def _get_actual_data_end(self, driving_data, end):
+    def get_actual_data_end(self, driving_data, end):
+        """
+        Get the actual end date of the driving data download
+        :param driving_data: The driving data being downloaded
+        :param end: The requested end date
+        :return: :raise ServiceException: On error with the dates
+        """
         self._create_dap_clients_if_missing(driving_data)
         ends = []
         for dap_client in self._dap_clients:
             actual_end = dap_client.get_time_immediately_before(end)
+            if actual_end is None:
+                raise ServiceException("No datapoints found in the requested time range")
             ends.append(actual_end)
         if len(set(ends)) > 1:
             raise ServiceException("Driving dataset timesteps are not synchronised between variables. "
@@ -165,8 +190,8 @@ class AsciiDownloadHelper(object):
         data_values = []
         for dap_client in self._dap_clients:
             data = dap_client.get_data_at(lat, lon, date)
-            data_values.append(str(data))
-        return "\t".join(data_values) + "\n"
+            data_values.append((data))
+        return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\n"
 
     def _create_dap_clients_if_missing(self, driving_data):
         if self._dap_clients is None:

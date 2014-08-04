@@ -111,6 +111,7 @@ class DrivingDataControllerHelper(object):
         Download driving data for driving dataset, position and time specified in POST values dict
         :param values: POST values dictionary
         :param errors: Object to add errors to
+        :param response: Pylons response object
         :return:
         """
 
@@ -119,6 +120,9 @@ class DrivingDataControllerHelper(object):
 
         start = self._validate_date(errors, 'dt_start', values)
         end = self._validate_date(errors, 'dt_end', values)
+
+        self.ascii_download_helper.get_actual_data_start(driving_data, start)
+        self.ascii_download_helper.get_actual_data_end(driving_data, end)
 
         lat = values['lat']
         lon = values['lon']
