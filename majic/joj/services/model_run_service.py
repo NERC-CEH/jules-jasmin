@@ -8,7 +8,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
 from pylons import config
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, DrivingDataset
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -448,7 +448,9 @@ class ModelRunService(DatabaseService):
             .options(subqueryload(ModelRun.code_version)) \
             .options(contains_eager(ModelRun.parameter_values)
                      .contains_eager(ParameterValue.parameter)
-                     .contains_eager(Parameter.namelist)) \
+                     .contains_eager(Parameter.namelist))\
+            .options(subqueryload(ModelRun.driving_dataset).
+                     contains_eager(DrivingDataset.locations))\
             .one()
 
     def _get_parameters_for_creating_model(self, session, user):

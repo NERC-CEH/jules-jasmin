@@ -224,3 +224,18 @@ class DapClient(object):
         self.cache_dict = {time: val for time, val in zip(time_indices, vals)}
 
         return self.cache_dict[time_index]
+
+    def get_closest_lat_lon(self, lat, lon):
+        """
+        Get the closest latitude / longitude coordinates in the driving data grid
+        :param lat: Latitude
+        :param lon: Longitude
+        :return: Lat, lon
+        """
+        lat_index = self._get_closest_value_index(self._lat, lat)
+        lon_index = self._get_closest_value_index(self._lon, lon)
+
+        lat = float(self._lat[lat_index])
+        lon = float(self._lon[lon_index])
+
+        return lat, lon

@@ -2,11 +2,12 @@
 header
 """
 import datetime
+from pylons import config
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent, SpatialExtent
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent, TemporalExtent
 from joj.utils import constants
-from joj.services.lat_lon_service import LatLonService
 from joj.services.dataset import DatasetService
+from joj.services.dap_client import DapClient
 
 
 def create_values_dict_from_database(model_run, driving_data):
@@ -17,9 +18,7 @@ def create_values_dict_from_database(model_run, driving_data):
     :param driving_data: The driving data selected for the model_run
     :return: Dictionary of form input names -> values
     """
-    # if driving_data.id == dataset_service.get_id_for_user_upload_driving_dataset():
-    #     return _create_values_dict_for_user_driving_data(model_run)
-    # else:
+
     values = {}
     is_user_data = _is_user_driving_data(driving_data)
 
@@ -184,8 +183,11 @@ def save_extents_against_model_run(values, driving_data, model_run, model_run_se
     else:
         params_to_save.append([constants.JULES_PARAM_LATLON_REGION, False])
         params_to_save.append([constants.JULES_PARAM_NPOINTS, 1])
-        lat_lon_service = LatLonService()
-        lat, lon = lat_lon_service.get_nearest_cell_center(values['lat'], values['lon'], driving_data.id)
+
+        url = config['thredds.server_url'] + driving_data.locations[0].base_url
+        dap_client = DapClient(url)
+        lat, lon = dap_client.get_closest_lat_lon(values['lat'], values['lon'])
+
         params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [lat, lon]])
         params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'average_over_cell' not in values])
 

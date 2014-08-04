@@ -169,8 +169,6 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
-    @validate(schema=ModelRunDrivingDataSchema(), form='driving_data', post_only=False, on_get=False,
-              prefix_error=False, auto_error_formatter=BaseController.error_formatter)
     def driving_data(self):
         """
         Select a driving data set
@@ -213,7 +211,7 @@ class ModelRunController(BaseController):
                 auto_error_formatter=BaseController.error_formatter)
         else:
             # This is a post
-            values = self.form_result
+            values = dict(request.params)
 
             # Get the action to perform and remove it from the dictionary
             action = values['submit']

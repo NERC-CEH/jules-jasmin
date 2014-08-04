@@ -82,8 +82,8 @@ class DrivingDataControllerHelper(object):
         model_run_id = model_run.id
         start_date = datetime.datetime.strptime(values['dt_start'], constants.USER_UPLOAD_DATE_FORMAT)
         end_date = datetime.datetime.strptime(values['dt_end'], constants.USER_UPLOAD_DATE_FORMAT)
-        lat = values['lat']
-        lon = values['lon']
+        lat = float(values['lat'])
+        lon = float(values['lon'])
         file = values['driving-file'].file
 
         try:
@@ -106,6 +106,28 @@ class DrivingDataControllerHelper(object):
 
         model_run_service.save_driving_dataset_for_new_model(new_driving_dataset, old_driving_dataset, user)
 
+    def _validate_download_values(self, driving_data, errors, values):
+        start = self._validate_date(errors, 'dt_start', values)
+        end = self._validate_date(errors, 'dt_end', values)
+        if start is not None and end is not None:
+            self.ascii_download_helper.get_actual_data_start(driving_data, start)
+            self.ascii_download_helper.get_actual_data_end(driving_data, end)
+
+        lat, lon = None, None
+        if 'lat' not in values or values['lat'] == '':
+            errors['lat'] = "Please enter a value"
+        elif 'lon' not in values or values['lon'] == '':
+            errors['lon'] = "Please enter a value"
+        else:
+            lat = float(values['lat'])
+            lon = float(values['lon'])
+
+            spatial_extent = SpatialExtent(driving_data.boundary_lat_north, driving_data.boundary_lat_south,
+                                           driving_data.boundary_lon_west, driving_data.boundary_lon_east)
+
+            _validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon)
+        return lat, lon, start, end
+
     def download_driving_data(self, values, errors, response):
         """
         Download driving data for driving dataset, position and time specified in POST values dict
@@ -118,19 +140,7 @@ class DrivingDataControllerHelper(object):
         driving_id = values['driving_dataset']
         driving_data = self.dataset_service.get_driving_dataset_by_id(driving_id)
 
-        start = self._validate_date(errors, 'dt_start', values)
-        end = self._validate_date(errors, 'dt_end', values)
-
-        self.ascii_download_helper.get_actual_data_start(driving_data, start)
-        self.ascii_download_helper.get_actual_data_end(driving_data, end)
-
-        lat = values['lat']
-        lon = values['lon']
-
-        spatial_extent = SpatialExtent(driving_data.boundary_lat_north, driving_data.boundary_lat_south,
-                                       driving_data.boundary_lon_west, driving_data.boundary_lon_east)
-
-        _validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon)
+        lat, lon, start, end = self._validate_download_values(driving_data, errors, values)
 
         if len(errors) > 0:
             return
@@ -288,21 +298,29 @@ class DrivingDataControllerHelper(object):
                 errors['dt_end'] = 'End date must not be before the start date'
 
         # Validate the lat lon:
-        lat = values['lat']
-        lon = values['lon']
-        self._validate_lat_lon(errors, lat, lon)
+        if 'lat' not in values or values['lat'] == '':
+            errors['lat'] = "Please enter a value"
+        elif 'lon' not in values or values['lon'] == '':
+            errors['lon'] = "Please enter a value"
+        else:
+            lat = float(values['lat'])
+            lon = float(values['lon'])
+            self._validate_lat_lon(errors, lat, lon)
 
         file = values['driving-file']
         if file == u'':
             errors['driving-file'] = "You must select a driving data file"
 
     def _validate_date(self, errors, key, values):
-        date_str = values[key]
-        try:
-            return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT)
-        except ValueError:
-            errors[key] = 'Please enter a date in the format YYYY-MM-DD HH:MM'
-        return None
+        if key not in values or values[key] == '':
+            errors[key] = 'Please enter a date'
+        else:
+            date_str = values[key]
+            try:
+                return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT)
+            except ValueError:
+                errors[key] = 'Please enter a date in the format YYYY-MM-DD HH:MM'
+            return None
 
     def _validate_lat_lon(self, errors, lat, lon):
         # FormEncode should have already converted these to floats
