@@ -7,7 +7,7 @@ from joj.model.meta import Base
 from joj.utils import constants
 
 
-class LandCoverRegionType(Base):
+class LandCoverRegionCategory(Base):
     """
     Represents a category of land cover regions e.g. 'River catchments' or 'Countries'
     """

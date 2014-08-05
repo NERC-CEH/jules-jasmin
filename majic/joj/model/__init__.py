@@ -23,8 +23,9 @@ from joj.model.driving_dataset import DrivingDataset
 from joj.model.driving_dataset_parameter_value import DrivingDatasetParameterValue
 from joj.model.system_alert_email import SystemAlertEmail
 from joj.model.land_cover_region import LandCoverRegion
-from joj.model.land_cover_region_type import LandCoverRegionType
+from joj.model.land_cover_region_category import LandCoverRegionCategory
 from joj.model.land_cover_region_action import LandCoverRegionAction
+from joj.model.land_cover_value import LandCoverValue
 
 
 def initialise_session(config, manual_connection_string=None):
