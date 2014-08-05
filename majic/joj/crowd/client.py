@@ -96,10 +96,10 @@ class CrowdClient(object):
                 urllib2.ProxyHandler({'http': config['external_http_proxy'],
                                       'https': config['external_https_proxy']})
             )
-            log.info("installed proxed external opener for crowd client")
+            log.info("installed proxied external opener for crowd client")
         except KeyError:
             self.external_opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
-            log.info("installed non-proxed external opener for crowd client")
+            log.info("installed non-proxied external opener for crowd client")
 
     def check_authenticated(self, user_name, password):
         """
