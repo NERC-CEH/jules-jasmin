@@ -28,10 +28,10 @@ class TemporalExtent(object):
         """
         if start_time < self._start_bound:
             raise InvalidTemporalExtent("Start date cannot be earlier than %s" % self._start_bound.strftime("%Y-%m-%d"))
-        if start_time > self._end:
-            raise InvalidTemporalExtent("Start date cannot be later than the end date")
-        if start_time > self._end_bound:
+        elif start_time > self._end_bound:
             raise InvalidTemporalExtent("Start date cannot be later than %s" % self._end_bound.strftime("%Y-%m-%d"))
+        elif start_time > self._end:
+            raise InvalidTemporalExtent("Start date cannot be later than the end date")
         self._start = start_time
 
     def set_end(self, end_time):
@@ -42,10 +42,10 @@ class TemporalExtent(object):
         """
         if end_time < self._start_bound:
             raise InvalidTemporalExtent("End date cannot be earlier than %s" % self._start_bound.strftime("%Y-%m-%d"))
-        if end_time < self._start:
-            raise InvalidTemporalExtent("End date cannot be earlier than the start date")
-        if end_time > self._end_bound:
+        elif end_time > self._end_bound:
             raise InvalidTemporalExtent("End date cannot be later than %s" % self._end_bound.strftime("%Y-%m-%d"))
+        elif end_time < self._start:
+            raise InvalidTemporalExtent("End date cannot be earlier than the start date")
         self._end = end_time
 
     def get_temporal_extent(self):

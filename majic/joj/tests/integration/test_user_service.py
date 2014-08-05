@@ -1,14 +1,17 @@
+"""
+header
+"""
 from hamcrest import *
-from crowd.crowd_client_factory import CrowdClientFactory
+from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.crowd.client import ClientException, CrowdClient
 from joj.model import session_scope
 from mock import *
 from joj.model import User
-from joj.services.tests.base import BaseTest
 from joj.services.user import UserService
 from joj.tests import TestController
 from joj.services.email_service import EmailService
 from joj.services.general import ServiceException
+
 
 class UserServiceTest(TestController):
 

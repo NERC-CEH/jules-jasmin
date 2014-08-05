@@ -201,7 +201,7 @@ class TestModelRunDrivingData(TestController):
                 'dt_end': u'this-is-not-a-date'},
             upload_files=[('driving-file', 'file.txt', self.sample_file_contents)]
         )
-        assert_that(response.normal_body, contains_string('Please enter a date in the format YYYY-MM-DD HH:MM'))
+        assert_that(response.normal_body, contains_string('Please enter date in the format YYYY-MM-DD HH:MM'))
 
     def test_GIVEN_user_driving_data_but_invalid_lat_lon_WHEN_upload_data_THEN_errors_returned(self):
         self._add_model_run_being_created()

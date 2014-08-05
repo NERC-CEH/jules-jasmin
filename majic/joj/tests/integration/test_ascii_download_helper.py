@@ -113,9 +113,12 @@ class TestAsciiDownloadHelper(TestController):
 
     def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_header_has_var_names_interps_and_descs(self):
         text = self.get_download_text_lines()
-        assert_that(text[0], contains_string("var1\tvar2"))
-        assert_that(text[0], contains_string("i\tnf"))
-        assert_that(text[0], contains_string("variable1_desc\tv2_desc"))
+        assert_that(text[0], contains_string("var1"))
+        assert_that(text[0], contains_string("i"))
+        assert_that(text[0], contains_string("variable1_desc"))
+        assert_that(text[0], contains_string("var2"))
+        assert_that(text[0], contains_string("nf"))
+        assert_that(text[0], contains_string("v2_desc"))
 
     def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_file_has_expected_number_of_points(self):
         text = self.get_download_text_lines()

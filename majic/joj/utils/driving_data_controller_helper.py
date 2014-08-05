@@ -9,7 +9,7 @@ from joj.model import ParameterValue
 from joj.services.dataset import DatasetService
 from joj.services.job_runner_client import JobRunnerClient
 from joj.model.non_database.spatial_extent import SpatialExtent
-from joj.utils.extents_controller_helper import _validate_singlecell_spatial_extents
+from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.ascii_download_helper import AsciiDownloadHelper
 
 
@@ -125,7 +125,7 @@ class DrivingDataControllerHelper(object):
             spatial_extent = SpatialExtent(driving_data.boundary_lat_north, driving_data.boundary_lat_south,
                                            driving_data.boundary_lon_west, driving_data.boundary_lon_east)
 
-            _validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon)
+            ExtentsControllerHelper().validate_singlecell_spatial_extents(spatial_extent, errors, lat, lon)
         return lat, lon, start, end
 
     def download_driving_data(self, values, errors, response):

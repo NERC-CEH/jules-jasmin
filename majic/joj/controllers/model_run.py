@@ -14,7 +14,6 @@ from joj.services.user import UserService
 from joj.lib.base import BaseController, c, request, render, redirect
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
-from joj.services.general import ServiceException
 from joj.services.dataset import DatasetService
 from joj.lib import helpers
 from joj.utils import constants
@@ -24,12 +23,11 @@ from joj.model.model_run_extent_schema import ModelRunExtentSchema
 
 from joj.utils.utils import find_by_id, KeyNotFound
 from joj.utils import output_controller_helper
-from joj.utils import extents_controller_helper
 from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY_PERIOD, JULES_YEARLY_PERIOD
 from joj.utils import utils
+from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
-from joj.model.model_run_driving_data_schema import ModelRunDrivingDataSchema
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.services.general import ServiceException
 
@@ -339,6 +337,7 @@ class ModelRunController(BaseController):
         """
         Specify the spatial and temporal extents of the model
         """
+        extents_controller_helper = ExtentsControllerHelper()
 
         # First we need to check that we are allowed to be on this page
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
@@ -484,6 +483,7 @@ class ModelRunController(BaseController):
             c.science_config = self._model_run_service.get_science_configuration_by_id(
                 model_run.science_configuration_id)
 
+            extents_controller_helper = ExtentsControllerHelper()
             c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
 
             c.driving_data_name = model_run.driving_dataset.name

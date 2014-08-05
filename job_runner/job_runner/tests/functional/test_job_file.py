@@ -16,7 +16,7 @@ class TestJobFileController(TestController):
 
     def setUp(self):
         self.job_service = JobService()
-        self.test_filename = 'user_driving_data.dat'
+        self.test_filename = 'user_uploaded_driving_data.dat'
         self.model_run_id = 1
         self.directory = self.job_service.get_run_dir(self.model_run_id)
         self.path = os.path.join(self.directory, self.test_filename)
