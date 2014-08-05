@@ -58,6 +58,10 @@ JSON_MODEL_NAMELIST_NAME = 'name'
 JSON_MODEL_NAMELIST_INDEX = 'index'
 JSON_MODEL_NAMELIST_GROUP_ID = 'group_id'
 JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
+# These are used for transferring files from the web app to the job runner (e.g. user uploaded driving datasets)
+JSON_MODEL_FILENAME = 'filename'
+JSON_MODEL_FILE_LINE = 'line'
+JOB_RUNNER_CLIENT_FILE_CHUNK_BYTES = 100*1024
 
 JSON_USER_NAME = 'user_name'
 JSON_USER_ID = 'user_id'
@@ -73,6 +77,23 @@ NETCDF_LONGITUDE = ['Longitude', 'lon']
 NETCDF_TIME = ['Time']
 NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
+#The name of the driving dataset which represents the 'upload your own driving dataset' option
+USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"
+USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in
+USER_UPLOAD_DATE_FORMAT = "%Y-%m-%d %H:%M"
+USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 'lw_net', 'sw_net', 'diff_rad',
+                            'precip', 'tot_rain', 'tot_snow', 'ls_rain', 'con_rain', 'ls_snow', 'con_snow',
+                            'wind', 'u', 'v']
+USER_UPLOAD_ALLOWED_INTERPS = ['b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
+USER_DOWNLOAD_DRIVING_DATA_FILE_EXTENSION = ".dat"
+USER_DOWNLOAD_CACHE_SIZE = 100  # Number of timesteps to cache when downloading driving data
+
+# These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
+# or end of a run.
+INTERPS_EXTRA_STEPS_RUN_START = {'b': 0, 'c': 1, 'f': 1, 'i': 0, 'nb': 0, 'nc': 0, 'nf': 0}
+INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 0}
+
+FRACTIONAL_FILENAME = 'fractional.dat'
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
@@ -120,11 +141,17 @@ JULES_PARAM_INPUT_GRID_DIM_NAME = [JULES_NML_INPUT, "grid_dim_name"]
 JULES_PARAM_INPUT_NPOINTS = [JULES_NML_INPUT, "npoints"]
 JULES_PARAM_INPUT_TIME_DIM_NAME = [JULES_NML_INPUT, "time_dim_name"]
 JULES_PARAM_INPUT_TYPE_DIM_NAME = [JULES_NML_INPUT, "type_dim_name"]
+JULES_PARAM_INPUT_GRID_NX = [JULES_NML_INPUT, "nx"]
+JULES_PARAM_INPUT_GRID_NY = [JULES_NML_INPUT, "ny"]
+JULES_PARAM_INPUT_GRID_X_DIM_NAME = [JULES_NML_INPUT, "x_dim_name"]
+JULES_PARAM_INPUT_GRID_Y_DIM_NAME = [JULES_NML_INPUT, "y_dim_name"]
 
 JULES_NML_LATLON = "JULES_LATLON"
 JULES_PARAM_LATLON_FILE = [JULES_NML_LATLON, "file"]
 JULES_PARAM_LATLON_LAT_NAME = [JULES_NML_LATLON, "lat_name"]
 JULES_PARAM_LATLON_LON_NAME = [JULES_NML_LATLON, "lon_name"]
+JULES_PARAM_LATLON_LATITUDE = [JULES_NML_LATLON, "latitude"]
+JULES_PARAM_LATLON_LONGITUDE = [JULES_NML_LATLON, "longitude"]
 
 JULES_NML_LAND_FRAC = "JULES_LAND_FRAC"
 JULES_PARAM_LAND_FRAC_FILE = [JULES_NML_LAND_FRAC, "file"]
@@ -160,6 +187,8 @@ JULES_PARAM_SOIL_PROPS_FILE = [JULES_NML_SOIL_PROPS, "file"]
 JULES_PARAM_SOIL_PROPS_NVARS = [JULES_NML_SOIL_PROPS, "nvars"]
 JULES_PARAM_SOIL_PROPS_VAR = [JULES_NML_SOIL_PROPS, "var"]
 JULES_PARAM_SOIL_PROPS_VAR_NAME = [JULES_NML_SOIL_PROPS, "var_name"]
+JULES_PARAM_SOIL_USE_FILE = [JULES_NML_SOIL_PROPS, "use_file"]
+JULES_PARAM_SOIL_CONST_VALS = [JULES_NML_SOIL_PROPS, "const_val"]
 
 #initial namelist file
 JULES_NML_INITIAL = "JULES_INITIAL"

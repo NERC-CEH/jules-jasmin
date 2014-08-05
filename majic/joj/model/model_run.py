@@ -5,7 +5,7 @@ header
 import datetime
 
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, SmallInteger, ForeignKey, Float
 from joj.model.meta import Base
 from joj.utils import constants
 from joj.model import ModelRunStatus
@@ -30,6 +30,9 @@ class ModelRun(Base):
     code_version_id = Column(SmallInteger, ForeignKey('code_versions.id'))
     science_configuration_id = Column(Integer, ForeignKey('model_runs.id'))
     driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
+    driving_data_lat = Column(Float)
+    driving_data_lon = Column(Float)
+    driving_data_rows = Column(Integer)
 
     # amount of storage the run takes up excluding the common driving data sets,
     # only set when a run is failed or complete
@@ -76,15 +79,16 @@ class ModelRun(Base):
         param_vals.sort(key=lambda pv: pv.group_id)
         return param_vals
 
-    def get_python_parameter_value(self, parameter_namelist_name):
+    def get_python_parameter_value(self, parameter_namelist_name, is_list=False):
         """
         Gets the value of the first matching parameter value as a python object
         :param parameter_namelist_name: list containing [namelist, name] of parameter to find
+        :param is_list: Indicates whether the value is a lsit
         """
         for param_val in self.parameter_values:
             if param_val.parameter.name == parameter_namelist_name[1]:
                 if param_val.parameter.namelist.name == parameter_namelist_name[0]:
-                    return param_val.get_value_as_python()
+                    return param_val.get_value_as_python(is_list=is_list)
 
     def __repr__(self):
         """ String representation of the model run """

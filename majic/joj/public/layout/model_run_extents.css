@@ -35,21 +35,6 @@
     width:900px;
 }
 
-.accordion {
-    margin-bottom:0;
-    display:inline-block;
-}
-
-.accordion-group {
-    background-color: #F7F7F7
-}
-
-#bng-error {
-    margin-top:10px;
-    margin-bottom:0px;
-    display:none;
-}
-
 #upload_yes:hover i, #upload_no:hover i {
     color:green;
 }

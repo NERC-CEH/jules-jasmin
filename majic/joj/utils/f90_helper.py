@@ -3,6 +3,7 @@ header
 """
 import datetime
 from f90nml import to_f90str
+import re
 
 DATE_TIME_FORMAT = "%Y-%m-%d %X"
 
@@ -14,7 +15,7 @@ def python_to_f90_str(value):
     :return: Fortran string
     """
     if type(value) == list:
-        return ', '.join([python_to_f90_str(v) for v in value])
+        return '    '.join([python_to_f90_str(v) for v in value])
     elif type(value) == datetime.datetime:
         return to_f90str(value.strftime(DATE_TIME_FORMAT))
     elif type(value) == unicode:
@@ -23,15 +24,16 @@ def python_to_f90_str(value):
         return to_f90str(value)
 
 
-def f90_str_to_python(value):
+def f90_str_to_python(value, is_list=False):
     """
     Convert a Fortran 90 namelist value to a Python object
     :param value: F90 value string to convert
+    :param is_list: Indicates whether the value is a list
     :return: Corresponding Python object
     """
     if type(value) == unicode:
         value = str(value)
-    if _is_list(value):
+    if is_list:
         return _from_list(value)
     if _is_datetime(value):
         return _from_datetime(value)
@@ -45,26 +47,21 @@ def f90_str_to_python(value):
         return _from_float(value)
 
 
-def _is_list(value):
-    """
-    Determine if a fortran namelist string represents a Python list
-    :param value: Value to test
-    :return: True if a Python list, false otherwise
-    """
-    if _is_string(value):
-        return False
-    list_candidate = value.split(',')
-    return len(list_candidate) > 1
-
-
 def _from_list(f_list):
     """
     Convert a namelist list into a Python list
     :param f_list: Fortran list to convert
     :return: Python list
     """
-    f_list = f_list.split(',')
-    return [f90_str_to_python(v.strip()) for v in f_list]
+    #First try a string list (includes datetimes)
+    py_list = re.findall("('.*?')", f_list)
+    if len(py_list) == 0:
+        #Finally try booleans
+        py_list = re.findall("((?:\.false\.)|(?:\.true\.)|(?:false)|(?:true)|(?:t)|(?:f))", f_list.lower())
+    if len(py_list) == 0:
+        # Then try numbers
+        py_list = re.findall("([\deE+-\.]+)", f_list)
+    return [f90_str_to_python(v) for v in py_list]
 
 
 def _is_string(value):
@@ -96,7 +93,7 @@ def _is_bool(value):
     :param value: Value to test
     :return: True if a Python string, false otherwise
     """
-    return value == ".true." or value == ".false."
+    return _from_bool(value) is not None
 
 
 def _from_bool(f_bool):
@@ -105,7 +102,11 @@ def _from_bool(f_bool):
     :param f_bool: Fortran bool to convert
     :return: Python boolean
     """
-    return f_bool == ".true."
+    if f_bool.lower() in [".false.", "f", "false"]:
+        return False
+    elif f_bool.lower() in [".true.", "t", "true"]:
+        return True
+    return None
 
 
 def _is_int(value):

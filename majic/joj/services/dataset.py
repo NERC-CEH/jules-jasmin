@@ -1,9 +1,13 @@
+"""
+header
+"""
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload, contains_eager, immediateload
-from joj.model import Dataset, DatasetType, Analysis, DrivingDataset
+from sqlalchemy.orm import joinedload, contains_eager, subqueryload
+from joj.model import Dataset, DatasetType, DrivingDataset, DrivingDatasetParameterValue, Parameter
 from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
+from joj.utils import constants
 
 __author__ = 'Phil Jenkins (Tessella)'
 
@@ -12,14 +16,13 @@ class DatasetService(DatabaseService):
     """Encapsulates operations on Map datasets"""
 
     def get_datasets_for_user(self, user_id, dataset_type=None, dataset_type_id=None):
-        """Returns a list of datasets that the supplied user has access to,
-            and is of a particular type. This can be specified as either an ID
-            or a name, depending on which is more convenient
-
-            Params:
-                user_id: ID of the user to get a list of datasets for
-                dataset_type: String name of the dataset type
-                dataset_type_id: ID of the dataset type
+        """
+        Returns a list of datasets that the supplied user has access to,
+        and is of a particular type. This can be specified as either an ID
+        or a name, depending on which is more convenient
+        :param user_id: ID of the user to get a list of datasets for
+        :param dataset_type: String name of the dataset type
+        :param dataset_type_id: ID of the dataset type
         """
 
         with self.readonly_scope() as session:
@@ -51,8 +54,8 @@ class DatasetService(DatabaseService):
 
     def get_dataset_by_id(self, dataset_id, user_id=None):
         """ Returns a single dataset with the given ID
-            Params:
-                dataset_id: ID of the dataset to look for
+        :param dataset_id: ID of the dataset to look for
+        :param user_id: Optional user ID to match
         """
 
         with self.readonly_scope() as session:
@@ -161,8 +164,24 @@ class DatasetService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(DrivingDataset)\
                 .options(joinedload(DrivingDataset.parameter_values))\
-                .order_by(DrivingDataset.id)\
+                .order_by(DrivingDataset.order_by_id)\
                 .all()
+
+    def get_driving_dataset_by_id(self, id):
+        """
+        Get a driving dataset specified by an ID
+        :param id: Driving dataset ID
+        :return: DrivingDataset
+        """
+        with self.readonly_scope() as session:
+            return session.query(DrivingDataset)\
+                .outerjoin(DrivingDataset.parameter_values, "parameter", "namelist") \
+                .options(contains_eager(DrivingDataset.parameter_values)
+                         .contains_eager(DrivingDatasetParameterValue.parameter)
+                         .contains_eager(Parameter.namelist))\
+                .options(subqueryload(DrivingDataset.locations))\
+                .filter(DrivingDataset.id == id)\
+                .one()
 
     def get_spatial_extent(self, driving_dataset_id):
         """
@@ -190,3 +209,15 @@ class DatasetService(DatabaseService):
                 .filter(DrivingDataset.id == driving_dataset_id)\
                 .one()
         return TemporalExtent(driving_dataset.time_start, driving_dataset.time_end)
+
+    def get_id_for_user_upload_driving_dataset(self):
+        """
+        Return the database ID for the driving dataset which indicates
+        the special case where the user has uploaded their own driving dataset.
+        :return: The database ID of the user uploaded driving dataset
+        """
+        with self.readonly_scope() as session:
+            driving_dataset = session.query(DrivingDataset)\
+                .filter(DrivingDataset.name == constants.USER_UPLOAD_DRIVING_DATASET_NAME)\
+                .one()
+        return driving_dataset.id

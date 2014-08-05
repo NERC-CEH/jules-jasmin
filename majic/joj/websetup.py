@@ -345,7 +345,8 @@ def setup_app(command, conf, vars):
         driving_ds_1.boundary_lon_west = -30
         driving_ds_1.boundary_lon_east = 10
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
-        driving_ds_1.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
+        driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
+        driving_ds_1.order_by_id = 100
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"
@@ -362,6 +363,7 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
+        driving_ds_2.order_by_id = 200
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -376,8 +378,81 @@ def setup_app(command, conf, vars):
         driving_ds_3.boundary_lon_east = 180
         driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
+        driving_ds_3.order_by_id = 300
 
-        parameters = [
+        file_template = 'data/WATCH_2D/driving/{}_190101.nc'
+
+        for name, var in zip(['PSurf_WFD/PSurf_WFD', 'Tair_WFD/Tair_WFD', 'Qair_WFD/Qair_WFD', 'Wind_WFD/Wind_WFD',
+                              'LWdown_WFD/LWdown_WFD', 'SWdown_WFD/SWdown_WFD', 'Rainf_WFD_GPCC/Rainf_WFD_GPCC',
+                              'Snowf_WFD_GPCC/Snowf_WFD_GPCC'],
+                             ['pstar', 't', 'q', 'wind', 'lw_down', 'sw_down', 'tot_rain', 'tot_snow']):
+            location = DrivingDatasetLocation()
+            location.base_url = file_template.format(name)
+            location.var_name = var
+            location.driving_dataset = driving_ds_1
+
+        parameters1 = [
+            [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
+            [constants.JULES_PARAM_DRIVE_DATA_END, "'1901-01-31 21:00:00'"],
+            [constants.JULES_PARAM_DRIVE_DATA_PERIOD, "10800"],
+            [constants.JULES_PARAM_DRIVE_FILE, "'data/WATCH_2D/driving/%vv/%vv_%y4%m2.nc'"],
+            [constants.JULES_PARAM_DRIVE_NVARS, "8"],
+            [constants.JULES_PARAM_DRIVE_VAR,
+             "'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     "
+             "'tot_rain'        'tot_snow'"],
+            [constants.JULES_PARAM_DRIVE_VAR_NAME, "'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      "
+                                                   "'SWdown'      'Rainf'           'Snowf'"],
+            [constants.JULES_PARAM_DRIVE_TPL_NAME, "'PSurf_WFD'      'Tair_WFD'      "
+                                                   "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'      "
+                                                   "'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC'"],
+            [constants.JULES_PARAM_DRIVE_INTERP,
+             "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
+            [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
+            [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
+
+            [constants.JULES_PARAM_INPUT_GRID_IS_1D, ".false."],
+            [constants.JULES_PARAM_INPUT_GRID_NX, "720"],
+            [constants.JULES_PARAM_INPUT_GRID_NY, "280"],
+            [constants.JULES_PARAM_INPUT_GRID_X_DIM_NAME, "'Longitude'"],
+            [constants.JULES_PARAM_INPUT_GRID_Y_DIM_NAME, "'Latitude'"],
+            [constants.JULES_PARAM_INPUT_TIME_DIM_NAME, "'Time'"],
+            [constants.JULES_PARAM_INPUT_TYPE_DIM_NAME, "'pseudo'"],
+
+            [constants.JULES_PARAM_LATLON_FILE, "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"],
+            [constants.JULES_PARAM_LATLON_LAT_NAME, "'Grid_lat'"],
+            [constants.JULES_PARAM_LATLON_LON_NAME, "'Grid_lon'"],
+            [constants.JULES_PARAM_LAND_FRAC_FILE, "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"],
+            [constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME, "'land'"],
+            [constants.JULES_PARAM_SURF_HGT_ZERO_HEIGHT, ".true."],
+
+            [constants.JULES_PARAM_FRAC_FILE, "'data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc'"],
+            [constants.JULES_PARAM_FRAC_NAME, "'frac'"],
+
+            [constants.JULES_PARAM_SOIL_PROPS_CONST_Z, ".true."],
+            [constants.JULES_PARAM_SOIL_PROPS_FILE,
+             "'data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc'"],
+            [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
+            [constants.JULES_PARAM_SOIL_PROPS_VAR,
+             "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
+            [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
+             "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
+
+            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
+            [constants.JULES_PARAM_INITIAL_VAR,
+             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+            [constants.JULES_PARAM_INITIAL_USE_FILE,
+             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+            [constants.JULES_PARAM_INITIAL_CONST_VAL,
+             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+        ]
+
+        model_run_service = ModelRunService()
+
+        for constant, value in parameters1:
+            ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
+            driving_ds_1.parameter_values.append(ddpv)
+
+        parameters3 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
             [constants.JULES_PARAM_DRIVE_DATA_END, "'2009-12-31 21:00:00'"],
             [constants.JULES_PARAM_DRIVE_DATA_PERIOD, "10800"],
@@ -432,7 +507,7 @@ def setup_app(command, conf, vars):
 
         model_run_service = ModelRunService()
 
-        for constant, value in parameters:
+        for constant, value in parameters3:
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
             driving_ds_3.parameter_values.append(ddpv)
 
@@ -444,4 +519,36 @@ def setup_app(command, conf, vars):
             location.base_url = file_template.format(name)
             location.driving_dataset = driving_ds_3
 
-        session.add_all([driving_ds_1, driving_ds_2, driving_ds_3])
+        driving_ds_upload = DrivingDataset()
+        driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
+        driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
+                                        "single cell site"
+        driving_ds_upload.order_by_id = 1000
+
+        parameters_upload = [
+
+            [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
+            [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
+
+            [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
+            [constants.JULES_PARAM_SOIL_PROPS_VAR,
+                "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
+            [constants.JULES_PARAM_SOIL_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
+                                                  ".false. .false."],
+            [constants.JULES_PARAM_SOIL_CONST_VALS,
+             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+
+            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
+            [constants.JULES_PARAM_INITIAL_VAR,
+                "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+            [constants.JULES_PARAM_INITIAL_USE_FILE,
+                ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+            [constants.JULES_PARAM_INITIAL_CONST_VAL,
+                "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+        ]
+
+        for constant, value in parameters_upload:
+            ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_upload, constant, value)
+            driving_ds_upload.parameter_values.append(ddpv)
+
+        session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])

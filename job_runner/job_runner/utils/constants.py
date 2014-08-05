@@ -10,6 +10,8 @@ VALID_SINGLE_PROCESSOR_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_single_pro
 
 # Set the name of the output directory (if changed copy to joj)
 OUTPUT_DIR = 'output'
+# The list of filenames which the job_file controller API is allowed to create / write to remotely.
+WHITELISTED_FILE_NAMES = ["fractional.dat", "user_uploaded_driving_data.dat"]
 
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'
@@ -30,6 +32,9 @@ JSON_MODEL_NAMELIST_FILE_FILENAME = 'filename'
 JSON_USER_NAME = 'user_name'
 JSON_USER_ID = 'user_id'
 JSON_USER_EMAIL = 'user_email'
+# These are used for transferring files from the web app to the job runner (e.g. user uploaded driving datasets)
+JSON_MODEL_FILENAME = 'filename'
+JSON_MODEL_FILE_LINE = 'line'
 
 # Model run statuses
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'

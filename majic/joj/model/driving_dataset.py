@@ -26,6 +26,22 @@ class DrivingDataset(Base):
     boundary_lon_west = Column(Float)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
+    order_by_id = Column(Integer)
+
+    driving_data_lat = None
+    driving_data_lon = None
+    driving_data_rows = None
+
+    def get_python_parameter_value(self, parameter_namelist_name, is_list=False):
+        """
+        Gets the value of the first matching parameter value as a python object
+        :param parameter_namelist_name: list containing [namelist, name] of parameter to find
+        :param is_list: Indicates whether the value is a list
+        """
+        for param_val in self.parameter_values:
+            if param_val.parameter.name == parameter_namelist_name[1]:
+                if param_val.parameter.namelist.name == parameter_namelist_name[0]:
+                    return param_val.get_value_as_python(is_list=is_list)
 
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name

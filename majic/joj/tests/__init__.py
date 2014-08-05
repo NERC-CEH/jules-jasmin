@@ -29,7 +29,7 @@ from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, M
     Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
     AccountRequest
 from joj.services.user import UserService
-from joj.utils import constants
+from joj.utils import constants, f90_helper
 from joj.services.model_run_service import ModelRunService
 from joj.model import session_scope, Session, ModelRun
 from joj.services.dap_client_factory import DapClientFactory
@@ -105,7 +105,9 @@ class TestController(TestCase):
 
             session.query(DrivingDatasetLocation).delete()
             session.query(DrivingDatasetParameterValue).delete()
-            session.query(DrivingDataset).delete()
+            session.query(DrivingDataset)\
+                .filter(DrivingDataset.name != constants.USER_UPLOAD_DRIVING_DATASET_NAME)\
+                .delete()
 
             session\
                 .query(User)\
@@ -179,6 +181,7 @@ class TestController(TestCase):
         Creates two driving datasets with datasets, parameter values etc set up
         :return: nothing
         """
+        model_run_service = ModelRunService()
         with session_scope(Session) as session:
             ds1 = Dataset()
             ds1.name = "Driving dataset 1"
@@ -201,12 +204,20 @@ class TestController(TestCase):
             driving1.boundary_lon_east = 30
             driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
             driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
+            driving1.order_by_id = 100
             location1 = DrivingDatasetLocation()
             location1.base_url = "base_url"
             location1.driving_dataset = driving1
             location2 = DrivingDatasetLocation()
             location2.base_url = "base_url2"
             location2.driving_dataset = driving1
+
+            val = f90_helper.python_to_f90_str(8 * ["i"])
+            pv1 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                               constants.JULES_PARAM_DRIVE_INTERP, val)
+            val = f90_helper.python_to_f90_str(3600)
+            pv2 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                               constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
 
             driving2 = DrivingDataset()
             driving2.name = "driving2"
@@ -221,15 +232,22 @@ class TestController(TestCase):
             driving2.boundary_lon_east = 180
             driving2.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
             driving2.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
+            driving2.order_by_id = 200
 
             location3 = DrivingDatasetLocation()
             location3.base_url = "base_url3"
             location3.driving_dataset = driving2
 
+            val = f90_helper.python_to_f90_str(8 * ["i"])
+            pv3 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_DRIVE_INTERP, val)
+            val = f90_helper.python_to_f90_str(3600)
+            pv4 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+
             session.add_all([driving1, driving2])
             session.commit()
 
-            model_run_service = ModelRunService()
             driving_data_filename_param_val = DrivingDatasetParameterValue(
                 model_run_service,
                 driving1,

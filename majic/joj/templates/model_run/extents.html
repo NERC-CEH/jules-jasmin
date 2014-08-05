@@ -16,56 +16,6 @@
 </p>
 
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='extents')}">
-
-<div class="control-group">
-    <h3>Temporal Extent</h3>
-    <label class="control-label">
-        Timeline
-        <p class="label-explain">
-            The time line you wish to run your model over. This must fall completely within the
-            boundaries of your chosen driving data.
-        </p>
-    </label>
-    <div class="controls">
-        <fieldset class="fieldset">
-            <div class="controls-row">
-                <div class="span2">
-                    <h5>Time</h5>
-                </div>
-                <div class="span2">
-                    <h5>Driving Data Value</h5>
-                </div>
-                <div class="span7">
-                    <h5>This Model Run</h5>
-                </div>
-            </div>
-            <div class="controls-row">
-                <div class="span2">
-                    <p>Start Date</p>
-                </div>
-                <div class="span2">${c.dataset.time_start.date()}</div>
-                <div class="span7">
-                    <div class="" style="margin-left:0px">
-                        ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    </div>
-                </div>
-            </div>
-            <br/>
-            <div class="controls-row">
-                <div class="span2">
-                    <p>End Date</p>
-                </div>
-                <div class="span2">${c.dataset.time_end.date()}</div>
-                <div class="span7">
-                    <div class="" style="margin-left:0px">
-                        ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-    </div>
-</div>
-
 <div class="control-group">
     <h3>Spatial Extent</h3>
     <label for="scientific_configuration" class="control-label">
@@ -94,6 +44,7 @@
                 </p>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -110,33 +61,12 @@
             <fieldset class="fieldset">
                 <div class="controls-row">
                     <div class="span11">
-                        <div class="accordion" id="accordion">
-                            <div class="accordion-group">
-                                <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"
-                                       href="#collapseOne">
-                                        I want to enter this in British National Grid coordinates
-                                    </a>
-                                </div>
-                                <div id="collapseOne" class="accordion-body collapse">
-                                    <div class="accordion-inner">
-                                        <p>Enter site location as all-numeric eastings / northings
-                                            <br/><small>e.g. 451246 / 206416 (Oxford)</small></p>
-                                        ${h.html_tags.text('bng_e', style='width:60px', placeholder='Eastings')}
-                                        &nbsp;/&nbsp;
-                                        ${h.html_tags.text('bng_n', style='width:60px', placeholder='Northings')}
-                                        <a class="btn btn-info pull-right" href="#!" id="convert-bng">Convert</a>
-                                        <div id="bng-error" class="alert alert-danger">
-                                            Couldn't convert these coordinates
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <xi:include href="../bng-convert.html"/>
                     </div>
                 </div>
                 <div class="controls-row">
                     <div class="span2">
+                        <h5>Boundary</h5>
                     </div>
                     <div class="span2">
                         <h5>Driving Data Range</h5>
@@ -149,7 +79,7 @@
                     <div class="span2">
                         <p>Latitude <small>(&deg;N)</small></p>
                     </div>
-                    <div class="span2">${c.dataset.boundary_lat_south} <small>to</small> ${c.dataset.boundary_lat_north}</div>
+                    <div class="span2">${c.boundary_lat_s} <small>to</small> ${c.boundary_lat_n}</div>
                     <div class="span7">
                         <div class="" style="margin-left:0px">
                             ${h.html_tags.text('lat', style='width:60px')}
@@ -161,7 +91,7 @@
                     <div class="span2">
                         <p>Longitude <small>(&deg;E)</small></p>
                     </div>
-                    <div class="span2">${c.dataset.boundary_lon_west} <small>to</small> ${c.dataset.boundary_lon_east}</div>
+                    <div class="span2">${c.boundary_lon_w} <small>to</small> ${c.boundary_lon_e}</div>
                     <div class="span7">
                         <div class="" style="margin-left:0px">
                             ${h.html_tags.text('lon', style='width:60px')}
@@ -217,7 +147,7 @@
                 <div class="span2">
                     <p>Northern Bounding Latitude <small>(&deg;N)</small></p>
                 </div>
-                <div class="span2">${c.dataset.boundary_lat_north}</div>
+                <div class="span2">${c.boundary_lat_n}</div>
                 <div class="span7">
                     <div class="" style="margin-left:0px">
                         ${h.html_tags.text('lat_n', style='width:60px')}<br/>
@@ -228,7 +158,7 @@
                 <div class="span2">
                     <p>Southern Bounding Latitude <small>(&deg;N)</small></p>
                 </div>
-                <div class="span2">${c.dataset.boundary_lat_south}</div>
+                <div class="span2">${c.boundary_lat_s}</div>
                 <div class="span7">
                     <div class="" style="margin-left:0px">
                         ${h.html_tags.text('lat_s', style='width:60px')}<br/>
@@ -239,7 +169,7 @@
                 <div class="span2">
                     <p>Western Bounding Longitude <small>(&deg;E)</small></p>
                 </div>
-                <div class="span2">${c.dataset.boundary_lon_west}</div>
+                <div class="span2">${c.boundary_lon_w}</div>
                 <div class="span7">
                     ${h.html_tags.text('lon_w', style='width:60px')}<br/>
                 </div>
@@ -248,7 +178,7 @@
                 <div class="span2">
                     <p>Eastern Bounding Longitude <small>(&deg;E)</small></p>
                 </div>
-                <div class="span2">${c.dataset.boundary_lon_east}</div>
+                <div class="span2">${c.boundary_lon_e}</div>
                 <div class="span7">
                     ${h.html_tags.text('lon_e', style='width:60px')}<br/>
                 </div>
@@ -256,131 +186,57 @@
         </fieldset>
     </div>
 </div>
-<div id="upload-single-cell">
-    <div class="control-group">
-        <h3>Upload Single Cell Driving Data</h3>
 
-        <label class="control-label">
-            Upload my own data
-            <p class="label-explain">Optionally you can choose to use your own site measurements as part of your driving data</p>
-        </label>
-        <div class="controls">
-            <div id="upload_no">
-                <div class="select-div">
-                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
+<div>
+    <h3>Temporal Extent</h3>
+</div>
+
+<div class="control-group">
+    <label class="control-label">
+        Timeline
+        <p class="label-explain">
+            The time line you wish to run your model over. This must fall completely within the
+            boundaries of your chosen driving data.
+        </p>
+    </label>
+    <div class="controls">
+        <fieldset class="fieldset">
+            <div class="controls-row">
+                <div class="span2">
+                    <h5>Time</h5>
                 </div>
-                <div class="description-div">
-                    <p>
-                        <strong>No - </strong>I'm happy to leave the driving data as it is.
-                    </p>
+                <div class="span2">
+                    <h5>Driving Data Value</h5>
+                </div>
+                <div class="span7">
+                    <h5>This Model Run</h5>
                 </div>
             </div>
-            <div id="upload_yes">
-                <div class="select-div">
-                    <i class="fa fa-check-circle-o fa-2x select-icon"></i>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>Start Date</p>
                 </div>
-                <div class="description-div">
-                    <p>
-                        <strong>Yes - </strong>I'd like to include my own measurements as driving data for my chosen site.
-                    </p>
+                <div class="span2">${c.start_date}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('start_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
                 </div>
             </div>
-        </div>
+            <br/>
+            <div class="controls-row">
+                <div class="span2">
+                    <p>End Date</p>
+                </div>
+                <div class="span2">${c.end_date}</div>
+                <div class="span7">
+                    <div class="" style="margin-left:0px">
+                        ${h.html_tags.text('end_date', style='width:100px', placeholder='YYYY-MM-DD')}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
     </div>
-    <div id="upload_driving_data">
-        <ul class="nav nav-tabs" id="driving-data-tabs">
-            <li id="tab-upload" class="active"><a href="#upload" data-toggle="tab">Upload</a></li>
-            <li><a href="#download" data-toggle="tab">Download</a></li>
-        </ul>
-
-        <div class="tab-content">
-            <div class="tab-pane active" id="upload">
-                <p>Upload a driving data text file. If you're not sure what the format of the file should be you should
-                first download some driving data and use that as a template to insert your data into.</p>
-                <div class="control-group">
-
-                    <label class="control-label">
-                        Start date/time
-                        <p class="label-explain">Date / time of the first row in your uploaded driving data.</p>
-                    </label>
-                    <div class="controls">
-                        <div class="controls-row">
-                            ${h.html_tags.text('ul_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">
-                        End date/time
-                        <p class="label-explain">Date / time of the last row in your uploaded driving data.</p>
-                    </label>
-                    <div class="controls">
-                        <div class="controls-row">
-                            ${h.html_tags.text('ul_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">
-                        Driving Data file
-                        <p class="label-explain">Upload a text file containing your driving data</p>
-                    </label>
-                    <div class="controls">
-                        <div class="controls-row">
-                            <input name="driving-file" type="file"/>
-                            <br/><br/>
-                            <a href="#!" class="btn btn-info" onclick="$('#upload-success').show()"><i class="fa fa-upload"></i>&nbsp;&nbsp;Upload Driving Data</a>
-
-                        </div>
-                    </div>
-                </div>
-                <div id="upload-success" class="alert alert-success" style="display:inline-block; display:none">119 rows of data uploaded from 2010-01-01 00:00 to 2010-01-15 21:00</div>
-
-            </div>
-
-
-
-            <div class="tab-pane" id="download">
-                <p>Download driving data for your chosen site location as a text-file. You can then use this as a template to edit or insert your own data into.</p>
-                <div class="control-group">
-
-                    <label class="control-label">
-                        Start date/time
-                        <p class="label-explain">Download only data points after this time</p>
-                    </label>
-                    <div class="controls">
-                        <div class="controls-row">
-                            ${h.html_tags.text('dl_start', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">
-                        End date/time
-                        <p class="label-explain">Download only data points before this time</p>
-                    </label>
-                    <div class="controls">
-                        <div class="controls-row">
-                            ${h.html_tags.text('dl_end', style='width:150px', placeholder='YYYY-MM-DD HH:MM')}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <div class="controls">
-                        <div class="controls-row" style="margin-top:-30px">
-                            <a href="#!" class="btn btn-info"><i class="fa fa-download"></i>&nbsp;&nbsp;Download Driving Data</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
 </div>
 
 <div class="controls">
@@ -388,6 +244,8 @@
     <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="previous" value="Previous" />
 </div>
 </form>
+
+<div class="modal fade hide" id="dataset-preview"></div>
 
 </body>
 </html>

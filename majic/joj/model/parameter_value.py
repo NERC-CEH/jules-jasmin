@@ -35,9 +35,10 @@ class ParameterValue(Base):
         """
         self.value = f90_helper.python_to_f90_str(value)
 
-    def get_value_as_python(self):
+    def get_value_as_python(self, is_list=False):
         """
         Get the Parameter value, converting a Fortran namelist string to a Python type
+        :param is_list: Indicates whether this value is a list
         :return: Python type
         """
-        return f90_helper.f90_str_to_python(self.value)
+        return f90_helper.f90_str_to_python(self.value, is_list)

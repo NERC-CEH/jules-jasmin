@@ -1,0 +1,14 @@
+.bng-accordion {
+    margin-bottom:0;
+    display:inline-block;
+}
+
+.bng-accordion-group {
+    background-color: #F7F7F7
+}
+
+#bng-error {
+    margin-top:10px;
+    margin-bottom:0px;
+    display:none;
+}

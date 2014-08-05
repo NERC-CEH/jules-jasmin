@@ -41,6 +41,6 @@ p.description
     cursor: pointer;
 }
 
-tr.driving-data:hover i {
+tr.driving-data:hover .select-icon {
     color:green;
 }

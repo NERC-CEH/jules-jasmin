@@ -5,7 +5,7 @@ from urlparse import urlparse
 import datetime
 from hamcrest import assert_that, is_, contains_string, close_to
 from pylons import url
-from joj.model import DrivingDataset, Session, session_scope, ModelRun, User
+from joj.model import DrivingDataset, Session, session_scope, ModelRun, User, ParameterValue
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import *
@@ -19,6 +19,7 @@ class TestModelRunExtents(TestController):
         self.model_run_service = ModelRunService()
         with session_scope(Session) as session:
             self.driving_data = DrivingDataset()
+            self.driving_data.name = "d1"
             self.driving_data.boundary_lat_north = 47.5
             self.driving_data.boundary_lat_south = 13.8
             self.driving_data.boundary_lon_east = 123.1
@@ -33,7 +34,20 @@ class TestModelRunExtents(TestController):
             self.model_run.status = self._status(MODEL_RUN_STATUS_CREATED)
             self.model_run.driving_dataset_id = self.driving_data.id
             self.model_run.user = self.user
+
+            param1 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_INTERP)
+            pv1 = ParameterValue()
+            pv1.parameter_id = param1.id
+            pv1.set_value_from_python(8 * ['nf'])
+
+            param2 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_DATA_PERIOD)
+            pv2 = ParameterValue()
+            pv2.parameter_id = param2.id
+            pv2.set_value_from_python(60 * 60)
+
+            self.model_run.parameter_values = [pv1, pv2]
             session.add(self.model_run)
+
 
     def test_GIVEN_no_created_model_WHEN_page_get_THEN_redirect_to_create(self):
         self.clean_database()
@@ -204,8 +218,8 @@ class TestModelRunExtents(TestController):
         latlon_region = model_run.get_parameter_values(JULES_PARAM_LATLON_REGION)[0].value
         start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
         end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
-        assert_that(lat_bounds, is_("20, 25"))
-        assert_that(lon_bounds, is_("35, 40"))
+        assert_that(lat_bounds, is_("20    25"))
+        assert_that(lon_bounds, is_("35    40"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".true."))
         assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
@@ -231,7 +245,7 @@ class TestModelRunExtents(TestController):
         l_point_data = model_run.get_parameter_values(JULES_PARAM_SWITCHES_L_POINT_DATA)[0].value
         start_run = model_run.get_parameter_values(JULES_PARAM_RUN_START)[0].value
         end_run = model_run.get_parameter_values(JULES_PARAM_RUN_END)[0].value
-        assert_that(pointfile, is_("25.25, 40.25"))
+        assert_that(pointfile, is_("25.25    40.25"))
         assert_that(n_points, is_("1"))
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".false."))
