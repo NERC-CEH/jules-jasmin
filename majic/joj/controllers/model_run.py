@@ -31,8 +31,9 @@ from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.services.general import ServiceException
 
-# The prefix given to parameter name in html elements
+from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
 
+# The prefix given to parameter name in html elements
 PARAMETER_NAME_PREFIX = 'param'
 
 # Message to show when the submission has failed
@@ -387,9 +388,45 @@ class ModelRunController(BaseController):
             except KeyError:
                 action = None
             if action == u'Next':
-                redirect(url(controller='model_run', action='output'))
+                redirect(url(controller='model_run', action='land_cover'))
             else:
                 redirect(url(controller='model_run', action='driving_data'))
+
+    def land_cover(self):
+        """
+        Set the land cover options
+        """
+        land_cover_controller_helper = LandCoverControllerHelper()
+        model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
+        values = dict(request.params)
+        errors = {}
+        if not request.POST:
+            self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
+            land_cover_controller_helper.add_land_covers_to_context(c, errors, model_run)
+            return htmlfill.render(
+                render('model_run/extents.html'),
+                defaults=values,
+                errors=errors,
+                auto_error_formatter=BaseController.error_formatter)
+        else:
+            land_cover_controller_helper.save_land_covers(values, errors, model_run)
+            if len(errors) > 0:
+                return htmlfill.render(
+                    render('model_run/extents.html'),
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
+            else:
+                # Get the action to perform
+                self._model_run_controller_helper.check_user_quota(self.current_user)
+                try:
+                    action = values['submit']
+                except KeyError:
+                    action = None
+                if action == u'Next':
+                    redirect(url(controller='model_run', action='output'))
+                else:
+                    redirect(url(controller='model_run', action='extents'))
 
     def output(self):
         """
@@ -429,7 +466,7 @@ class ModelRunController(BaseController):
             if action == u'Next':
                 redirect(url(controller='model_run', action='submit'))
             else:
-                redirect(url(controller='model_run', action='extents'))
+                redirect(url(controller='model_run', action='land_cover'))
 
     def parameters(self):
         """
