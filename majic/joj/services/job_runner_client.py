@@ -30,8 +30,7 @@ class JobRunnerClient(object):
         data = self.convert_model_to_dictionary(model, parameters)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
-            response = self._post_securely(data, url)
-            # auth=('user', 'password'))
+            response = self._post_securely(url, data)
         except Exception, ex:
             log.error("Failed to submit job %s" % ex.message)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
@@ -50,8 +49,7 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/status'
-            response = self._post_securely(model_ids, url)
-            # auth=('user', 'password'))
+            response = self._post_securely(url, model_ids)
 
         except Exception, ex:
             raise ServiceException("Failed to get job statuses %s" % ex.message)
@@ -70,7 +68,7 @@ class JobRunnerClient(object):
         """
         try:
             url = self._config['job_runner_url'] + 'jobs/delete'
-            response = self._post_securely({constants.JSON_MODEL_RUN_ID: model_run.id}, url)
+            response = self._post_securely(url, {constants.JSON_MODEL_RUN_ID: model_run.id})
 
         except Exception:
             log.exception("Job runner service error on delete")
@@ -163,11 +161,11 @@ class JobRunnerClient(object):
         namelists.append(namelist)
         return namelist
 
-    def _post_securely(self, data, url):
+    def _post_securely(self, url, data):
         """
         Use the ssl certificates to post some data
-        :param data: the data to post
         :param url: the url to post to
+        :param data: the data to post
         :return: the response
         """
         verify = True
@@ -193,7 +191,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILENAME: filename}
         try:
             url = self._config['job_runner_url'] + 'job_file/new'
-            response = requests.post(url, data=json.dumps(data))
+            response = self._post_securely(url, data=json.dumps(data))
             if not response.status_code == 200:
                 raise ServiceException(response.text)
         except Exception, ex:
@@ -220,7 +218,7 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
             try:
                 url = self._config['job_runner_url'] + 'job_file/append'
-                response = requests.post(url, data=json.dumps(data))
+                response = self._post_securely(url, data=json.dumps(data))
                 self._file_lines_store = ''
                 if not response.status_code == 200:
                     raise ServiceException(response.text)
@@ -241,7 +239,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILENAME: filename}
         try:
             url = self._config['job_runner_url'] + 'job_file/delete'
-            response = requests.post(url, data=json.dumps(data))
+            response = self._post_securely(url, data=json.dumps(data))
             if not response.status_code == 200:
                 raise ServiceException(response.text)
         except Exception, ex:
@@ -263,7 +261,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
         try:
             url = self._config['job_runner_url'] + 'job_file/append'
-            response = requests.post(url, data=json.dumps(data))
+            response = self._post_securely(url, data=json.dumps(data))
             self._file_lines_store = ''
             if not response.status_code == 200:
                 raise ServiceException(response.text)
