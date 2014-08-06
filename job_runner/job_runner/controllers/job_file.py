@@ -5,6 +5,7 @@ from pylons.controllers.util import abort
 from job_runner.lib.base import BaseController
 from job_runner.utils import constants
 from job_runner.services.job_service import JobService
+from pylons.decorators import jsonify
 
 
 class JobFileController(BaseController):
@@ -25,13 +26,14 @@ class JobFileController(BaseController):
         if filename not in constants.WHITELISTED_FILE_NAMES:
             abort(400, "Filename %s is not an authorised file to write to" % filename)
 
+    @jsonify
     def new(self):
         """
         Create a new file with specified file name in the directory for a specified model run ID
         :return:
         """
         try:
-            json = self.get_json_abort_on_error()
+            json = self._get_json_abort_on_error()
             filename = json[constants.JSON_MODEL_FILENAME]
             model_run_id = json[constants.JSON_MODEL_RUN_ID]
             self._check_whitelist_filename(filename)
@@ -40,13 +42,14 @@ class JobFileController(BaseController):
             abort(400, "Missing key: required '%s' and '%s'" % (constants.JSON_MODEL_FILENAME,
                                                                 constants.JSON_MODEL_RUN_ID))
 
+    @jsonify
     def append(self):
         """
         Add lines of text to an existing file with given filename and model run ID
         :return:
         """
         try:
-            json = self.get_json_abort_on_error()
+            json = self._get_json_abort_on_error()
             filename = json[constants.JSON_MODEL_FILENAME]
             model_run_id = json[constants.JSON_MODEL_RUN_ID]
             line = json[constants.JSON_MODEL_FILE_LINE]
@@ -57,13 +60,14 @@ class JobFileController(BaseController):
                                                                       constants.JSON_MODEL_RUN_ID,
                                                                       constants.JSON_MODEL_FILE_LINE))
 
+    @jsonify
     def delete(self):
         """
         Delete a file with specified file name and model run ID
         :return:
         """
         try:
-            json = self.get_json_abort_on_error()
+            json = self._get_json_abort_on_error()
             filename = json[constants.JSON_MODEL_FILENAME]
             model_run_id = json[constants.JSON_MODEL_RUN_ID]
             self._check_whitelist_filename(filename)

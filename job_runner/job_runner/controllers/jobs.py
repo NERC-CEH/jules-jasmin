@@ -4,10 +4,8 @@
 
 import logging
 
-from pylons import request
 from pylons.controllers.util import abort
 from pylons.decorators import jsonify
-from simplejson import JSONDecodeError
 
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
@@ -59,17 +57,6 @@ class JobsController(BaseController):
         :param job_service: the job service
         """
         self._job_service = job_service
-
-    def _get_json_abort_on_error(self):
-        """
-        raise a exception if this is not a post with a json body
-        otherwise return the body
-
-        """
-        try:
-            return request.json_body
-        except JSONDecodeError:
-            abort(400, "Only valid JSON Posts allowed")
 
     @jsonify
     def new(self):
