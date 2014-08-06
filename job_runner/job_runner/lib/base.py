@@ -20,7 +20,7 @@ class BaseController(WSGIController):
         # available in environ['pylons.routes_dict']
         return WSGIController.__call__(self, environ, start_response)
 
-    def get_json_abort_on_error(self):
+    def _get_json_abort_on_error(self):
         """
         raise a exception if this is not a post with a json body
         otherwise return the body
