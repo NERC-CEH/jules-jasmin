@@ -154,8 +154,6 @@ class AsciiDownloadHelper(object):
         :param start: The requested start date
         :return: :raise ServiceException: On error with the dates
         """
-        d = config['thredds.server_url']
-        e = config['blah']
         self._create_dap_clients_if_missing(driving_data)
         starts = []
         for dap_client in self._dap_clients:
@@ -204,6 +202,6 @@ class AsciiDownloadHelper(object):
         vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
         location_dict = {location.var_name: location.base_url for location in driving_data.locations}
         for var in vars:
-            url = str(config[str('thredds.server_url')] + "dodsC/model_runs/" + location_dict[var])
+            url = str("https://jules-bd1-dev.ceda.ac.uk:8080/thredds/" + "dodsC/model_runs/" + location_dict[var])
             dap_client = self._dap_client_factory.get_dap_client(url)
             self._dap_clients.append(dap_client)
