@@ -3,7 +3,7 @@
 """
 import random
 import string
-from pylons import config
+from pylons import config, url
 import logging
 from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import AccountRequest, Session
@@ -73,12 +73,13 @@ class AccountRequestService(DatabaseService):
             msg)
 
         # Then email the admin to approve
-        msg = email_messages.ACCOUNT_REQUESTED_ADMIN % (
-            account_request.first_name,
-            account_request.last_name,
-            account_request.email,
-            account_request.institution,
-            account_request.usage)
+        msg = email_messages.ACCOUNT_REQUESTED_ADMIN.format(
+            first_name=account_request.first_name,
+            last_name=account_request.last_name,
+            email=account_request.email,
+            institution=account_request.institution,
+            usage=account_request.usage,
+            link=url(controller='user', action='requests'))
         self._email_service.send_email(
             config['email.from_address'],
             config['email.admin_address'],
