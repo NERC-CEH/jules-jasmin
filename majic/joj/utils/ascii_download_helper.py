@@ -154,6 +154,8 @@ class AsciiDownloadHelper(object):
         :param start: The requested start date
         :return: :raise ServiceException: On error with the dates
         """
+        d = config['thredds.server_url']
+        e = config['blah']
         self._create_dap_clients_if_missing(driving_data)
         starts = []
         for dap_client in self._dap_clients:
