@@ -191,7 +191,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILENAME: filename}
         try:
             url = self._config['job_runner_url'] + 'job_file/new'
-            response = self._post_securely(url, data=json.dumps(data))
+            response = self._post_securely(url, data)
             if not response.status_code == 200:
                 raise ServiceException(response.text)
         except Exception, ex:
@@ -218,7 +218,7 @@ class JobRunnerClient(object):
                     constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
             try:
                 url = self._config['job_runner_url'] + 'job_file/append'
-                response = self._post_securely(url, data=json.dumps(data))
+                response = self._post_securely(url, data=data)
                 self._file_lines_store = ''
                 if not response.status_code == 200:
                     raise ServiceException(response.text)
@@ -239,7 +239,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILENAME: filename}
         try:
             url = self._config['job_runner_url'] + 'job_file/delete'
-            response = self._post_securely(url, data=json.dumps(data))
+            response = self._post_securely(url, data=data)
             if not response.status_code == 200:
                 raise ServiceException(response.text)
         except Exception, ex:
@@ -261,7 +261,7 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_FILE_LINE: self._file_lines_store}
         try:
             url = self._config['job_runner_url'] + 'job_file/append'
-            response = self._post_securely(url, data=json.dumps(data))
+            response = self._post_securely(url, data=data)
             self._file_lines_store = ''
             if not response.status_code == 200:
                 raise ServiceException(response.text)
