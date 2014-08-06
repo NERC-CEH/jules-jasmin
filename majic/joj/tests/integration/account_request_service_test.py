@@ -2,6 +2,7 @@
 from hamcrest import *
 from mock import Mock
 from pylons import config
+from sqlalchemy.orm.exc import NoResultFound
 from joj.crowd.client import CrowdClient, ClientException
 from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.tests import TestController
@@ -118,3 +119,10 @@ class AccountRequestServiceTest(TestController):
             assert_that(session.query(User).count(), is_(1), "Total user count (should be core)")
 
         assert_that(self.email_service.send_email.called, is_(False), "Acceptance email sent")
+
+    def test_GIVEN_no_account_request_WHEN_accept_THEN_exception_thrown(self):
+        request_id = -1
+
+        with self.assertRaises(NoResultFound, msg="Should have thrown a ClientException exception"):
+            self.account_request_service.accept_account_request(request_id)
+

@@ -136,7 +136,10 @@ class AccountRequestService(DatabaseService):
         :return:nothing
         """
         with self.transaction_scope() as session:
-            account_request = session.query(AccountRequest).get(account_request_id)
+            account_request = session\
+                .query(AccountRequest)\
+                .filter(AccountRequest.id == account_request_id)\
+                .one()
             new_username = account_request.email
 
             user = self._user_service.get_user_by_username_in_session(session, new_username)
