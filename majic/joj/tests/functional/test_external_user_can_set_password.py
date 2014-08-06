@@ -61,12 +61,17 @@ class TestAccountRequestController(TestController):
         user_service.create(username, "test", "test", "email", constants.USER_ACCESS_LEVEL_EXTERNAL)
         user = user_service.get_user_by_username(username)
         user_service.set_forgot_password(user.id)
+        user = user_service.get_user_by_username(username)
 
         response = self.app.get(
             url=url(controller='home', action='password', id=user.id, uuid=user.forgotten_password_uuid)
         )
 
         assert_that(response.normal_body, contains_string("Password Request"), "Correct page")
+        assert_that(response.normal_body, is_not(contains_string("Your new password")), "tooltip is rewriten")
+        assert_that(response.normal_body, contains_string('title="Username"'), "Username tooltip")
+        assert_that(response.normal_body, contains_string('title="New password"'), "Username tooltip")
+        assert_that(response.normal_body, contains_string('title="Retype your new password"'), "Username tooltip")
 
     def test_GIVEN_valid_id_and_invalid_uuid_WHEN_password_THEN_page_with_error(self):
         user_service = UserService()

@@ -72,8 +72,6 @@ class AccountController(BaseController):
 
                 authenticated, headers = who_api.login(c.form_result)
 
-
-
                 if authenticated:
 
                     # Who is this user?

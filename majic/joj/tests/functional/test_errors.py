@@ -21,6 +21,8 @@ class TestRedirectOnLogin(TestController):
             ['home', 'passwor'],
             ['not_a_controller', 'not_an_action'],
             ['model_run', 'index'],
+            ['model_run', 'login'],
+            ['model_run', 'request_account'],
         ]
 
         for controller, action in pages:
@@ -33,16 +35,24 @@ class TestRedirectOnLogin(TestController):
     def test_GIVEN_not_logged_in_WHEN_go_to_known_public_or_home_page_THEN_no_redirect(self):
 
         pages = [
-            ['home', ''],
-            ['', ''],
-            ['home', 'password'],
-            ['home', 'about'],
-            ['home', 'index']
+            ['home', None, None],
+            ['/', None, None],
+            ['home', 'password', None],
+            ['home', 'about', None],
+            ['home', 'index', None],
+            ['home', 'password', '4'],
+            ['account', 'login', None],
+            ['request_account', 'license', None],
+            ['request_account', 'request', None]
         ]
 
-        for controller, action in pages:
-            response = self.app.get(
-                url=url(controller=controller, action=action)
-            )
+        for controller, action, id in pages:
+            if id:
+                theurl = url(controller=controller, action=action, id=id)
+            elif action:
+                theurl = url(controller=controller, action=action)
+            else:
+                theurl = url(controller=controller)
+            response = self.app.get(url=theurl)
 
-            assert_that(response.status_code, is_(200), "For %s - %s" % (controller, action))
+            assert_that(response.status_code, is_(200), "For %s" % theurl)
