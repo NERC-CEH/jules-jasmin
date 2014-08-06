@@ -517,3 +517,20 @@ class ModelRunServiceTest(TestWithFullModelRun):
         assert_that(len(actions), is_(1))
         assert_that(actions[0].value, is_(2))
         assert_that(actions[0].order, is_(4))
+
+    def test_GIVEN_no_land_cover_actions_WHEN_save_land_cover_actions_THEN_all_land_cover_actions_removed(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.model_run_service)
+        
+        self.add_land_cover_actions(land_cover_region, model_run, [], self.model_run_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(0))
+
+
