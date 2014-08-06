@@ -83,12 +83,12 @@ class AsciiDownloadHelper(object):
                                     period=period,
                                     vars=vars,
                                     interps=interps)
-        yield header
+        yield str(header)
         line_date = actual_start
         while line_date <= actual_end:
             data_line = self._get_data_line(driving_data, lat, lon, line_date)
             line_date += datetime.timedelta(seconds=period)
-            yield data_line
+            yield str(data_line)
 
     def get_driving_data_filename(self, driving_data, lat, lon, start, end):
         """

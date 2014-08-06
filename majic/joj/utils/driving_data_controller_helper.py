@@ -148,13 +148,11 @@ class DrivingDataControllerHelper(object):
         filename = self.ascii_download_helper.get_driving_data_filename(driving_data, lat, lon, start, end)
         filesize = self.ascii_download_helper.get_driving_data_filesize(driving_data, start, end)
 
-        response.headers['Content-Type'] = 'text/plain'
-        response.headers['Content-Disposition'] = 'attachment; filename="%s"' % filename
+        response.headers['Content-Type'] = str('text/plain')
+        response.headers['Content-Disposition'] = str('attachment; filename="%s"' % filename)
         response.headers['Content-Length'] = str(filesize)
 
         file_generator = self.ascii_download_helper.get_driving_data_file_gen(driving_data, lat, lon, start, end)
-
-        return "Download"
 
         return file_generator
 
