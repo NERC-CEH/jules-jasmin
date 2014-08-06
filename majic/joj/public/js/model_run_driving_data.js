@@ -23,4 +23,10 @@ $(document).ready(function() {
     EcomapsGeneral.initialise_custom_checkboxes(id_attr, radio_button_id_prefix, click_selectors);
     $('.driving-data').click(enableDownloadButton);
     enableDownloadButton();
+
+    $('#uploadBtn, #downloadBtn').click(function() {
+        if (!$(this).hasClass('disabled')) {
+            $('.error-message').hide()
+        }
+    })
 });
