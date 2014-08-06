@@ -1,11 +1,11 @@
 import logging
+from urlparse import urlparse
 from joj.crowd.client import CrowdClient, ClientException
 from zope.interface import directlyProvides
 from repoze.who.interfaces import IChallengeDecider
 
-__author__ = 'Phil Jenkins (Tessella)'
-
 log = logging.getLogger(__name__)
+
 
 class CrowdRepozePlugin(object):
     """Implementation of a repoze.who plugin which communicates
@@ -234,5 +234,18 @@ def is_home_page(environ):
     :return: True if home page, False otherwise
     """
     path_info = environ.get('PATH_INFO')
-    # Includes 'about' page ('home/about')
-    return path_info == '/' or 'home' in path_info
+
+    if path_info == '/':
+        return True
+
+    if 'home' not in path_info:
+        return False
+
+    home_actions = ['', '/', '/about', '/index', '/password']
+    path = urlparse(path_info).path
+
+    for home_action in home_actions:
+        if path.endswith('home%s' % home_action):
+            return True
+
+    return False
