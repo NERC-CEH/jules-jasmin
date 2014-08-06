@@ -44,21 +44,26 @@
                     <td>
                         <form action="${h.url(controller='user', action='requests', id=account_request.id)}"
                               method="post"
-                              style="margin:0"
+                              style="width:200px"
                               class="form-inline">
 
-                            <button type="submit" name="action" value="accept" class="btn btn-success"> <i class="icon-ok icon-white" /> Accept </button>
-                            <div class="input-append">
-                                <input type="text" name="reason" value="" title="Rejection reason which will be emailed to the requester." />
+                            <div class="controls-row btn-group" style="width:100%">
+                            <button style="width:100px" type="submit" name="action" value="accept" class="btn btn-success"> <i class="icon-ok icon-white" /> Accept </button>
 
-                                <button
-                                        type="submit"
-                                        name="action"
-                                        value="reject"
-                                        class="btn btn-danger"
-                                        data-confirm="You can not undo rejecting a request and the reject reason will be EMAILED to the user. Are you sure you want to reject the request?">
-                                            <i class=" icon-remove icon-white" /> Reject
-                                </button>
+
+
+                            <button
+                                    style="width:100px"
+                                    type="submit"
+                                    name="action"
+                                    value="reject"
+                                    class="btn btn-danger"
+                                    data-confirm="You can not undo rejecting a request and the reject reason will be EMAILED to the user. Are you sure you want to reject the request?">
+                                        <i class=" icon-remove icon-white" /> Reject
+                            </button>
+                            </div>
+                            <div class="controls-row">
+                                <textarea style="width:186px" name="reason" value="" title="Rejection reason which will be emailed to the requester." placeholder="Rejection Reason"/>
                             </div>
                         </form>
                     </td>
