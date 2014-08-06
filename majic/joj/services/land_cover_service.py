@@ -1,8 +1,9 @@
 """
 header
 """
+from sqlalchemy.orm import subqueryload
 from joj.services.general import DatabaseService
-from joj.model import LandCoverRegion
+from joj.model import LandCoverRegion, LandCoverValue
 
 
 class LandCoverService(DatabaseService):
@@ -17,10 +18,15 @@ class LandCoverService(DatabaseService):
         :return: LandCoverRegion
         """
         with self.readonly_scope() as session:
-            return session.query(LandCoverRegion).filter(LandCoverRegion.id == id).one()
+            return session.query(LandCoverRegion)\
+                .filter(LandCoverRegion.id == id)\
+                .options(subqueryload(LandCoverRegion.category))\
+                .one()
 
-
-
-    def get_land_cover_types(self):
-        # todo write and test
-        pass
+    def get_land_cover_values(self):
+        """
+        Return all available land cover values
+        :return:
+        """
+        with self.readonly_scope() as session:
+            return session.query(LandCoverValue).all()

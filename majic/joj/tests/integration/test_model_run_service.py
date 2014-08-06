@@ -525,12 +525,10 @@ class ModelRunServiceTest(TestWithFullModelRun):
 
         land_cover_region = self.add_land_cover_region(model_run)
         self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.model_run_service)
-        
+
         self.add_land_cover_actions(land_cover_region, model_run, [], self.model_run_service)
 
         with session_scope() as session:
             model_run = self.model_run_service._get_model_run_being_created(session, user)
         actions = model_run.land_cover_actions
         assert_that(len(actions), is_(0))
-
-

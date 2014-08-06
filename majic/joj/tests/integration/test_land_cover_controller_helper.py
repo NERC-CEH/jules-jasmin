@@ -24,7 +24,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
         self.land_cover_service = LandCoverService()
         self.land_cover_service.get_land_cover_region_by_id = self._mock_lcs_get_land_cover_region
-        self.land_cover_service.get_land_cover_types = self._mock_get_land_cover_types
+        self.land_cover_service.get_land_cover_values = self._mock_get_land_cover_types
 
         self.model_run_service = ModelRunService()
         self.model_run_service.save_land_cover_actions_for_model = MagicMock()

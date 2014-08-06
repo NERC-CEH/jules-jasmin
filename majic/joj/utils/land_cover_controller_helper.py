@@ -53,7 +53,7 @@ class LandCoverControllerHelper(object):
         # Check that:
         # - Values correspond to known land cover types
         # - Region IDs correspond to recognised regions for the current driving_data
-        land_cover_types = self.land_cover_service.get_land_cover_types()
+        land_cover_types = self.land_cover_service.get_land_cover_values()
         land_cover_type_ids = [lc_type.id for lc_type in land_cover_types]
         try:
             for key in values:
