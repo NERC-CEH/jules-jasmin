@@ -202,6 +202,6 @@ class AsciiDownloadHelper(object):
         vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
         location_dict = {location.var_name: location.base_url for location in driving_data.locations}
         for var in vars:
-            url = config['thredds.server_url'] + "dodsC/model_runs/" + location_dict[var]
+            url = str(config[str('thredds.server_url')] + "dodsC/model_runs/" + location_dict[var])
             dap_client = self._dap_client_factory.get_dap_client(url)
             self._dap_clients.append(dap_client)
