@@ -50,7 +50,7 @@ class TestAsciiDownloadHelper(TestController):
         mock_dap_client_factory = DapClientFactory()
         mock_dap_client_factory.get_dap_client = MagicMock(side_effect=_create_dap_client)
 
-        self.download_helper = AsciiDownloadHelper(dap_client_factory=mock_dap_client_factory)
+        self.download_helper = AsciiDownloadHelper("test_url", dap_client_factory=mock_dap_client_factory)
         self.model_run_service = ModelRunService()
         self.nvars = 2
         self.period = 3600

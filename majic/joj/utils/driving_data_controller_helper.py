@@ -33,7 +33,7 @@ class DrivingDataControllerHelper(object):
     job_runner_client = None
 
     def __init__(self, job_runner_client=JobRunnerClient(config), dataset_service=DatasetService(),
-                 ascii_download_helper=AsciiDownloadHelper()):
+                 ascii_download_helper=AsciiDownloadHelper(config['thredds.server_url'])):
         self.ascii_download_helper = ascii_download_helper
         self.job_runner_client = job_runner_client
         self.dataset_service = dataset_service

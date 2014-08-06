@@ -45,13 +45,14 @@ class AsciiDownloadHelper(object):
 # {interps}
 """
 
-    def __init__(self, dataset_service=DatasetService(), dap_client_factory=DapClientFactory()):
+    def __init__(self, thredds_url, dataset_service=DatasetService(), dap_client_factory=DapClientFactory()):
         """
         Constructor
         :param dataset_service: Provides access to datasets
         :param dap_client_factory: Factory to create dap clients
         :return: AsciiDownloadHelper
         """
+        self.thredds_url = thredds_url
         self._dap_clients = None
         self._dataset_service = dataset_service
         self._dap_client_factory = dap_client_factory
@@ -202,6 +203,6 @@ class AsciiDownloadHelper(object):
         vars = driving_data.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
         location_dict = {location.var_name: location.base_url for location in driving_data.locations}
         for var in vars:
-            url = str("https://jules-bd1-dev.ceda.ac.uk:8080/thredds/" + "dodsC/model_runs/" + location_dict[var])
+            url = self.thredds_url + "dodsC/model_runs/" + location_dict[var]
             dap_client = self._dap_client_factory.get_dap_client(url)
             self._dap_clients.append(dap_client)
