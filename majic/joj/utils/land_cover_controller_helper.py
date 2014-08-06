@@ -3,8 +3,8 @@ header
 """
 import re
 from joj.services.model_run_service import ModelRunService
-from model import LandCoverRegionAction
-from services.land_cover_service import LandCoverService
+from joj.model import LandCoverAction
+from joj.services.land_cover_service import LandCoverService
 
 
 class LandCoverControllerHelper(object):
@@ -42,7 +42,7 @@ class LandCoverControllerHelper(object):
             for key in values:
                 actions += re.findall("^action_(\d+)", key)
             for index in set(actions):
-                lcra = LandCoverRegionAction()
+                lcra = LandCoverAction()
                 lcra.region_id = int(values['action_%s_region' % index])
                 lcra.value = int(values['action_%s_value' % index])
                 lcra.order = int(values['action_%s_order' % index])

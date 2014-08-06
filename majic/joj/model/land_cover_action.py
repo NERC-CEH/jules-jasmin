@@ -7,22 +7,22 @@ from joj.model.meta import Base
 from joj.utils import constants
 
 
-class LandCoverRegionAction(Base):
+class LandCoverAction(Base):
     """
     Represents an action to be carried out on a land cover region with a mask and
     land cover value
     """
 
-    __tablename__ = 'land_cover_region_actions'
+    __tablename__ = 'land_cover_actions'
 
     id = Column(Integer, primary_key=True)
-    value = Column(Integer, ForeignKey('land_cover_types.id'))
+    value = Column(Integer, ForeignKey('land_cover_values.id'))
     order = Column(Integer)
     region_id = Column(Integer, ForeignKey("land_cover_regions.id"))
     model_run_id = Column(Integer, ForeignKey("model_runs.id"))
 
     land_cover_region = relationship("LandCoverRegion", backref=backref("actions", order_by=id))
-    model_run = relationship("ModelRun", backref=backref("land_cover_region_actions", order_by=order))
+    model_run = relationship("ModelRun", backref=backref("land_cover_actions", order_by=order))
 
     def __repr__(self):
-        return "<LandCoverRegionAction(region=%s, value=%s)>" % self.region_id, self.value
+        return "<LandCoverAction(region=%s, value=%s)>" % (self.region_id, self.value)

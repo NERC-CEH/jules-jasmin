@@ -9,7 +9,8 @@ from pylons import url
 
 from hamcrest import *
 from joj.services.model_run_service import ModelRunService
-from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus, Parameter, ParameterValue, Dataset
+from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus, Parameter, ParameterValue, Dataset, \
+    LandCoverAction, LandCoverRegion, LandCoverRegionCategory
 from joj.services.general import ServiceException
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
@@ -18,6 +19,7 @@ from joj.utils import constants
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
+from services.land_cover_service import LandCoverService
 
 
 class ModelRunServiceTest(TestWithFullModelRun):
@@ -485,3 +487,33 @@ class ModelRunServiceTest(TestWithFullModelRun):
         with session_scope(Session) as session:
             count = session.query(ModelRun).filter(ModelRun.id == model_not_to_delete.id).count()
         assert_that(count, is_(1), 'Count(Model)')
+
+    def test_GIVEN_land_cover_actions_WHEN_save_land_cover_actions_THEN_land_cover_actions_saved(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.model_run_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(2))
+
+    def test_GIVEN_existing_land_cover_actions_WHEN_save_land_cover_actions_THEN_land_cover_actions_overwritten(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.model_run_service)
+
+        self.add_land_cover_actions(land_cover_region, model_run, [(2, 4)], self.model_run_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(1))
+        assert_that(actions[0].value, is_(2))
+        assert_that(actions[0].order, is_(4))

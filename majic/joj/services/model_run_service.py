@@ -8,7 +8,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
 from pylons import config
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset, \
+    LandCoverAction
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -498,6 +499,7 @@ class ModelRunService(DatabaseService):
             .filter(ModelRun.user == user) \
             .options(subqueryload(ModelRun.code_version)) \
             .options(subqueryload(ModelRun.user)) \
+            .options(subqueryload(ModelRun.land_cover_actions))\
             .one()
 
     def remove_parameter_set_from_model_being_created(self, parameter_values, user):
@@ -649,3 +651,18 @@ class ModelRunService(DatabaseService):
             session.delete(model_run)
 
         return model_run_name
+
+    def save_land_cover_actions_for_model(self, model_run, land_cover_actions):
+        """
+        Save a list of LandCoverActions against a model run
+        :param model_run: Model run to save against
+        :param land_cover_actions: List of LandCoverActions
+        :return:
+        """
+        with self.transaction_scope() as session:
+            session.query(LandCoverAction)\
+                .filter(LandCoverAction.model_run_id == model_run.id)\
+                .delete()
+            for land_cover_action in land_cover_actions:
+                land_cover_action.model_run = model_run
+                session.add(land_cover_action)

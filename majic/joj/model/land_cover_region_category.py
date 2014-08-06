@@ -12,13 +12,13 @@ class LandCoverRegionCategory(Base):
     Represents a category of land cover regions e.g. 'River catchments' or 'Countries'
     """
 
-    __tablename__ = 'land_cover_region_types'
+    __tablename__ = 'land_cover_region_categories'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(constants.DB_LONG_STRING_SIZE))
     driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
 
-    driving_dataset = relationship("DrivingDataset", backref=backref("land_cover_region_types", order_by=id))
+    driving_dataset = relationship("DrivingDataset", backref=backref("land_cover_region_categories", order_by=id))
 
     def __repr__(self):
         return "<LandCoverRegionType(name=%s)>" % self.name
