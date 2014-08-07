@@ -2,10 +2,11 @@
 header
 """
 from hamcrest import assert_that, is_
-from joj.services.land_cover_service import LandCoverService
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
-from model import session_scope, LandCoverRegionCategory
-from services.model_run_service import ModelRunService
+from joj.model import session_scope, LandCoverRegionCategory, LandCoverRegion
+from joj.services.land_cover_service import LandCoverService
+from joj.services.dataset import DatasetService
+from joj.services.model_run_service import ModelRunService
 
 
 class TestLandCoverService(TestWithFullModelRun):
@@ -13,6 +14,7 @@ class TestLandCoverService(TestWithFullModelRun):
     def setUp(self):
         self.land_cover_service = LandCoverService()
         self.model_run_service = ModelRunService()
+        self.dataset_service = DatasetService()
         self.clean_database()
         self.user = self.login()
         self.create_model_run_ready_for_submit()
@@ -48,3 +50,60 @@ class TestLandCoverService(TestWithFullModelRun):
         names = [lc_value.name for lc_value in lc_values]
         assert 'Urban' in names
         assert 'Ice' in names
+
+    def test_GIVEN_multiple_land_cover_categories_WHEN_get_categories_THEN_correct_categories_returned(self):
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        datasets = self.dataset_service.get_driving_datasets()
+
+        with session_scope() as session:
+            cat1 = LandCoverRegionCategory()
+            cat1.name = "Countries"
+            cat1.driving_dataset_id = model_run.driving_dataset_id
+
+            region1 = LandCoverRegion()
+            region1.mask_file = "filepath"
+            region1.name = "Wales"
+            region1.category = cat1
+
+            cat2 = LandCoverRegionCategory()
+            cat2.name = "Rivers"
+            cat2.driving_dataset_id = datasets[1].id
+
+            region2 = LandCoverRegion()
+            region2.mask_file = "filepath2"
+            region2.name = "Thames"
+            region2.category = cat2
+
+            session.add_all([region1, region2])
+
+        categories = self.land_cover_service.get_land_cover_categories(model_run.driving_dataset_id)
+        assert_that(len(categories), is_(1))
+        assert_that(categories[0].name, is_("Countries"))
+
+    def test_GIVEN_categories_have_land_cover_regions_WHEN_get_categories_THEN_category_has_regions_loaded(self):
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+
+        with session_scope() as session:
+            cat1 = LandCoverRegionCategory()
+            cat1.name = "Countries"
+            cat1.driving_dataset_id = model_run.driving_dataset_id
+
+            region1 = LandCoverRegion()
+            region1.mask_file = "filepath"
+            region1.name = "Wales"
+            region1.category = cat1
+
+            cat2 = LandCoverRegionCategory()
+            cat2.name = "Rivers"
+            cat2.driving_dataset_id = model_run.driving_dataset_id
+
+            region2 = LandCoverRegion()
+            region2.mask_file = "filepath2"
+            region2.name = "Thames"
+            region2.category = cat2
+
+            session.add_all([region1, region2])
+
+        categories = self.land_cover_service.get_land_cover_categories(model_run.driving_dataset_id)
+        assert_that(len(categories[0].land_cover_regions), is_(1))
+        assert_that(categories[0].land_cover_regions[0].name, is_("Wales"))

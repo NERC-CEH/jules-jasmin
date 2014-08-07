@@ -18,7 +18,7 @@ class LandCoverRegion(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(constants.DB_LONG_STRING_SIZE))
     mask_file = Column(String(constants.DB_LONG_STRING_SIZE))
-    type_id = Column(Integer, ForeignKey('land_cover_region_categories.id'))
+    category_id = Column(Integer, ForeignKey('land_cover_region_categories.id'))
 
     category = relationship("LandCoverRegionCategory", backref=backref("land_cover_regions", order_by=id))
 

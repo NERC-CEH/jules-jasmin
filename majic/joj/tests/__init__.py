@@ -370,3 +370,7 @@ class TestController(TestCase):
 
             session.add(land_cover_region)
         return land_cover_region
+
+    def _add_model_run_being_created(self, user):
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run(user, "test", 1)
