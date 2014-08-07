@@ -319,7 +319,7 @@ class DrivingDataControllerHelper(object):
             try:
                 return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT)
             except ValueError:
-                errors[key] = 'Please enter date in the format YYYY-MM-DD HH:MM'
+                errors[key] = 'Enter date in the format YYYY-MM-DD HH:MM'
             return None
 
     def _validate_lat_lon(self, errors, lat, lon):
