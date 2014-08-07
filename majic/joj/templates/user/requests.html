@@ -44,11 +44,10 @@
                     <td>
                         <form action="${h.url(controller='user', action='requests', id=account_request.id)}"
                               method="post"
-                              style="width:210px"
                               class="form-inline">
 
                             <div class="controls-row btn-group" style="width:100%">
-                            <button style="width:70px"
+                            <button style="width:85px"
                                     type="submit"
                                     name="action"
                                     value="accept"
@@ -57,17 +56,17 @@
                                     data-confirm="You can not undo accepting a request. Are you sure you want to accept this request?">
                                     <i class="icon-ok icon-white" /> Accept </button>
 
-                            <button style="width:70px"
+                            <button style="width:85px"
                                     type="submit"
                                     name="action"
-                                    value="accept"
+                                    value="ignore"
                                     class="btn btn-warning"
                                     title="Ignoring a request means the request is deleted but the user is not informed"
                                     data-confirm="You can not undo ignoring a request. Are you sure you want to ignore the request?">
                                     <i class="icon-ban-circle icon-white" /> Ignore </button>
 
                             <button
-                                    style="width:70px"
+                                    style="width:85px"
                                     type="submit"
                                     name="action"
                                     value="reject"
@@ -78,7 +77,7 @@
                             </button>
                             </div>
                             <div class="controls-row">
-                                <textarea style="width:196px" name="reason" value="" title="Rejection reason which will be emailed to the requester." placeholder="Rejection Reason"/>
+                                <textarea style="width:241px" name="reason" value="" title="Rejection reason which will be emailed to the requester." placeholder="Rejection Reason"/>
                             </div>
                         </form>
                     </td>

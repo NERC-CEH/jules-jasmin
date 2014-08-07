@@ -74,13 +74,14 @@ class AccountRequestService(DatabaseService):
             msg)
 
         # Then email the admin to approve
+        link = config['serverurl'].rstrip('/') + url(controller='user', action='requests')
         msg = email_messages.ACCOUNT_REQUESTED_ADMIN.format(
             first_name=account_request.first_name,
             last_name=account_request.last_name,
             email=account_request.email,
             institution=account_request.institution,
             usage=account_request.usage,
-            link=url(controller='user', action='requests'))
+            link=link)
         self._email_service.send_email(
             config['email.from_address'],
             config['email.admin_address'],
