@@ -5,6 +5,7 @@ import random
 import string
 from pylons import config, url
 import logging
+from joj.crowd.client import UserException
 from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
@@ -144,10 +145,12 @@ class AccountRequestService(DatabaseService):
                 .query(AccountRequest)\
                 .filter(AccountRequest.id == account_request_id)\
                 .one()
-            new_username = account_request.email
+            new_username = account_request.email.strip()
 
             user = self._user_service.get_user_by_username_in_session(session, new_username)
 
+            crowd_client = self._crowd_client_factory.get_client()
+            random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
             if user is None:
                 user = self._user_service.create_in_session(
                     session,
@@ -158,14 +161,26 @@ class AccountRequestService(DatabaseService):
                     constants.USER_ACCESS_LEVEL_EXTERNAL,
                     account_request.institution)
 
-                random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
-                crowd_client = self._crowd_client_factory.get_client()
-                crowd_client.create_user(
-                    account_request.email,
-                    account_request.first_name,
-                    account_request.last_name,
-                    account_request.email,
-                    random_password)
+                try:
+                    crowd_client.create_user(
+                        new_username,
+                        account_request.first_name,
+                        account_request.last_name,
+                        account_request.email,
+                        random_password)
+                except UserException:
+                    # user already exists in crowd
+                    pass
+            else:
+                try:
+                    crowd_client.get_user_info(new_username)
+                except UserException:
+                    crowd_client.create_user(
+                        new_username,
+                        account_request.first_name,
+                        account_request.last_name,
+                        account_request.email,
+                        random_password)
 
         #write user to database so they have an id
         with self.transaction_scope() as session:

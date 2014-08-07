@@ -59,7 +59,8 @@ class CrowdClient(object):
     _errorMap = {
         'INVALID_SSO_TOKEN': SessionNotFoundException,
         'INVALID_USER_AUTHENTICATION': AuthenticationFailedException,
-        'INVALID_USER': UserException
+        'INVALID_USER': UserException,
+        'USER_NOT_FOUND': UserException
     }
 
     _token_cache = {}
