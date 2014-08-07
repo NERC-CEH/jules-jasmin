@@ -25,7 +25,10 @@ class LandCoverControllerHelper(object):
         :param errors: The object to add any errors to
         :param model_run: The model run being created
         """
-        pass
+
+        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values()
+        tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
+            model_run.driving_dataset_id)
 
     def save_land_covers(self, values, errors, model_run):
         """
@@ -68,4 +71,4 @@ class LandCoverControllerHelper(object):
 
     def _does_region_belong_to_driving_data(self, region_id, driving_data):
         land_cover_region = self.land_cover_service.get_land_cover_region_by_id(region_id)
-        return land_cover_region.type.driving_dataset_id is driving_data.id
+        return land_cover_region.category.driving_dataset_id is driving_data.id
