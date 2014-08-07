@@ -128,3 +128,20 @@ class AccountRequestServiceTest(TestController):
         with self.assertRaises(NoResultFound, msg="Should have thrown a ClientException exception"):
             self.account_request_service.accept_account_request(request_id)
 
+    def test_GIVEN_no_account_request_WHEN_ignore_THEN_exception_thrown(self):
+        request_id = -1
+
+        with self.assertRaises(NoResultFound, msg="Should have thrown a ClientException exception"):
+            self.account_request_service.ignore_account_request(request_id)
+
+    def test_GIVEN_account_request_WHEN_ignore_THEN_request_deleted_and_no_email_sent_and_no_created_crowd_account_and_no_user_account_created(self):
+        request_id = self.create_account_request()
+
+        self.account_request_service.ignore_account_request(request_id)
+
+        with session_scope() as session:
+            assert_that(session.query(AccountRequest).filter(AccountRequest.id == request_id).count(), is_(0), "Request has been deleted")
+            assert_that(session.query(User).count(), is_(1), "Total user count (should be core)")
+
+        assert_that(self.crowd_client.create_user.called, is_(False), "User was not created in crowd")
+        assert_that(self.email_service.send_email.called, is_(False), "Acceptance email was created")

@@ -40,7 +40,7 @@ class UserService(DatabaseService):
         """
 
         user = User()
-        user.username = username
+        user.username = username.strip()
         user.name = " ".join([first_name, last_name])
         user.email = email
         user.access_level = access_level

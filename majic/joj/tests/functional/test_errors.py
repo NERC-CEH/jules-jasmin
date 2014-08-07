@@ -42,6 +42,7 @@ class TestRedirectOnLogin(TestController):
             ['home', 'index', None],
             ['home', 'password', '4'],
             ['account', 'login', None],
+            ['account', 'dologin', None],
             ['request_account', 'license', None],
             ['request_account', 'request', None]
         ]

@@ -101,20 +101,23 @@ class AccountRequestService(DatabaseService):
         :return: account requests
         """
         with self.readonly_scope() as session:
-            return session.query(AccountRequest).all()
+            return session\
+                .query(AccountRequest)\
+                .order_by(AccountRequest.email)\
+                .all()
 
-    def reject_account_request(self, id, reason):
+    def reject_account_request(self, account_request_id, reason):
         """
         Reject the account request
         :param reason: reason for account rejection
-        :param id: id of account request to reject
-        :return:nothing
+        :param account_request_id: account_request_id of account request to reject
+        :return:nothing, throw NoResultFound if request does not exist
         """
 
         with self.transaction_scope() as session:
             account_request = session.\
                 query(AccountRequest)\
-                .filter(AccountRequest.id == id)\
+                .filter(AccountRequest.id == account_request_id)\
                 .one()
 
             msg = email_messages.ACCOUNT_REQUEST_REJECTED_MESSAGE.format(
@@ -134,7 +137,7 @@ class AccountRequestService(DatabaseService):
         """
         Accept the account request, make a user account, add to crowd send email
         :param account_request_id: the account request account_request_id to accept
-        :return:nothing
+        :return:nothing throw NoResultFound if request does not exist, Client Exception if crowd is down
         """
         with self.transaction_scope() as session:
             account_request = session\
@@ -180,5 +183,20 @@ class AccountRequestService(DatabaseService):
                 account_request.email,
                 email_messages.ACCOUNT_REQUEST_ACCEPTED_SUBJECT,
                 msg)
+
+            session.delete(account_request)
+
+    def ignore_account_request(self, account_request_id):
+        """
+        Ignore an account request
+        :param account_request_id: id of the request
+        :return:nothing, throw NoResultFound if request does not exist
+        """
+
+        with self.transaction_scope() as session:
+            account_request = session\
+                .query(AccountRequest)\
+                .filter(AccountRequest.id == account_request_id)\
+                .one()
 
             session.delete(account_request)

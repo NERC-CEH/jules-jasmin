@@ -221,7 +221,7 @@ def is_public_page(environ):
     """
     path_info = environ.get('PATH_INFO')
 
-    if _check_actions(path_info, 'account', ['login']):
+    if _check_actions(path_info, 'account', ['login', 'dologin']):
         return True
 
     return _check_actions(path_info, 'request_account', ['license', 'request'])

@@ -234,6 +234,10 @@ class UserController(BaseController):
                     else:
                         self._account_request_service.reject_account_request(id, reason_for_rejection)
                         helpers.success_flash("User account request has been rejected and an email has been sent.")
+                elif action == u'ignore':
+                    self._account_request_service.ignore_account_request(id)
+                    helpers.success_flash(
+                        "User account request ignored; no user account created and user has not been emailed.")
                 else:
                     raise KeyError()
             except KeyError:
