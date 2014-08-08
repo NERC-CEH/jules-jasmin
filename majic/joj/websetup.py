@@ -10,7 +10,8 @@ import pylons.test
 from joj.model.model_run import ModelRun
 from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, \
-    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation
+    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation, LandCoverValue, LandCoverRegionCategory, \
+    LandCoverRegion
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from model.system_alert_email import SystemAlertEmail
@@ -139,8 +140,8 @@ def setup_app(command, conf, vars):
         ds1 = Dataset()
         ds1.name = "Land Cover Map 2007"
         ds1.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds1.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LCM2007_GB_1K_DOM_TAR.nc"
         ds1.data_range_from = 1
         ds1.data_range_to = 30
@@ -152,8 +153,8 @@ def setup_app(command, conf, vars):
         ds2 = Dataset()
         ds2.name = "Surface incident longwave radiation"
         ds2.wms_url = conf.local_conf['thredds.server_url'] + \
-            "wms/dev/LWdown_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      "wms/dev/LWdown_TEST_190101.nc" \
+                      "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds2.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LWdown_TEST_190101.nc"
         ds2.data_range_from = 230
         ds2.data_range_to = 350
@@ -211,8 +212,8 @@ def setup_app(command, conf, vars):
         ds3 = Dataset()
         ds3.name = "Surface pressure"
         ds3.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/PSurf_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/PSurf_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds3.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/PSurf_TEST_190101.nc"
         ds3.data_range_from = 75000
         ds3.data_range_to = 100000
@@ -224,8 +225,8 @@ def setup_app(command, conf, vars):
         ds4 = Dataset()
         ds4.name = "Near surface specific humidity"
         ds4.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/Qair_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/Qair_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds4.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Qair_TEST_190101.nc"
         ds4.data_range_from = 0.001
         ds4.data_range_to = 0.0055
@@ -237,8 +238,8 @@ def setup_app(command, conf, vars):
         ds5 = Dataset()
         ds5.name = "Rainfall rate"
         ds5.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/Rainf_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/Rainf_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds5.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Rainf_TEST_190101.nc"
         ds5.data_range_from = 0
         ds5.data_range_to = 0.0001
@@ -267,8 +268,8 @@ def setup_app(command, conf, vars):
         ds6 = Dataset()
         ds6.name = "Snowfall rate"
         ds6.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/Snowf_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/Snowf_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds6.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Snowf_TEST_190101.nc"
         ds6.data_range_from = 0
         ds6.data_range_to = 0.003
@@ -280,8 +281,8 @@ def setup_app(command, conf, vars):
         ds7 = Dataset()
         ds7.name = "Surface incident shortwave radiation"
         ds7.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/SWdown_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/SWdown_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds7.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/SWdown_TEST_190101.nc"
         ds7.data_range_from = 0
         ds7.data_range_to = 0.1
@@ -293,8 +294,8 @@ def setup_app(command, conf, vars):
         ds8 = Dataset()
         ds8.name = "Near surface air temperature"
         ds8.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/Tair_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/Tair_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds8.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Tair_TEST_190101.nc"
         ds8.data_range_from = 260
         ds8.data_range_to = 290
@@ -306,8 +307,8 @@ def setup_app(command, conf, vars):
         ds9 = Dataset()
         ds9.name = "Near surface wind speed"
         ds9.wms_url = conf.local_conf['thredds.server_url'] \
-            + "wms/dev/Wind_TEST_190101.nc" \
-            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                      + "wms/dev/Wind_TEST_190101.nc" \
+                        "?service=WMS&version=1.3.0&request=GetCapabilities"
         ds9.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/Wind_TEST_190101.nc"
         ds9.data_range_from = 0
         ds9.data_range_to = 20
@@ -347,6 +348,48 @@ def setup_app(command, conf, vars):
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
         driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.order_by_id = 100
+
+        cat1 = LandCoverRegionCategory()
+        cat1.name = "River Catchments"
+        cat1.driving_dataset = driving_ds_1
+        region1 = LandCoverRegion()
+        region1.name = "River Thames"
+        region1.category = cat1
+        region2 = LandCoverRegion()
+        region2.name = "River Itchen"
+        region2.category = cat1
+        region3 = LandCoverRegion()
+        region3.name = "River Severn"
+        region3.category = cat1
+        cat1.regions = [region1, region2, region3]
+
+        cat2 = LandCoverRegionCategory()
+        cat2.name = "Counties"
+        cat2.driving_dataset = driving_ds_1
+        region4 = LandCoverRegion()
+        region4.name = "Hampshire"
+        region4.category = cat2
+        region5 = LandCoverRegion()
+        region5.name = "Oxfordshire"
+        region5.category = cat2
+        region6 = LandCoverRegion()
+        region6.name = "Surrey"
+        region6.category = cat2
+        cat2.regions = [region4, region5, region6]
+
+        cat3 = LandCoverRegionCategory()
+        cat3.name = "UK Countries"
+        cat3.driving_dataset = driving_ds_1
+        region7 = LandCoverRegion()
+        region7.name = "England"
+        region7.category = cat3
+        region8 = LandCoverRegion()
+        region8.name = "Wales"
+        region8.category = cat3
+        region9 = LandCoverRegion()
+        region9.name = "Scotland"
+        region9.category = cat3
+        cat3.regions = [region7, region8, region9]
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"
@@ -459,13 +502,13 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_DRIVE_FILE, "'data/met_data/driving/%vv_%y4%m2.nc'"],
             [constants.JULES_PARAM_DRIVE_NVARS, "8"],
             [constants.JULES_PARAM_DRIVE_VAR,
-                "'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     "
-                "'tot_rain'        'tot_snow'"],
+             "'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     "
+             "'tot_rain'        'tot_snow'"],
             [constants.JULES_PARAM_DRIVE_VAR_NAME, "'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      "
                                                    "'SWdown'      'Rainf'           'Snowf'"],
             [constants.JULES_PARAM_DRIVE_TPL_NAME, "'PSurf_WFDEI_land'      'Tair_WFDEI_land'      "
-                "'Qair_WFDEI_land'      'Wind_WFDEI_land'      'LWdown_WFDEI_land'      'SWdown_WFDEI_land'      "
-                "'Rainf_WFDEI_GPCC_land'           'Snowf_WFDEI_land'"],
+                                                   "'Qair_WFDEI_land'      'Wind_WFDEI_land'      'LWdown_WFDEI_land'      'SWdown_WFDEI_land'      "
+                                                   "'Rainf_WFDEI_GPCC_land'           'Snowf_WFDEI_land'"],
             [constants.JULES_PARAM_DRIVE_INTERP,
              "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
             [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
@@ -489,20 +532,20 @@ def setup_app(command, conf, vars):
 
             [constants.JULES_PARAM_SOIL_PROPS_CONST_Z, ".true."],
             [constants.JULES_PARAM_SOIL_PROPS_FILE,
-                "'data/met_data/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_WFDEI.nc'"],
+             "'data/met_data/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_WFDEI.nc'"],
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
-                "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
+             "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
-                "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
+             "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
 
             [constants.JULES_PARAM_INITIAL_NVARS, "8"],
             [constants.JULES_PARAM_INITIAL_VAR,
-                "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
             [constants.JULES_PARAM_INITIAL_USE_FILE,
-                ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
             [constants.JULES_PARAM_INITIAL_CONST_VAL,
-                "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
         ]
 
         model_run_service = ModelRunService()
@@ -532,7 +575,7 @@ def setup_app(command, conf, vars):
 
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
-                "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
+             "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
             [constants.JULES_PARAM_SOIL_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
                                                   ".false. .false."],
             [constants.JULES_PARAM_SOIL_CONST_VALS,
@@ -540,11 +583,11 @@ def setup_app(command, conf, vars):
 
             [constants.JULES_PARAM_INITIAL_NVARS, "8"],
             [constants.JULES_PARAM_INITIAL_VAR,
-                "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
             [constants.JULES_PARAM_INITIAL_USE_FILE,
-                ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
             [constants.JULES_PARAM_INITIAL_CONST_VAL,
-                "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
         ]
 
         for constant, value in parameters_upload:
@@ -552,3 +595,11 @@ def setup_app(command, conf, vars):
             driving_ds_upload.parameter_values.append(ddpv)
 
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
+
+        land_cover_types = {1: 'BT', 2: 'NT', 3: 'C3G', 4: 'C4G', 5: 'Shrub', 6: 'Urban', 7: 'Lake', 8: 'Soil',
+                            9: 'Ice'}
+        for index in land_cover_types:
+            land_cover_type = LandCoverValue()
+            land_cover_type.index = index
+            land_cover_type.name = land_cover_types[index]
+            session.add(land_cover_type)

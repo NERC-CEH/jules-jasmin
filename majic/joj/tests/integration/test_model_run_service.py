@@ -3,19 +3,14 @@
 """
 from datetime import datetime
 from mock import Mock
-from urlparse import urlparse
 from sqlalchemy.orm.exc import NoResultFound
-from pylons import url
 
 from hamcrest import *
-from joj.services.model_run_service import ModelRunService
 from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus, Parameter, ParameterValue, Dataset
 from joj.services.general import ServiceException
 from joj.services.model_run_service import ModelRunService
-from joj.tests import TestController
 from pylons import config
 from joj.utils import constants
-from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
 

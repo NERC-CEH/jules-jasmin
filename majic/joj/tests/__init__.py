@@ -27,7 +27,7 @@ from webtest import TestApp
 from joj.config.environment import load_environment
 from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
     Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
-    AccountRequest
+    AccountRequest, LandCoverAction, LandCoverRegion, LandCoverValue, LandCoverRegionCategory
 from joj.services.user import UserService
 from joj.utils import constants, f90_helper
 from joj.services.model_run_service import ModelRunService
@@ -88,6 +88,10 @@ class TestController(TestCase):
                 .join(User)\
                 .filter(User.username == constants.CORE_USERNAME)\
                 .all()
+
+            session.query(LandCoverAction).delete()
+            session.query(LandCoverRegion).delete()
+            session.query(LandCoverRegionCategory).delete()
 
             session\
                 .query(ParameterValue)\
@@ -334,3 +338,39 @@ class TestController(TestCase):
         with session_scope() as session:
             ac = session.query(AccountRequest).filter(AccountRequest.first_name == self.account_request.first_name).one()
             return ac.id
+
+    def add_land_cover_actions(self, land_cover_region, model_run, value_order_pairs, land_cover_service):
+        """
+        Create land cover actions and save them using the model_run_service.save_land_cover_actions method
+        :param land_cover_region: Land cover region actions should belong to
+        :param model_run: Model run to add them against
+        :param value_order_pairs: List of 2-tuples [(value, order)]; each tuple is a land cover action to be added
+        :param land_cover_service: Land Cover service to use
+        :return:
+        """
+        land_cover_actions = []
+        for value, order in value_order_pairs:
+            lca = LandCoverAction()
+            lca.region_id = land_cover_region.id
+            lca.value_id = value
+            lca.order = order
+            land_cover_actions.append(lca)
+        land_cover_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
+
+    def add_land_cover_region(self, model_run):
+        with session_scope() as session:
+            land_cover_cat = LandCoverRegionCategory()
+            land_cover_cat.name = "Countries"
+            land_cover_cat.driving_dataset_id = model_run.driving_dataset_id
+
+            land_cover_region = LandCoverRegion()
+            land_cover_region.mask_file = "filepath"
+            land_cover_region.name = "Wales"
+            land_cover_region.category = land_cover_cat
+
+            session.add(land_cover_region)
+        return land_cover_region
+
+    def _add_model_run_being_created(self, user):
+        model_run_service = ModelRunService()
+        model_run_service.update_model_run(user, "test", 1)

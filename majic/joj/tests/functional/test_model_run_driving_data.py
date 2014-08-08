@@ -58,10 +58,6 @@ class TestModelRunDrivingData(TestController):
         assert_that(var, is_("'sw_down'    'lw_down'    'tot_rain'    'tot_snow'    't'    'wind'    'pstar'    'q'"))
         assert_that(interp, is_("'i'    'i'    'i'    'i'    'i'    'i'    'i'    'i'"))
 
-    def _add_model_run_being_created(self):
-        model_run_service = ModelRunService()
-        model_run_service.update_model_run(self.user, "test", 1)
-
     def test_GIVEN_no_model_being_created_WHEN_page_get_THEN_redirect_to_create_model_run(self):
         response = self.app.get(
             url(controller='model_run', action='driving_data'))
@@ -70,7 +66,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='create')), "url")
 
     def test_GIVEN_two_driving_datasets_WHEN_get_THEN_select_driving_data_page_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         response = self.app.get(
@@ -79,7 +75,7 @@ class TestModelRunDrivingData(TestController):
         self.assert_model_run_creation_action(self.user, 'driving_data')
 
     def test_GIVEN_two_driving_datasets_WHEN_get_THEN_driving_datasets_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         response = self.app.get(
@@ -88,14 +84,14 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string("driving2"))
 
     def test_GIVEN_driving_dataset_for_user_upload_WHEN_get_THEN_driving_dataset_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
 
         response = self.app.get(
             url(controller='model_run', action='driving_data'))
         assert_that(response.normal_body, contains_string(constants.USER_UPLOAD_DRIVING_DATASET_NAME))
 
     def test_GIVEN_invalid_driving_data_chosen_WHEN_post_THEN_error_returned(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         response = self.app.post(
@@ -108,7 +104,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string("Driving data not recognised"))
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_post_THEN_next_page_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
@@ -132,7 +128,7 @@ class TestModelRunDrivingData(TestController):
         user = self.login()
         self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
@@ -150,7 +146,7 @@ class TestModelRunDrivingData(TestController):
                     is_(url(controller='model_run', action='index')), "url")
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_go_back_THEN_create_page_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
@@ -168,7 +164,7 @@ class TestModelRunDrivingData(TestController):
                     is_(url(controller='model_run', action='create')), "url")
 
     def test_GIVEN_valid_driving_data_chosen_WHEN_post_THEN_driving_data_stored_against_model_run(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.create_two_driving_datasets()
 
         dataset_service = DatasetService()
@@ -187,7 +183,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(param_val, is_('testFileName'))
 
     def test_GIVEN_user_driving_data_but_invalid_dates_WHEN_upload_data_THEN_errors_returned(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         data_service = DatasetService()
         ds_id = data_service.get_id_for_user_upload_driving_dataset()
         response = self.app.post(
@@ -204,7 +200,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string('Enter date in the format YYYY-MM-DD HH:MM'))
 
     def test_GIVEN_user_driving_data_but_invalid_lat_lon_WHEN_upload_data_THEN_errors_returned(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         data_service = DatasetService()
         ds_id = data_service.get_id_for_user_upload_driving_dataset()
         response = self.app.post(
@@ -222,7 +218,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string('Longitude must be between -180 and 180'))
 
     def test_GIVEN_no_user_driving_data_uploaded_WHEN_upload_THEN_errors_shown(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         data_service = DatasetService()
         ds_id = data_service.get_id_for_user_upload_driving_dataset()
         response = self.app.post(
@@ -239,12 +235,12 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string('You must select a driving data file'))
 
     def test_GIVEN_valid_user_driving_data_WHEN_upload_data_THEN_data_stored_against_model_run(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.upload_valid_user_driving_data()
         self.check_valid_user_driving_data_params_stored()
 
     def test_GIVEN_user_driving_data_previously_selected_WHEN_get_THEN_user_driving_data_rendered(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.upload_valid_user_driving_data()
         response = self.app.get(
             url(controller='model_run', action='driving_data'))
@@ -255,7 +251,7 @@ class TestModelRunDrivingData(TestController):
         assert_that(response.normal_body, contains_string('3 rows of driving data currently uploaded'))
 
     def test_GIVEN_valid_user_driving_data_selected_WHEN_page_submit_THEN_proceeds_to_next_page(self):
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.upload_valid_user_driving_data()
         data_service = DatasetService()
         ds_id = data_service.get_id_for_user_upload_driving_dataset()
@@ -278,7 +274,7 @@ class TestModelRunDrivingData(TestController):
             self):
         # This is understood to be the correct action - unless the 'upload' button is clicked, the user
         # driving data does not get processed.
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         self.upload_valid_user_driving_data()
 
         self.app.get(
@@ -304,7 +300,7 @@ class TestModelRunDrivingData(TestController):
         # 3. They click submit (the driving data is now stored).
         # 4. They return to the driving data page and submit again without changing anything
         # This is acceptable, they should be moved on. In fact no database saves need to occur.
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
 
         self.upload_valid_user_driving_data()
         data_service = DatasetService()
@@ -329,7 +325,7 @@ class TestModelRunDrivingData(TestController):
         # 2. User chooses upload data but doesn't actually upload anything
         # 3. User clicks submit
         # This is bad and an error should appear
-        self._add_model_run_being_created()
+        self._add_model_run_being_created(self.user)
         data_service = DatasetService()
         ds_id = data_service.get_id_for_user_upload_driving_dataset()
         response = self.app.post(

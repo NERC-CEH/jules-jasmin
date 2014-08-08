@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>Create Model Run | Edit Land Cover</title>
+    <link rel="stylesheet" type="text/css" href="../layout/model_run_land_cover.css"/>
+    <script src="../js/model_run_land_cover.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+</head>
+<body id="land_cover">
+<h1>Edit Land Cover</h1>
+<p>Description here</p>
+<div class="well">
+    <div class="drop-down-holder">
+        <p>Category:</p>
+        <select id="lc_cat">
+            <!--<option value="0">All Categories</option>-->
+            <option py:for="category in c.land_cover_categories" value="${category.id}">${category.name}</option>
+        </select>
+    </div>
+    <div class="drop-down-holder">
+        <p>Region:</p>
+        <!--<select id="lc_cat_0_region" class="lc_region">-->
+        <!--<py:for each="category in c.land_cover_categories">-->
+        <!--<option py:for="region in category.regions" value="${region.id}">${region.name}</option>-->
+        <!--</py:for>-->
+        <!--</select>-->
+        <select py:for="category in c.land_cover_categories" id="lc_cat_${category.id}_region" class="lc_region">
+            <option py:for="region in category.regions" value="${region.id}">${region.name}</option>
+        </select>
+    </div>
+    <div class="drop-down-holder">
+        <p>Change to:</p>
+        <select id="lc_value">
+            <option py:for="value in c.land_cover_values" value="${value.id}">${value.name}</option>
+        </select>
+    </div>
+    <div class="add-holder">
+        <button id="lc_add"><i class='fa fa-plus fa-1x' style='color:green'></i>&nbsp;&nbsp;Add</button>
+    </div>
+</div>
+
+<form class="form-horizontal" method="POST" action="${url(controller='model_run', action='land_cover')}">
+    <div class="well">
+        <div id="base_land_cover" class="lc-action-holder">
+            <div class="lc-base">Start with the base land cover map for <b>WATCH 2D Driving Data</b></div>
+            <div id="no-actions-message"><span>You have no additional land cover edits.
+                Add some from the menu above, or leave the land cover map as it is</span></div>
+        </div>
+        <div id="actions-sortable">
+            <py:for each="action in c.land_cover_actions">
+                <!--NOTE!! Any changes to ths div MUST be copied through to the identical block of html fragment in
+                model_run_land_cover.js-->
+                <div id="lc_action_${action.id}" class="lc-action-holder" action-id="${action.id}">
+                    <span class="then">then</span>
+                    <div class="lc-action">
+                        <i class="fa fa-arrows sort-icon"></i>&nbsp;&nbsp;
+                        Change <b>${action.region.name} (${action.region.category.name})</b> to <b>${action.value.name}</b>
+                        <span class="pull-right"><i action-id="${action.id}" class="fa fa-times-circle remove-icon"></i></span>
+                        <input id="action_${action.id}_region" name="action_${action.id}_region" type="hidden" value="${action.region_id}"/>
+                        <input id="action_${action.id}_value" name="action_${action.id}_value" type="hidden" value="${action.value_id}"/>
+                        <input id="action_${action.id}_order" name="action_${action.id}_order" type="hidden" value="${action.order}"/>
+                    </div>
+                </div>
+            </py:for>
+        </div>
+    </div>
+
+
+
+    <div class="controls">
+        <input type="submit" class="btn btn-primary btn-large pull-right control-group" name="submit" value="Next" />
+        <input type="submit" class="btn btn-primary btn-large pull-left control-group" name="submit" value="Previous" />
+    </div>
+</form>
+
+<div class="modal fade hide" id="dataset-preview"></div>
+
+</body>
+</html>

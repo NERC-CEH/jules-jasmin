@@ -498,6 +498,7 @@ class ModelRunService(DatabaseService):
             .filter(ModelRun.user == user) \
             .options(subqueryload(ModelRun.code_version)) \
             .options(subqueryload(ModelRun.user)) \
+            .options(subqueryload(ModelRun.land_cover_actions))\
             .one()
 
     def remove_parameter_set_from_model_being_created(self, parameter_values, user):
