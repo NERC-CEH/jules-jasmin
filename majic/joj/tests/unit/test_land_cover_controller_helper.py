@@ -264,7 +264,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
     def test_GIVEN_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_actions(self):
         context = self.Context()
-        self.land_cover_helper.add_land_covers_to0000000000_context(context, {}, self.model_run)
+        self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
 
         assert_that(len(context.land_cover_actions), is_(1))
 
