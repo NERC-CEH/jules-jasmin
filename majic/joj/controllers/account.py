@@ -1,8 +1,11 @@
+"""
+# header
+"""
 import logging
 import formencode
 
-from pylons import request, response, session, tmpl_context as c, url
-from pylons.controllers.util import abort, redirect
+from pylons import request, tmpl_context as c, url
+from pylons.controllers.util import redirect
 from webob.exc import HTTPFound
 
 from joj.lib.base import BaseController, render
@@ -15,6 +18,7 @@ from joj.services.user import UserService
 __author__ = 'Phil Jenkins (Tessella)'
 
 log = logging.getLogger(__name__)
+
 
 class AccountController(BaseController):
     """Encapsulates operations on a user's ecomaps account"""
@@ -29,7 +33,6 @@ class AccountController(BaseController):
         super(BaseController, self).__init__()
 
         self._user_service = user_service
-
 
     def login(self):
         """Action for the 'log in' view"""
@@ -69,10 +72,8 @@ class AccountController(BaseController):
                 c.form_result = error.value
                 c.form_errors = error.error_dict or {}
             else:
-
+                c.form_result['login'] = c.form_result['login'].strip()
                 authenticated, headers = who_api.login(c.form_result)
-
-
 
                 if authenticated:
 
@@ -92,7 +93,7 @@ class AccountController(BaseController):
 
                             if not u:
 
-                                log.debug("Couldn't find %s in Ecomaps DB, creating user" % user_name)
+                                log.debug("Couldn't find %s in Majic DB, creating user" % user_name)
 
                                 self._user_service.create(user_name,
                                                           request.environ['user.first-name'],
@@ -105,8 +106,8 @@ class AccountController(BaseController):
                         except ServiceException as sx:
 
                             # Something has gone wrong at a fundamental level, so we can't realistically continue
-                            message = 'The EcoMaps database is unavailable, please contact technical support'
-                            log.error("EcoMaps database unavailable: %s" % sx)
+                            message = 'The Majic database is unavailable, please contact technical support'
+                            log.exception("Majic database unavailable: %s" % sx)
 
                 else:
                     # Authentication not successful
@@ -133,6 +134,7 @@ class AccountController(BaseController):
         headers = who_api.logout()
 
         return HTTPFound(location='/account/login', headers=headers)
+
 
 def _custom_formatter(error):
     """Custom error formatter"""

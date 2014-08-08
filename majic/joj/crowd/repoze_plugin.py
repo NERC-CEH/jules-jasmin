@@ -1,11 +1,11 @@
 import logging
+from urlparse import urlparse
 from joj.crowd.client import CrowdClient, ClientException
 from zope.interface import directlyProvides
 from repoze.who.interfaces import IChallengeDecider
 
-__author__ = 'Phil Jenkins (Tessella)'
-
 log = logging.getLogger(__name__)
+
 
 class CrowdRepozePlugin(object):
     """Implementation of a repoze.who plugin which communicates
@@ -220,11 +220,11 @@ def is_public_page(environ):
     :return: True if public, False otherwise
     """
     path_info = environ.get('PATH_INFO')
-    public_urls = ['login', 'request_account']
-    for public_url in public_urls:
-        if public_url in path_info:
-            return True
-    return False
+
+    if _check_actions(path_info, 'account', ['login', 'dologin']):
+        return True
+
+    return _check_actions(path_info, 'request_account', ['license', 'request'])
 
 
 def is_home_page(environ):
@@ -234,5 +234,33 @@ def is_home_page(environ):
     :return: True if home page, False otherwise
     """
     path_info = environ.get('PATH_INFO')
-    # Includes 'about' page ('home/about')
-    return path_info == '/' or 'home' in path_info
+
+    if path_info == '/':
+        return True
+
+    if 'home' not in path_info:
+        return False
+    path = urlparse(path_info).path
+
+    if path == '/home' or path == '/home/':
+        return True
+
+    return _check_actions(path_info, 'home', ['about', 'index', 'password'])
+
+
+def _check_actions(path_info, controller, actions):
+    """
+    Check the action and controller matches the url
+    :param path_info: path info to check against
+    :param controller: controller name
+    :param actions: possible actions
+    :return: True if it is one of the actions on the controller
+    """
+    path = urlparse(path_info).path
+
+    for action in actions:
+        if path == '/%s/%s' % (controller, action):
+            return True
+        if path.startswith('/%s/%s/' % (controller, action)):
+            return True
+    return False

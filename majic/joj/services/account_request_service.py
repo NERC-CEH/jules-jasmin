@@ -3,8 +3,9 @@
 """
 import random
 import string
-from pylons import config
+from pylons import config, url
 import logging
+from joj.crowd.client import UserException
 from joj.crowd.crowd_client_factory import CrowdClientFactory
 from joj.model import AccountRequest, Session
 from joj.services.general import DatabaseService
@@ -73,12 +74,14 @@ class AccountRequestService(DatabaseService):
             msg)
 
         # Then email the admin to approve
-        msg = email_messages.ACCOUNT_REQUESTED_ADMIN % (
-            account_request.first_name,
-            account_request.last_name,
-            account_request.email,
-            account_request.institution,
-            account_request.usage)
+        link = config['serverurl'].rstrip('/') + url(controller='user', action='requests')
+        msg = email_messages.ACCOUNT_REQUESTED_ADMIN.format(
+            first_name=account_request.first_name,
+            last_name=account_request.last_name,
+            email=account_request.email,
+            institution=account_request.institution,
+            usage=account_request.usage,
+            link=link)
         self._email_service.send_email(
             config['email.from_address'],
             config['email.admin_address'],
@@ -100,20 +103,23 @@ class AccountRequestService(DatabaseService):
         :return: account requests
         """
         with self.readonly_scope() as session:
-            return session.query(AccountRequest).all()
+            return session\
+                .query(AccountRequest)\
+                .order_by(AccountRequest.email)\
+                .all()
 
-    def reject_account_request(self, id, reason):
+    def reject_account_request(self, account_request_id, reason):
         """
         Reject the account request
         :param reason: reason for account rejection
-        :param id: id of account request to reject
-        :return:nothing
+        :param account_request_id: account_request_id of account request to reject
+        :return:nothing, throw NoResultFound if request does not exist
         """
 
         with self.transaction_scope() as session:
             account_request = session.\
                 query(AccountRequest)\
-                .filter(AccountRequest.id == id)\
+                .filter(AccountRequest.id == account_request_id)\
                 .one()
 
             msg = email_messages.ACCOUNT_REQUEST_REJECTED_MESSAGE.format(
@@ -133,14 +139,19 @@ class AccountRequestService(DatabaseService):
         """
         Accept the account request, make a user account, add to crowd send email
         :param account_request_id: the account request account_request_id to accept
-        :return:nothing
+        :return:nothing throw NoResultFound if request does not exist, Client Exception if crowd is down
         """
         with self.transaction_scope() as session:
-            account_request = session.query(AccountRequest).get(account_request_id)
-            new_username = account_request.email
+            account_request = session\
+                .query(AccountRequest)\
+                .filter(AccountRequest.id == account_request_id)\
+                .one()
+            new_username = account_request.email.strip()
 
             user = self._user_service.get_user_by_username_in_session(session, new_username)
 
+            crowd_client = self._crowd_client_factory.get_client()
+            random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
             if user is None:
                 user = self._user_service.create_in_session(
                     session,
@@ -151,14 +162,26 @@ class AccountRequestService(DatabaseService):
                     constants.USER_ACCESS_LEVEL_EXTERNAL,
                     account_request.institution)
 
-                random_password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
-                crowd_client = self._crowd_client_factory.get_client()
-                crowd_client.create_user(
-                    account_request.email,
-                    account_request.first_name,
-                    account_request.last_name,
-                    account_request.email,
-                    random_password)
+                try:
+                    crowd_client.create_user(
+                        new_username,
+                        account_request.first_name,
+                        account_request.last_name,
+                        account_request.email,
+                        random_password)
+                except UserException:
+                    # user already exists in crowd
+                    pass
+            else:
+                try:
+                    crowd_client.get_user_info(new_username)
+                except UserException:
+                    crowd_client.create_user(
+                        new_username,
+                        account_request.first_name,
+                        account_request.last_name,
+                        account_request.email,
+                        random_password)
 
         #write user to database so they have an id
         with self.transaction_scope() as session:
@@ -176,5 +199,20 @@ class AccountRequestService(DatabaseService):
                 account_request.email,
                 email_messages.ACCOUNT_REQUEST_ACCEPTED_SUBJECT,
                 msg)
+
+            session.delete(account_request)
+
+    def ignore_account_request(self, account_request_id):
+        """
+        Ignore an account request
+        :param account_request_id: id of the request
+        :return:nothing, throw NoResultFound if request does not exist
+        """
+
+        with self.transaction_scope() as session:
+            account_request = session\
+                .query(AccountRequest)\
+                .filter(AccountRequest.id == account_request_id)\
+                .one()
 
             session.delete(account_request)

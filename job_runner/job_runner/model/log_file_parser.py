@@ -35,13 +35,17 @@ class LogFileParser(object):
 
         found_a_line = False
         errors = []
+        post_process_errors = []
         for line in self._lines:
             found_a_line = True
             error_line = line.split(constants.JULES_FATAL_ERROR_PREFIX)
+            post_process_error_line = line.split(constants.JULES_POST_PROCESS_ERROR_PREFIX)
             if constants.JULES_RUN_COMPLETED_MESSAGE in line:
                 self.status = constants.MODEL_RUN_STATUS_COMPLETED
             elif len(error_line) > 1:
                 errors.append(error_line[1].strip())
+            elif len(post_process_error_line) > 1:
+                post_process_errors.append(post_process_error_line[1].strip())
             elif line.startswith(constants.JULES_START_TIME_PREFIX):
                 time = line[len(constants.JULES_START_TIME_PREFIX):].strip()
                 try:
@@ -66,7 +70,10 @@ class LogFileParser(object):
             self.error_message = constants.ERROR_MESSAGE_OUTPUT_IS_EMPTY
             return
 
-        if self.status != constants.MODEL_RUN_STATUS_COMPLETED:
+        if len(post_process_errors) != 0:
+            self.status = constants.MODEL_RUN_STATUS_FAILED
+            self.error_message = "Post processing error:" + ", ".join(post_process_errors)
+        elif self.status != constants.MODEL_RUN_STATUS_COMPLETED:
             self.status = constants.MODEL_RUN_STATUS_FAILED
             if len(errors) == 0:
                 self.error_message = constants.ERROR_MESSAGE_UNKNOWN_JULES_ERROR

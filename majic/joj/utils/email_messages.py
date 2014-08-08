@@ -77,11 +77,12 @@ ACCOUNT_REQUESTED_USER = "Dear %s,\r\n\r\n" \
 
 ACCOUNT_REQUESTED_ADMIN = "Dear Majic admin,\r\n\r\nThe following request for a Majic " \
                           "account has been received:\r\n\r\n" \
-                          "Name: %s %s\r\n" \
-                          "Email: %s\r\n" \
-                          "Institution: %s\r\n" \
-                          "Expected usage: %s\r\n\r\n" \
-                          "Please login to Majic and review this user request"
+                          "Name: {first_name} {last_name}\r\n" \
+                          "Email: {email}\r\n" \
+                          "Institution: {institution}\r\n" \
+                          "Expected usage: {usage}\r\n\r\n" \
+                          "Please follow this link to review this user's request: \r\n" \
+                          "{link}\r\n"
 
 ACCOUNT_REQUEST_FULL = "Dear %s,\r\n\r\n" \
                        "Unfortunately we are unable to accept any more account requests for today. We're " \
