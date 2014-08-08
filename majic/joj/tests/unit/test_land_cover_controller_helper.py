@@ -5,7 +5,8 @@ from hamcrest import assert_that, is_
 from mock import MagicMock
 from joj.services.tests.base import BaseTest
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
-from joj.model import ModelRun, DrivingDataset, LandCoverRegion, LandCoverRegionCategory, LandCoverValue
+from joj.model import ModelRun, DrivingDataset, LandCoverRegion, LandCoverRegionCategory, LandCoverValue, \
+    LandCoverAction
 from joj.services.land_cover_service import LandCoverService
 
 
@@ -20,12 +21,14 @@ class TestLandCoverControllerHelper(BaseTest):
         self.model_run = ModelRun()
         self.model_run.name = "Model Run1"
         self.model_run.driving_dataset = driving_data
+        self.model_run.driving_dataset_id = 1
 
         self.land_cover_service = LandCoverService()
         self.land_cover_service.get_land_cover_region_by_id = self._mock_lcs_get_land_cover_region
         self.land_cover_service.get_land_cover_values = self._mock_get_land_cover_values
         self.land_cover_service.get_land_cover_categories = self._mock_get_land_cover_categories
         self.land_cover_service.save_land_cover_actions_for_model = MagicMock()
+        self.land_cover_service.get_land_cover_actions_for_model = self._mock_lcs_get_actions_for_model_run
 
         self.land_cover_helper = LandCoverControllerHelper(land_cover_service=self.land_cover_service)
 
@@ -124,6 +127,48 @@ class TestLandCoverControllerHelper(BaseTest):
 
         return land_cover_region
 
+    @staticmethod
+    def _mock_lcs_get_actions_for_model_run(model_run):
+        cat = LandCoverRegionCategory()
+        cat.id = 1
+        cat.name = "Countries"
+        cat.driving_dataset_id = 1
+
+        region = LandCoverRegion()
+        region.id = 1
+        region.name = "Wales"
+        region.category = cat
+
+        action = LandCoverAction()
+        action.id = 1
+        action.region = region
+        action.value_id = 1
+
+        return [action]
+
+    @staticmethod
+    def _mock_lcs_get_actions_for_model_run_wrong_dataset(model_run):
+        cat = LandCoverRegionCategory()
+        cat.id = 1
+        cat.name = "Countries"
+        cat.driving_dataset_id = 2
+
+        region = LandCoverRegion()
+        region.id = 1
+        region.name = "Wales"
+        region.category = cat
+
+        action = LandCoverAction()
+        action.id = 1
+        action.region = region
+        action.value_id = 1
+
+        return [action]
+
+    @staticmethod
+    def _mock_lcs_get_actions_for_model_run_no_actions(model_run):
+        return []
+
     def test_GIVEN_single_action_WHEN_save_land_cover_THEN_land_cover_action_saved(self):
         values = {'action_1_region': u'1',
                   'action_1_value': u'8',
@@ -200,21 +245,40 @@ class TestLandCoverControllerHelper(BaseTest):
         assert not self.land_cover_service.save_land_cover_actions_for_model.called
 
     def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_no_errors_returned(self):
+        self.land_cover_service.save_land_cover_actions_for_model = self._mock_lcs_get_actions_for_model_run
         errors = {}
-        context = self.Context()
-        self.land_cover_helper.add_land_covers_to_context(context, errors, self.model_run)
+        self.land_cover_helper.add_land_covers_to_context(self.Context(), errors, self.model_run)
         assert_that(len(errors), is_(0))
 
-    def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_land_cover_categories(self):
+    def test_GIVEN_driving_data_has_categories_WHEN_add_to_context_THEN_context_contains_land_cover_categories(self):
         context = self.Context()
         self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
 
         assert_that(len(context.land_cover_categories), is_(2))
 
-    def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_land_cover_values(self):
+    def test_GIVEN_nothing_saved_WHEN_add_to_context_THEN_context_contains_land_cover_values(self):
         context = self.Context()
         self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
 
         assert_that(len(context.land_cover_values), is_(9))
 
-    # TODO  Test that we can add existing saved land cover actions to the context, and validate errors.
+    def test_GIVEN_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_actions(self):
+        context = self.Context()
+        self.land_cover_helper.add_land_covers_to0000000000_context(context, {}, self.model_run)
+
+        assert_that(len(context.land_cover_actions), is_(1))
+
+    def test_GIVEN_invalid_land_cover_actions_saved_WHEN_add_to_context_THEN_errors_returned(self):
+        self.land_cover_service.get_land_cover_actions_for_model = self._mock_lcs_get_actions_for_model_run_wrong_dataset
+        errors = {}
+        self.land_cover_helper.add_land_covers_to_context(self.Context(), errors, self.model_run)
+
+        assert_that(len(errors), is_(1))
+
+    def test_GIVEN_invalid_land_cover_actions_saved_WHEN_add_to_context_THEN_no_actions_returned(self):
+        self.land_cover_service.get_land_cover_actions_for_model = self._mock_lcs_get_actions_for_model_run_wrong_dataset
+
+        context = self.Context()
+        self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
+
+        assert_that(len(context.land_cover_actions), is_(0))
