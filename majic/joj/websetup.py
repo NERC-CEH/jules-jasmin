@@ -361,7 +361,7 @@ def setup_app(command, conf, vars):
         region3 = LandCoverRegion()
         region3.name = "River Severn"
         region3.category = cat1
-        cat1.land_cover_regions = [region1, region2, region3]
+        cat1.regions = [region1, region2, region3]
 
         cat2 = LandCoverRegionCategory()
         cat2.name = "Counties"
@@ -375,7 +375,7 @@ def setup_app(command, conf, vars):
         region6 = LandCoverRegion()
         region6.name = "Surrey"
         region6.category = cat2
-        cat2.land_cover_regions = [region4, region5, region6]
+        cat2.regions = [region4, region5, region6]
 
         cat3 = LandCoverRegionCategory()
         cat3.name = "UK Countries"
@@ -389,7 +389,7 @@ def setup_app(command, conf, vars):
         region9 = LandCoverRegion()
         region9.name = "Scotland"
         region9.category = cat3
-        cat3.land_cover_regions = [region7, region8, region9]
+        cat3.regions = [region7, region8, region9]
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"

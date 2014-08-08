@@ -43,10 +43,10 @@ class TestModelRunLandCover(TestController):
             url(controller='model_run', action='land_cover'),
             params={
                 'submit': u'Next',
-                'action_1_region': str(categories[0].land_cover_regions[0].id),
+                'action_1_region': str(categories[0].regions[0].id),
                 'action_1_value': u'8',
                 'action_1_order': u'1',
-                'action_2_region': str(categories[0].land_cover_regions[0].id),
+                'action_2_region': str(categories[0].regions[0].id),
                 'action_2_value': u'7',
                 'action_2_order': u'2'
             })
@@ -132,7 +132,7 @@ class TestModelRunLandCover(TestController):
             region2.category_id = 1
             region2.category = cat1
 
-            cat1.land_cover_regions = [region1, region2]
+            cat1.regions = [region1, region2]
 
             cat2 = LandCoverRegionCategory()
             cat2.driving_dataset_id = driving_dataset.id
@@ -151,6 +151,6 @@ class TestModelRunLandCover(TestController):
             region4.category_id = 2
             region4.category = cat2
 
-            cat2.land_cover_regions = [region3, region4]
+            cat2.regions = [region3, region4]
 
             return [cat1, cat2]

@@ -67,7 +67,7 @@ class TestLandCoverControllerHelper(BaseTest):
         region2.category_id = 1
         region2.category = cat1
 
-        cat1.land_cover_regions = [region1, region2]
+        cat1.regions = [region1, region2]
 
         cat2 = LandCoverRegionCategory()
         cat2.driving_dataset_id = driving_data_id
@@ -86,7 +86,7 @@ class TestLandCoverControllerHelper(BaseTest):
         region4.category_id = 2
         region4.category = cat2
 
-        cat2.land_cover_regions = [region3, region4]
+        cat2.regions = [region3, region4]
 
         return [cat1, cat2]
 

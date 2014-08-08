@@ -24,11 +24,11 @@
         <p>Region:</p>
         <!--<select id="lc_cat_0_region" class="lc_region">-->
         <!--<py:for each="category in c.land_cover_categories">-->
-        <!--<option py:for="region in category.land_cover_regions" value="${region.id}">${region.name}</option>-->
+        <!--<option py:for="region in category.regions" value="${region.id}">${region.name}</option>-->
         <!--</py:for>-->
         <!--</select>-->
         <select py:for="category in c.land_cover_categories" id="lc_cat_${category.id}_region" class="lc_region">
-            <option py:for="region in category.land_cover_regions" value="${region.id}">${region.name}</option>
+            <option py:for="region in category.regions" value="${region.id}">${region.name}</option>
         </select>
     </div>
     <div class="drop-down-holder">
@@ -57,7 +57,7 @@
                     <span class="then">then</span>
                     <div class="lc-action">
                         <i class="fa fa-arrows sort-icon"></i>&nbsp;&nbsp;
-                        Change <b>${action.land_cover_region.name} (${action.land_cover_region.category.name})</b> to <b>${action.value.id}</b>
+                        Change <b>${action.region.name} (${action.region.category.name})</b> to <b>${action.value.id}</b>
                         <span class="pull-right"><i action-id="${action.id}" class="fa fa-times-circle remove-icon"></i></span>
                         <input id="action_${action.id}_region" name="action_${action.id}_region" type="hidden" value="${action.region_id}"/>
                         <input id="action_${action.id}_value" name="action_${action.id}_value" type="hidden" value="${action.value_id}"/>

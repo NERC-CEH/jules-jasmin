@@ -20,7 +20,7 @@ class LandCoverRegion(Base):
     mask_file = Column(String(constants.DB_LONG_STRING_SIZE))
     category_id = Column(Integer, ForeignKey('land_cover_region_categories.id'))
 
-    category = relationship("LandCoverRegionCategory", backref=backref("land_cover_regions", order_by=id))
+    category = relationship("LandCoverRegionCategory", backref=backref("regions", order_by=id))
 
     def __repr__(self):
         return "<LandCoverRegion(name=%s)>" % self.name

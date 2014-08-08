@@ -339,13 +339,13 @@ class TestController(TestCase):
             ac = session.query(AccountRequest).filter(AccountRequest.first_name == self.account_request.first_name).one()
             return ac.id
 
-    def add_land_cover_actions(self, land_cover_region, model_run, value_order_pairs, model_run_service):
+    def add_land_cover_actions(self, land_cover_region, model_run, value_order_pairs, land_cover_service):
         """
         Create land cover actions and save them using the model_run_service.save_land_cover_actions method
         :param land_cover_region: Land cover region actions should belong to
         :param model_run: Model run to add them against
         :param value_order_pairs: List of 2-tuples [(value, order)]; each tuple is a land cover action to be added
-        :param model_run_service: Model run service to use
+        :param land_cover_service: Land Cover service to use
         :return:
         """
         land_cover_actions = []
@@ -355,7 +355,7 @@ class TestController(TestCase):
             lca.value_id = value
             lca.order = order
             land_cover_actions.append(lca)
-        model_run_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
+        land_cover_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
 
     def add_land_cover_region(self, model_run):
         with session_scope() as session:

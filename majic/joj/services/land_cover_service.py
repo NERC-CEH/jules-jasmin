@@ -40,7 +40,7 @@ class LandCoverService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(LandCoverRegionCategory)\
                 .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id)\
-                .options(subqueryload(LandCoverRegionCategory.land_cover_regions))\
+                .options(subqueryload(LandCoverRegionCategory.regions))\
                 .all()
 
     def save_land_cover_actions_for_model(self, model_run, land_cover_actions):
@@ -57,3 +57,12 @@ class LandCoverService(DatabaseService):
             for land_cover_action in land_cover_actions:
                 land_cover_action.model_run = model_run
                 session.add(land_cover_action)
+
+    def get_land_cover_actions_for_model(self, model_run):
+        with self.readonly_scope() as session:
+            return session.query(LandCoverAction)\
+                .filter(LandCoverAction.model_run_id == model_run.id)\
+                .options(subqueryload(LandCoverAction.region)
+                         .subqueryload(LandCoverRegion.category))\
+                .options(subqueryload(LandCoverAction.value))\
+                .all()

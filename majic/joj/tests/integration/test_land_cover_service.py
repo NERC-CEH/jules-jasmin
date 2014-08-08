@@ -105,5 +105,88 @@ class TestLandCoverService(TestWithFullModelRun):
             session.add_all([region1, region2])
 
         categories = self.land_cover_service.get_land_cover_categories(model_run.driving_dataset_id)
-        assert_that(len(categories[0].land_cover_regions), is_(1))
-        assert_that(categories[0].land_cover_regions[0].name, is_("Wales"))
+        assert_that(len(categories[0].regions), is_(1))
+        assert_that(categories[0].regions[0].name, is_("Wales"))
+
+    def test_GIVEN_land_cover_actions_WHEN_save_land_cover_actions_THEN_land_cover_actions_saved(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.land_cover_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(2))
+
+    def test_GIVEN_existing_land_cover_actions_WHEN_save_land_cover_actions_THEN_land_cover_actions_overwritten(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.land_cover_service)
+
+        self.add_land_cover_actions(land_cover_region, model_run, [(2, 4)], self.land_cover_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(1))
+        assert_that(actions[0].value_id, is_(2))
+        assert_that(actions[0].order, is_(4))
+
+    def test_GIVEN_no_land_cover_actions_WHEN_save_land_cover_actions_THEN_all_land_cover_actions_removed(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.land_cover_service)
+
+        self.add_land_cover_actions(land_cover_region, model_run, [], self.land_cover_service)
+
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, user)
+        actions = model_run.land_cover_actions
+        assert_that(len(actions), is_(0))
+
+    def test_GIVEN_land_cover_actions_saved_on_model_run_WHEN_get_land_cover_actions_THEN_actions_returned(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1), (2, 3)], self.land_cover_service)
+
+        actions = self.land_cover_service.get_land_cover_actions_for_model(model_run)
+        assert_that(len(actions), is_(2))
+        assert_that(actions[0].value_id, is_(1))
+        assert_that(actions[0].order, is_(1))
+        assert_that(actions[1].value_id, is_(2))
+        assert_that(actions[1].order, is_(3))
+
+    def test_GIVEN_land_cover_actions_saved_WHEN_get_actions_THEN_actions_have_regions_and_categories_loaded(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1)], self.land_cover_service)
+
+        action = self.land_cover_service.get_land_cover_actions_for_model(model_run)[0]
+        assert_that(action.region.name, is_("Wales"))
+        assert_that(action.region.category.name, is_("Countries"))
+
+    def test_GIVEN_land_cover_actions_saved_WHEN_get_actions_THEN_actions_have_values_loaded(self):
+        user = self.login()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+
+        land_cover_region = self.add_land_cover_region(model_run)
+        self.add_land_cover_actions(land_cover_region, model_run, [(1, 1)], self.land_cover_service)
+
+        action = self.land_cover_service.get_land_cover_actions_for_model(model_run)[0]
+        assert_that(action.value.name, is_("BT"))

@@ -22,8 +22,8 @@ class LandCoverAction(Base):
     model_run_id = Column(Integer, ForeignKey("model_runs.id"))
 
     value = relationship("LandCoverValue", backref=backref("actions", order_by=id))
-    land_cover_region = relationship("LandCoverRegion", backref=backref("actions", order_by=id))
+    region = relationship("LandCoverRegion", backref=backref("actions", order_by=id))
     model_run = relationship("ModelRun", backref=backref("land_cover_actions", order_by=order))
 
     def __repr__(self):
-        return "<LandCoverAction(region=%s, value=%s)>" % (self.region_id, self.value)
+        return "<LandCoverAction(region=%s, value=%s)>" % (self.region_id, self.value_id)
