@@ -103,9 +103,18 @@ class TestJulesLogFileParser(TestController):
     def test_GIVEN_file_does_not_contain_success_and_has_multiple_fatal_errors_from_different_processors_WHEN_parse_THEN_job_status_failed_error_message_is_fatal_error(self):
         expected_error = 'init_output'
         self.lines.extend(['random line', '{MPI Task 1}[FATAL ERROR] ' + expected_error,
-                           '{MPI Task 0}[FATAL ERROR] ' + expected_error,'foo again'])
+                           '{MPI Task 0}[FATAL ERROR] ' + expected_error, 'foo again'])
 
         self.parser.parse()
 
         assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
         assert_that(self.parser.error_message, is_("Jules error:" + expected_error + ', ' + expected_error), "error message")
+
+    def test_GIVEN_file_contains_success_and_post_processing_error_WHEN_parse_THEN_job_status_failed(self):
+        expected_error = "error line"
+        self.lines.extend(['blah', ' foo' + constants.JULES_RUN_COMPLETED_MESSAGE + 'bah', 'foo again', '{MPI}'+ constants.JULES_POST_PROCESS_ERROR_PREFIX + expected_error])
+
+        self.parser.parse()
+
+        assert_that(self.parser.status, is_(constants.MODEL_RUN_STATUS_FAILED), "Job status")
+        assert_that(self.parser.error_message, contains_string(expected_error), "error line")

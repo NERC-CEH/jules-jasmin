@@ -16,6 +16,7 @@ WHITELISTED_FILE_NAMES = ["fractional.dat", "user_uploaded_driving_data.dat"]
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'
 JULES_FATAL_ERROR_PREFIX = "[FATAL ERROR]"
+JULES_POST_PROCESS_ERROR_PREFIX = "[POST PROCESS ERROR]"
 JULES_START_TIME_PREFIX = 'Start Time:'
 JULES_END_TIME_PREFIX = 'End Time:'
 JULES_STORAGE_PREFIX = 'Storage MB:'

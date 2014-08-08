@@ -21,7 +21,7 @@ for hostName in ${myhosts[*]};do echo $hostName >> hosts.txt ; done
 
 blaunch -u hosts.txt `pwd`/post_process.sh >> out.log 2>> err.log
 
-mv processed/* output
+mv -n processed/* output
 rmdir processed
 
 echo "End Time: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log

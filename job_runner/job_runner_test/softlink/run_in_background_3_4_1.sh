@@ -8,7 +8,7 @@ echo "Post processing start: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log
 
 ./post_process.sh  >> out.log
 
-mv processed/* output
+mv -n processed/* output
 rmdir processed
 
 echo "End Time: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log
