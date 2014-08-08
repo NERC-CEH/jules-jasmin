@@ -35,7 +35,6 @@ from dateutil.rrule import rrule, MONTHLY, DAILY, HOURLY
 ##  (EPSG 27700) projection so don't need to worry about re-projecting between
 ##  different projection systems.
 
-
 def mapToPixel(mX, mY, geoTransform):
     """Convert map coordinates to pixel coordinates.
 
@@ -105,22 +104,39 @@ def invertGeoTransform(geoTransform):
 
 # Function to convert from datetime date to netcdf date
 def datetime2netcdf(netcdfUnits,date):
-	import netcdftime
-	import datetime
-	cdftime = netcdftime.utime(netcdfUnits)
-	t = cdftime.date2num(date)
-	return t
+    import netcdftime
+    import datetime
+    cdftime = netcdftime.utime(netcdfUnits)
+    t = cdftime.date2num(date)
+    return t
 
 # Function to convert from netcdf date to datetime date
 def netcdf2datetime(t,netcdfUnits):
-	import netcdftime
-	import datetime
-	cdftime = netcdftime.utime(netcdfUnits)
-	date = cdftime.num2date(t)
-	return date
+    import netcdftime
+    import datetime
+    cdftime = netcdftime.utime(netcdfUnits)
+    date = cdftime.num2date(t)
+    return date
 # ======================================================================================================================
 
-def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
+
+def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
+    """
+    Convert 1D data into a 2D grid
+    :param inputFolder: folder in which orginal file is stored
+    :param outputFolder:  folder to output new file to
+    :param inputFileName: filename of the file
+    :param verbose: True to print more information on convert
+    :return: nothing
+    """
+
+    # Names of special dimensions
+    # The time dimension as it must appear in the final file
+    DIM_TIME_FINAL = 'Time'
+
+    #The time timension that should be replaced if it appears in 1D file
+    DIM_TIME_ORIGINAL = 'time'
+
     MISSINGVALUE = -9999.99
 
     ROOTFOLDER = inputFolder
@@ -297,7 +313,9 @@ def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
             size = sizes[len(sizes)-1]
             if verbose == True:
                 print 'Creating dimension ' + name + ' of size '+ size
-            outnc.createDimension(name,int(size))
+            if (name == DIM_TIME_ORIGINAL):
+                name = DIM_TIME_FINAL
+            outnc.createDimension(name, int(size))
 
 ##
 ##    #
@@ -314,16 +332,16 @@ def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
 ##    outncdimx = outnc.createDimension('nt', 2)
     #
     #  Create out netCDF file time bounds variable
-    outncvartime = outnc.createVariable('time_bounds', 'f8', ('time','nt'), zlib=zlib)
+    outncvartime = outnc.createVariable('time_bounds', 'f8', (DIM_TIME_FINAL,'nt'), zlib=zlib)
     outncvartime[:] = fh.variables['time_bounds']
     for att in fh.variables['time_bounds'].ncattrs():
         setattr(outncvartime, att, getattr(fh.variables['time_bounds'],att))
 
     #  Create out netCDF file time variable
-    outncvartime = outnc.createVariable('Time', 'f8', ('time'), zlib=zlib)
-    outncvartime[:] = fh.variables['time']
-    for att in fh.variables['time'].ncattrs():
-        setattr(outncvartime, att, getattr(fh.variables['time'],att))
+    outncvartime = outnc.createVariable('Time', 'f8', (DIM_TIME_FINAL), zlib=zlib)
+    outncvartime[:] = fh.variables[DIM_TIME_ORIGINAL]
+    for att in fh.variables[DIM_TIME_ORIGINAL].ncattrs():
+        setattr(outncvartime, att, getattr(fh.variables[DIM_TIME_ORIGINAL],att))
     intervals = len(outncvartime)
     if verbose==True:
         print '\t\t#\n\t\tintervals:\t\t\t\t{0}'.format(intervals)
@@ -333,7 +351,7 @@ def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
     t1 = outncvartime[0]
     t2 = outncvartime[intervals-1]
 
-    netcdfUnits = getattr(fh.variables['time'],'units')
+    netcdfUnits = getattr(fh.variables[DIM_TIME_ORIGINAL],'units')
 
     startdatetime = netcdf2datetime(t1,netcdfUnits)
     enddatetime = netcdf2datetime(t2,netcdfUnits)
@@ -354,7 +372,7 @@ def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
     setattr(outncvarx, 'units', 'degrees_east')
 
     # List of variables that have already been defined
-    NoList = ['time','time_bounds','Time','longitude','Longitude','latitude','Latitude']
+    NoList = [DIM_TIME_ORIGINAL,'time_bounds','Time','longitude','Longitude','latitude','Latitude']
 
     # Loop through the remaining variables
     for var in fh.variables:
@@ -380,7 +398,10 @@ def convert1Din2D(inputFolder,outputFolder,inputFileName,verbose=False):
             elements = parenthesis.split(',')
             newDim = []
             for k in range(len(elements)-2):
-                newDim.append(elements[k].strip())
+                if elements[k].strip() != DIM_TIME_ORIGINAL:
+                    newDim.append(elements[k].strip())
+                else:
+                    newDim.append(DIM_TIME_FINAL)
             newDim.append('Latitude')
             newDim.append('Longitude')
             if verbose==True:
