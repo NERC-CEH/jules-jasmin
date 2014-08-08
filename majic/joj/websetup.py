@@ -67,6 +67,39 @@ def setup_app(command, conf, vars):
 
         session.add(user2)
 
+        user3 = User()
+        user3.name = 'Matt Fry'
+        user3.first_name = 'Matt'
+        user3.last_name = 'Fry'
+        user3.username = 'mfry'
+        user3.email = 'mfry@ceh.ac.uk'
+        user3.access_level = "Admin"
+        user3.storage_quota_in_gb = conf['storage_quota_admin_GB']
+
+        session.add(user3)
+
+        user4 = User()
+        user4.name = 'Eleanor Blyth'
+        user4.first_name = 'Eleanor'
+        user4.last_name = 'Blyth'
+        user4.username = 'emb'
+        user4.email = 'emb@ceh.ac.uk'
+        user4.access_level = "Admin"
+        user4.storage_quota_in_gb = conf['storage_quota_admin_GB']
+
+        session.add(user4)
+
+        user5 = User()
+        user5.name = 'Sandeep Kaur'
+        user5.first_name = 'Sandeep'
+        user5.last_name = 'Kaur'
+        user5.username = 'sankau'
+        user5.email = 'Sandeep.Kaur@tessella.com'
+        user5.access_level = "Admin"
+        user5.storage_quota_in_gb = conf['storage_quota_admin_GB']
+
+        session.add(user5)
+
         core_user = User()
         core_user.name = 'System'
         core_user.first_name = 'The'
@@ -403,7 +436,7 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_DRIVE_VAR_NAME, "'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      "
                                                    "'SWdown'      'Rainf'           'Snowf'"],
             [constants.JULES_PARAM_DRIVE_TPL_NAME, "'PSurf_WFD'      'Tair_WFD'      "
-                                                   "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'      "
+                                                   "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'     "
                                                    "'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC'"],
             [constants.JULES_PARAM_DRIVE_INTERP,
              "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
