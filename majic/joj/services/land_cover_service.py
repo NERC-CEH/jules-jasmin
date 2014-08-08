@@ -3,7 +3,7 @@ header
 """
 from sqlalchemy.orm import subqueryload
 from joj.services.general import DatabaseService
-from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory
+from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
 
 
 class LandCoverService(DatabaseService):
@@ -42,3 +42,18 @@ class LandCoverService(DatabaseService):
                 .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id)\
                 .options(subqueryload(LandCoverRegionCategory.land_cover_regions))\
                 .all()
+
+    def save_land_cover_actions_for_model(self, model_run, land_cover_actions):
+        """
+        Save a list of LandCoverActions against a model run
+        :param model_run: Model run to save against
+        :param land_cover_actions: List of LandCoverActions
+        :return:
+        """
+        with self.transaction_scope() as session:
+            session.query(LandCoverAction)\
+                .filter(LandCoverAction.model_run_id == model_run.id)\
+                .delete()
+            for land_cover_action in land_cover_actions:
+                land_cover_action.model_run = model_run
+                session.add(land_cover_action)

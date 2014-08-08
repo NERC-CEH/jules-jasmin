@@ -2,7 +2,6 @@
 header
 """
 import re
-from joj.services.model_run_service import ModelRunService
 from joj.model import LandCoverAction
 from joj.services.land_cover_service import LandCoverService
 
@@ -12,8 +11,7 @@ class LandCoverControllerHelper(object):
     Helper class for the land cover controller
     """
 
-    def __init__(self, model_run_service=ModelRunService(), land_cover_service=LandCoverService()):
-        self.model_run_service = model_run_service
+    def __init__(self, land_cover_service=LandCoverService()):
         self.land_cover_service = land_cover_service
 
     def add_land_covers_to_context(self, tmpl_context, errors, model_run):
@@ -50,7 +48,7 @@ class LandCoverControllerHelper(object):
                 lcra.value_id = int(values['action_%s_value' % index])
                 lcra.order = int(values['action_%s_order' % index])
                 land_cover_actions.append(lcra)
-            self.model_run_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
+            self.land_cover_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
 
     def _validate_values(self, values, errors, driving_data):
         # Check that:
