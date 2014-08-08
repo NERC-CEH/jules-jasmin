@@ -32,6 +32,12 @@ class TestLandCoverControllerHelper(BaseTest):
         self.land_cover_helper = LandCoverControllerHelper(model_run_service=self.model_run_service,
                                                            land_cover_service=self.land_cover_service)
 
+    class Context(object):
+        """
+        Mock context object
+        """
+        pass
+
     @staticmethod
     def _mock_get_land_cover_values():
         land_cover_values = []
@@ -60,7 +66,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
         region2 = LandCoverRegion()
         region2.id = 2
-        region2.name = "Thames"
+        region2.name = "Itchen"
         region2.category_id = 1
         region2.category = cat1
 
@@ -131,7 +137,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
         lca1 = called_land_cover_actions[0]
         assert_that(lca1.region_id, is_(1))
-        assert_that(lca1.value, is_(8))
+        assert_that(lca1.value_id, is_(8))
 
     def test_GIVEN_two_actions_WHEN_save_land_cover_THEN_both_saved_with_correct_order(self):
         values = {'action_1_region': u'1',
@@ -145,12 +151,12 @@ class TestLandCoverControllerHelper(BaseTest):
 
         lca1 = called_land_cover_actions[0]
         assert_that(lca1.region_id, is_(1))
-        assert_that(lca1.value, is_(8))
+        assert_that(lca1.value_id, is_(8))
         assert_that(lca1.order, is_(1))
 
         lca2 = called_land_cover_actions[1]
         assert_that(lca2.region_id, is_(3))
-        assert_that(lca2.value, is_(7))
+        assert_that(lca2.value_id, is_(7))
         assert_that(lca2.order, is_(2))
 
     def test_GIVEN_invalid_region_WHEN_save_land_cover_THEN_error_returned(self):
@@ -199,21 +205,18 @@ class TestLandCoverControllerHelper(BaseTest):
 
     def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_no_errors_returned(self):
         errors = {}
-        self.land_cover_helper.add_land_covers_to_context(object, errors, self.model_run)
+        context = self.Context()
+        self.land_cover_helper.add_land_covers_to_context(context, errors, self.model_run)
         assert_that(len(errors), is_(0))
 
     def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_land_cover_categories(self):
-        class Context(object):
-            pass
-        context = Context()
+        context = self.Context()
         self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
 
         assert_that(len(context.land_cover_categories), is_(2))
 
     def test_GIVEN_no_land_cover_actions_saved_WHEN_add_to_context_THEN_context_contains_land_cover_values(self):
-        class Context(object):
-            pass
-        context = Context()
+        context = self.Context()
         self.land_cover_helper.add_land_covers_to_context(context, {}, self.model_run)
 
         assert_that(len(context.land_cover_values), is_(9))

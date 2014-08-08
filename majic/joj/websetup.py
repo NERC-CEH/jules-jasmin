@@ -10,7 +10,8 @@ import pylons.test
 from joj.model.model_run import ModelRun
 from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, \
-    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation, LandCoverValue
+    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation, LandCoverValue, LandCoverRegionCategory, \
+    LandCoverRegion
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from model.system_alert_email import SystemAlertEmail
@@ -347,6 +348,48 @@ def setup_app(command, conf, vars):
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
         driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.order_by_id = 100
+
+        cat1 = LandCoverRegionCategory()
+        cat1.name = "River Catchments"
+        cat1.driving_dataset = driving_ds_1
+        region1 = LandCoverRegion()
+        region1.name = "River Thames"
+        region1.category = cat1
+        region2 = LandCoverRegion()
+        region2.name = "River Itchen"
+        region2.category = cat1
+        region3 = LandCoverRegion()
+        region3.name = "River Severn"
+        region3.category = cat1
+        cat1.land_cover_regions = [region1, region2, region3]
+
+        cat2 = LandCoverRegionCategory()
+        cat2.name = "Counties"
+        cat2.driving_dataset = driving_ds_1
+        region4 = LandCoverRegion()
+        region4.name = "Hampshire"
+        region4.category = cat2
+        region5 = LandCoverRegion()
+        region5.name = "Oxfordshire"
+        region5.category = cat2
+        region6 = LandCoverRegion()
+        region6.name = "Surrey"
+        region6.category = cat2
+        cat2.land_cover_regions = [region4, region5, region6]
+
+        cat3 = LandCoverRegionCategory()
+        cat3.name = "UK Countries"
+        cat3.driving_dataset = driving_ds_1
+        region7 = LandCoverRegion()
+        region7.name = "England"
+        region7.category = cat3
+        region8 = LandCoverRegion()
+        region8.name = "Wales"
+        region8.category = cat3
+        region9 = LandCoverRegion()
+        region9.name = "Scotland"
+        region9.category = cat3
+        cat3.land_cover_regions = [region7, region8, region9]
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"

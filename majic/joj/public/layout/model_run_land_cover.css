@@ -1,0 +1,57 @@
+.lc-action, .lc-base {
+    margin:5px;
+    padding:10px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    background-color:#ddd;
+    box-shadow: 3px 3px 3px #666;
+    text-align: left;
+    font-color: grey;
+}
+
+.lc-action {
+    cursor:move;
+}
+
+.then {
+    font-weight: 900;
+}
+
+.lc-action-holder {
+    text-align: center;
+    margin-top:8px;
+}
+
+.sort-icon {
+    color:#808080;
+    font-size:1.25em
+}
+
+.remove-icon {
+    color:grey;
+    font-size:1.5em;
+}
+
+.remove-icon:hover {
+    color:#900;
+    font-size:1.5em;
+    cursor:pointer;
+}
+
+.drop-down-holder {
+    display:inline-block;
+    margin-right: 15px;
+}
+
+.drop-down-holder select {
+    margin-bottom: 0;
+}
+
+.add-holder {
+    display:inline-block;
+}
+
+#no-actions-message {
+    margin-top:10px;
+    color:grey
+}

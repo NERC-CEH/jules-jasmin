@@ -16,11 +16,12 @@ class LandCoverAction(Base):
     __tablename__ = 'land_cover_actions'
 
     id = Column(Integer, primary_key=True)
-    value = Column(Integer, ForeignKey('land_cover_values.id'))
+    value_id = Column(Integer, ForeignKey('land_cover_values.id'))
     order = Column(Integer)
     region_id = Column(Integer, ForeignKey("land_cover_regions.id"))
     model_run_id = Column(Integer, ForeignKey("model_runs.id"))
 
+    value = relationship("LandCoverValue", backref=backref("actions", order_by=id))
     land_cover_region = relationship("LandCoverRegion", backref=backref("actions", order_by=id))
     model_run = relationship("ModelRun", backref=backref("land_cover_actions", order_by=order))
 

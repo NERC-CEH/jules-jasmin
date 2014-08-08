@@ -47,7 +47,7 @@ class LandCoverControllerHelper(object):
             for index in set(actions):
                 lcra = LandCoverAction()
                 lcra.region_id = int(values['action_%s_region' % index])
-                lcra.value = int(values['action_%s_value' % index])
+                lcra.value_id = int(values['action_%s_value' % index])
                 lcra.order = int(values['action_%s_order' % index])
                 land_cover_actions.append(lcra)
             self.model_run_service.save_land_cover_actions_for_model(model_run, land_cover_actions)

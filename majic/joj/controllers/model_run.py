@@ -404,7 +404,7 @@ class ModelRunController(BaseController):
             self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
             land_cover_controller_helper.add_land_covers_to_context(c, errors, model_run)
             return htmlfill.render(
-                render('model_run/extents.html'),
+                render('model_run/land_cover.html'),
                 defaults=values,
                 errors=errors,
                 auto_error_formatter=BaseController.error_formatter)
@@ -412,7 +412,7 @@ class ModelRunController(BaseController):
             land_cover_controller_helper.save_land_covers(values, errors, model_run)
             if len(errors) > 0:
                 return htmlfill.render(
-                    render('model_run/extents.html'),
+                    render('model_run/land_cover.html'),
                     defaults=values,
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)

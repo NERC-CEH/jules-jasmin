@@ -352,7 +352,7 @@ class TestController(TestCase):
         for value, order in value_order_pairs:
             lca = LandCoverAction()
             lca.region_id = land_cover_region.id
-            lca.value = value
+            lca.value_id = value
             lca.order = order
             land_cover_actions.append(lca)
         model_run_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
