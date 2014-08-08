@@ -403,19 +403,13 @@ class ModelRunController(BaseController):
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
             land_cover_controller_helper.add_land_covers_to_context(c, errors, model_run)
-            return htmlfill.render(
-                render('model_run/land_cover.html'),
-                defaults=values,
-                errors=errors,
-                auto_error_formatter=BaseController.error_formatter)
+            return render('model_run/land_cover.html')
+
         else:
             land_cover_controller_helper.save_land_covers(values, errors, model_run)
             if len(errors) > 0:
-                return htmlfill.render(
-                    render('model_run/land_cover.html'),
-                    defaults=values,
-                    errors=errors,
-                    auto_error_formatter=BaseController.error_formatter)
+                helpers.error_flash(errors['land_cover_actions'])
+                return render('model_run/land_cover.html')
             else:
                 # Get the action to perform
                 self._model_run_controller_helper.check_user_quota(self.current_user)

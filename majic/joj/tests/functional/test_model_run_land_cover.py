@@ -6,7 +6,7 @@ from pylons import url
 from sqlalchemy.orm import subqueryload
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
-from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion
+from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction
 from joj.services.dataset import DatasetService
 from joj.utils import constants
 
@@ -110,8 +110,25 @@ class TestModelRunLandCover(TestController):
         for value in values:
             assert_that(response.normal_body, contains_string(str(value.name)))
 
-    def test_GIVEN_land_cover_actions_already_saved_WHEN_get_THEN_actions_rendered(self):
-        assert False #todo
+    def test_GIVEN_land_cover_action_already_saved_WHEN_get_THEN_action_rendered(self):
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, self.user)
+            dds = model_run.driving_dataset
+            session.add_all(self.generate_categories_with_regions(dds))
+
+            action = LandCoverAction()
+            action.model_run = model_run
+            action.region_id = 1  # Thames
+            action.value_id = 9  # Ice
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Ice</b>"))
+
+    def test_GIVEN_invalid_land_cover_actions_already_saved_WHEN_get_THEN_errors_returned_no_actions_rendered(self):
+        assert False
+
+    def test_GIVEN_multiple_land_cover_actions_saved_in_odd_order_WHEN_get_THEN_order_rendered_correctly(self):
+        assert False
 
     def generate_categories_with_regions(self, driving_dataset):
             # Add categories

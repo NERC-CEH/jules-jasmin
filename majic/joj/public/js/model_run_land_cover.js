@@ -69,11 +69,10 @@ var change_categories = function() {
     $('#lc_cat_' + cat_id + '_region').show()
 }
 
-var show_or_hide_message= function() {
+var show_or_hide_message = function() {
     message = $('#no-actions-message');
     if ($('#actions-sortable').children().length == 0) {
         message.show()
-        //message.slideDown();
     } else {
         message.hide();
     }
@@ -87,4 +86,6 @@ $(document).ready(function() {
 
     $('#lc_cat').change(change_categories);
     change_categories();
+
+    show_or_hide_message();
 })
