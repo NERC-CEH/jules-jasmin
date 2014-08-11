@@ -85,4 +85,4 @@ class LandCoverControllerHelper(object):
 
     def _does_region_belong_to_driving_data(self, region_id, driving_data):
         land_cover_region = self.land_cover_service.get_land_cover_region_by_id(region_id)
-        return land_cover_region.category.driving_dataset_id is driving_data.id
+        return land_cover_region.category.driving_dataset_id == driving_data.id
