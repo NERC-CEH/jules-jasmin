@@ -39,6 +39,9 @@ class TestJobDataUpdaterCreation(TestWithFullModelRun):
                 .filter(Dataset.is_input == False)\
                 .all()
             assert_that(len(datasets), is_(3), "Number of output datasets")
+            dataset_names = [dataset.name for dataset in datasets]
+            assert_that(dataset_names, contains_inanyorder(
+                contains_string('Monthly'), contains_string('Yearly'), contains_string('Hourly')))
 
             datasets = session.query(Dataset)\
                 .filter(Dataset.model_run_id == model_run.id)\

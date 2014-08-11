@@ -165,7 +165,7 @@ class TestModelRunOutput(TestController):
                                    output_var_2.name, output_var_3.name]))
         assert_that(nvars_vals, is_([1, 1, 1, 1, 1]))
         assert_that(profile_name_vals, is_([output_var_1.name + '_yearly', output_var_1.name + '_monthly',
-                                            output_var_2.name + '_daily', output_var_2.name + '_timestep',
+                                            output_var_2.name + '_daily', output_var_2.name + '_hourly',
                                             output_var_3.name + '_monthly']))
         assert_that(output_main_run_vals, is_([True, True, True, True, True]))
         assert_that(output_period_vals, is_([-2, -1, 24 * 60 * 60, TIMESTEP_LEN, -1]))
@@ -250,7 +250,7 @@ class TestModelRunOutput(TestController):
         assert_that(var_vals, is_([output_var_10.name, output_var_10.name, output_var_1.name]))
         assert_that(nvars_vals, is_([1, 1, 1]))
         assert_that(profile_name_vals, is_([output_var_10.name + '_yearly', output_var_10.name + '_monthly',
-                                            output_var_1.name + '_timestep']))
+                                            output_var_1.name + '_hourly']))
         assert_that(output_main_run_vals, is_([True, True, True]))
         assert_that(output_period_vals, is_([-2, -1, TIMESTEP_LEN]))
         assert_that(output_types, is_(['M', 'M', 'M']))

@@ -1,6 +1,7 @@
 """
 header
 """
+from joj.utils import constants
 
 
 class KeyNotFound(Exception):
@@ -50,3 +51,26 @@ def convert_mb_to_gb_and_round(value_in_mb):
         return round(int(value_in_mb) / 1024.0, 1)
     else:
         return 0
+
+
+def convert_time_period_to_name(time_in_seconds):
+    """
+    Convert time period from seconds to english if possible
+    :param time_in_seconds: the time in seconds (-1 is monthly, and -2 is yearly)
+    :return: description of time period e.g. Hourly or every x seconds
+    """
+
+    if time_in_seconds is None or time_in_seconds == 0:
+        return 'Unknown time period'
+    if time_in_seconds == constants.JULES_MONTHLY_PERIOD:
+        return 'Monthly'
+    if time_in_seconds == constants.JULES_YEARLY_PERIOD:
+        return 'Yearly'
+    if time_in_seconds == constants.JULES_DAILY_PERIOD:
+        return 'Daily'
+    if time_in_seconds == 60*60:
+        return 'Hourly'
+    if time_in_seconds % 60 == 0:
+        minutes = time_in_seconds / 60
+        return 'Every {} minutes'.format(minutes)
+    return 'Every {} seconds'.format(time_in_seconds)

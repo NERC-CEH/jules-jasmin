@@ -23,7 +23,6 @@ from joj.model.model_run_extent_schema import ModelRunExtentSchema
 
 from joj.utils.utils import find_by_id, KeyNotFound
 from joj.utils import output_controller_helper
-from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD, JULES_DAILY_PERIOD, JULES_YEARLY_PERIOD
 from joj.utils import utils
 from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
@@ -534,11 +533,11 @@ class ModelRunController(BaseController):
                 for output_period in selected_output_periods:
                     if output_period.group_id == selected_var.group_id:
                         period = output_period.get_value_as_python()
-                        if period == JULES_YEARLY_PERIOD:
+                        if period == constants.JULES_YEARLY_PERIOD:
                             outputs[var_name].append('Yearly')
-                        elif period == JULES_MONTHLY_PERIOD:
+                        elif period == constants.JULES_MONTHLY_PERIOD:
                             outputs[var_name].append('Monthly')
-                        elif period == JULES_DAILY_PERIOD:
+                        elif period == constants.JULES_DAILY_PERIOD:
                             outputs[var_name].append('Daily')
                         else:
                             outputs[var_name].append('Hourly')

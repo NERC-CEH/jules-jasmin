@@ -108,6 +108,11 @@ RUN_ID = "majic"
 # Set the name of the output directory (if changed copy to job_runner)
 OUTPUT_DIR = 'output'
 
+# Periods for jules output
+JULES_YEARLY_PERIOD = -2
+JULES_MONTHLY_PERIOD = -1
+JULES_DAILY_PERIOD = 24 * 60 * 60
+
 # Constants for Jules Parameters (so we can easily update if they change name etc)
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_USE_SUBGRID = [JULES_NML_MODEL_GRID, "use_subgrid"]

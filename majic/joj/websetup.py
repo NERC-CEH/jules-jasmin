@@ -374,12 +374,15 @@ def setup_app(command, conf, vars):
         driving_ds_1.geographic_region = 'United Kingdom'
         driving_ds_1.temporal_resolution = '24 Hours'
         driving_ds_1.spatial_resolution = '1 km'
-        driving_ds_1.boundary_lat_north = 50
-        driving_ds_1.boundary_lat_south = 40
-        driving_ds_1.boundary_lon_west = -30
-        driving_ds_1.boundary_lon_east = 10
+        driving_ds_1.boundary_lat_north = 90
+        driving_ds_1.boundary_lat_south = -90
+        driving_ds_1.boundary_lon_west = -180
+        driving_ds_1.boundary_lon_east = 180
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
-        driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
+        if conf['full_data_range']:
+            driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
+        else:
+            driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.order_by_id = 100
 
         cat1 = LandCoverRegionCategory()

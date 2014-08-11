@@ -42,7 +42,6 @@ class TestRedirectOnLogin(TestController):
             ['home', 'index', None],
             ['home', 'password', '4'],
             ['account', 'login', None],
-            ['account', 'dologin', None],
             ['request_account', 'license', None],
             ['request_account', 'request', None]
         ]
@@ -57,3 +56,20 @@ class TestRedirectOnLogin(TestController):
             response = self.app.get(url=theurl)
 
             assert_that(response.status_code, is_(200), "For %s" % theurl)
+
+    def test_GIVEN_not_logged_in_WHEN_post_to_known_public_or_home_page_THEN_no_redirect(self):
+
+        pages = [
+            ['account', 'dologin', None],
+        ]
+
+        for controller, action, id in pages:
+            if id:
+                theurl = url(controller=controller, action=action, id=id)
+            elif action:
+                theurl = url(controller=controller, action=action)
+            else:
+                theurl = url(controller=controller)
+            response = self.app.post(url=theurl)
+
+            assert_that(response.status_code, is_(302), "For %s" % theurl)
