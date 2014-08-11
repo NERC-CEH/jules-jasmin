@@ -3,10 +3,11 @@
 """
 from hamcrest import *
 from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User, LandCoverAction, \
-    LandCoverRegion
+    LandCoverRegion, DrivingDataset
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests import TestController
+from joj.services.dataset import DatasetService
 from pylons import config
 
 
@@ -175,7 +176,19 @@ class TestJobRunnerClient(TestController):
 
     def test_GIVEN_model_with_land_cover_actions_WHEN_convert_to_dictionary_THEN_land_cover_actions_present(self):
 
-        job_runner_client = JobRunnerClient(config)
+        mock_dataset_service = DatasetService()
+        fractional_base_file = "fractional_file.nc"
+        def _mock_get_driving_dataset_by_id(id):
+
+            def _mock_get_python_parameter_value(id):
+                return fractional_base_file
+            driving_data = DrivingDataset()
+            driving_data.get_python_parameter_value = _mock_get_python_parameter_value
+            return driving_data
+
+        mock_dataset_service.get_driving_dataset_by_id = _mock_get_driving_dataset_by_id
+
+        job_runner_client = JobRunnerClient(config, dataset_service=mock_dataset_service)
 
         parameter = Parameter(name='param1')
         expected_parameter_value = '12'
@@ -220,7 +233,10 @@ class TestJobRunnerClient(TestController):
         land_cover_actions = [lca1, lca2]
 
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, land_cover_actions)
-        result_lc_actions = result[constants.JSON_LAND_COVER_ACTIONS]
+        result_lc = result[constants.JSON_LAND_COVER]
+
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_(fractional_base_file))
+        result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
 
         assert_that(len(result_lc_actions), is_(2))
         action1 = result_lc_actions[0]

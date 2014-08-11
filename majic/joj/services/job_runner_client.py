@@ -7,6 +7,7 @@ import requests
 import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
+from joj.services.dataset import DatasetService
 
 log = logging.getLogger(__name__)
 
@@ -16,8 +17,9 @@ class JobRunnerClient(object):
     Client to contact the job runner service
     """
 
-    def __init__(self, config):
+    def __init__(self, config, dataset_service=DatasetService()):
         self._config = config
+        self.dataset_service = dataset_service
         self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
     def submit(self, model, parameters, land_cover_actions):
@@ -108,12 +110,18 @@ class JobRunnerClient(object):
                         parameter_value.group_id)
                     namelist[constants.JSON_MODEL_PARAMETERS][parameter.name] = parameter_value.value
 
-        json_actions = []
-        for action in land_cover_actions:
-            json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
-                           constants.JSON_LAND_COVER_VALUE: action.value_id,
-                           constants.JSON_LAND_COVER_ORDER: action.order}
-            json_actions.append(json_action)
+        json_land_cover = {}
+        if land_cover_actions:
+            driving_data = self.dataset_service.get_driving_dataset_by_id(run_model.driving_dataset_id)
+            fractional_base_filename = driving_data.get_python_parameter_value(constants.JULES_PARAM_LAND_FRAC_FILE)
+            json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+            json_actions = []
+            for action in land_cover_actions:
+                json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                               constants.JSON_LAND_COVER_VALUE: action.value_id,
+                               constants.JSON_LAND_COVER_ORDER: action.order}
+                json_actions.append(json_action)
+            json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
 
         return \
             {
@@ -123,7 +131,7 @@ class JobRunnerClient(object):
                 constants.JSON_USER_ID: run_model.user.id,
                 constants.JSON_USER_NAME: run_model.user.username,
                 constants.JSON_USER_EMAIL: run_model.user.email,
-                constants.JSON_LAND_COVER_ACTIONS: json_actions
+                constants.JSON_LAND_COVER: json_land_cover
             }
 
     def _find_or_create_namelist_file(self, namelist_files, namelist_filename):
