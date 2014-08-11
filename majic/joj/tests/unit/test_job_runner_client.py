@@ -174,29 +174,19 @@ class TestJobRunnerClient(TestController):
         parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
         assert_that(parameters_result, is_({}), "there are no values")
 
+        assert_that(len(result[constants.JSON_LAND_COVER]), is_(0))
+
     def test_GIVEN_model_with_land_cover_actions_WHEN_convert_to_dictionary_THEN_land_cover_actions_present(self):
 
-        mock_dataset_service = DatasetService()
-        fractional_base_file = "fractional_file.nc"
-        def _mock_get_driving_dataset_by_id(id):
+        job_runner_client = JobRunnerClient(config)
 
-            def _mock_get_python_parameter_value(id):
-                return fractional_base_file
-            driving_data = DrivingDataset()
-            driving_data.get_python_parameter_value = _mock_get_python_parameter_value
-            return driving_data
-
-        mock_dataset_service.get_driving_dataset_by_id = _mock_get_driving_dataset_by_id
-
-        job_runner_client = JobRunnerClient(config, dataset_service=mock_dataset_service)
-
-        parameter = Parameter(name='param1')
-        expected_parameter_value = '12'
+        parameter = Parameter(name='file')
+        expected_parameter_value = 'base_frac_file.nc'
         expected_index = 3
         #There is only one parameter value per run:
         parameter.parameter_values = [ParameterValue(value=expected_parameter_value)]
 
-        namelist = Namelist(name='NAME_LIST')
+        namelist = Namelist(name='JULES_FRAC')
         namelist_file = NamelistFile(filename='filename')
 
         namelist.parameters = [parameter]
@@ -235,7 +225,7 @@ class TestJobRunnerClient(TestController):
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, land_cover_actions)
         result_lc = result[constants.JSON_LAND_COVER]
 
-        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_(fractional_base_file))
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_(expected_parameter_value))
         result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
 
         assert_that(len(result_lc_actions), is_(2))
@@ -248,3 +238,9 @@ class TestJobRunnerClient(TestController):
         assert_that(action2[constants.JSON_LAND_COVER_MASK_FILE], is_("region2.nc"))
         assert_that(action2[constants.JSON_LAND_COVER_ORDER], is_(2))
         assert_that(action2[constants.JSON_LAND_COVER_VALUE], is_(5))
+
+        namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
+        parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
+        assert_that(parameters_result.values()[0], is_(constants.USER_EDITED_FRACTIONAL_FILENAME))
+
+

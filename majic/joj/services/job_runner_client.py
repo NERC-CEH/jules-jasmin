@@ -90,6 +90,25 @@ class JobRunnerClient(object):
         :param land_cover_actions:
         :return: dictionary for the run model
         """
+        json_land_cover = {}
+        if land_cover_actions:
+            # Identify the base land cover file, and rename the parameter to be the new file we'll create
+            fractional_base_filename = ''
+            for parameter in parameters:
+                if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
+                    if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
+                        fractional_base_filename = parameter.parameter_values[0].value
+                        parameter.parameter_values[0].value = constants.USER_EDITED_FRACTIONAL_FILENAME
+            json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+
+            json_actions = []
+            for action in land_cover_actions:
+                json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                               constants.JSON_LAND_COVER_VALUE: action.value_id,
+                               constants.JSON_LAND_COVER_ORDER: action.order}
+                json_actions.append(json_action)
+            json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
+
         namelist_files = []
 
         for parameter in parameters:
@@ -109,19 +128,6 @@ class JobRunnerClient(object):
                         parameter.namelist.index_in_file,
                         parameter_value.group_id)
                     namelist[constants.JSON_MODEL_PARAMETERS][parameter.name] = parameter_value.value
-
-        json_land_cover = {}
-        if land_cover_actions:
-            driving_data = self.dataset_service.get_driving_dataset_by_id(run_model.driving_dataset_id)
-            fractional_base_filename = driving_data.get_python_parameter_value(constants.JULES_PARAM_LAND_FRAC_FILE)
-            json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
-            json_actions = []
-            for action in land_cover_actions:
-                json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
-                               constants.JSON_LAND_COVER_VALUE: action.value_id,
-                               constants.JSON_LAND_COVER_ORDER: action.order}
-                json_actions.append(json_action)
-            json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
 
         return \
             {
@@ -168,7 +174,7 @@ class JobRunnerClient(object):
         if group_id is not None:
             for namelist in namelists:
                 if namelist[constants.JSON_MODEL_NAMELIST_NAME] == namelist_name \
-                   and namelist[constants.JSON_MODEL_NAMELIST_GROUP_ID] is None:
+                        and namelist[constants.JSON_MODEL_NAMELIST_GROUP_ID] is None:
                     namelists.remove(namelist)
                     break
 
