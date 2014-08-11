@@ -71,6 +71,11 @@ JSON_STATUS_STORAGE = 'storage_in_mb'
 JSON_STATUS_START_TIME = 'start_time'
 JSON_STATUS_END_TIME = 'end_time'
 
+JSON_LAND_COVER_ACTIONS = 'land_cover_actions'
+JSON_LAND_COVER_MASK_FILE = 'land_cover_mask_file'
+JSON_LAND_COVER_VALUE = 'land_cover_value'
+JSON_LAND_COVER_ORDER = 'land_cover_order'
+
 # Constants for reading netCDF files
 NETCDF_LATITUDE = ['Latitude', 'lat']
 NETCDF_LONGITUDE = ['Longitude', 'lon']

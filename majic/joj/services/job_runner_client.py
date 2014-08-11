@@ -20,14 +20,15 @@ class JobRunnerClient(object):
         self._config = config
         self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
-    def submit(self, model, parameters):
+    def submit(self, model, parameters, land_cover_actions):
         """
         Submit the model to the job_runner service
         :param model: the run model including parameters
         :param parameters: List of parameters to submit
+        :param land_cover_actions: List of land cover actions to apply
         :return: status the model run is in and a message
         """
-        data = self.convert_model_to_dictionary(model, parameters)
+        data = self.convert_model_to_dictionary(model, parameters, land_cover_actions)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
             response = self._post_securely(url, data)
@@ -79,11 +80,12 @@ class JobRunnerClient(object):
         else:
             raise ServiceException(response.text)
 
-    def convert_model_to_dictionary(self, run_model, parameters):
+    def convert_model_to_dictionary(self, run_model, parameters, land_cover_actions):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
         :param run_model: the run model
         :param parameters: Model run parameters
+        :param land_cover_actions:
         :return: dictionary for the run model
         """
         namelist_files = []
@@ -106,6 +108,13 @@ class JobRunnerClient(object):
                         parameter_value.group_id)
                     namelist[constants.JSON_MODEL_PARAMETERS][parameter.name] = parameter_value.value
 
+        json_actions = []
+        for action in land_cover_actions:
+            json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                           constants.JSON_LAND_COVER_VALUE: action.value_id,
+                           constants.JSON_LAND_COVER_ORDER: action.order}
+            json_actions.append(json_action)
+
         return \
             {
                 constants.JSON_MODEL_RUN_ID: run_model.id,
@@ -113,7 +122,8 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_NAMELIST_FILES: namelist_files,
                 constants.JSON_USER_ID: run_model.user.id,
                 constants.JSON_USER_NAME: run_model.user.username,
-                constants.JSON_USER_EMAIL: run_model.user.email
+                constants.JSON_USER_EMAIL: run_model.user.email,
+                constants.JSON_LAND_COVER_ACTIONS: json_actions
             }
 
     def _find_or_create_namelist_file(self, namelist_files, namelist_filename):
