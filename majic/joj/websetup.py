@@ -629,8 +629,8 @@ def setup_app(command, conf, vars):
 
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
 
-        land_cover_types = {1: 'BT', 2: 'NT', 3: 'C3G', 4: 'C4G', 5: 'Shrub', 6: 'Urban', 7: 'Lake', 8: 'Soil',
-                            9: 'Ice'}
+        land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
+                            6: 'Urban', 7: 'Lake', 8: 'Soil', 9: 'Ice'}
         for index in land_cover_types:
             land_cover_type = LandCoverValue()
             land_cover_type.index = index

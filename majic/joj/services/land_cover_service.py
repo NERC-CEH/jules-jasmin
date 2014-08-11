@@ -1,6 +1,7 @@
 """
 header
 """
+from sqlalchemy import asc
 from sqlalchemy.orm import subqueryload
 from joj.services.general import DatabaseService
 from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
@@ -59,10 +60,16 @@ class LandCoverService(DatabaseService):
                 session.add(land_cover_action)
 
     def get_land_cover_actions_for_model(self, model_run):
+        """
+        Get all land cover actions saved for a model run
+        :param model_run: Model run to retrieve for
+        :return: List of land cover actions
+        """
         with self.readonly_scope() as session:
             return session.query(LandCoverAction)\
                 .filter(LandCoverAction.model_run_id == model_run.id)\
                 .options(subqueryload(LandCoverAction.region)
                          .subqueryload(LandCoverRegion.category))\
                 .options(subqueryload(LandCoverAction.value))\
+                .order_by(asc(LandCoverAction.order))\
                 .all()

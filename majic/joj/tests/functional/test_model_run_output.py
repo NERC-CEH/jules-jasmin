@@ -179,7 +179,7 @@ class TestModelRunOutput(TestController):
             params=params)
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='extents')), "url")
+                    is_(url(controller='model_run', action='land_cover')), "url")
 
     def test_GIVEN_nsmax_set_zero_WHEN_page_get_THEN_nsmax_parameters_not_available_on_page(self):
         self.model_run_service.save_parameter(JULES_PARAM_NSMAX, 0, self.user)

@@ -66,12 +66,12 @@ class LandCoverControllerHelper(object):
             for key in values:
                 if 'region' in key:
                     if not self._does_region_belong_to_driving_data(int(values[key]), driving_data):
-                        errors['land_cover'] = "Land Cover Region not valid for the chosen driving data"
+                        errors['land_cover_actions'] = "Land Cover Region not valid for the chosen driving data"
                 if 'value' in key:
                     if not int(values[key]) in land_cover_value_ids:
-                        errors['land_cover'] = "Land Cover Value does not correspond to a valid land cover type"
+                        errors['land_cover_actions'] = "Land Cover Value does not correspond to a valid land cover type"
         except ValueError:
-            errors['land_cover'] = "Value is not an integer"
+            errors['land_cover_actions'] = "Value is not an integer"
 
     def _validate_land_cover_actions(self, errors, land_cover_actions, model_run):
         land_cover_values = self.land_cover_service.get_land_cover_values()
@@ -81,7 +81,7 @@ class LandCoverControllerHelper(object):
             if action.value_id not in land_cover_value_ids:
                 errors['land_cover_actions'] = "Land Cover Value does not correspond to a valid land cover type"
             if not action.region.category.driving_dataset_id == model_run.driving_dataset_id:
-                errors['land_cover_actions'] = "Land Cover Region not valid for the chosen driving data"
+                errors['land_cover_actions'] = "Your saved Land Cover edits are not valid for the chosen driving data"
 
     def _does_region_belong_to_driving_data(self, region_id, driving_data):
         land_cover_region = self.land_cover_service.get_land_cover_region_by_id(region_id)
