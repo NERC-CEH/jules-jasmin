@@ -6,7 +6,7 @@ from urlparse import urlparse
 from hamcrest import *
 from joj.tests import *
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
-from joj.model import Session
+from joj.model import Session, session_scope, LandCoverRegion, LandCoverRegionCategory, LandCoverAction
 from joj.utils import constants
 
 
@@ -124,11 +124,39 @@ class TestModelRunSummaryController(TestWithFullModelRun):
         assert_that(response.normal_body, contains_string(str(self.date_start.strftime("%Y-%m-%d"))))
         assert_that(response.normal_body, contains_string(str(self.date_end.strftime("%Y-%m-%d"))))
 
+        assert_that(response.normal_body, contains_string("No land cover edits made"))
+
         output_variable_1 = self.model_run_service.get_output_variable_by_id(1)
         output_variable_10 = self.model_run_service.get_output_variable_by_id(10)
         assert_that(response.normal_body, contains_string(str(output_variable_1.description)))
         assert_that(response.normal_body, contains_string(str(output_variable_10.description)))
         self.assert_model_run_creation_action(self.user, 'submit')
+
+    def test_GIVEN_land_cover_action_saved_WHEN_view_submit_page_THEN_land_cover_action_shown(self):
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+
+        with session_scope() as session:
+            land_cover_cat = LandCoverRegionCategory()
+            land_cover_cat.driving_dataset_id = model_run.driving_dataset_id
+            land_cover_cat.name = "Rivers"
+
+            land_cover_region = LandCoverRegion()
+            land_cover_region.name = "Thames"
+            land_cover_region.category = land_cover_cat
+
+            land_cover_action = LandCoverAction()
+            land_cover_action.model_run = model_run
+            land_cover_action.value_id = 9
+            land_cover_action.region = land_cover_region
+            land_cover_action.order = 1
+
+            session.add(land_cover_action)
+
+        response = self.app.get(
+            url(controller='model_run', action='submit'))
+
+        assert_that(response.normal_body, contains_string("Change Thames (Rivers) to Ice"))
 
     def test_GIVEN_alternate_workflow_branch_followed_WHEN_reach_submit_THEN_parameter_values_the_same(self):
         # We create a model run, then simulate going back to the first page and recreating it with different options

@@ -30,10 +30,12 @@ from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.services.general import ServiceException
-
+from joj.services.land_cover_service import LandCoverService
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
 
+
 # The prefix given to parameter name in html elements
+
 PARAMETER_NAME_PREFIX = 'param'
 
 # Message to show when the submission has failed
@@ -520,6 +522,9 @@ class ModelRunController(BaseController):
             c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
 
             c.driving_data_name = model_run.driving_dataset.name
+
+            land_cover_service = LandCoverService()
+            c.land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model_run)
 
             output_variables = self._model_run_service.get_output_variables()
             output_variable_dict = dict((x.name, x.description) for x in output_variables)
