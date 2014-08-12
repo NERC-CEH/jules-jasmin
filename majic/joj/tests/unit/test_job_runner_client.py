@@ -3,11 +3,10 @@
 """
 from hamcrest import *
 from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User, LandCoverAction, \
-    LandCoverRegion, DrivingDataset
+    LandCoverRegion
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests import TestController
-from joj.services.dataset import DatasetService
 from pylons import config
 
 
@@ -182,14 +181,17 @@ class TestJobRunnerClient(TestController):
 
         parameter = Parameter(name='file')
         expected_parameter_value = 'base_frac_file.nc'
-        expected_index = 3
-        #There is only one parameter value per run:
         parameter.parameter_values = [ParameterValue(value=expected_parameter_value)]
+
+        parameter2 = Parameter(name='frac_name')
+        expected_parameter_value2 = 'frac'
+        parameter2.parameter_values = [ParameterValue(value=expected_parameter_value2)]
 
         namelist = Namelist(name='JULES_FRAC')
         namelist_file = NamelistFile(filename='filename')
+        expected_index = 3
 
-        namelist.parameters = [parameter]
+        namelist.parameters = [parameter, parameter2]
         namelist.namelist_file = namelist_file
         namelist.index_in_file = expected_index
 
@@ -198,7 +200,7 @@ class TestJobRunnerClient(TestController):
         code_version = CodeVersion(name='Jules v3.4.1')
 
         model_run.code_version = code_version
-        code_version.parameters = [parameter]
+        code_version.parameters = [parameter, parameter2]
 
         user = User()
         user.id = 1
@@ -226,6 +228,7 @@ class TestJobRunnerClient(TestController):
         result_lc = result[constants.JSON_LAND_COVER]
 
         assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_(expected_parameter_value))
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_KEY], is_(expected_parameter_value2))
         result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
 
         assert_that(len(result_lc_actions), is_(2))
@@ -241,6 +244,5 @@ class TestJobRunnerClient(TestController):
 
         namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
         parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
-        assert_that(parameters_result.values()[0], is_(constants.USER_EDITED_FRACTIONAL_FILENAME))
-
-
+        assert_that(parameters_result['file'], is_(constants.USER_EDITED_FRACTIONAL_FILENAME))
+        assert_that(parameters_result['frac_name'], is_('frac'))

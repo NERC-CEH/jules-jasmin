@@ -7,7 +7,6 @@ import requests
 import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
-from joj.services.dataset import DatasetService
 
 log = logging.getLogger(__name__)
 
@@ -92,13 +91,18 @@ class JobRunnerClient(object):
         json_land_cover = {}
         if land_cover_actions:
             # Identify the base land cover file, and rename the parameter to be the new file we'll create
+            # Identify the name of the base land cover variable
             fractional_base_filename = ''
+            fractional_base_variable_key = ''
             for parameter in parameters:
                 if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
                     if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
                         fractional_base_filename = parameter.parameter_values[0].value
                         parameter.parameter_values[0].value = constants.USER_EDITED_FRACTIONAL_FILENAME
+                    elif parameter.name == constants.JULES_PARAM_FRAC_NAME[1]:
+                        fractional_base_variable_key = parameter.parameter_values[0].value
             json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+            json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
 
             json_actions = []
             for action in land_cover_actions:

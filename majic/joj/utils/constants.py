@@ -75,6 +75,7 @@ JSON_LAND_COVER = 'land_cover'
 JSON_LAND_COVER_ACTIONS = 'land_cover_actions'
 JSON_LAND_COVER_MASK_FILE = 'land_cover_mask_file'
 JSON_LAND_COVER_BASE_FILE = 'land_cover_base_file'
+JSON_LAND_COVER_BASE_KEY = 'land_cover_base_key'
 JSON_LAND_COVER_VALUE = 'land_cover_value'
 JSON_LAND_COVER_ORDER = 'land_cover_order'
 

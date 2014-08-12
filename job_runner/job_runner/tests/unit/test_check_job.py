@@ -1,16 +1,17 @@
-# header
-from formencode import Invalid
-
+"""
+header
+"""
 
 from hamcrest import *
 from mock import Mock
+from datetime import datetime
+import pytz
 from job_runner.model.job_status import JobStatus
 from job_runner.tests import TestController
 from job_runner.utils import constants
-from job_runner.services.job_service import JobService, ServiceException
+from job_runner.services.job_service import JobService
+from job_runner.services.service_exception import ServiceException
 from job_runner.model.log_file_parser import LogFileParser
-from datetime import datetime
-import pytz
 
 
 class TestJobRunnerClient(TestController):

@@ -12,7 +12,7 @@ VALID_SINGLE_PROCESSOR_CODE_VERSIONS = {'Jules v3.4.1': 'submit_jules_single_pro
 OUTPUT_DIR = 'output'
 # The list of filenames which the job_file controller API is allowed to create / write to remotely.
 WHITELISTED_FILE_NAMES = ["fractional.dat", "user_uploaded_driving_data.dat"]
-
+USER_EDITED_FRACTIONAL_FILENAME = 'user_edited_land_cover_fractional_file.nc'
 
 JULES_RUN_COMPLETED_MESSAGE = 'Run completed successfully'
 JULES_FATAL_ERROR_PREFIX = "[FATAL ERROR]"
@@ -41,6 +41,7 @@ JSON_LAND_COVER = 'land_cover'
 JSON_LAND_COVER_ACTIONS = 'land_cover_actions'
 JSON_LAND_COVER_MASK_FILE = 'land_cover_mask_file'
 JSON_LAND_COVER_BASE_FILE = 'land_cover_base_file'
+JSON_LAND_COVER_BASE_KEY = 'land_cover_base_key'
 JSON_LAND_COVER_VALUE = 'land_cover_value'
 JSON_LAND_COVER_ORDER = 'land_cover_order'
 

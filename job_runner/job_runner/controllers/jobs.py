@@ -9,8 +9,9 @@ from pylons.decorators import jsonify
 
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
-from job_runner.services.job_service import JobService, ServiceException
+from job_runner.services.job_service import JobService
 from job_runner.model.job_status import JobStatus
+from job_runner.services.service_exception import ServiceException
 
 log = logging.getLogger(__name__)
 
