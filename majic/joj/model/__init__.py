@@ -1,7 +1,9 @@
 """
 # header
 """
+from sqlalchemy import engine_from_config, create_engine
 from joj.model.meta import Session, Base
+from contextlib import contextmanager
 
 #import all the database models in so they can be built
 from joj.model.account_request import AccountRequest
@@ -17,7 +19,6 @@ from joj.model.user import User
 from joj.model.user_level import UserLevel
 from joj.model.dataset_type import DatasetType
 from joj.model.dataset import Dataset
-from joj.model.ecomaps_models import *
 from joj.model.driving_dataset_location import DrivingDatasetLocation
 from joj.model.driving_dataset import DrivingDataset
 from joj.model.driving_dataset_parameter_value import DrivingDatasetParameterValue

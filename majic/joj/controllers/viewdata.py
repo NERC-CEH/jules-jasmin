@@ -20,7 +20,6 @@ from joj.lib.status_builder import StatusBuilder
 import joj.lib.usage_logger as usage_logger
 import joj.lib.viewdataExport as viewdataExport
 from joj.controllers.wmsviz import WmsvizController
-from joj.services.analysis import AnalysisService
 from joj.services.dataset import DatasetService
 from joj.services.user import UserService
 
@@ -35,17 +34,14 @@ class ViewdataController(WmsvizController):
 
     _user_service = None
     _dataset_service = None
-    _analysis_service = None
 
     def __init__(self,
                  user_service=UserService(),
-                 dataset_service=DatasetService(),
-                 analysis_service=AnalysisService()):
+                 dataset_service=DatasetService()):
 
         super(WmsvizController, self).__init__()
         self._user_service = user_service
         self._dataset_service = dataset_service
-        self._analysis_service = analysis_service
 
     def _getConfiguration():
         """ Reads the configuration values.
@@ -186,17 +182,14 @@ class ViewdataController(WmsvizController):
         #return [layer.entity.getAsDict() for layer in layer_list[0]]
 
     def layers(self, id):
-        """ Returns a view on a dataset's map layers
-            @param dataset_id: The ID of the dataset to get the layer data for
         """
-        dataset = self._dataset_service.get_dataset_by_id(id,
-                                                          user_id=self.current_user.id)
+        Returns a view on a dataset's map layers
+        :param id: The ID of the dataset to get the layer data for
+        :return: rendered layer
+        """
+        dataset = self._dataset_service.get_dataset_by_id(id, user_id=self.current_user.id)
 
         c.dataset = dataset
-
-        if dataset.dataset_type.type == 'Result':
-            c.analysis_id = self._analysis_service.get_analysis_for_result_dataset(dataset.id)
-
         c.layers = self.get_layers_for_dataset(dataset)
 
         c.dimensions = []
