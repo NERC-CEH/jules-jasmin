@@ -17,9 +17,8 @@ class JobRunnerClient(object):
     Client to contact the job runner service
     """
 
-    def __init__(self, config, dataset_service=DatasetService()):
+    def __init__(self, config):
         self._config = config
-        self.dataset_service = dataset_service
         self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
     def submit(self, model, parameters, land_cover_actions):

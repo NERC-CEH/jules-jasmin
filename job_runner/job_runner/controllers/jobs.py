@@ -81,6 +81,8 @@ class JobsController(BaseController):
         if len(json[JSON_MODEL_NAMELIST_FILES]) == 0:
             abort(400, "Invalid namelist files")
 
+        self._check_field_exists_in_json("land cover", json, JSON_LAND_COVER)
+
         namelist = []
         for namelist_file in json[JSON_MODEL_NAMELIST_FILES]:
             namelist.append(_validate_namelist_file(namelist_file))
