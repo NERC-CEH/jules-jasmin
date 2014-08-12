@@ -42,6 +42,11 @@ class TestJobDataUpdaterCreation(TestWithFullModelRun):
             dataset_names = [dataset.name for dataset in datasets]
             assert_that(dataset_names, contains_inanyorder(
                 contains_string('Monthly'), contains_string('Yearly'), contains_string('Hourly')))
+            dataset_wms_urls = [dataset.wms_url for dataset in datasets]
+            assert_that(dataset_wms_urls, contains_inanyorder(
+                contains_string('output/majic.fch4_wetl_yearly.ncml'),
+                contains_string('output/majic.fch4_wetl_monthly.ncml'),
+                contains_string('output/majic.albedo_land_hourly.ncml')))
 
             datasets = session.query(Dataset)\
                 .filter(Dataset.model_run_id == model_run.id)\

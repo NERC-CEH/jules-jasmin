@@ -189,7 +189,7 @@ class JobStatusUpdaterService(DatabaseService):
         thredds_server = self._config['thredds.server_url'].rstrip("/")
 
         for selected_output_profile_name in selected_output_profile_names:
-            filename = "{output_dir}/{run_id}.{profile_name}.nc".format(
+            filename = "{output_dir}/{run_id}.{profile_name}.ncml".format(
                 run_id=run_id,
                 profile_name=selected_output_profile_name.get_value_as_python(),
                 output_dir=constants.OUTPUT_DIR)

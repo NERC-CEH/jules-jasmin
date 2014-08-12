@@ -379,7 +379,7 @@ def setup_app(command, conf, vars):
         driving_ds_1.boundary_lon_west = -180
         driving_ds_1.boundary_lon_east = 180
         driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
-        if conf['full_data_range']:
+        if conf['full_data_range'].lower() == "true":
             driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
         else:
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
@@ -459,7 +459,7 @@ def setup_app(command, conf, vars):
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
         driving_ds_3.order_by_id = 300
 
-        file_template = 'data/WATCH_2D/driving/{}_190101.nc'
+        file_template = 'data/WATCH_2D/driving/{}.ncml'
 
         for name, var in zip(['PSurf_WFD/PSurf_WFD', 'Tair_WFD/Tair_WFD', 'Qair_WFD/Qair_WFD', 'Wind_WFD/Wind_WFD',
                               'LWdown_WFD/LWdown_WFD', 'SWdown_WFD/SWdown_WFD', 'Rainf_WFD_GPCC/Rainf_WFD_GPCC',
@@ -590,7 +590,7 @@ def setup_app(command, conf, vars):
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
             driving_ds_3.parameter_values.append(ddpv)
 
-        file_template = 'data/met_data/driving/{}_197901.nc'
+        file_template = 'data/met_data/driving/{}.ncml'
 
         for name in ['PSurf_WFDEI_land', 'Tair_WFDEI_land', 'Qair_WFDEI_land', 'Wind_WFDEI_land', 'LWdown_WFDEI_land',
                      'SWdown_WFDEI_land', 'Rainf_WFDEI_GPCC_land', 'Snowf_WFDEI_land']:
