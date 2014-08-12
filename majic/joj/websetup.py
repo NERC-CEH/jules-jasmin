@@ -371,8 +371,8 @@ def setup_app(command, conf, vars):
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
                                    "five variables are at 3 hourly resolution."
         driving_ds_1.dataset = ds1
-        driving_ds_1.geographic_region = 'United Kingdom'
-        driving_ds_1.temporal_resolution = '24 Hours'
+        driving_ds_1.geographic_region = 'Global'
+        driving_ds_1.temporal_resolution = '3 Hours'
         driving_ds_1.spatial_resolution = '1 km'
         driving_ds_1.boundary_lat_north = 90
         driving_ds_1.boundary_lat_south = -90
@@ -472,7 +472,7 @@ def setup_app(command, conf, vars):
 
         parameters1 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
-            [constants.JULES_PARAM_DRIVE_DATA_END, "'1901-01-31 21:00:00'"],
+            [constants.JULES_PARAM_DRIVE_DATA_END, "'2001-12-31 21:00:00'"],
             [constants.JULES_PARAM_DRIVE_DATA_PERIOD, "10800"],
             [constants.JULES_PARAM_DRIVE_FILE, "'data/WATCH_2D/driving/%vv/%vv_%y4%m2.nc'"],
             [constants.JULES_PARAM_DRIVE_NVARS, "8"],
