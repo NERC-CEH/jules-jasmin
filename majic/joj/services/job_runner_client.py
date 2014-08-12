@@ -33,14 +33,14 @@ class JobRunnerClient(object):
             url = self._config['job_runner_url'] + 'jobs/new'
             response = self._post_securely(url, data)
         except Exception, ex:
-            log.error("Failed to submit job %s" % ex.message)
+            log.error("Failed to submit job: %s" % ex.message)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
 
         if response.status_code == 200:
             return constants.MODEL_RUN_STATUS_SUBMITTED, "Model run submitted."
         else:
             log.error("Failed to submit job %s" % response.text)
-            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error %s" % response.text
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % response.text
 
     def get_run_model_statuses(self, model_ids):
         """
@@ -53,7 +53,7 @@ class JobRunnerClient(object):
             response = self._post_securely(url, model_ids)
 
         except Exception, ex:
-            raise ServiceException("Failed to get job statuses %s" % ex.message)
+            raise ServiceException("Failed to get job statuses: %s" % ex.message)
 
         if response.status_code == 200:
             return response.json()
@@ -97,10 +97,10 @@ class JobRunnerClient(object):
             for parameter in parameters:
                 if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
                     if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
-                        fractional_base_filename = parameter.parameter_values[0].value
-                        parameter.parameter_values[0].value = constants.USER_EDITED_FRACTIONAL_FILENAME
+                        fractional_base_filename = parameter.parameter_values[0].get_value_as_python()
+                        parameter.parameter_values[0].set_value_from_python(constants.USER_EDITED_FRACTIONAL_FILENAME)
                     elif parameter.name == constants.JULES_PARAM_FRAC_NAME[1]:
-                        fractional_base_variable_key = parameter.parameter_values[0].value
+                        fractional_base_variable_key = parameter.parameter_values[0].get_value_as_python()
             json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
             json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
 

@@ -180,11 +180,11 @@ class TestJobRunnerClient(TestController):
         job_runner_client = JobRunnerClient(config)
 
         parameter = Parameter(name='file')
-        expected_parameter_value = 'base_frac_file.nc'
+        expected_parameter_value = "'base_frac_file.nc'"
         parameter.parameter_values = [ParameterValue(value=expected_parameter_value)]
 
         parameter2 = Parameter(name='frac_name')
-        expected_parameter_value2 = 'frac'
+        expected_parameter_value2 = "'frac'"
         parameter2.parameter_values = [ParameterValue(value=expected_parameter_value2)]
 
         namelist = Namelist(name='JULES_FRAC')
@@ -227,8 +227,8 @@ class TestJobRunnerClient(TestController):
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, land_cover_actions)
         result_lc = result[constants.JSON_LAND_COVER]
 
-        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_(expected_parameter_value))
-        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_KEY], is_(expected_parameter_value2))
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_("base_frac_file.nc"))
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_KEY], is_("frac"))
         result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
 
         assert_that(len(result_lc_actions), is_(2))
@@ -244,5 +244,5 @@ class TestJobRunnerClient(TestController):
 
         namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
         parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
-        assert_that(parameters_result['file'], is_(constants.USER_EDITED_FRACTIONAL_FILENAME))
-        assert_that(parameters_result['frac_name'], is_('frac'))
+        assert_that(parameters_result['file'], is_("'" + constants.USER_EDITED_FRACTIONAL_FILENAME + "'"))
+        assert_that(parameters_result['frac_name'], is_("'frac'"))
