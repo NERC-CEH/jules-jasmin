@@ -7,6 +7,7 @@ from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
+from sqlalchemy.sql.expression import false
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
 from joj.services.general import DatabaseService
@@ -15,7 +16,7 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
-from sqlalchemy.sql.expression import false
+from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
@@ -286,7 +287,10 @@ class ModelRunService(DatabaseService):
             model = self._get_model_run_being_created(session, user)
             parameters = self._get_parameters_for_creating_model(session, user)
 
-        status_name, message = self._job_runner_client.submit(model, parameters)
+        land_cover_service = LandCoverService()
+        land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model)
+
+        status_name, message = self._job_runner_client.submit(model, parameters, land_cover_actions)
 
         with self.transaction_scope() as session:
             model = self._get_model_run_being_created(session, user)

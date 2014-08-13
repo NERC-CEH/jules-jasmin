@@ -9,8 +9,9 @@ from pylons.decorators import jsonify
 
 from job_runner.lib.base import BaseController
 from job_runner.utils.constants import *
-from job_runner.services.job_service import JobService, ServiceException
+from job_runner.services.job_service import JobService
 from job_runner.model.job_status import JobStatus
+from job_runner.services.service_exception import ServiceException
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +81,8 @@ class JobsController(BaseController):
         self._check_field_exists_in_json("namelist files", json, JSON_MODEL_NAMELIST_FILES)
         if len(json[JSON_MODEL_NAMELIST_FILES]) == 0:
             abort(400, "Invalid namelist files")
+
+        self._check_field_exists_in_json("land cover", json, JSON_LAND_COVER)
 
         namelist = []
         for namelist_file in json[JSON_MODEL_NAMELIST_FILES]:

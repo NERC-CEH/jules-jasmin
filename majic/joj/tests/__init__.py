@@ -208,7 +208,7 @@ class TestController(TestCase):
             driving1.boundary_lon_east = 30
             driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
             driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
-            driving1.order_by_id = 100
+            driving1.view_order_index = 100
             location1 = DrivingDatasetLocation()
             location1.base_url = "base_url"
             location1.driving_dataset = driving1
@@ -236,7 +236,7 @@ class TestController(TestCase):
             driving2.boundary_lon_east = 180
             driving2.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
             driving2.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
-            driving2.order_by_id = 200
+            driving2.view_order_index = 200
 
             location3 = DrivingDatasetLocation()
             location3.base_url = "base_url3"

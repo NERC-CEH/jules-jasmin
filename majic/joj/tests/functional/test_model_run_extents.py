@@ -307,7 +307,7 @@ class TestModelRunExtents(TestController):
             })
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
-                    is_(url(controller='model_run', action='output')), "url")
+                    is_(url(controller='model_run', action='land_cover')), "url")
 
     def test_GIVEN_valid_extents_and_user_over_quota_WHEN_post_THEN_redirect_to_catalogue(self):
         self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)

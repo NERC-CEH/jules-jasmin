@@ -2,7 +2,8 @@
 # header
 """
 from hamcrest import *
-from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User
+from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User, LandCoverAction, \
+    LandCoverRegion
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests import TestController
@@ -40,7 +41,7 @@ class TestJobRunnerClient(TestController):
         user.username = "username"
         model_run.user = user
 
-        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, [])
 
         assert_that(result[constants.JSON_MODEL_RUN_ID], is_(model_run.id), "value is correct")
         assert_that(result[constants.JSON_MODEL_CODE_VERSION], is_(model_run.code_version.name), "value is correct")
@@ -95,7 +96,7 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [param_profile_name, param_var, param_nprofiles]
 
-        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, [])
 
         # Check the result dictionary has the correct run ID and code version
         assert_that(result[constants.JSON_MODEL_RUN_ID], is_(model_run.id), "value is correct")
@@ -161,7 +162,7 @@ class TestJobRunnerClient(TestController):
         model_run.code_version = code_version
         code_version.parameters = [parameter]
 
-        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters)
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, [])
 
         namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
         assert_that(namelist_file_result[constants.JSON_MODEL_NAMELIST_FILE_FILENAME],
@@ -171,3 +172,77 @@ class TestJobRunnerClient(TestController):
 
         parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
         assert_that(parameters_result, is_({}), "there are no values")
+
+        assert_that(len(result[constants.JSON_LAND_COVER]), is_(0))
+
+    def test_GIVEN_model_with_land_cover_actions_WHEN_convert_to_dictionary_THEN_land_cover_actions_present(self):
+
+        job_runner_client = JobRunnerClient(config)
+
+        parameter = Parameter(name='file')
+        expected_parameter_value = "'base_frac_file.nc'"
+        parameter.parameter_values = [ParameterValue(value=expected_parameter_value)]
+
+        parameter2 = Parameter(name='frac_name')
+        expected_parameter_value2 = "'frac'"
+        parameter2.parameter_values = [ParameterValue(value=expected_parameter_value2)]
+
+        namelist = Namelist(name='JULES_FRAC')
+        namelist_file = NamelistFile(filename='filename')
+        expected_index = 3
+
+        namelist.parameters = [parameter, parameter2]
+        namelist.namelist_file = namelist_file
+        namelist.index_in_file = expected_index
+
+        model_run = ModelRun()
+        model_run.id = 101
+        code_version = CodeVersion(name='Jules v3.4.1')
+
+        model_run.code_version = code_version
+        code_version.parameters = [parameter, parameter2]
+
+        user = User()
+        user.id = 1
+        user.email = "email"
+        user.username = "username"
+        model_run.user = user
+
+        lcr1 = LandCoverRegion()
+        lcr1.mask_file = "region1.nc"
+        lca1 = LandCoverAction()
+        lca1.value_id = 9
+        lca1.order = 1
+        lca1.region = lcr1
+
+        lcr2 = LandCoverRegion()
+        lcr2.mask_file = "region2.nc"
+        lca2 = LandCoverAction()
+        lca2.value_id = 5
+        lca2.order = 2
+        lca2.region = lcr2
+
+        land_cover_actions = [lca1, lca2]
+
+        result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, land_cover_actions)
+        result_lc = result[constants.JSON_LAND_COVER]
+
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_("base_frac_file.nc"))
+        assert_that(result_lc[constants.JSON_LAND_COVER_BASE_KEY], is_("frac"))
+        result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
+
+        assert_that(len(result_lc_actions), is_(2))
+        action1 = result_lc_actions[0]
+        assert_that(action1[constants.JSON_LAND_COVER_MASK_FILE], is_("region1.nc"))
+        assert_that(action1[constants.JSON_LAND_COVER_ORDER], is_(1))
+        assert_that(action1[constants.JSON_LAND_COVER_VALUE], is_(9))
+
+        action2 = result_lc_actions[1]
+        assert_that(action2[constants.JSON_LAND_COVER_MASK_FILE], is_("region2.nc"))
+        assert_that(action2[constants.JSON_LAND_COVER_ORDER], is_(2))
+        assert_that(action2[constants.JSON_LAND_COVER_VALUE], is_(5))
+
+        namelist_file_result = result[constants.JSON_MODEL_NAMELIST_FILES][0]
+        parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
+        assert_that(parameters_result['file'], is_("'" + constants.USER_EDITED_FRACTIONAL_FILENAME + "'"))
+        assert_that(parameters_result['frac_name'], is_("'frac'"))

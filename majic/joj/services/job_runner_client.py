@@ -20,26 +20,27 @@ class JobRunnerClient(object):
         self._config = config
         self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
-    def submit(self, model, parameters):
+    def submit(self, model, parameters, land_cover_actions):
         """
         Submit the model to the job_runner service
         :param model: the run model including parameters
         :param parameters: List of parameters to submit
+        :param land_cover_actions: List of land cover actions to apply
         :return: status the model run is in and a message
         """
-        data = self.convert_model_to_dictionary(model, parameters)
+        data = self.convert_model_to_dictionary(model, parameters, land_cover_actions)
         try:
             url = self._config['job_runner_url'] + 'jobs/new'
             response = self._post_securely(url, data)
         except Exception, ex:
-            log.error("Failed to submit job %s" % ex.message)
+            log.error("Failed to submit job: %s" % ex.message)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
 
         if response.status_code == 200:
             return constants.MODEL_RUN_STATUS_SUBMITTED, "Model run submitted."
         else:
             log.error("Failed to submit job %s" % response.text)
-            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error %s" % response.text
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % response.text
 
     def get_run_model_statuses(self, model_ids):
         """
@@ -52,7 +53,7 @@ class JobRunnerClient(object):
             response = self._post_securely(url, model_ids)
 
         except Exception, ex:
-            raise ServiceException("Failed to get job statuses %s" % ex.message)
+            raise ServiceException("Failed to get job statuses: %s" % ex.message)
 
         if response.status_code == 200:
             return response.json()
@@ -79,13 +80,38 @@ class JobRunnerClient(object):
         else:
             raise ServiceException(response.text)
 
-    def convert_model_to_dictionary(self, run_model, parameters):
+    def convert_model_to_dictionary(self, run_model, parameters, land_cover_actions):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
         :param run_model: the run model
         :param parameters: Model run parameters
+        :param land_cover_actions:
         :return: dictionary for the run model
         """
+        json_land_cover = {}
+        if land_cover_actions:
+            # Identify the base land cover file, and rename the parameter to be the new file we'll create
+            # Identify the name of the base land cover variable
+            fractional_base_filename = ''
+            fractional_base_variable_key = ''
+            for parameter in parameters:
+                if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
+                    if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
+                        fractional_base_filename = parameter.parameter_values[0].get_value_as_python()
+                        parameter.parameter_values[0].set_value_from_python(constants.USER_EDITED_FRACTIONAL_FILENAME)
+                    elif parameter.name == constants.JULES_PARAM_FRAC_NAME[1]:
+                        fractional_base_variable_key = parameter.parameter_values[0].get_value_as_python()
+            json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+            json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
+
+            json_actions = []
+            for action in land_cover_actions:
+                json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                               constants.JSON_LAND_COVER_VALUE: action.value_id,
+                               constants.JSON_LAND_COVER_ORDER: action.order}
+                json_actions.append(json_action)
+            json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
+
         namelist_files = []
 
         for parameter in parameters:
@@ -113,7 +139,8 @@ class JobRunnerClient(object):
                 constants.JSON_MODEL_NAMELIST_FILES: namelist_files,
                 constants.JSON_USER_ID: run_model.user.id,
                 constants.JSON_USER_NAME: run_model.user.username,
-                constants.JSON_USER_EMAIL: run_model.user.email
+                constants.JSON_USER_EMAIL: run_model.user.email,
+                constants.JSON_LAND_COVER: json_land_cover
             }
 
     def _find_or_create_namelist_file(self, namelist_files, namelist_filename):
@@ -150,7 +177,7 @@ class JobRunnerClient(object):
         if group_id is not None:
             for namelist in namelists:
                 if namelist[constants.JSON_MODEL_NAMELIST_NAME] == namelist_name \
-                   and namelist[constants.JSON_MODEL_NAMELIST_GROUP_ID] is None:
+                        and namelist[constants.JSON_MODEL_NAMELIST_GROUP_ID] is None:
                     namelists.remove(namelist)
                     break
 

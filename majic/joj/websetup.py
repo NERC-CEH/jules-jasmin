@@ -383,49 +383,37 @@ def setup_app(command, conf, vars):
             driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
         else:
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
-        driving_ds_1.order_by_id = 100
+        driving_ds_1.view_order_index = 100
+        driving_ds_1.usage_order_index = 2
 
         cat1 = LandCoverRegionCategory()
-        cat1.name = "River Catchments"
+        cat1.name = "Test Regions"
         cat1.driving_dataset = driving_ds_1
+
         region1 = LandCoverRegion()
-        region1.name = "River Thames"
+        region1.name = "Equator Horizontal Strip (20 deg)"
         region1.category = cat1
+        region1.mask_file = "data/WATCH_2D/masks/equator-20-degree-horizontal-strip.nc"
+
         region2 = LandCoverRegion()
-        region2.name = "River Itchen"
+        region2.name = "Prime Meridian Vertical Strip (30 deg)"
         region2.category = cat1
+        region2.mask_file = "data/WATCH_2D/masks/meridian-30-degree-vertical-strip.nc"
+
         region3 = LandCoverRegion()
-        region3.name = "River Severn"
+        region3.name = "Russia Square (big)"
         region3.category = cat1
-        cat1.regions = [region1, region2, region3]
+        region3.mask_file = "data/WATCH_2D/masks/russia-square-big.nc"
 
-        cat2 = LandCoverRegionCategory()
-        cat2.name = "Counties"
-        cat2.driving_dataset = driving_ds_1
         region4 = LandCoverRegion()
-        region4.name = "Hampshire"
-        region4.category = cat2
-        region5 = LandCoverRegion()
-        region5.name = "Oxfordshire"
-        region5.category = cat2
-        region6 = LandCoverRegion()
-        region6.name = "Surrey"
-        region6.category = cat2
-        cat2.regions = [region4, region5, region6]
+        region4.name = "Russia Square (small)"
+        region4.category = cat1
+        region4.mask_file = "data/WATCH_2D/masks/russia-square-small.nc"
 
-        cat3 = LandCoverRegionCategory()
-        cat3.name = "UK Countries"
-        cat3.driving_dataset = driving_ds_1
-        region7 = LandCoverRegion()
-        region7.name = "England"
-        region7.category = cat3
-        region8 = LandCoverRegion()
-        region8.name = "Wales"
-        region8.category = cat3
-        region9 = LandCoverRegion()
-        region9.name = "Scotland"
-        region9.category = cat3
-        cat3.regions = [region7, region8, region9]
+        region5 = LandCoverRegion()
+        region5.name = "Wrong Shape Mask"
+        region5.category = cat1
+        region5.mask_file = "data/WATCH_2D/masks/wrong-shape.nc"
 
         driving_ds_2 = DrivingDataset()
         driving_ds_2.name = "UK CHESS Forcing Data"
@@ -442,7 +430,8 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
-        driving_ds_2.order_by_id = 200
+        driving_ds_2.view_order_index = 200
+        driving_ds_2.usage_order_index = 1
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -457,7 +446,8 @@ def setup_app(command, conf, vars):
         driving_ds_3.boundary_lon_east = 180
         driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
-        driving_ds_3.order_by_id = 300
+        driving_ds_3.view_order_index = 300
+        driving_ds_3.usage_order_index = 100
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
@@ -602,7 +592,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
         driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
                                         "single cell site"
-        driving_ds_upload.order_by_id = 1000
+        driving_ds_upload.view_order_index = 1000
 
         parameters_upload = [
 
@@ -632,8 +622,8 @@ def setup_app(command, conf, vars):
 
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
 
-        land_cover_types = {1: 'BT', 2: 'NT', 3: 'C3G', 4: 'C4G', 5: 'Shrub', 6: 'Urban', 7: 'Lake', 8: 'Soil',
-                            9: 'Ice'}
+        land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
+                            6: 'Urban', 7: 'Lake', 8: 'Soil', 9: 'Ice'}
         for index in land_cover_types:
             land_cover_type = LandCoverValue()
             land_cover_type.index = index

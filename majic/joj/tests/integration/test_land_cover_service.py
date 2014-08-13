@@ -189,4 +189,4 @@ class TestLandCoverService(TestWithFullModelRun):
         self.add_land_cover_actions(land_cover_region, model_run, [(1, 1)], self.land_cover_service)
 
         action = self.land_cover_service.get_land_cover_actions_for_model(model_run)[0]
-        assert_that(action.value.name, is_("BT"))
+        assert_that(action.value.name, is_("Broad-leaved Tree"))

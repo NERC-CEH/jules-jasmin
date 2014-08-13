@@ -1,18 +1,16 @@
 """
 header
 """
-from hamcrest import is_, assert_that, contains_string
+from hamcrest import is_, assert_that, contains_string, is_not
 from pylons import url
 from sqlalchemy.orm import subqueryload
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
-from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction
+from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction, DrivingDataset
 from joj.services.dataset import DatasetService
+from joj.services.land_cover_service import LandCoverService
 from joj.utils import constants
-
-
 # noinspection PyProtectedMember
-from services.land_cover_service import LandCoverService
 
 
 class TestModelRunLandCover(TestController):
@@ -85,8 +83,7 @@ class TestModelRunLandCover(TestController):
                 'action_1_order': u'1'
             })
         assert_that(response.normal_body, contains_string("Land Cover"))  # Check still on page
-        assert_that(response.normal_body, contains_string("Your chosen land cover choices are not valid for your"
-                                                          " chosen driving dataset"))
+        assert_that(response.normal_body, contains_string("Land Cover Region not valid for the chosen driving data"))
 
     def test_GIVEN_land_cover_values_and_regions_exist_WHEN_get_THEN_regions_and_categories_rendered(self):
         with session_scope() as session:
@@ -125,10 +122,61 @@ class TestModelRunLandCover(TestController):
         assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Ice</b>"))
 
     def test_GIVEN_invalid_land_cover_actions_already_saved_WHEN_get_THEN_errors_returned_no_actions_rendered(self):
-        assert False
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, self.user)
+            dds = model_run.driving_dataset
+            session.add_all(self.generate_categories_with_regions(dds))
 
-    def test_GIVEN_multiple_land_cover_actions_saved_in_odd_order_WHEN_get_THEN_order_rendered_correctly(self):
-        assert False
+            action = LandCoverAction()
+            action.model_run = model_run
+            action.region_id = 1  # Thames
+            action.value_id = 9  # Ice
+            session.add(action)
+            session.commit()
+
+            # Set the model run to have a different driving dataset - this should result in an error
+            model_run.driving_dataset = session.query(DrivingDataset).filter(DrivingDataset.name == "driving2").one()
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        assert_that(response.normal_body, contains_string("Your saved Land Cover edits are not valid for the "
+                                                          "chosen driving data"))
+        assert_that(response.normal_body, is_not(contains_string("Change <b>")))  # Actions start with this
+
+    def test_GIVEN_multiple_land_cover_actions_saved_out_of_order_WHEN_get_THEN_order_rendered_correctly(self):
+        with session_scope() as session:
+            model_run = self.model_run_service._get_model_run_being_created(session, self.user)
+            dds = model_run.driving_dataset
+            session.add_all(self.generate_categories_with_regions(dds))
+
+            action = LandCoverAction()
+            action.model_run = model_run
+            action.region_id = 1  # Thames
+            action.value_id = 9  # Ice
+            action.order = 5
+            session.add(action)
+            session.commit()
+
+            action2 = LandCoverAction()
+            action2.model_run = model_run
+            action2.region_id = 2  # Itchen
+            action2.value_id = 1  # Broad-leaved Tree
+            action2.order = 1
+            session.add(action2)
+            session.commit()
+
+            action3 = LandCoverAction()
+            action3.model_run = model_run
+            action3.region_id = 3  # Hampshire
+            action3.value_id = 6  # Urban
+            action3.order = 2
+            session.add(action3)
+            session.commit()
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        order1 = response.normal_body.index("Change <b>Itchen (Rivers)</b> to <b>Broad-leaved Tree</b>")
+        order2 = response.normal_body.index("Change <b>Hampshire (Counties)</b> to <b>Urban</b>")
+        order5 = response.normal_body.index("Change <b>Thames (Rivers)</b> to <b>Ice</b>")
+        assert (order1 < order2 < order5)
 
     def generate_categories_with_regions(self, driving_dataset):
             # Add categories

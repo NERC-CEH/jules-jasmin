@@ -74,6 +74,33 @@
     </div>
 
     <div class="row summary">
+        <div id="edit-land-cover-page" class="span1 edit">
+            <div class="icon">
+                <a href="${h.url(controller='model_run', action='land_cover')}" class="edit">
+                    <i class="fa fa-edit fa-2x edit"></i>
+                </a>
+            </div>
+        </div>
+        <div class="span11">
+            <div id="land-cover-page" class="page-group">
+                <py:choose>
+                    <py:when test="len(c.land_cover_actions) == 0">
+                        <p><b>Land Cover Edits - </b>No land cover edits made</p>
+                    </py:when>
+                    <py:otherwise>
+                        <p><b>Land Cover Edits:</b></p>
+                        <ul>
+                            <li py:for="action in c.land_cover_actions">
+                                Change ${action.region.name} (${action.region.category.name}) to ${action.value.name}
+                            </li>
+                        </ul>
+                    </py:otherwise>
+                </py:choose>
+            </div>
+        </div>
+    </div>
+
+    <div class="row summary">
         <div id="edit-output" class="span1 edit">
             <div class="icon">
                 <a href="${h.url(controller='model_run', action='output')}" class="edit">
