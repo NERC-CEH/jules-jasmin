@@ -16,7 +16,7 @@ from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
 from sqlalchemy.sql.expression import false
-from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD
+from services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
