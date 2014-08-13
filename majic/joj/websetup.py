@@ -475,7 +475,7 @@ def setup_app(command, conf, vars):
                                                    "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'     "
                                                    "'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC'"],
             [constants.JULES_PARAM_DRIVE_INTERP,
-             "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
+             "'i'          'i'         'i'         'i'         'nf'          'nf'          'nf'              'nf'"],
             [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
             [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
 

@@ -180,53 +180,66 @@ class TestController(TestCase):
         with session_scope(Session) as session:
             return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
 
+    def create_driving_dataset(self, session):
+        """
+        Create a driving dataset
+        :param session: session to use
+        :return: dataset
+        """
+        model_run_service = ModelRunService()
+
+        driving1 = DrivingDataset()
+        driving1.name = "driving1"
+        driving1.description = "driving 1 description"
+        driving1.geographic_region = 'European'
+        driving1.spatial_resolution = '1km'
+        driving1.temporal_resolution = '24 hours'
+        driving1.boundary_lat_north = 50
+        driving1.boundary_lat_south = -10
+        driving1.boundary_lon_west = -15
+        driving1.boundary_lon_east = 30
+        driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
+        driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
+        driving1.view_order_index = 100
+        location1 = DrivingDatasetLocation()
+        location1.base_url = "base_url"
+        location1.driving_dataset = driving1
+        location2 = DrivingDatasetLocation()
+        location2.base_url = "base_url2"
+        location2.driving_dataset = driving1
+        val = f90_helper.python_to_f90_str(8 * ["i"])
+        pv1 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                           constants.JULES_PARAM_DRIVE_INTERP, val)
+        val = f90_helper.python_to_f90_str(3600)
+        pv2 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                           constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+        session.add(driving1)
+        session.commit()
+
+        driving_data_filename_param_val = DrivingDatasetParameterValue(
+            model_run_service,
+            driving1,
+            constants.JULES_PARAM_DRIVE_FILE,
+            "'testFileName'")
+        session.add(driving_data_filename_param_val)
+        session.commit()
+
+        return driving1
+
     def create_two_driving_datasets(self):
         """
         Creates two driving datasets with datasets, parameter values etc set up
         :return: nothing
         """
-        model_run_service = ModelRunService()
+
         with session_scope(Session) as session:
-            ds1 = Dataset()
-            ds1.name = "Driving dataset 1"
-            ds1.netcdf_url = "url1"
-            ds2 = Dataset()
-            ds2.name = "Driving dataset 2"
-            ds2.netcdf_url = "url2"
-            session.add_all([ds1, ds2])
+            self.create_driving_dataset(session)
 
-            driving1 = DrivingDataset()
-            driving1.name = "driving1"
-            driving1.description = "driving 1 description"
-            driving1.dataset = ds1
-            driving1.geographic_region = 'European'
-            driving1.spatial_resolution = '1km'
-            driving1.temporal_resolution = '24 hours'
-            driving1.boundary_lat_north = 50
-            driving1.boundary_lat_south = -10
-            driving1.boundary_lon_west = -15
-            driving1.boundary_lon_east = 30
-            driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
-            driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
-            driving1.view_order_index = 100
-            location1 = DrivingDatasetLocation()
-            location1.base_url = "base_url"
-            location1.driving_dataset = driving1
-            location2 = DrivingDatasetLocation()
-            location2.base_url = "base_url2"
-            location2.driving_dataset = driving1
-
-            val = f90_helper.python_to_f90_str(8 * ["i"])
-            pv1 = DrivingDatasetParameterValue(model_run_service, driving1,
-                                               constants.JULES_PARAM_DRIVE_INTERP, val)
-            val = f90_helper.python_to_f90_str(3600)
-            pv2 = DrivingDatasetParameterValue(model_run_service, driving1,
-                                               constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+            model_run_service = ModelRunService()
 
             driving2 = DrivingDataset()
             driving2.name = "driving2"
             driving2.description = "driving 2 description"
-            driving2.dataset = ds2
             driving2.geographic_region = 'Global'
             driving2.spatial_resolution = 'Half degree'
             driving2.temporal_resolution = '3 Hours'
@@ -249,15 +262,7 @@ class TestController(TestCase):
             pv4 = DrivingDatasetParameterValue(model_run_service, driving2,
                                                constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
 
-            session.add_all([driving1, driving2])
-            session.commit()
-
-            driving_data_filename_param_val = DrivingDatasetParameterValue(
-                model_run_service,
-                driving1,
-                constants.JULES_PARAM_DRIVE_FILE,
-                "'testFileName'")
-            session.add(driving_data_filename_param_val)
+            session.add(driving2)
 
     def assert_model_run_status_and_return(self, model_run_id, status):
         """

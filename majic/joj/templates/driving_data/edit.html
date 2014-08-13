@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>Edit Driving Data</title>
+    <link rel="stylesheet" type="text/css" href="../layout/ecomaps.css"/>
+</head>
+<body id="admin">
+    <h1>Edit Driving Data</h1>
+
+    <form class="form-horizontal" method="POST">
+        <div class="control-group">
+            <label for="name" class="control-label">Name</label>
+            <div class="controls">
+               ${h.html_tags.text('name', placeholder='Enter a unique name')}
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
+        </div>
+    </form>
+</body>
+</html>
