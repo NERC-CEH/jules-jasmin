@@ -7,6 +7,7 @@ from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
+from sqlalchemy.sql.expression import false
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
 from joj.services.general import DatabaseService
@@ -15,8 +16,7 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
-from sqlalchemy.sql.expression import false
-from services.land_cover_service import LandCoverService
+from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
