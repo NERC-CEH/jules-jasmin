@@ -383,7 +383,8 @@ def setup_app(command, conf, vars):
             driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
         else:
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
-        driving_ds_1.order_by_id = 100
+        driving_ds_1.view_order_index = 100
+        driving_ds_1.usage_order_index = 2
 
         cat1 = LandCoverRegionCategory()
         cat1.name = "Test Regions"
@@ -429,7 +430,8 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
-        driving_ds_2.order_by_id = 200
+        driving_ds_2.view_order_index = 200
+        driving_ds_2.usage_order_index = 1
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -444,7 +446,8 @@ def setup_app(command, conf, vars):
         driving_ds_3.boundary_lon_east = 180
         driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
-        driving_ds_3.order_by_id = 300
+        driving_ds_3.view_order_index = 300
+        driving_ds_3.usage_order_index = 100
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
@@ -589,7 +592,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
         driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
                                         "single cell site"
-        driving_ds_upload.order_by_id = 1000
+        driving_ds_upload.view_order_index = 1000
 
         parameters_upload = [
 
