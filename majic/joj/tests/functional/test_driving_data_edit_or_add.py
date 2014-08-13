@@ -4,7 +4,7 @@
 from hamcrest import *
 from joj.tests import *
 from joj.utils import constants, utils
-from joj.model import session_scope
+from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory
 
 
 class TestDrivingDataEditOrAdd(TestController):
@@ -40,3 +40,36 @@ class TestDrivingDataEditOrAdd(TestController):
 
         assert_that(response.normal_body, contains_string(self.driving_dataset.name))
 
+    def test_GIVEN_no_data_set_WHEN_list_THEN_returns_empty_data_set(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        response = self.app.get(
+            url=url(controller='driving_data', action='edit'),
+            expect_errors=True
+        )
+
+        assert_that(response.normal_body, contains_string('New Driving Data Set'))
+
+    def test_GIVEN_data_set_with_a_region_WHEN_list_THEN_returns_mask(self):
+
+        with session_scope () as session:
+            category = LandCoverRegionCategory()
+            category.driving_dataset = self.driving_dataset
+            category.name = "mycategory"
+
+            region = LandCoverRegion()
+            region.name = "myregion"
+            region.category = category
+            region.mask_file = "data/file_path"
+            session.add(category)
+
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        response = self.app.get(
+            url=url(controller='driving_data', action='edit', id=self.driving_dataset.id),
+            expect_errors=True
+        )
+
+        assert_that(response.normal_body, contains_string(category.name))
+        assert_that(response.normal_body, contains_string(region.name))
+        assert_that(response.normal_body, contains_string(region.mask_file))

@@ -19,6 +19,8 @@ from joj.utils.general_controller_helper import must_be_admin
 from joj.services.model_run_service import ModelRunService
 from joj.services.account_request_service import AccountRequestService
 from joj.services.general import ServiceException
+from joj.model import DrivingDataset
+from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
@@ -26,15 +28,17 @@ log = logging.getLogger(__name__)
 class DrivingDataController(BaseController):
     """Provides operations for driving data page actions"""
 
-    def __init__(self, user_service=UserService(), dataset_service=DatasetService()):
+    def __init__(self, user_service=UserService(), dataset_service=DatasetService(), landcover_service=LandCoverService()):
         """
         Constructor for the user controller, takes in any services required
         :param user_service: User service to use within the controller
+        :param landcover_service: Land cover service to use
         :return: nothing
         """
         super(DrivingDataController, self).__init__(user_service)
 
         self._dataset_service = dataset_service
+        self._landcover_service = landcover_service
 
     @must_be_admin
     def index(self):
@@ -56,8 +60,20 @@ class DrivingDataController(BaseController):
 
         values = {}
         errors = {}
-        c.driving_data_sets = self._dataset_service.get_driving_dataset_by_id(id)
-        values['name'] = c.driving_data_sets.name
+
+        if id is None:
+            c.driving_data_set = DrivingDataset()
+            c.regions = []
+        else:
+            c.driving_data_set = self._dataset_service.get_driving_dataset_by_id(id)
+            c.regions = self._landcover_service.get_land_cover_regions(id)
+
+        values = c.driving_data_set.__dict__
+        for region in c.regions:
+            values['name_{}'.format(region.id)] = region.name
+            values['path_{}'.format(region.id)] = region.mask_file
+            values['category_{}'.format(region.id)] = region.category.name
+
         html = render('driving_data/edit.html')
 
         return htmlfill.render(

@@ -370,7 +370,6 @@ def setup_app(command, conf, vars):
         driving_ds_1.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
                                    "five variables are at 3 hourly resolution."
-        driving_ds_1.dataset = ds1
         driving_ds_1.geographic_region = 'Global'
         driving_ds_1.temporal_resolution = '3 Hours'
         driving_ds_1.spatial_resolution = '1 km'
