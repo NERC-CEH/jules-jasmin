@@ -8,11 +8,9 @@ from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction, DrivingDataset
 from joj.services.dataset import DatasetService
+from joj.services.land_cover_service import LandCoverService
 from joj.utils import constants
-
-
 # noinspection PyProtectedMember
-from services.land_cover_service import LandCoverService
 
 
 class TestModelRunLandCover(TestController):

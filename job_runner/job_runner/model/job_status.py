@@ -3,7 +3,7 @@ header
 """
 
 from job_runner.utils import constants
-from job_runner.services.job_service import ServiceException
+from job_runner.services.service_exception import ServiceException
 
 
 class JobStatus(object):

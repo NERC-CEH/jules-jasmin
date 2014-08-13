@@ -71,8 +71,11 @@ JSON_STATUS_STORAGE = 'storage_in_mb'
 JSON_STATUS_START_TIME = 'start_time'
 JSON_STATUS_END_TIME = 'end_time'
 
+JSON_LAND_COVER = 'land_cover'
 JSON_LAND_COVER_ACTIONS = 'land_cover_actions'
 JSON_LAND_COVER_MASK_FILE = 'land_cover_mask_file'
+JSON_LAND_COVER_BASE_FILE = 'land_cover_base_file'
+JSON_LAND_COVER_BASE_KEY = 'land_cover_base_key'
 JSON_LAND_COVER_VALUE = 'land_cover_value'
 JSON_LAND_COVER_ORDER = 'land_cover_order'
 
@@ -99,6 +102,7 @@ INTERPS_EXTRA_STEPS_RUN_START = {'b': 0, 'c': 1, 'f': 1, 'i': 0, 'nb': 0, 'nc': 
 INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 0}
 
 FRACTIONAL_FILENAME = 'fractional.dat'
+USER_EDITED_FRACTIONAL_FILENAME = 'user_edited_land_cover_fractional_file.nc'
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
 DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_tile',
