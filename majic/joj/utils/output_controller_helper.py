@@ -4,9 +4,6 @@ header
 from hamcrest import assert_that, is_
 from joj.utils import constants
 
-JULES_YEARLY_PERIOD = -2
-JULES_MONTHLY_PERIOD = -1
-JULES_DAILY_PERIOD = 24 * 60 * 60
 TIMESTEP_DESCRIPTION = 'Hourly'  # The description used on the web page for output_period == timestep.
 
 
@@ -45,11 +42,11 @@ def add_selected_outputs_to_template_context(template_context, model_run):
         for output_period in selected_output_periods:
             if output_period.group_id == selected_var.group_id:
                 period = output_period.get_value_as_python()
-                if period == JULES_YEARLY_PERIOD:
+                if period == constants.JULES_YEARLY_PERIOD:
                     template_context.yearly_output_ids.append(param_id)
-                elif period == JULES_MONTHLY_PERIOD:
+                elif period == constants.JULES_MONTHLY_PERIOD:
                     template_context.monthly_output_ids.append(param_id)
-                elif period == JULES_DAILY_PERIOD:
+                elif period == constants.JULES_DAILY_PERIOD:
                     template_context.daily_output_ids.append(param_id)
                 else:
                     template_context.timestep_output_ids.append(param_id)
@@ -69,10 +66,11 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
     timestep = model_run.get_python_parameter_value(constants.JULES_PARAM_TIMESTEP_LEN)
     # The daily time period needs to be a multiple of the timestep so check this here to raise errors
     # before they are sent to JULES
-    assert_that(JULES_DAILY_PERIOD % timestep, is_(0), "The duration of a day (24 * 60 * 60 seconds) as used for the "
-                                                       "output variables is not divisible by the timestep length. "
-                                                       "You should set JULES_TIME::timestep_len to be a factor of "
-                                                       "86400 or JULES won't run correctly.")
+    assert_that(constants.JULES_DAILY_PERIOD % timestep, is_(0),
+                    "The duration of a day (24 * 60 * 60 seconds) as used for the "
+                    "output variables is not divisible by the timestep length. "
+                    "You should set JULES_TIME::timestep_len to be a factor of "
+                    "86400 or JULES won't run correctly.")
     output_variable_groups = []
     for value in post_values:
         if "ov_select_" in value:
@@ -81,21 +79,21 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
             if "ov_yearly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
-                    [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_YEARLY_PERIOD],
+                    [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_YEARLY_PERIOD],
                     [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_monthly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
-                    [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_MONTHLY_PERIOD],
+                    [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_MONTHLY_PERIOD],
                     [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_daily_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
-                    [constants.JULES_PARAM_OUTPUT_PERIOD, JULES_DAILY_PERIOD],
+                    [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_DAILY_PERIOD],
                     [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"]
                 ]
                 output_variable_groups.append(output_variable_group)
@@ -103,7 +101,7 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, timestep],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_timestep"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"]
                 ]
                 output_variable_groups.append(output_variable_group)
     return output_variable_groups

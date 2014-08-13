@@ -7,7 +7,6 @@ from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc
-from sqlalchemy.sql.expression import false
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
 from joj.services.general import DatabaseService
@@ -16,8 +15,8 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
+from sqlalchemy.sql.expression import false
 from joj.utils.output_controller_helper import JULES_MONTHLY_PERIOD
-from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
@@ -156,7 +155,7 @@ class ModelRunService(DatabaseService):
         # Add CHESS defaults:
         chess_defaults = ['surf_roff', 'sub_surf_roff', 'fqw_gb', 'rad_net', 'ftl_gb', 'gpp_gb', 'resp_p_gb',
                           'tstar_gb', 'snow_mass_gb', 't_soil', 'smc_tot', 'smcl', 'swet_liq_tot']
-        chess_periods = [(JULES_MONTHLY_PERIOD, "_monthly")]
+        chess_periods = [(constants.JULES_MONTHLY_PERIOD, "_monthly")]
 
         group_id = 0
         for output_variable in chess_defaults:

@@ -16,6 +16,7 @@
     <serviceName>all</serviceName>
     <filter>
       <include wildcard="*.nc" />
+      <include wildcard="*.ncml" />
       <exclude wildcard="*.dump.*"/>
     </filter>
   </datasetScan>

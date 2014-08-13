@@ -85,7 +85,7 @@ class AccountController(BaseController):
 
                         user_name = request.environ['user.username']
 
-                        log.debug("Looking for %s in Ecomaps DB" % user_name)
+                        log.debug("Looking for %s in Majic DB" % user_name)
 
                         try:
 
@@ -128,12 +128,12 @@ class AccountController(BaseController):
         )
 
     def logout(self):
-        """Action to log the user out of ecomaps - removing their session"""
+        """Action to log the user out - removing their session"""
 
         who_api = get_api(request.environ)
         headers = who_api.logout()
 
-        return HTTPFound(location='/account/login', headers=headers)
+        redirect(url(controller='home', action='index'))
 
 
 def _custom_formatter(error):

@@ -181,21 +181,23 @@ class JobStatusUpdaterService(DatabaseService):
 
         run_id = model_run.get_python_parameter_value(constants.JULES_PARAM_OUTPUT_RUN_ID)
         selected_output_profile_names = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
-        selected_output_variables = {}
-        for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR):
-            selected_output_variables[var.group_id] = var.get_value_as_python()
+        selected_output_periods = {}
+        for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD):
+            selected_output_periods[var.group_id] = var.get_value_as_python()
 
         dataset_type = session.query(DatasetType).filter(DatasetType.type == constants.DATASET_TYPE_COVERAGE).one()
         thredds_server = self._config['thredds.server_url'].rstrip("/")
 
         for selected_output_profile_name in selected_output_profile_names:
-            filename = "{output_dir}/{run_id}.{profile_name}.nc".format(
+            filename = "{output_dir}/{run_id}.{profile_name}.ncml".format(
                 run_id=run_id,
                 profile_name=selected_output_profile_name.get_value_as_python(),
                 output_dir=constants.OUTPUT_DIR)
             is_input = False
 
-            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
+            profile_name = utils.convert_time_period_to_name(
+                selected_output_periods[selected_output_profile_name.group_id])
+            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server, profile_name)
 
         input_locations = session \
             .query(DrivingDatasetLocation) \
@@ -207,7 +209,7 @@ class JobStatusUpdaterService(DatabaseService):
             is_input = True
             self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
 
-    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, thredds_server):
+    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, thredds_server, frequency=None):
         """
         Create a single dataset
         :param dataset_type: the dataset type
@@ -216,6 +218,7 @@ class JobStatusUpdaterService(DatabaseService):
         :param model_run: the model run
         :param session: the session
         :param thredds_server: url of the thredds server
+        :param frequency: extra label to append to the name to indicate frequency
         :return:
         """
         dataset = Dataset()
@@ -239,7 +242,10 @@ class JobStatusUpdaterService(DatabaseService):
                 filename=filename)
 
         dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
-        dataset.name = dap_client.get_longname()
+        if frequency:
+            dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+        else:
+            dataset.name = dap_client.get_longname()
         dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
         session.add(dataset)
 
