@@ -188,7 +188,7 @@ class DrivingDataControllerHelper(object):
                           [constants.JULES_PARAM_DRIVE_DATA_END, end_date],
                           [constants.JULES_PARAM_DRIVE_DATA_PERIOD, self.period],
                           [constants.JULES_PARAM_DRIVE_FILE, constants.USER_UPLOAD_FILE_NAME],
-                          [constants.JULES_PARAM_DRIVE_NVARS, len(self.var_list)],
+                          [constants.JULES_PARAM_DRIVE_NVARS, len(self.var_list or [])],
                           [constants.JULES_PARAM_DRIVE_VAR, self.var_list],
                           [constants.JULES_PARAM_DRIVE_INTERP, self.interp_list],
                           [constants.JULES_PARAM_LATLON_LATITUDE, lat],

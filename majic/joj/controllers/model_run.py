@@ -307,6 +307,12 @@ class ModelRunController(BaseController):
                         auto_error_formatter=BaseController.error_formatter)
                 # If the new selected driving dataset is NOT a user uploaded dataset:
                 if driving_dataset.id != user_upload_ds_id:
+                    # If the previous driving dataset was a user uploaded driving dataset we need to create an uploaded
+                    # driving dataset so that the parameters are removed:
+                    if old_driving_dataset is not None:
+                        if old_driving_dataset.id == user_upload_ds_id:
+                            old_driving_dataset = driving_data_controller_helper.\
+                            _create_uploaded_driving_dataset(None, None, None, None, self._model_run_service)
                     self._model_run_service.save_driving_dataset_for_new_model(
                         driving_dataset,
                         old_driving_dataset,
@@ -397,10 +403,17 @@ class ModelRunController(BaseController):
         """
         Set the land cover options
         """
-        land_cover_controller_helper = LandCoverControllerHelper()
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
         values = dict(request.params)
         errors = {}
+        user_upload_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
+        if model_run.driving_dataset_id == user_upload_id:
+            return self._user_uploaded_land_cover(model_run, values, errors)
+        else:
+            return self._land_cover(model_run, values, errors)
+
+    def _land_cover(self, model_run, values, errors):
+        land_cover_controller_helper = LandCoverControllerHelper()
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
             land_cover_controller_helper.add_land_covers_to_context(c, errors, model_run)
@@ -409,7 +422,7 @@ class ModelRunController(BaseController):
             return render('model_run/land_cover.html')
 
         else:
-            land_cover_controller_helper.save_land_covers(values, errors, model_run)
+            land_cover_controller_helper.save_land_cover_actions(values, errors, model_run)
             if len(errors) > 0:
                 helpers.error_flash(errors['land_cover_actions'])
                 return render('model_run/land_cover.html')
@@ -424,6 +437,9 @@ class ModelRunController(BaseController):
                     redirect(url(controller='model_run', action='output'))
                 else:
                     redirect(url(controller='model_run', action='extents'))
+
+    def _user_uploaded_land_cover(self, model_run, values, errors):
+        pass
 
     def output(self):
         """
