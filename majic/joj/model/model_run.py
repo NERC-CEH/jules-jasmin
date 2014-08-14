@@ -33,6 +33,7 @@ class ModelRun(Base):
     driving_data_lat = Column(Float)
     driving_data_lon = Column(Float)
     driving_data_rows = Column(Integer)
+    land_cover_frac = Column(String(constants.DB_STRING_SIZE))
 
     # amount of storage the run takes up excluding the common driving data sets,
     # only set when a run is failed or complete

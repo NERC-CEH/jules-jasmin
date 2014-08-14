@@ -102,6 +102,7 @@ INTERPS_EXTRA_STEPS_RUN_START = {'b': 0, 'c': 1, 'f': 1, 'i': 0, 'nb': 0, 'nc': 
 INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 0}
 
 FRACTIONAL_FILENAME = 'fractional.dat'
+FRACTIONAL_ICE_NAME = 'Ice'
 USER_EDITED_FRACTIONAL_FILENAME = 'user_edited_land_cover_fractional_file.nc'
 
 # Some JULES output variables depend on the value of nsmax being > 0 - keep a record of those names here:
