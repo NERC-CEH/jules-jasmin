@@ -5,6 +5,7 @@ from sqlalchemy import asc
 from sqlalchemy.orm import subqueryload
 from joj.services.general import DatabaseService
 from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
+from joj.utils import constants
 
 
 class LandCoverService(DatabaseService):
@@ -73,3 +74,28 @@ class LandCoverService(DatabaseService):
                 .options(subqueryload(LandCoverAction.value))\
                 .order_by(asc(LandCoverAction.order))\
                 .all()
+
+    def save_fractional_land_cover_for_model(self, model_run, fractional_string):
+        """
+        Save fractional land cover for a model run
+        :param model_run:
+        :param fractional_string:
+        :return:
+        """
+        pass
+
+    def get_default_fractional_cover(self, model_run):
+        """
+        Get the default fractional land cover for a model run
+        :param model_run: Model run being created
+        :return: Fractional land cover as a list of floats.
+        """
+        pass
+
+    def find_ice_index(self, land_cover_types):
+        """
+        Search through a list of land cover types to find the index of the ice type
+        :param land_cover_types: List of land cover types
+        :return: The 1-based index of the ice type
+        """
+        return [type.index for type in land_cover_types if type.name == constants.FRACTIONAL_ICE_NAME][0]
