@@ -38,7 +38,7 @@ class EcoMapsNetCdfFileTest(unittest.TestCase):
 
     def test_temporal_dataset(self):
 
-        f = EcoMapsNetCdfFile('http://thredds-prod.nerc-lancaster.ac.uk/thredds/dodsC/ECOMAPSDetail/ECOMAPSInputLOI01.nc')
+        f = EcoMapsNetCdfFile('http://localhost:8080/thredds/dodsC/ECOMAPSDetail/ECOMAPSInputLOI01.nc')
         g=0
 
     def test_overlay_point_data(self):
@@ -47,4 +47,4 @@ class EcoMapsNetCdfFileTest(unittest.TestCase):
         test_conf = load_environment(conf.global_conf, conf.local_conf)
 
         s= NetCdfService(config=test_conf)
-        self.assertNotEqual(None, s.overlay_point_data('http://thredds-prod.nerc-lancaster.ac.uk/thredds/dodsC/ECOMAPSDetail/ECOMAPSInputLOI01.nc'))
+        self.assertNotEqual(None, s.overlay_point_data('http://localhost:8080/thredds/dodsC/ECOMAPSDetail/ECOMAPSInputLOI01.nc'))

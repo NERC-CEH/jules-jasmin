@@ -2,7 +2,7 @@
 header
 """
 from sqlalchemy import asc
-from sqlalchemy.orm import subqueryload
+from sqlalchemy.orm import subqueryload, eagerload
 from joj.services.general import DatabaseService
 from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
 from joj.utils import constants
@@ -43,6 +43,19 @@ class LandCoverService(DatabaseService):
             return session.query(LandCoverRegionCategory)\
                 .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id)\
                 .options(subqueryload(LandCoverRegionCategory.regions))\
+                .all()
+
+    def get_land_cover_regions(self, driving_data_id):
+        """
+        Return all available land cover regions for a given driving dataset
+        :param driving_data_id: Database ID of chosen driving dataset
+        :return: List of LandCoverRegions (with Categories loaded)
+        """
+        with self.readonly_scope() as session:
+            return session.query(LandCoverRegion)\
+                .join(LandCoverRegionCategory)\
+                .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id)\
+                .options(eagerload(LandCoverRegion.category))\
                 .all()
 
     def save_land_cover_actions_for_model(self, model_run, land_cover_actions):

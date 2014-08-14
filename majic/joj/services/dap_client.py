@@ -3,7 +3,7 @@
 """
 import logging
 import datetime
-import re
+from coards import parse
 from pydap.client import open_url
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
 from joj.lib.wmc_util import create_request_and_open_url
@@ -60,6 +60,7 @@ class DapClient(object):
             self._lat = self._dataset[self._get_key(NETCDF_LATITUDE)][:]
             self._lon = self._dataset[self._get_key(NETCDF_LONGITUDE)][:]
             self._time = self._dataset[self._get_key(NETCDF_TIME)][:]
+            self._time_units = self._dataset[self._get_key(NETCDF_TIME)].units
             self.start_date = self.get_data_start_date()
             self.variable_names = []
             self._variable = self._get_variable_to_plot()
@@ -131,22 +132,19 @@ class DapClient(object):
         Get the start date of the data as a datetime (rather than as seconds after some arbitrary time)
         :return: Datetime representing the data start date
         """
-        time_units = self._dataset[self._get_key(NETCDF_TIME)].units
-        # The time axis does not start from the Unix epoch but from some other datetime specified
-        # in the units which we find with a regex.
-        start_date = re.findall(r'(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)', time_units)[0]
-        date = datetime.datetime.strptime(start_date, "%Y-%m-%d %X")
-        return date
 
-    def _get_millis_since_epoch(self, secs):
+        return parse(0, self._time_units)
+
+    def _get_millis_since_epoch(self, intervals):
         """
         Convert a timestamp into milliseconds since the Unix epoch
-        :param secs: The time to convert
+        :param intervals: The time interval to convert (eg number of seconds since)
         :return: milliseconds since the Unix epoch
         """
         epoch = datetime.datetime.utcfromtimestamp(0)
-        delta = self.start_date - epoch
-        return (secs + delta.total_seconds()) * 1000
+        time = parse(intervals, self._time_units)
+        delta = time - epoch
+        return delta.total_seconds() * 1000
 
     def get_longname(self):
         """
