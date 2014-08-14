@@ -33,6 +33,7 @@ from joj.utils import constants, f90_helper
 from joj.services.model_run_service import ModelRunService
 from joj.model import session_scope, Session, ModelRun
 from joj.services.dap_client_factory import DapClientFactory
+from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -180,10 +181,15 @@ class TestController(TestCase):
         with session_scope(Session) as session:
             return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
 
-    def create_driving_dataset(self, session):
+    def create_driving_dataset(
+            self,
+            session,
+            jules_params=DrivingDatasetJulesParams(dataperiod=3600, var_interps=8 * ["i"])
+            ):
         """
         Create a driving dataset
         :param session: session to use
+        :param data_period: data period to user (default 3600)
         :return: dataset
         """
         model_run_service = ModelRunService()
@@ -207,12 +213,8 @@ class TestController(TestCase):
         location2 = DrivingDatasetLocation()
         location2.base_url = "base_url2"
         location2.driving_dataset = driving1
-        val = f90_helper.python_to_f90_str(8 * ["i"])
-        pv1 = DrivingDatasetParameterValue(model_run_service, driving1,
-                                           constants.JULES_PARAM_DRIVE_INTERP, val)
-        val = f90_helper.python_to_f90_str(3600)
-        pv2 = DrivingDatasetParameterValue(model_run_service, driving1,
-                                           constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+        jules_params.add_to_driving_dataset(model_run_service, driving1)
+
         session.add(driving1)
         session.commit()
 

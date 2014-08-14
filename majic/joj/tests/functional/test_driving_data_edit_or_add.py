@@ -5,6 +5,7 @@ from hamcrest import *
 from joj.tests import *
 from joj.utils import constants, utils
 from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory
+from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 
 class TestDrivingDataEditOrAdd(TestController):
@@ -12,8 +13,23 @@ class TestDrivingDataEditOrAdd(TestController):
     def setUp(self):
         super(TestDrivingDataEditOrAdd, self).setUp()
         self.clean_database()
+        self.driving_dataset_jules_params = DrivingDatasetJulesParams(
+            dataperiod=1800,
+            drive_file="jules_param_drive_file",
+            drive_var=['drive var 1', 'drive var 2'],
+            var_names=['name1', 'name2'],
+            var_templates=['template1', 'template2'],
+            var_interps=['interp1', 'interp2'],
+            nx='jules_param_nx',
+            ny='jules_param_ny',
+            x_dim_name='jules_param_x_dim_name',
+            y_dim_name='jules_param_y_dim_name',
+            time_dim_name='jules_param_time_dim_name')
+
         with session_scope() as session:
-            self.driving_dataset = self.create_driving_dataset(session)
+            self.driving_dataset = self.create_driving_dataset(
+                session,
+                self.driving_dataset_jules_params)
 
     def test_GIVEN_not_logged_in_WHEN_edit_THEN_redirects(self):
         response = self.app.get(
@@ -39,6 +55,21 @@ class TestDrivingDataEditOrAdd(TestController):
         )
 
         assert_that(response.normal_body, contains_string(self.driving_dataset.name))
+        assert_that(response.normal_body, contains_string(str(self.driving_dataset_jules_params.data_period)))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.drive_file))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.nx))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.ny))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.x_dim_name))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.y_dim_name))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.time_dim_name))
+        for drive_var in self.driving_dataset_jules_params.vars:
+            assert_that(response.normal_body, contains_string(drive_var))
+        for drive_var_name in self.driving_dataset_jules_params.var_names:
+            assert_that(response.normal_body, contains_string(drive_var_name))
+        for drive_var_template in self.driving_dataset_jules_params.var_templates:
+            assert_that(response.normal_body, contains_string(drive_var_template))
+        for drive_var_interp in self.driving_dataset_jules_params.var_interps:
+            assert_that(response.normal_body, contains_string(drive_var_interp))
 
     def test_GIVEN_no_data_set_WHEN_list_THEN_returns_empty_data_set(self):
 
@@ -52,7 +83,7 @@ class TestDrivingDataEditOrAdd(TestController):
 
     def test_GIVEN_data_set_with_a_region_WHEN_list_THEN_returns_mask(self):
 
-        with session_scope () as session:
+        with session_scope() as session:
             category = LandCoverRegionCategory()
             category.driving_dataset = self.driving_dataset
             category.name = "mycategory"

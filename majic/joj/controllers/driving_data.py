@@ -21,6 +21,7 @@ from joj.services.account_request_service import AccountRequestService
 from joj.services.general import ServiceException
 from joj.model import DrivingDataset
 from joj.services.land_cover_service import LandCoverService
+from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 log = logging.getLogger(__name__)
 
@@ -69,10 +70,19 @@ class DrivingDataController(BaseController):
             c.regions = self._landcover_service.get_land_cover_regions(id)
 
         values = c.driving_data_set.__dict__
+
+        c.masks = 0
         for region in c.regions:
-            values['name_{}'.format(region.id)] = region.name
-            values['path_{}'.format(region.id)] = region.mask_file
-            values['category_{}'.format(region.id)] = region.category.name
+            values['id_{}'.format(c.masks)] = region.id
+            values['name_{}'.format(c.masks)] = region.name
+            values['path_{}'.format(c.masks)] = region.mask_file
+            values['category_{}'.format(c.masks)] = region.category.name
+            c.masks += 1
+
+        jules_params = DrivingDatasetJulesParams()
+        jules_params.create_from(c.driving_data_set)
+        jules_params.add_to_dict(values)
+        c.nvar = values['drive_nvar']
 
         html = render('driving_data/edit.html')
 
