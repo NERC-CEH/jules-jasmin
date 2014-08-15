@@ -13,6 +13,7 @@ class TestDrivingDataEditOrAdd(TestController):
     def setUp(self):
         super(TestDrivingDataEditOrAdd, self).setUp()
         self.clean_database()
+        self.extra_parameter = "extra_parameter"
         self.driving_dataset_jules_params = DrivingDatasetJulesParams(
             dataperiod=1800,
             drive_file="jules_param_drive_file",
@@ -24,7 +25,17 @@ class TestDrivingDataEditOrAdd(TestController):
             ny='jules_param_ny',
             x_dim_name='jules_param_x_dim_name',
             y_dim_name='jules_param_y_dim_name',
-            time_dim_name='jules_param_time_dim_name')
+            time_dim_name='jules_param_time_dim_name',
+            latlon_file='latlon_file',
+            latlon_lat_name='latlon_lat_name',
+            latlon_lon_name='latlon_lon_name',
+            land_frac_file='land_frac_file',
+            land_frac_frac_name='land_frac_frac_name',
+            frac_file='frac_file_file_name',
+            frac_frac_dim_name='frac_frac_dim_name',
+            frac_type_dim_name='frac_type_dim_name',
+            soil_props_file='soil_props_file',
+            extra_parameters={1: self.extra_parameter})
 
         with session_scope() as session:
             self.driving_dataset = self.create_driving_dataset(
@@ -54,22 +65,38 @@ class TestDrivingDataEditOrAdd(TestController):
             expect_errors=True
         )
 
+        # driving data
         assert_that(response.normal_body, contains_string(self.driving_dataset.name))
-        assert_that(response.normal_body, contains_string(str(self.driving_dataset_jules_params.data_period)))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.drive_file))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.nx))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.ny))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.x_dim_name))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.y_dim_name))
-        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.time_dim_name))
-        for drive_var in self.driving_dataset_jules_params.vars:
+        assert_that(response.normal_body, contains_string(str(self.driving_dataset_jules_params.values['driving_data_period'])))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_file']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_nx']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_ny']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_x_dim_name']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_y_dim_name']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_time_dim_name']))
+        for drive_var in self.driving_dataset_jules_params.values['drive_vars']:
             assert_that(response.normal_body, contains_string(drive_var))
-        for drive_var_name in self.driving_dataset_jules_params.var_names:
+        for drive_var_name in self.driving_dataset_jules_params.values['drive_var_names']:
             assert_that(response.normal_body, contains_string(drive_var_name))
-        for drive_var_template in self.driving_dataset_jules_params.var_templates:
+        for drive_var_template in self.driving_dataset_jules_params.values['drive_var_templates']:
             assert_that(response.normal_body, contains_string(drive_var_template))
-        for drive_var_interp in self.driving_dataset_jules_params.var_interps:
+        for drive_var_interp in self.driving_dataset_jules_params.values['drive_var_interps']:
             assert_that(response.normal_body, contains_string(drive_var_interp))
+
+        #ancilary parameters
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['latlon_file']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['latlon_lat_name']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['latlon_lon_name']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['land_frac_file']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['land_frac_frac_name']))
+
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['frac_file']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['frac_frac_name']))
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['frac_type_dim_name']))
+
+        assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['soil_props_file']))
+
+        assert_that(response.normal_body, contains_string(self.extra_parameter))
 
     def test_GIVEN_no_data_set_WHEN_list_THEN_returns_empty_data_set(self):
 

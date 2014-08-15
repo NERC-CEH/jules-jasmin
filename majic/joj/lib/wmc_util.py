@@ -123,7 +123,7 @@ def GetWebMapCapabilities(endpoint):
     except urllib2.HTTPError, e:            
         log.exception("exception occurred")
         if e.code == 401:
-            log.info ('401 unauthorized error in ecomaps')
+            log.info ('401 unauthorized error in Majic')
             return abort(401) #triggers ndg security framework
         elif e.code == 403:  #TODO: 403 response is UNTESTED.
             # User is authenticated but doesn't have the required permissions

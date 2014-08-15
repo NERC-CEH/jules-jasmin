@@ -12,6 +12,8 @@ class DrivingDatasetJulesParams(object):
 
     def __init__(self,
                  dataperiod=None,
+                 data_start=None,
+                 data_end=None,
                  drive_file=None,
                  drive_var=None,
                  var_names=None,
@@ -21,7 +23,17 @@ class DrivingDatasetJulesParams(object):
                  ny=None,
                  x_dim_name='Longitude',
                  y_dim_name='Latitude',
-                 time_dim_name='Time'):
+                 time_dim_name='Time',
+                 latlon_file=None,
+                 latlon_lat_name='Grid_lat',
+                 latlon_lon_name='Grid_lon',
+                 land_frac_file=None,
+                 land_frac_frac_name='land',
+                 frac_file=None,
+                 frac_frac_dim_name='frac',
+                 frac_type_dim_name='psuedo',
+                 soil_props_file=None,
+                 extra_parameters=None):
         """
         Initialise
         :param dataperiod: the period of each time step
@@ -37,18 +49,59 @@ class DrivingDatasetJulesParams(object):
         :param time_dim_name: time dimension name
         :return: nothing
         """
+        self.values = {}
+        self.values['driving_data_period'] = dataperiod
+        self.values['driving_data_start'] = data_start
+        self.values['driving_data_end'] = data_end
+        self.values['drive_file'] = drive_file
+        self.values['drive_vars'] = drive_var if drive_var is not None else []
+        self.values['drive_var_names'] = var_names if var_names is not None else []
+        self.values['drive_var_templates'] = var_templates if var_templates is not None else []
+        self.values['drive_var_interps'] = var_interps if var_interps is not None else []
+        self.values['drive_nx'] = nx
+        self.values['drive_ny'] = ny
+        self.values['drive_x_dim_name'] = x_dim_name
+        self.values['drive_y_dim_name'] = y_dim_name
+        self.values['drive_time_dim_name'] = time_dim_name
 
-        self.data_period = dataperiod
-        self.drive_file = drive_file
-        self.vars = drive_var if drive_var is not None else []
-        self.var_names = var_names if var_names is not None else []
-        self.var_templates = var_templates if var_templates is not None else []
-        self.var_interps = var_interps if var_interps is not None else []
-        self.nx = nx
-        self.ny = ny
-        self.x_dim_name = x_dim_name
-        self.y_dim_name = y_dim_name
-        self.time_dim_name = time_dim_name
+        self.values['latlon_file'] = latlon_file
+        self.values['latlon_lat_name'] = latlon_lat_name
+        self.values['latlon_lon_name'] = latlon_lon_name
+
+        self.values['frac_file'] = frac_file
+        self.values['frac_frac_name'] = frac_frac_dim_name
+        self.values['frac_type_dim_name'] = frac_type_dim_name
+
+        self.values['land_frac_file'] = land_frac_file
+        self.values['land_frac_frac_name'] = land_frac_frac_name
+
+        self.values['soil_props_file'] = soil_props_file
+
+        self._extra_parameters = extra_parameters if extra_parameters is not None else {}
+
+        self._names_constant_dict = {
+            'driving_data_period': constants.JULES_PARAM_DRIVE_DATA_PERIOD,
+            'driving_data_start': constants.JULES_PARAM_DRIVE_DATA_START,
+            'driving_data_end': constants.JULES_PARAM_DRIVE_DATA_END,
+            'drive_file': constants.JULES_PARAM_DRIVE_FILE,
+            'drive_vars': constants.JULES_PARAM_DRIVE_VAR,
+            'drive_var_names': constants.JULES_PARAM_DRIVE_VAR_NAME,
+            'drive_var_templates': constants.JULES_PARAM_DRIVE_TPL_NAME,
+            'drive_var_interps': constants.JULES_PARAM_DRIVE_INTERP,
+            'drive_nx': constants.JULES_PARAM_INPUT_GRID_NX,
+            'drive_ny': constants.JULES_PARAM_INPUT_GRID_NY,
+            'drive_x_dim_name': constants.JULES_PARAM_INPUT_GRID_X_DIM_NAME,
+            'drive_y_dim_name': constants.JULES_PARAM_INPUT_GRID_Y_DIM_NAME,
+            'drive_time_dim_name': constants.JULES_PARAM_INPUT_TIME_DIM_NAME,
+            'latlon_file': constants.JULES_PARAM_LATLON_FILE,
+            'latlon_lat_name': constants.JULES_PARAM_LATLON_LAT_NAME,
+            'latlon_lon_name': constants.JULES_PARAM_LATLON_LON_NAME,
+            'frac_file': constants.JULES_PARAM_FRAC_FILE,
+            'frac_frac_name': constants.JULES_PARAM_FRAC_NAME,
+            'frac_type_dim_name': constants.JULES_PARAM_INPUT_TYPE_DIM_NAME,
+            'land_frac_file': constants.JULES_PARAM_LAND_FRAC_FILE,
+            'land_frac_frac_name': constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME,
+            'soil_props_file': constants.JULES_PARAM_SOIL_PROPS_FILE}
 
     def add_to_driving_dataset(self, model_run_service, driving_dataset):
         """
@@ -58,87 +111,63 @@ class DrivingDatasetJulesParams(object):
         :return:nothing
         """
 
-        if self.drive_file is not None:
-            val = f90_helper.python_to_f90_str(self.drive_file)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_DRIVE_FILE, val)
-        if self.vars is not None:
-            val = f90_helper.python_to_f90_str(self.vars)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_DRIVE_VAR, val)
-        if self.var_names is not None:
-            val = f90_helper.python_to_f90_str(self.var_names)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_DRIVE_VAR_NAME, val)
-        if self.var_templates is not None:
-            val = f90_helper.python_to_f90_str(self.var_templates)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_DRIVE_TPL_NAME, val)
-        if self.var_interps is not None:
-            val = f90_helper.python_to_f90_str(self.var_interps)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_DRIVE_INTERP, val)
-        if self.data_period is not None:
-            val = f90_helper.python_to_f90_str(self.data_period)
-            DrivingDatasetParameterValue(
-                model_run_service,
-                driving_dataset,
-                constants.JULES_PARAM_DRIVE_DATA_PERIOD,
-                val)
-        if self.nx is not None:
-            val = f90_helper.python_to_f90_str(self.nx)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_INPUT_GRID_NX, val)
-        if self.ny is not None:
-            val = f90_helper.python_to_f90_str(self.ny)
-            DrivingDatasetParameterValue(model_run_service, driving_dataset, constants.JULES_PARAM_INPUT_GRID_NY, val)
-        if self.x_dim_name is not None:
-            val = f90_helper.python_to_f90_str(self.x_dim_name)
-            DrivingDatasetParameterValue(
-                model_run_service,
-                driving_dataset,
-                constants.JULES_PARAM_INPUT_GRID_X_DIM_NAME,
-                val)
-        if self.y_dim_name is not None:
-            val = f90_helper.python_to_f90_str(self.y_dim_name)
-            DrivingDatasetParameterValue(
-                model_run_service,
-                driving_dataset,
-                constants.JULES_PARAM_INPUT_GRID_Y_DIM_NAME,
-                val)
-        if self.time_dim_name is not None:
-            val = f90_helper.python_to_f90_str(self.time_dim_name)
-            DrivingDatasetParameterValue(
-                model_run_service,
-                driving_dataset,
-                constants.JULES_PARAM_INPUT_TIME_DIM_NAME,
-                val)
+        for key, value in self.values.iteritems():
+            if value is not None and value != []:
+                val = f90_helper.python_to_f90_str(value)
+                DrivingDatasetParameterValue(model_run_service, driving_dataset, self._names_constant_dict[key], val)
 
-    def create_from(self, driving_data_set):
-        self.data_period = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_PERIOD)
-        self.drive_file = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_FILE)
+        for parameter_id, value in self._extra_parameters.iteritems():
+            if value is not None and value != []:
+                val = f90_helper.python_to_f90_str(value)
+                DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, val)
 
-        self.vars = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR, is_list=True)
-        self.var_names = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR_NAME, is_list=True)
-        self.var_templates = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_TPL_NAME, is_list=True)
-        self.var_interps = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_DRIVE_INTERP, is_list=True)
-        self.nx = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_NX)
-        self.ny = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_NY)
-        self.x_dim_name = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_X_DIM_NAME)
-        self.y_dim_name = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_Y_DIM_NAME)
-        self.time_dim_name = driving_data_set.get_python_parameter_value(constants.JULES_PARAM_INPUT_TIME_DIM_NAME)
+    def set_from(self, driving_data_set):
+        """
+        Set values from a driving set with parameters in
+        :param driving_data_set: the driving data set
+        :return: nothing
+        """
 
-    def add_to_dict(self, values):
-        values['driving_data_period'] = self.data_period
-        values['drive_file'] = self.drive_file
-        values['drive_nx'] = self.nx
-        values['drive_ny'] = self.ny
-        values['drive_x_dim_name'] = self.x_dim_name
-        values['drive_y_dim_name'] = self.y_dim_name
-        values['drive_time_dim_name'] = self.time_dim_name
+        for name, constant in self._names_constant_dict.iteritems():
+            val = driving_data_set.get_python_parameter_value(constant)
+            self.values[name] = val
 
-        if self.vars is None:
-            nvar = 0
+        for parameter_value in driving_data_set.parameter_values:
+            found = False
+            for named_param in self._names_constant_dict.values():
+                    if named_param[0] == parameter_value.parameter.namelist.name \
+                            and named_param[1] == parameter_value.parameter.name:
+                        found = True
+                    continue
+            if not found:
+                self._extra_parameters[parameter_value.parameter_id] = parameter_value.value
+
+    def add_to_dict(self, values, namelists):
+
+        for name in self._names_constant_dict.keys():
+            if name in self.values:
+                value =self.values[name]
+                if type(value) is list:
+                    for val, index in zip(value, range(len(value))):
+                        values["{}_{}".format(name, str(index))] = val
+                else:
+                    values[name] = value
+            else:
+                values[name] = ''
+
+        if self.values['drive_vars'] is None:
+            values['drive_nvar'] = 0
         else:
-            nvar = 0
-            for var, name, template, interp_flag in zip(self.vars, self.var_names, self.var_templates, self.var_interps):
-                nvar += 1
-                values['drive_var_{}'.format(nvar - 1)] = var
-                values['drive_var_name_{}'.format(nvar - 1)] = name
-                values['drive_var_template_{}'.format(nvar - 1)] = template
-                values['drive_var_interp_{}'.format(nvar - 1)] = interp_flag
-        values['drive_nvar'] = nvar
+            values['drive_nvar'] = len(self.values['drive_vars'])
+
+        values['parameters_nvar'] = len(self._extra_parameters)
+        names = []
+        for param_id, val, index in \
+                zip(self._extra_parameters.keys(), self._extra_parameters.values(), range(len(self._extra_parameters))):
+            values["param_id_{}".format(str(index))] = param_id
+            values["param_value_{}".format(str(index))] = val
+            for namelist_name, namelist in namelists.iteritems():
+                if param_id in namelist:
+                    names.append(namelist_name + '::' + namelist[param_id])
+                    continue
+        values["param_names"] = names
