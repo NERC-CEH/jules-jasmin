@@ -43,7 +43,8 @@ class TestJobsControllerNew(TestController):
             'namelist_files': namelist_files,
             JSON_USER_NAME: 'name',
             JSON_USER_ID: 2,
-            JSON_USER_EMAIL: 'email'
+            JSON_USER_EMAIL: 'email',
+            JSON_LAND_COVER: {}
         }
 
     def test_GIVEN_nothing_WHEN_get_new_job_THEN_error(self):

@@ -16,7 +16,8 @@ setup(
         "Pylons>=1.0.1rc1",
         "lxml",
         "pytz",
-        "shapely"
+        "shapely",
+        "python-dateutil"
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),

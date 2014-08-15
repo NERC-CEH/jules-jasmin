@@ -3,26 +3,22 @@
 """
 from datetime import datetime
 import logging
+import subprocess
+import shutil
+
 import os
 from pylons import config
-import subprocess
 import re
+
 from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
 from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
-import shutil
+from job_runner.utils.land_cover_editor import LandCoverEditor
+from job_runner.services.service_exception import ServiceException
+
 
 log = logging.getLogger(__name__)
-
-
-class ServiceException(Exception):
-    """
-    Exception class for when the service has a problem
-    """
-    def __init__(self, message):
-        super(ServiceException, self).__init__()
-        self.message = message
 
 
 class JobService(object):
@@ -31,7 +27,8 @@ class JobService(object):
     """
 
     def __init__(self, valid_code_versions=VALID_CODE_VERSIONS,
-                 valid_single_processor_code_version=VALID_SINGLE_PROCESSOR_CODE_VERSIONS):
+                 valid_single_processor_code_version=VALID_SINGLE_PROCESSOR_CODE_VERSIONS,
+                 land_cover_editor=LandCoverEditor()):
         """
         Constructor setups up valid code versions
 
@@ -41,6 +38,7 @@ class JobService(object):
         """
         self._valid_code_version = valid_code_versions
         self._valid_single_processor_code_version = valid_single_processor_code_version
+        self.land_cover_editor = land_cover_editor
 
     def exists_run_dir(self, model_run_id):
         """
@@ -129,15 +127,15 @@ class JobService(object):
         log_file_parser.parse()
         return log_file_parser
 
-    def submit(self, model_run):
+    def submit(self, model_run_json):
         """
         submit a job to the lsf framework
-        :param model_run: the model run to submit
+        :param model_run_json: the model run to submit
         :return: job id
         :exception ServiceError: if there is a problem submitting the job
         """
         
-        run_directory = self.get_run_dir(model_run[JSON_MODEL_RUN_ID])
+        run_directory = self.get_run_dir(model_run_json[JSON_MODEL_RUN_ID])
 
         #create run directory
         if not os.path.exists(run_directory):
@@ -149,17 +147,19 @@ class JobService(object):
         #create softlinks to data
         src = os.path.join(config['jules_run_data_dir'])
         os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
+        if model_run_json[JSON_LAND_COVER]:
+            self._edit_land_cover_file(model_run_json[JSON_LAND_COVER], run_directory)
 
-        self._create_parameter_files(run_directory, model_run)
+        self._create_parameter_files(run_directory, model_run_json)
 
-        for namelist_file in model_run[JSON_MODEL_NAMELIST_FILES]:
+        for namelist_file in model_run_json[JSON_MODEL_NAMELIST_FILES]:
             self._create_namelist_file(namelist_file, run_directory)
 
-        single_processor = self._is_single_site_run(model_run)
+        single_processor = self._is_single_site_run(model_run_json)
 
-        bsub_id = self._submit_job(model_run[JSON_MODEL_CODE_VERSION], run_directory, single_processor)
+        bsub_id = self._submit_job(model_run_json[JSON_MODEL_CODE_VERSION], run_directory, single_processor)
 
-        self._write_job_log(bsub_id, model_run)
+        self._write_job_log(bsub_id, model_run_json)
         self.write_bsub_id(run_directory, bsub_id)
 
         return bsub_id
@@ -345,3 +345,20 @@ class JobService(object):
         f = open(path, 'a')
         f.write(text)
         f.close()
+
+    def _edit_land_cover_file(self, land_cover_json_dict, run_directory):
+        base_file_name = land_cover_json_dict[JSON_LAND_COVER_BASE_FILE]
+        base_file_frac_key = land_cover_json_dict[JSON_LAND_COVER_BASE_KEY]
+
+        # Make a copy of the base file in the run directory
+        base_file_path = self.land_cover_editor.copy_land_cover_base_map(base_file_name, run_directory)
+
+        land_cover_actions = land_cover_json_dict[JSON_LAND_COVER_ACTIONS]
+        # Sort by order
+        sorted_actions = sorted(land_cover_actions, key=lambda action: action[JSON_LAND_COVER_ORDER])
+        for land_cover_action in sorted_actions:
+            mask_file = land_cover_action[JSON_LAND_COVER_MASK_FILE]
+            value = land_cover_action[JSON_LAND_COVER_VALUE]
+            mask_file_path = os.path.join(run_directory, mask_file)
+            self.land_cover_editor.apply_land_cover_action(base_file_path, mask_file_path,
+                                                           value, key=base_file_frac_key)
