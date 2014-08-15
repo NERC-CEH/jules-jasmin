@@ -4,6 +4,7 @@
 import logging
 import datetime
 from coards import parse
+from pylons import config
 from pydap.client import open_url
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
 from joj.lib.wmc_util import create_request_and_open_url
@@ -29,6 +30,8 @@ class DapClient(object):
         Create a new DapClient for a specified dataset
         :param url: The URL of the OpenDAP dataset to look for
         """
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return
 
         def new_request(url):
             """
@@ -270,6 +273,8 @@ class DapClient(object):
         :param lon: Longitude
         :return: Lat, lon
         """
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return lat, lon
         lat_index = self._get_closest_value_index(self._lat, lat)
         lon_index = self._get_closest_value_index(self._lon, lon)
 

@@ -211,7 +211,7 @@ class JobRunnerClient(object):
         :param filename: Filename to create
         :return:
         """
-        if self._config['job_runner_mode'] == 'test':
+        if 'run_in_test_mode' in self._config and self._config['run_in_test_mode'].lower() == 'true':
             return
         self._file_lines_store = ''
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
@@ -235,7 +235,7 @@ class JobRunnerClient(object):
         :param line: Text to append
         :return:
         """
-        if self._config['job_runner_mode'] == 'test':
+        if 'run_in_test_mode' in self._config and self._config['run_in_test_mode'].lower() == 'true':
             return
         self._file_lines_store += line
         if sys.getsizeof(self._file_lines_store, 0) > constants.JOB_RUNNER_CLIENT_FILE_CHUNK_BYTES:
@@ -260,7 +260,7 @@ class JobRunnerClient(object):
         :param filename: Filename to delete
         :return:
         """
-        if self._config['job_runner_mode'] == 'test':
+        if 'run_in_test_mode' in self._config and self._config['run_in_test_mode'].lower() == 'true':
             return
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
                 constants.JSON_MODEL_FILENAME: filename}
@@ -281,7 +281,7 @@ class JobRunnerClient(object):
         :param filename: Filename to close
         :return:
         """
-        if self._config['job_runner_mode'] == 'test':
+        if 'run_in_test_mode' in self._config and self._config['run_in_test_mode'].lower() == 'true':
             return
         data = {constants.JSON_MODEL_RUN_ID: model_run_id,
                 constants.JSON_MODEL_FILENAME: filename,
