@@ -183,13 +183,18 @@ class JobService(object):
             #Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)
             if match is None:
-                raise ServiceException('Problem in job script. "%s"' % output)
+                log.error('Problem submitting job, unexpected output. "%s"' % output)
+                raise ServiceException('Problem submitting job, unexpected output.')
             return match.group(1)
 
         except subprocess.CalledProcessError, ex:
-            raise ServiceException('Problem running job script. "%s"' % ex.output)
-        except Exception, ex:
-            raise ServiceException('Problem submitting job script. "%s"' % ex.message)
+            log.exception('Problem submitting job, unknown error. "%s"' % ex.output)
+            raise ServiceException('Problem submitting job, unknown error.')
+        except ServiceException as ex:
+            raise ex
+        except Exception:
+            log.exception('Problem submitting job, unknown exception.')
+            raise ServiceException('Problem submitting job.')
 
     def _create_namelist_file(self, namelist_file, run_directory):
         """
