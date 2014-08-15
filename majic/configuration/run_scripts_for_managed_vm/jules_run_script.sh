@@ -5,7 +5,8 @@
 #BSUB -n procs_template
 #BSUB -m lotusr620
 
-JULES=/group_workspaces/jasmin2/jules_bd/jules_build/jules-vn3.4.1/build/bin/jules.exe
+JOB_RUNNER_DIR=/group_workspaces/jasmin2/jules_bd/job_runner
+JULES=/group_workspaces/jasmin2/jules_bd/jules_build/jules-vn3.4.1_dailydisagg/build/bin/jules.exe
 
 echo "About to run procs_template procs" >out.log
 echo "Start Time: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log
@@ -19,7 +20,9 @@ rm hosts.txt
 export myhosts=($LSB_HOSTS)
 for hostName in ${myhosts[*]};do echo $hostName >> hosts.txt ; done
 
-blaunch -u hosts.txt `pwd`/post_process.sh >> out.log 2>> err.log
+blaunch -u hosts.txt $JOB_RUNNER_DIR/run_scripts/post_process.sh >> out.log 2>> err.log
+
+rm hosts.txt
 
 mv -n processed/* output
 rmdir processed

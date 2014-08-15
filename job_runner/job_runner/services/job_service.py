@@ -2,7 +2,6 @@
 # Header
 """
 from datetime import datetime
-import glob
 import logging
 import os
 from pylons import config
@@ -147,9 +146,9 @@ class JobService(object):
         #create output dir
         os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
 
-        #create softlinks
-        for src in glob.glob(os.path.join(config['jules_files_to_softlink_dir'], '*')):
-            os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
+        #create softlinks to data
+        src = os.path.join(config['jules_run_data_dir'])
+        os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
 
         self._create_parameter_files(run_directory, model_run)
 
@@ -175,10 +174,11 @@ class JobService(object):
         :exception ServiceError: when there is a problem submiting the job
         """
         try:
+            script_directory = config['jules_run_script_dir']
             if single_processor:
-                script = os.path.join(run_directory, self._valid_single_processor_code_version[code_version])
+                script = os.path.join(script_directory, self._valid_single_processor_code_version[code_version])
             else:
-                script = os.path.join(run_directory, self._valid_code_version[code_version])
+                script = os.path.join(script_directory, self._valid_code_version[code_version])
             output = subprocess.check_output([script], stderr=subprocess.STDOUT, cwd=run_directory)
             #Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)

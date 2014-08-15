@@ -1,7 +1,7 @@
 #!/bin/bash
-command=`modulecmd bash load /utils/Modules/default/modulefiles/lsfmodules/8.0`
 
-eval "$command"
-
-
-sed "s/procs_template/4/g" jules_run_script.sh | bsub
+JOB_RUNNER_DIR=/group_workspaces/jasmin2/jules_bd/job_runner
+sed "s/procs_template/4/g" $JOB_RUNNER_DIR/run_scripts/jules_run_script.sh > jules_run.sh
+chmod g+wr output
+chmod g+wr .
+sudo -i -u jules-bd-robot /home/users/jules-bd-robot/submit.sh < jules_run.sh 
