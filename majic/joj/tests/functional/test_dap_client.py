@@ -36,7 +36,11 @@ class BaseDapClientTest(TestController):
         except:
             self.is_thredds_available = False
         self.dap_client_factory = DapClientFactory()
+
+    @classmethod
+    def setUpClass(cls):
         config['run_in_test_mode'] = "false"  # Deactivate 'test mode' so we can make real calls to THREDDS
+        assert_that(config['run_in_test_mode'], is_("false"))
 
 
 # noinspection PyArgumentList

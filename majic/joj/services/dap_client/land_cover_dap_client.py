@@ -1,6 +1,7 @@
 """
 header
 """
+from pylons import config
 from joj.services.dap_client.base_dap_client import BaseDapClient
 
 
@@ -10,6 +11,8 @@ class LandCoverDapClient(BaseDapClient):
     """
 
     def __init__(self, url, key):
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return
         super(LandCoverDapClient, self).__init__(url)
         self._frac = self._dataset[key]
 

@@ -3,6 +3,7 @@ header
 """
 import datetime
 from coards import parse
+from pylons import config
 from joj.services.dap_client.dap_client import DapClient
 
 
@@ -12,6 +13,8 @@ class GraphingDapClient(DapClient):
     """
 
     def __init__(self, url):
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return
         super(GraphingDapClient, self).__init__(url)
 
     def get_graph_data(self, lat, lon):

@@ -4,7 +4,7 @@ header
 import logging
 from pydap.client import open_url
 from pylons import config
-from lib.wmc_util import create_request_and_open_url
+from joj.lib.wmc_util import create_request_and_open_url
 from joj.utils import constants
 
 log = logging.getLogger(__name__)
@@ -18,6 +18,9 @@ class DapClientException(Exception):
 
 
 class BaseDapClient(object):
+    """
+    A basic DAP Client for accessing datasets on a THREDDS Server
+    """
 
     def __init__(self, url):
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
@@ -49,6 +52,7 @@ class BaseDapClient(object):
         except Exception:
             log.exception("Can not open the dataset URL '%s'." % url)
             raise DapClientException("Can not open the dataset URL.")
+
         try:
             self._lat = self._dataset[self._get_key(constants.NETCDF_LATITUDE)][:]
             self._lon = self._dataset[self._get_key(constants.NETCDF_LONGITUDE)][:]

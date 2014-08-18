@@ -22,6 +22,8 @@ class DapClient(BaseDapClient):
         Create a new DapClient for a specified dataset
         :param url: The URL of the OpenDAP dataset to look for
         """
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return
         super(DapClient, self).__init__(url)
         try:
             self._time = self._dataset[self._get_key(NETCDF_TIME)][:]

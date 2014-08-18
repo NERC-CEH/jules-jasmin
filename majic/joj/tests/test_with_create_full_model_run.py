@@ -10,7 +10,6 @@ from joj.services.job_status_updater import JobStatusUpdaterService
 from joj.services.email_service import EmailService
 from joj.services.job_runner_client import JobRunnerClient
 from pylons import config
-from tests.functional.test_model_run_driving_data import TestModelRunDrivingData
 
 
 class TestWithFullModelRun(TestController):
