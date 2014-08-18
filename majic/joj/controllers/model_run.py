@@ -3,9 +3,10 @@ header
 """
 
 import logging
+import urllib2
 from formencode import htmlfill
 
-from pylons import url, response
+from pylons import url, response, config
 from pylons.decorators import validate, jsonify
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -584,3 +585,22 @@ class ModelRunController(BaseController):
         except Exception:
             json_response['is_error'] = True
         return json_response
+
+    def user_land_cover(self, id):
+        path ="fileServer/model_runs/run%s/user_edited_land_cover_fractional_file.nc" % str(id)
+        url = config['thredds.server_url'] + path
+        file = urllib2.urlopen(url)
+
+        response.headers['Content-Type'] = file.headers.dict['content-type']
+        response.headers['Content-Disposition'] = str('attachment; filename="%s"' % "user_edited_land_cover.nc")
+        response.headers['Content-Length'] = file.headers.dict['content-length']
+
+        file_gen = self._make_file_gen(file)
+
+        return file_gen
+
+    def _make_file_gen(self, file):
+        for line in file.read():
+            yield line
+
+
