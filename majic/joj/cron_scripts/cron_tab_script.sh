@@ -1,8 +1,10 @@
 #!/bin/bash
 
-source /home/matken/projectenv/bin/activate
+VENV="/var/local/majic/virtual_env"
 
-cd /home/matken/jules-jasmin/majic/joj/cron_scripts
+source $VENV/bin/activate
 
-python /home/matken/jules-jasmin/majic/joj/cron_scripts/update_job_statuses.py development.ini 2>> /home/matken/jules-jasmin/majic/joj/cron_scripts/out.log >> /home/matken/jules-jasmin/majic/joj/cron_scripts/out.log
+cd "/var/local/majic/jules-jasmin/majic"
+export REQUESTS_CA_BUNDLE=/var/local/ssl/job_runner.crt
 
+python joj/cron_scripts/update_job_statuses.py production.ini

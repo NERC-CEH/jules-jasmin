@@ -19,6 +19,8 @@ class TestJobFileController(TestController):
         self.test_filename = 'user_uploaded_driving_data.dat'
         self.model_run_id = 1
         self.directory = self.job_service.get_run_dir(self.model_run_id)
+        if not os.path.exists(self.directory):
+            os.mkdir(self.directory)
         self.path = os.path.join(self.directory, self.test_filename)
         if os.path.exists(self.path):
             os.remove(self.path)
@@ -110,7 +112,8 @@ class TestJobFileController(TestController):
     def test_GIVEN_file_created_WHEN_delete_THEN_file_removed(self):
 
         # Set up file
-        open(self.path, 'w+')
+        f = open(self.path, 'w+')
+        f.close()
 
         # Call web service
         json_dict = {constants.JSON_MODEL_FILENAME: self.test_filename,
