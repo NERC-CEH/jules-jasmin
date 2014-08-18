@@ -5,22 +5,14 @@ import logging
 import datetime
 from coards import parse
 from pylons import config
-from pydap.client import open_url
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
-from joj.lib.wmc_util import create_request_and_open_url
 from joj.utils import constants
+from joj.services.dap_client.base_dap_client import BaseDapClient, DapClientException
 
 log = logging.getLogger(__name__)
 
 
-class DapClientException(Exception):
-    """
-    Exception for when there is a problem in the dap client
-    """
-    pass
-
-
-class DapClient(object):
+class DapClient(BaseDapClient):
     """
     Client for communicating with the OpenDAP server to extract time series data for a particular latitude / longitude
     """
@@ -30,96 +22,18 @@ class DapClient(object):
         Create a new DapClient for a specified dataset
         :param url: The URL of the OpenDAP dataset to look for
         """
-        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
-            return
-
-        def new_request(url):
-            """
-            Create a new dap request
-            :param url: the url
-            :return: headers and body tuple
-            """
-            log = logging.getLogger('pydap')
-            log.info('Opening %s' % url)
-
-            f = create_request_and_open_url(url.rstrip('?&'))
-            headers = dict(f.info().items())
-            body = f.read()
-            return headers, body
-
-        from pydap import client
-        client.request = new_request
-        from pydap import proxy
-        proxy.request = new_request
-
+        super(DapClient, self).__init__(url)
         try:
-            # this is a modified open url. See pydap factory
-            self._dataset = open_url(url)
-        except Exception:
-            log.exception("Can not open the dataset URL '%s'." % url)
-            raise DapClientException("Can not open the dataset URL.")
-
-        try:
-            self._lat = self._dataset[self._get_key(NETCDF_LATITUDE)][:]
-            self._lon = self._dataset[self._get_key(NETCDF_LONGITUDE)][:]
             self._time = self._dataset[self._get_key(NETCDF_TIME)][:]
             self._time_units = self._dataset[self._get_key(NETCDF_TIME)].units
-            self.start_date = self.get_data_start_date()
-            self.variable_names = []
+            self._start_date = self._get_data_start_date()
+            self._variable_names = []
             self._variable = self._get_variable_to_plot()
-            self.cache_dict = {}
-            self.cache_lat = None
-            self.cache_lon = None
+            self._cache_dict = {}
+            self._cache_lat_lon = None
         except Exception:
             log.exception("Can not read dataset '%s'." % url)
             raise DapClientException("Problems reading the dataset.")
-
-
-    def _get_variable_to_plot(self):
-        """
-        Identify the independent variable we wish to plot
-        :return: The first independent variable
-        """
-        keys = self._dataset.keys()
-        variables = []
-        for key in keys:
-            if key not in [
-                    self._get_key(NETCDF_LATITUDE),
-                    self._get_key(NETCDF_LONGITUDE),
-                    self._get_key(NETCDF_TIME),
-                    self._get_key(NETCDF_TIME_BOUNDS)]:
-                variables.append(self._dataset[key])
-                self.variable_names.append(key)
-        return variables[0]  # Do we want to only return the first variable?
-
-    def _get_closest_value_index(self, data, value):
-        """
-        Utility method to identify the closest data point in a list for a given value
-        :param data: List of data points
-        :param value: Value to search close to
-        :return: The index of the closest point in the list
-        """
-        # Won't always get the one we expect but will always be equally close (e.g. 6.5 might go to 6 not 7)
-        return min(range(len(data)), key=lambda i: abs(data[i] - value))
-
-    def get_data_start_date(self):
-        """
-        Get the start date of the data as a datetime (rather than as seconds after some arbitrary time)
-        :return: Datetime representing the data start date
-        """
-
-        return parse(0, self._time_units)
-
-    def _get_millis_since_epoch(self, intervals):
-        """
-        Convert a timestamp into milliseconds since the Unix epoch
-        :param intervals: The time interval to convert (eg number of seconds since)
-        :return: milliseconds since the Unix epoch
-        """
-        epoch = datetime.datetime.utcfromtimestamp(0)
-        time = parse(intervals, self._time_units)
-        delta = time - epoch
-        return delta.total_seconds() * 1000
 
     def get_longname(self):
         """
@@ -129,7 +43,7 @@ class DapClient(object):
         try:
             return self._variable.attributes['long_name']
         except KeyError:
-            return self.variable_names[0]
+            return self._variable_names[0]
 
     def get_data_range(self):
         """
@@ -137,28 +51,16 @@ class DapClient(object):
         :return: min and max tuple for the range
         """
         try:
-            return [self._variable.attributes['valid_min'], self._variable.attributes['valid_max']]
-        except KeyError:
+            return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
+        except (KeyError, ValueError):
             return [0, 100]
-
-    def _get_key(self, var_names):
-        """
-        Try to find the key in the list of variables (make it case insensitive)
-        :param var_names: list of possible variable name
-        :return: the key
-        """
-        for key in self._dataset.keys():
-            for possible_var_name in var_names:
-                if key.lower() == possible_var_name.lower():
-                    return key
-        return var_names[0]
 
     def get_variable_units(self):
         """
         Get the units for the independent variable
         :return:
         """
-        return self._dataset[self.variable_names[0]].units
+        return self._dataset[self._variable_names[0]].units
 
     def get_time_immediately_after(self, time):
         """
@@ -166,7 +68,7 @@ class DapClient(object):
         :param time: Datetime to search after
         :return: Datetime of next data point
         """
-        time_secs_elapsed = self.get_seconds_elapsed(time)
+        time_secs_elapsed = self._get_seconds_elapsed(time)
         timestamps = self._time.tolist()
         next_time = None
         for time in timestamps:
@@ -177,7 +79,7 @@ class DapClient(object):
         if next_time is None:
             return None
         delta = datetime.timedelta(seconds=next_time)
-        return self.start_date + delta
+        return self._start_date + delta
 
     def get_time_immediately_before(self, time):
         """
@@ -185,7 +87,7 @@ class DapClient(object):
         :param time: Datetime to search before
         :return: Datetime of previous data point
         """
-        time_secs_elapsed = self.get_seconds_elapsed(time)
+        time_secs_elapsed = self._get_seconds_elapsed(time)
         timestamps = self._time.tolist()
         prev_time = None
         for time in reversed(timestamps):
@@ -196,16 +98,7 @@ class DapClient(object):
         if prev_time is None:
             return None
         delta = datetime.timedelta(seconds=prev_time)
-        return self.start_date + delta
-
-    def get_seconds_elapsed(self, datetime):
-        """
-        Converts a datetime into seconds since the dataset started
-        :param datetime:
-        :return:
-        """
-        time_secs_elapsed = (datetime - self.start_date).total_seconds()
-        return time_secs_elapsed
+        return self._start_date + delta
 
     def get_data_at(self, lat, lon, date):
         """
@@ -218,12 +111,12 @@ class DapClient(object):
         # First we identify the closest positions we can use (by index):
         lat_index = self._get_closest_value_index(self._lat, lat)
         lon_index = self._get_closest_value_index(self._lon, lon)
-        time_secs_elapsed = self.get_seconds_elapsed(date)
+        time_secs_elapsed = self._get_seconds_elapsed(date)
         time_index = self._get_closest_value_index(self._time, time_secs_elapsed)
 
         # try and use cache:
-        if time_index in self.cache_dict:
-            return self.cache_dict[time_index]
+        if time_index in self._cache_dict and self._cache_lat_lon == (lat, lon):
+            return self._cache_dict[time_index]
 
         ## Save cache
         if time_index + constants.USER_DOWNLOAD_CACHE_SIZE < len(self._time):
@@ -234,9 +127,10 @@ class DapClient(object):
         vals = [val[0][0] for val in vals_array]
         time_indices = [time_index + i for i in range(0, constants.USER_DOWNLOAD_CACHE_SIZE)]
 
-        self.cache_dict = {time: val for time, val in zip(time_indices, vals)}
+        self._cache_dict = {time: val for time, val in zip(time_indices, vals)}
+        self._cache_lat_lon = lat, lon
 
-        return self.cache_dict[time_index]
+        return self._cache_dict[time_index]
 
     def get_closest_lat_lon(self, lat, lon):
         """
@@ -254,3 +148,36 @@ class DapClient(object):
         lon = float(self._lon[lon_index])
 
         return lat, lon
+
+    def _get_variable_to_plot(self):
+        """
+        Identify the independent variable we wish to plot
+        :return: The first independent variable
+        """
+        keys = self._dataset.keys()
+        variables = []
+        for key in keys:
+            if key not in [
+                    self._get_key(NETCDF_LATITUDE),
+                    self._get_key(NETCDF_LONGITUDE),
+                    self._get_key(NETCDF_TIME),
+                    self._get_key(NETCDF_TIME_BOUNDS)]:
+                variables.append(self._dataset[key])
+                self._variable_names.append(key)
+        return variables[0]  # Do we want to only return the first variable?
+
+    def _get_data_start_date(self):
+        """
+        Get the start date of the data as a datetime (rather than as seconds after some arbitrary time)
+        :return: Datetime representing the data start date
+        """
+        return parse(0, self._time_units)
+
+    def _get_seconds_elapsed(self, datetime):
+        """
+        Converts a datetime into seconds since the dataset started
+        :param datetime:
+        :return:
+        """
+        time_secs_elapsed = (datetime - self._start_date).total_seconds()
+        return time_secs_elapsed

@@ -80,7 +80,7 @@ class MapController(BaseController):
         lon = float(request.params['lon'])
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
         url = dataset.netcdf_url
-        dap_client = self._dap_factory.get_dap_client(url)
+        dap_client = self._dap_factory.get_graphing_dap_client(url)
         return dap_client.get_graph_data(lat, lon)
 
     @jsonify
