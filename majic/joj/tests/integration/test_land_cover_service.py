@@ -3,13 +3,14 @@ header
 """
 from hamcrest import assert_that, is_
 from pylons import config
+
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
 from joj.model import session_scope, LandCoverRegionCategory, LandCoverRegion
 from joj.services.land_cover_service import LandCoverService
 from joj.services.dataset import DatasetService
 from joj.services.model_run_service import ModelRunService
-from joj.services.dap_client import DapClientException
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client import DapClientException
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.utils import constants
 from joj.services.general import ServiceException
 

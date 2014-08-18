@@ -4,12 +4,13 @@ header
 from pylons import config
 from sqlalchemy import asc
 from sqlalchemy.orm import subqueryload, eagerload
+
 from joj.services.general import DatabaseService, ServiceException
 from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
 from joj.utils import constants
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.dataset import DatasetService
-from joj.services.dap_client import DapClientException
+from joj.services.dap_client.dap_client import DapClientException
 
 
 class LandCoverService(DatabaseService):

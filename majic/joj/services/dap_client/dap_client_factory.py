@@ -1,7 +1,7 @@
 """
 # header
 """
-from joj.services.dap_client import DapClient
+from joj.services.dap_client.dap_client import DapClient
 
 
 class DapClientFactory(object):
@@ -16,3 +16,9 @@ class DapClientFactory(object):
         :return: a dap client
         """
         return DapClient(url)
+
+    def get_land_cover_dap_client(self, land_cover_url, land_cover_key):
+        pass
+
+    def get_graphing_dap_client(self, url):
+        pass

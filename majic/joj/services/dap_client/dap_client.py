@@ -74,34 +74,6 @@ class DapClient(object):
             log.exception("Can not read dataset '%s'." % url)
             raise DapClientException("Problems reading the dataset.")
 
-    def get_graph_data(self, lat, lon):
-        """
-        Get the time series graphing data for a given point
-        :param lat: Latitude of point to graph
-        :param lon: Longitude of point to graph
-        :return: JSON-like dictionary of data and metadata
-        """
-        # First we identify the closest positions we can use (by index):
-        lat_index = self._get_closest_value_index(self._lat, lat)
-        lon_index = self._get_closest_value_index(self._lon, lon)
-
-        # Assumes that dimensions are time, lat, long.
-        variable_data = self._variable.array[:, lat_index, lon_index].tolist()
-        timestamps = self._time.tolist()
-        data = []
-        for i in range(len(variable_data)):
-            # Time should be in millis after 1970 epoch for FLOT
-            t = self._get_millis_since_epoch(timestamps[i])
-            data.append([t, variable_data[i][0][0]])
-        return {'data': data,
-                'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
-                'lat': lat,
-                'lon': lon,
-                'xmin': self._get_millis_since_epoch(min(timestamps)),
-                'xmax': self._get_millis_since_epoch(max(timestamps)),
-                'ymin': min(variable_data),
-                'ymax': max(variable_data)
-                }
 
     def _get_variable_to_plot(self):
         """

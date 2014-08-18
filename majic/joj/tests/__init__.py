@@ -9,30 +9,28 @@ setup-app`) and provides the base testing objects.
 """
 from unittest import TestCase
 import datetime
+import sys
+
 from hamcrest import assert_that, is_
 from mock import Mock
 import os
-import sys
-
 import pylons
 from pylons.i18n.translation import _get_translator
 from paste.deploy import loadapp
 from pylons import url
-from paste.script.appinstall import SetupCommand
 from routes.util import URLGenerator
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
 from webtest import TestApp
 
-from joj.config.environment import load_environment
-from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
-    AccountRequest, LandCoverAction, LandCoverRegion, LandCoverValue, LandCoverRegionCategory
+from joj.model import User, Dataset, ParameterValue, ModelRunStatus, \
+    DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
+    AccountRequest, LandCoverAction, LandCoverRegion, LandCoverRegionCategory
 from joj.services.user import UserService
 from joj.utils import constants, f90_helper
 from joj.services.model_run_service import ModelRunService
 from joj.model import session_scope, Session, ModelRun
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
+
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
