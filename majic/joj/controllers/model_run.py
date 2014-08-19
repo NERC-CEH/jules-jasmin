@@ -311,8 +311,8 @@ class ModelRunController(BaseController):
                     # driving dataset so that the parameters are removed:
                     if old_driving_dataset is not None:
                         if old_driving_dataset.id == user_upload_ds_id:
-                            old_driving_dataset = driving_data_controller_helper.\
-                            _create_uploaded_driving_dataset(None, None, None, None, self._model_run_service)
+                            old_driving_dataset = driving_data_controller_helper. \
+                                _create_uploaded_driving_dataset(None, None, None, None, self._model_run_service)
                     self._model_run_service.save_driving_dataset_for_new_model(
                         driving_dataset,
                         old_driving_dataset,
@@ -406,11 +406,13 @@ class ModelRunController(BaseController):
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
         values = dict(request.params)
         errors = {}
-        user_upload_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
-        if model_run.driving_dataset_id == user_upload_id:
-            return self._user_uploaded_land_cover(model_run, values, errors)
-        else:
+        multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION) \
+            and not 'fractional_cover' in values
+
+        if multicell:
             return self._land_cover(model_run, values, errors)
+        else:
+            return self._single_cell_land_cover(model_run, values, errors)
 
     def _land_cover(self, model_run, values, errors):
         land_cover_controller_helper = LandCoverControllerHelper()
@@ -438,8 +440,37 @@ class ModelRunController(BaseController):
                 else:
                     redirect(url(controller='model_run', action='extents'))
 
-    def _user_uploaded_land_cover(self, model_run, values, errors):
-        pass
+    def _single_cell_land_cover(self, model_run, values, errors):
+        land_cover_controller_helper = LandCoverControllerHelper()
+        if not request.POST:
+            self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
+            land_cover_controller_helper.add_fractional_land_cover_to_context(c, errors, model_run)
+            return render('model_run/fractional_land_cover.html')
+        else:
+            land_cover_controller_helper.save_fractional_land_cover(values, errors, model_run)
+            if len(errors) > 0:
+                if 'land_cover_frac' in errors:
+                    helpers.error_flash(errors['land_cover_frac'])
+                land_cover_controller_helper.add_fractional_land_cover_to_context(c, errors, model_run)
+                c.land_cover_values = values
+                del values['submit']
+                html = render('model_run/fractional_land_cover.html')
+                return htmlfill.render(
+                    html,
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter
+                )
+            else:
+                self._model_run_controller_helper.check_user_quota(self.current_user)
+                try:
+                    action = values['submit']
+                except KeyError:
+                    action = None
+                if action == u'Next':
+                    redirect(url(controller='model_run', action='output'))
+                else:
+                    redirect(url(controller='model_run', action='extents'))
 
     def output(self):
         """

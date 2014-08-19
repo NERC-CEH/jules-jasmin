@@ -8,7 +8,6 @@
     <link rel="stylesheet" type="text/css" href="../layout/model_run_land_cover.css"/>
     <script src="../js/model_run_land_cover.js"></script>
     <script src="../js/jquery-ui.js"></script>
-    <!--<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>-->
 </head>
 <body id="land_cover">
 <h1>Edit Land Cover</h1>
@@ -19,17 +18,11 @@
     <div class="drop-down-holder">
         <p>Category:</p>
         <select id="lc_cat">
-            <!--<option value="0">All Categories</option>-->
             <option py:for="category in c.land_cover_categories" value="${category.id}">${category.name}</option>
         </select>
     </div>
     <div class="drop-down-holder">
         <p>Region:</p>
-        <!--<select id="lc_cat_0_region" class="lc_region">-->
-        <!--<py:for each="category in c.land_cover_categories">-->
-        <!--<option py:for="region in category.regions" value="${region.id}">${region.name}</option>-->
-        <!--</py:for>-->
-        <!--</select>-->
         <select py:for="category in c.land_cover_categories" id="lc_cat_${category.id}_region" class="lc_region">
             <option py:for="region in category.regions" value="${region.id}">${region.name}</option>
         </select>
