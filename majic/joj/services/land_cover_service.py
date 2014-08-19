@@ -126,7 +126,7 @@ class LandCoverService(DatabaseService):
                 land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
                 land_cover_client = self.dap_client_factory.get_land_cover_dap_client(land_cover_url, land_cover_key)
                 return land_cover_client.get_fractional_cover(lat, lon)
-            except DapClientException:
+            except DapClientException as ex:
                 pass
         ntypes = len(self.get_land_cover_values())
         return ntypes * [0.0]

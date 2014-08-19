@@ -252,6 +252,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
     def test_GIVEN_valid_values_WHEN_save_fractional_land_cover_THEN_values_saved_to_file(self):
         values = {'submit': u'Next',
+                  'fractional_cover': u'1',
                   'land_cover_value_1': u'20',
                   'land_cover_value_2': u'20',
                   'land_cover_value_3': u'10',
@@ -270,6 +271,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
     def test_GIVEN_values_dont_add_up_WHEN_save_fractional_land_cover_THEN_values_saved_to_file(self):
         values = {'submit': u'Next',
+                  'fractional_cover': u'1',
                   'land_cover_value_1': u'20',
                   'land_cover_value_2': u'25',
                   'land_cover_value_3': u'10',
@@ -343,7 +345,7 @@ class TestLandCoverControllerHelper(BaseTest):
 
         assert_that(len(context.land_cover_values), is_(9))
 
-    def test_GIVEN_fractional_land_cover_saved_WHEN_add_fractional_cover_to_context_THEN_cover_types_added(self):
+    def test_GIVEN_fractional_land_cover_saved_WHEN_add_fractional_cover_to_context_THEN_cover_values_added(self):
         self.model_run.land_cover_frac = "0\t0\t0\t0\t0\t0\t0\t0\t1"
 
         context = self.Context()
