@@ -93,9 +93,6 @@ class DrivingDataControllerHelper(object):
             self.job_runner_client.delete_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
             return
 
-        # Save the fractional file
-        self._save_fractional_file_to_job_runner(model_run, model_run_id)
-
         # Do database stuff
         new_driving_dataset = self._create_uploaded_driving_dataset(start_date, end_date, lat, lon, model_run_service)
 
@@ -155,15 +152,6 @@ class DrivingDataControllerHelper(object):
         file_generator = self.ascii_download_helper.get_driving_data_file_gen(driving_data, lat, lon, start, end)
 
         return file_generator
-
-    def _save_fractional_file_to_job_runner(self, model_run, model_run_id):
-
-        # TODO this properly by reading from the fractional netCDF file
-        frac = "0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0"
-
-        self.job_runner_client.start_new_file(model_run_id, constants.FRACTIONAL_FILENAME)
-        self.job_runner_client.append_to_file(model_run, constants.FRACTIONAL_FILENAME, frac)
-        self.job_runner_client.close_file(model_run_id, constants.FRACTIONAL_FILENAME)
 
     def _create_uploaded_driving_dataset(self, start_date, end_date, lat, lon, model_run_service):
         class UploadedDrivingDataset(object):

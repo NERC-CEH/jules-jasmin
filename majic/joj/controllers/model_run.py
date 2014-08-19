@@ -412,6 +412,10 @@ class ModelRunController(BaseController):
         if multicell:
             return self._land_cover(model_run, values, errors)
         else:
+            latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
+            if latlon is None:
+                helpers.error_flash(u"You must set model run extents set before you can edit the land cover")
+                redirect(url(controller='model_run', action='extents'))
             return self._single_cell_land_cover(model_run, values, errors)
 
     def _land_cover(self, model_run, values, errors):

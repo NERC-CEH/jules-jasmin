@@ -177,7 +177,11 @@ class TestLandCoverControllerHelper(BaseTest):
 
     @staticmethod
     def _mock_lcs_get_awkward_default_fractional_cover(model_run):
-        return [0.0102193951607, 0.0, 0.461101979017, 0.0344029143453, 0.0, 0.369327515364, 0.0, 0.124948188663, 0.0]
+        return [0.0102193951607, 0.0, 0.361101979017, 0.0344029143453, 0.0, 0.369327515364, 0.0, 0.124948188663, 0.0]
+
+    @staticmethod
+    def _mock_lcs_get_missing_default_fractional_cover(model_run):
+        return 9 * [-9999.99]
 
     def test_GIVEN_single_action_WHEN_save_land_cover_THEN_land_cover_action_saved(self):
         values = {'action_1_region': u'1',
@@ -415,6 +419,15 @@ class TestLandCoverControllerHelper(BaseTest):
 
         context = self.Context()
         self.land_cover_helper.add_fractional_land_cover_to_context(context, {}, self.model_run)
-        context_vals = [context.land_cover_values[key] for key in sorted(context.land_cover_values)]
+        context_vals = [context.land_cover_values[key] for key in sorted(context.land_cover_values) if 'land_cover_value' in key]
         assert_that(context_vals[2], is_(46.12))
         assert sum(context_vals) - 100.0 < 0.00000001
+
+    def test_GIVEN_missing_fractional_cover_WHEN_add_cover_to_context_THEN_zeros_returned(self):
+        self.land_cover_service.get_default_fractional_cover = self._mock_lcs_get_missing_default_fractional_cover
+
+        context = self.Context()
+        self.land_cover_helper.add_fractional_land_cover_to_context(context, {}, self.model_run)
+        for value in context.land_cover_values.values():
+            assert_that(value, is_(0.0))
+

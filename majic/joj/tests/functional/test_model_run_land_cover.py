@@ -6,7 +6,7 @@ from hamcrest import is_, assert_that, contains_string, is_not, string_contains_
 from pylons import url
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
-from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction,\
+from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction, \
     DrivingDataset, Session, ParameterValue
 from joj.services.dataset import DatasetService
 from joj.services.land_cover_service import LandCoverService
@@ -188,50 +188,49 @@ class TestModelRunLandCover(TestController):
         assert (order1 < order2 < order5)
 
     def generate_categories_with_regions(self, driving_dataset):
-            # Add categories
-            cat1 = LandCoverRegionCategory()
-            cat1.driving_dataset_id = driving_dataset.id
-            cat1.name = "Rivers"
-            cat1.id = 1
+        # Add categories
+        cat1 = LandCoverRegionCategory()
+        cat1.driving_dataset_id = driving_dataset.id
+        cat1.name = "Rivers"
+        cat1.id = 1
 
-            region1 = LandCoverRegion()
-            region1.id = 1
-            region1.name = "Thames"
-            region1.category_id = 1
-            region1.category = cat1
+        region1 = LandCoverRegion()
+        region1.id = 1
+        region1.name = "Thames"
+        region1.category_id = 1
+        region1.category = cat1
 
-            region2 = LandCoverRegion()
-            region2.id = 2
-            region2.name = "Itchen"
-            region2.category_id = 1
-            region2.category = cat1
+        region2 = LandCoverRegion()
+        region2.id = 2
+        region2.name = "Itchen"
+        region2.category_id = 1
+        region2.category = cat1
 
-            cat1.regions = [region1, region2]
+        cat1.regions = [region1, region2]
 
-            cat2 = LandCoverRegionCategory()
-            cat2.driving_dataset_id = driving_dataset.id
-            cat2.name = "Counties"
-            cat2.id = 2
+        cat2 = LandCoverRegionCategory()
+        cat2.driving_dataset_id = driving_dataset.id
+        cat2.name = "Counties"
+        cat2.id = 2
 
-            region3 = LandCoverRegion()
-            region3.id = 3
-            region3.name = "Hampshire"
-            region3.category_id = 2
-            region3.category = cat2
+        region3 = LandCoverRegion()
+        region3.id = 3
+        region3.name = "Hampshire"
+        region3.category_id = 2
+        region3.category = cat2
 
-            region4 = LandCoverRegion()
-            region4.id = 4
-            region4.name = "Oxfordshire"
-            region4.category_id = 2
-            region4.category = cat2
+        region4 = LandCoverRegion()
+        region4.id = 4
+        region4.name = "Oxfordshire"
+        region4.category_id = 2
+        region4.category = cat2
 
-            cat2.regions = [region3, region4]
+        cat2.regions = [region3, region4]
 
-            return [cat1, cat2]
+        return [cat1, cat2]
 
 
 class TestModelRunLandCoverSingleCell(TestController):
-
     def setUp(self):
         self.model_run_service = ModelRunService()
         self.land_cover_service = LandCoverService()
@@ -446,3 +445,18 @@ class TestModelRunLandCoverSingleCell(TestController):
             string_names_values.append(lc_vals[i].name)
             string_names_values.append(frac_vals[i])
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_no_extents_selected_WHEN_page_get_THEN_redirect(self):
+        self.set_up_single_cell_model_run()
+        param = self.model_run_service.get_parameter_by_constant(JULES_PARAM_POINTS_FILE)
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        with session_scope() as session:
+            session.query(ParameterValue) \
+                .filter(ParameterValue.parameter_id == param.id) \
+                .filter(ParameterValue.model_run_id == model_run.id) \
+                .delete()
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='extents')), "url")

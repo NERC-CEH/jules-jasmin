@@ -162,6 +162,16 @@ class LandCoverControllerHelper(object):
     def _neaten_default_fractional_values(self, raw_frac_vals):
         # Sometimes the default fractional cover retrieved from the netCDF file is awkward in that the
         # fractions are long (11 decimal places) and don't add up to precisely 1.0
+
+        # Set missing values (e.g. -9999) to 0
+        missing_values = False
+        for value in raw_frac_vals:
+            if value < 0:
+                missing_values = True
+                break
+        if missing_values:
+            return len(raw_frac_vals) * [0.0]
+
         rounded_vals = []
         non_zero_indices = []
         for i in range(len(raw_frac_vals)):
@@ -170,8 +180,11 @@ class LandCoverControllerHelper(object):
                 non_zero_indices.append(i)
         non_zero_indices.sort(key=lambda i: -rounded_vals[i])
         increment = copysign(1, (10000 - sum(rounded_vals)))
-        for i in non_zero_indices:
-            if sum(rounded_vals) == 10000:
-                break
-            rounded_vals[i] += increment
+        finished = False
+        while not finished:
+            for i in non_zero_indices:
+                if sum(rounded_vals) == 10000:
+                    finished = True
+                    break
+                rounded_vals[i] += increment
         return [val / 10000.0 for val in rounded_vals]
