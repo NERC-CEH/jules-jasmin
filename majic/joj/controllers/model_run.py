@@ -35,6 +35,7 @@ from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
 
 
 # The prefix given to parameter name in html elements
+from joj.lib.wmc_util import create_request_and_open_url
 
 PARAMETER_NAME_PREFIX = 'param'
 
@@ -589,7 +590,8 @@ class ModelRunController(BaseController):
     def user_land_cover(self, id):
         path ="fileServer/model_runs/run%s/user_edited_land_cover_fractional_file.nc" % str(id)
         url = config['thredds.server_url'] + path
-        file = urllib2.urlopen(url)
+        # file = urllib2.urlopen(url)
+        file = create_request_and_open_url(url)
 
         response.headers['Content-Type'] = file.headers.dict['content-type']
         response.headers['Content-Disposition'] = str('attachment; filename="%s"' % "user_edited_land_cover.nc")
