@@ -88,6 +88,7 @@ var EcomapsMap = (function() {
         // Toggle the layer on or off
         layerContainer.on("click", "input.layer-toggle", function(){
            toggleLayerDisplay($(this).data("layerid"));
+           updateGraph();
         });
 
         // Toggle legend display on/off
@@ -198,6 +199,7 @@ var EcomapsMap = (function() {
             var layerId = $(this).attr("layer-id")
             removeDataset(layerId);
             $(this).closest("li").removeClass("active");
+            updateGraph();
         }
         else {
 
@@ -221,6 +223,7 @@ var EcomapsMap = (function() {
                 }
                 $("div#options-panel").show();
                 createSortableList();
+                updateGraph();
             });
 
             // Make the request for the WMS layer data
