@@ -3,14 +3,17 @@
 """
 
 import logging
+
 from pylons import config, request
 from pylons.decorators import jsonify
+
 from joj.lib.base import BaseController, render, c
 from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.lib.wmc_util import create_request_and_open_url
+
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +80,7 @@ class MapController(BaseController):
         lon = float(request.params['lon'])
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
         url = dataset.netcdf_url
-        dap_client = self._dap_factory.get_dap_client(url)
+        dap_client = self._dap_factory.get_graphing_dap_client(url)
         return dap_client.get_graph_data(lat, lon)
 
     @jsonify

@@ -2,16 +2,17 @@
 header
 """
 import datetime
+
 from hamcrest import is_, assert_that, contains_string
 from mock import MagicMock
+
 from joj.model import DrivingDataset, Session, session_scope, DrivingDatasetParameterValue, DrivingDatasetLocation
 from joj.tests import TestController
 from joj.utils.ascii_download_helper import AsciiDownloadHelper
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
-from joj.services.dap_client import DapClient
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 
 
 class TestAsciiDownloadHelper(TestController):

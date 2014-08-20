@@ -26,7 +26,8 @@ class DrivingDataset(Base):
     boundary_lon_west = Column(Float)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
-    order_by_id = Column(Integer)
+    view_order_index = Column(Integer)
+    usage_order_index = Column(Integer)
 
     driving_data_lat = None
     driving_data_lon = None

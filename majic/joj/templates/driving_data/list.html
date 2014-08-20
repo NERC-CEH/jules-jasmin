@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="../layout.html" />
+<head>
+    <title>Driving Data List</title>
+</head>
+<body id="admin">
+    <h1>Driving Data</h1>
+
+    <div>
+        <table class="table table-striped">
+            <thead>
+                <th>Name</th>
+                <th>Description</th>
+                <th style="width:80px">
+                </th>
+            </thead>
+            <tbody>
+                <tr py:for="driving_data_set in c.driving_data_sets">
+                    <td>
+                        ${driving_data_set.name}
+                    </td>
+                    <td>
+                        ${driving_data_set.description}
+                    </td>
+                    <td>
+                        <a href="${url(controller='driving_data', action='edit', id=driving_data_set.id) }" class="btn btn-info ">
+                            <i class="icon-edit icon-white"></i>
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a href="${url(controller='driving_data', action='edit') }" class="btn btn-success">
+        <i class="icon-plus icon-white"></i>
+        Add
+    </a>
+    </div>
+
+
+
+
+</body>
+</html>
+

@@ -370,9 +370,8 @@ def setup_app(command, conf, vars):
         driving_ds_1.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
                                    "five variables are at 3 hourly resolution."
-        driving_ds_1.dataset = ds1
-        driving_ds_1.geographic_region = 'United Kingdom'
-        driving_ds_1.temporal_resolution = '24 Hours'
+        driving_ds_1.geographic_region = 'Global'
+        driving_ds_1.temporal_resolution = '3 Hours'
         driving_ds_1.spatial_resolution = '1 km'
         driving_ds_1.boundary_lat_north = 90
         driving_ds_1.boundary_lat_south = -90
@@ -383,7 +382,8 @@ def setup_app(command, conf, vars):
             driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
         else:
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
-        driving_ds_1.order_by_id = 100
+        driving_ds_1.view_order_index = 100
+        driving_ds_1.usage_order_index = 2
 
         cat1 = LandCoverRegionCategory()
         cat1.name = "Test Regions"
@@ -429,7 +429,8 @@ def setup_app(command, conf, vars):
         driving_ds_2.boundary_lon_east = 170
         driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
-        driving_ds_2.order_by_id = 200
+        driving_ds_2.view_order_index = 200
+        driving_ds_2.usage_order_index = 1
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -444,7 +445,8 @@ def setup_app(command, conf, vars):
         driving_ds_3.boundary_lon_east = 180
         driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
-        driving_ds_3.order_by_id = 300
+        driving_ds_3.view_order_index = 300
+        driving_ds_3.usage_order_index = 100
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
@@ -472,7 +474,7 @@ def setup_app(command, conf, vars):
                                                    "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'     "
                                                    "'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC'"],
             [constants.JULES_PARAM_DRIVE_INTERP,
-             "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
+             "'i'          'i'         'i'         'i'         'nf'          'nf'          'nf'              'nf'"],
             [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
             [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
 
@@ -589,7 +591,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
         driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
                                         "single cell site"
-        driving_ds_upload.order_by_id = 1000
+        driving_ds_upload.view_order_index = 1000
 
         parameters_upload = [
 
@@ -620,7 +622,7 @@ def setup_app(command, conf, vars):
         session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
 
         land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
-                            6: 'Urban', 7: 'Lake', 8: 'Soil', 9: 'Ice'}
+                            6: 'Urban', 7: 'Lake', 8: 'Soil', 9: constants.FRACTIONAL_ICE_NAME}
         for index in land_cover_types:
             land_cover_type = LandCoverValue()
             land_cover_type.index = index

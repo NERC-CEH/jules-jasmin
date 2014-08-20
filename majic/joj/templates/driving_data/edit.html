@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>
+        <py:if test="c.driving_data_set.id is None">
+            New
+        </py:if>
+        <py:if test="c.driving_data_set.id is not None">
+        Edit
+        </py:if>
+        Driving Data Set</title>
+    <link rel="stylesheet" type="text/css" href="../../layout/joj.css"/>
+    <link rel="stylesheet" type="text/css" href="../../layout/model_run_extents.css"/>
+</head>
+<body id="admin">
+    <h1><py:if test="c.driving_data_set.id is None">
+            New
+        </py:if>
+        <py:if test="c.driving_data_set.id is not None">
+        Edit
+        </py:if> Driving Data</h1>
+
+    <form class="form-horizontal" method="POST">
+        <h2>General</h2>
+        <div class="control-group">
+            <label for="name" class="control-label">Name</label>
+            <div class="controls">
+               ${h.html_tags.text('name', placeholder='Enter a unique name', class_='input-xxlarge')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="description" class="control-label">Description</label>
+            <div class="controls">
+               ${h.html_tags.textarea('description', placeholder='Description', class_='input-xxlarge', rows=5)}
+            </div>
+        </div>
+
+
+        <div class="control-group">
+            <label for="geographic_region" class="control-label">
+                Geographical Region
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('geographic_region', placeholder='Geographic Region')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="spatial_resolution" class="control-label">
+                Spatial Resolution
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('spatial_resolution', placeholder='Spatial Resolution')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="temporal_resolution" class="control-label">
+                Temporal Resolution
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('temporal_resolution', placeholder='Temporal Resolution')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">
+                Spatial Extent
+                <p class="label-explain">The spatial area for the driving data.</p>
+            </label>
+            <div class="controls">
+                <fieldset class="fieldset">
+                    <div class="controls-row">
+                        <div class="span4">
+                            <h5>Boundary</h5>
+                        </div>
+                        <div class="span7">
+                            <h5>Value</h5>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>Northern Bounding Latitude <small>(&deg;N)</small></p>
+                        </div>
+                        <div class="span7">
+                            <div class="" >
+                                ${h.html_tags.text('boundary_lat_north')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>Southern Bounding Latitude <small>(&deg;N)</small></p>
+                        </div>
+                        <div class="span7">
+                            <div class="" >
+                                ${h.html_tags.text('boundary_lat_south')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>Western Bounding Longitude <small>(&deg;E)</small></p>
+                        </div>
+                        <div class="span7">
+                            ${h.html_tags.text('boundary_lon_west')}
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>Eastern Bounding Longitude <small>(&deg;E)</small></p>
+                        </div>
+                        <div class="span7">
+                            ${h.html_tags.text('boundary_lon_east')}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">
+                Temporal Extent
+                <p class="label-explain">The time over which the driving data extends.</p>
+            </label>
+            <div class="controls">
+                <fieldset class="fieldset">
+                    <div class="controls-row">
+                        <div class="span4">
+                            <h5>Time</h5>
+                        </div>
+                        <div class="span7">
+                            <h5>Value</h5>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>Start Date and Time</p>
+                        </div>
+                        <div class="span7">
+                            <div class="" >
+                                ${h.html_tags.text('time_start', placeholder="YYYY-MM-DD HH:MM")}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="span4">
+                            <p>End Date and Time </p>
+                        </div>
+                        <div class="span7">
+                            <div class="" >
+                                ${h.html_tags.text('time_end', placeholder="YYYY-MM-DD HH:MM")}
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="view" class="control-label">
+                View List Order
+                <i class="fa fa-info-circle" data-toggle="tooltip" title="View List Order" data-trigger="click | hover"
+                     data-content="On the driving data page in new model run the driving data sets are ordered by this value (smallest at the top)"></i>
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('view_order_index', placeholder='View list order')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="view" class="control-label">
+                Mask Usage Order
+                <i class="fa fa-info-circle" data-toggle="tooltip" title="Mask Usage Order" data-trigger="click | hover"
+                     data-content="The soil properties and default land cover values for a single site uploaded dataset are obtained from
+                      a driving data set. The driving dataset with the smallest mask usage order is picked as long as the
+                      longitude and latitude values are within the driving data set bounds."></i>
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('usage_order_index', placeholder='Mask usage order')}
+            </div>
+        </div>
+
+
+        <h2>Masks</h2>
+
+
+
+        <div class="control-group">
+            <label class="control-label">
+                Masks
+                <p class="label-explain">Categories, locations and names of masks</p>
+            </label>
+
+
+            <div class="controls">
+                <button type="button" class="btn control-group" value="masks">
+                    <i class="icon-plus"></i>
+                    Add Mask
+                </button>
+
+                <fieldset class="fieldset">
+                    <div class="controls-row">
+                        <div class="span3">
+                            <h5>Category</h5>
+                        </div>
+                        <div class="span3">
+                            <h5>Name</h5>
+                        </div>
+                        <div class="span5">
+                            <h5>Path</h5>
+                        </div>
+                    </div>
+                    <div py:for="masknum in range(c.masks)" class="controls-row">
+                        <div class="span3">
+                            ${h.html_tags.hidden('id_{}'.format(masknum), placeholder="Category")}
+                            ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
+                        </div>
+                        <div class="span3">
+                            ${h.html_tags.text('name_{}'.format(masknum), placeholder="Name")}
+                        </div>
+                        <div class="span5">
+                            ${h.html_tags.text('path_{}'.format(masknum), placeholder="data/filepath/filename.nc")}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+
+        <h2>Driving Data Files</h2>
+
+        <div class="control-group">
+            <label for="driving_data_period" class="control-label">Period of a Timestep (s)</label>
+            <div class="controls">
+               ${h.html_tags.text('driving_data_period', placeholder='Period in s of a time step')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="drive_file" class="control-label">Drivinf data filename or template</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_file', placeholder='data/filepath/template.nc', class_='input-xxlarge')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="drive_nx" class="control-label">Number of Cells in the X dimension</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_nx', placeholder='X')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="drive_ny" class="control-label">Number of Cells on the Y dimension</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_ny', placeholder='Y')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="drive_x_dim_name" class="control-label">X Axis Dimension Name</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_x_dim_name', placeholder='X Axis')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="drive_y_dim_name" class="control-label">Y Axis Dimension Name</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_y_dim_name', placeholder='Y Axis')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="drive_time_dim_name" class="control-label">Time Axis Dimension Name</label>
+            <div class="controls">
+               ${h.html_tags.text('drive_time_dim_name', placeholder='Time Axis')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">
+                Driving Data Variables
+            </label>
+
+
+            <div class="controls">
+                <button type="button" class="btn control-group" value="masks">
+                    <i class="icon-plus"></i>
+                    Add Variable
+                </button>
+
+                <fieldset class="fieldset">
+                    <div class="controls-row">
+                        <h5 class="span2">Variable </h5>
+                        <h5 class="span2">Name</h5>
+                        <h5 class="span2">Template</h5>
+                        <h5 class="span2">Interpolation</h5>
+                    </div>
+                    <div py:for="varnum in range(c.nvar)" class="controls-row">
+                            ${h.html_tags.text('drive_var_{}'.format(varnum), placeholder="Variable", class_="span2")}
+                            ${h.html_tags.text('drive_var_name_{}'.format(varnum), placeholder="Variable name", class_="span2")}
+                            ${h.html_tags.text('drive_var_template_{}'.format(varnum), placeholder="Template name", class_="span2")}
+                            ${h.html_tags.text('drive_var_interp_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
+                            <i class="fa fa-times-circle fa-2x ico red span1"></i>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+
+        <div class="controls">
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
+        </div>
+
+    </form>
+</body>
+</html>

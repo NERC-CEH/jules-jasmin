@@ -164,7 +164,7 @@ class DatasetService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(DrivingDataset)\
                 .options(joinedload(DrivingDataset.parameter_values))\
-                .order_by(DrivingDataset.order_by_id)\
+                .order_by(DrivingDataset.view_order_index)\
                 .all()
 
     def get_driving_dataset_by_id(self, id):

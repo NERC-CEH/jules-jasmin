@@ -181,3 +181,25 @@ class TestModelRunSummaryController(TestWithFullModelRun):
             assert_that(param_values_start[i].value, is_(param_values_end[i].value))
             assert_that(param_values_start[i].group_id, is_(param_values_end[i].group_id))
 
+    def test_GIVEN_workflow_branch_with_user_driving_data_followed_WHEN_reach_submit_THEN_parameter_values_the_same(self):
+        # We create a model run, then simulate going back to the first page and recreating it with different options
+        # Finally we again go back to the first page and recreate the original model run to check the end result is
+        # the same both paths.
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        param_values_start = model_run.parameter_values
+        self.create_model_run_with_user_uploaded_driving_data()
+        self.create_model_run_ready_for_submit()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        param_values_end = model_run.parameter_values
+
+        # Sort by param_id
+        param_values_start.sort(key=lambda pv: pv.parameter_id)
+        param_values_end.sort(key=lambda pv: pv.parameter_id)
+
+        # The two lists should match up
+        assert_that(len(param_values_start), is_(len(param_values_end)))
+        for i in range(len(param_values_start)):
+            assert_that(param_values_start[i].parameter_id, is_(param_values_end[i].parameter_id))
+            assert_that(param_values_start[i].value, is_(param_values_end[i].value))
+            assert_that(param_values_start[i].group_id, is_(param_values_end[i].group_id))

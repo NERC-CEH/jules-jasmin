@@ -58,9 +58,9 @@
                 <py:choose>
                     <py:when test="c.extents_values['site'] == 'single'">
                         <p><b>Site Location - </b>${c.extents_values['lat']}&deg;N, ${c.extents_values['lon']}&deg;E
-                        <py:if test="'average_over_cell' in c.extents_values">
-                            <br/><small>Using Cell average</small>
-                        </py:if>
+                            <py:if test="'average_over_cell' in c.extents_values">
+                                <br/><small>Using Cell average</small>
+                            </py:if>
                         </p>
                     </py:when>
                     <py:otherwise>
@@ -84,16 +84,37 @@
         <div class="span11">
             <div id="land-cover-page" class="page-group">
                 <py:choose>
-                    <py:when test="len(c.land_cover_actions) == 0">
-                        <p><b>Land Cover Edits - </b>No land cover edits made</p>
+                    <py:when test="c.extents_values['site'] == 'single'">
+                        <py:choose>
+                            <py:when test="'land_cover_ice' in c.land_cover_values">
+                                <p><b>Fractional Land Cover - </b>Cell is 100% ice</p>
+                            </py:when>
+                            <py:otherwise>
+                                <p><b>Fractional Land Cover:</b></p>
+                                <ul>
+                                    <py:for each="lc_val in c.land_cover_types">
+                                        <li py:if="lc_val.id != c.ice_index">
+                                            ${lc_val.name}: ${c.land_cover_values['land_cover_value_' + str(lc_val.id)]} %
+                                        </li>
+                                    </py:for>
+                                </ul>
+                            </py:otherwise>
+                        </py:choose>
                     </py:when>
                     <py:otherwise>
-                        <p><b>Land Cover Edits:</b></p>
-                        <ul>
-                            <li py:for="action in c.land_cover_actions">
-                                Change ${action.region.name} (${action.region.category.name}) to ${action.value.name}
-                            </li>
-                        </ul>
+                        <py:choose>
+                            <py:when test="len(c.land_cover_actions) == 0">
+                                <p><b>Land Cover Edits - </b>No land cover edits made</p>
+                            </py:when>
+                            <py:otherwise>
+                                <p><b>Land Cover Edits:</b></p>
+                                <ul>
+                                    <li py:for="action in c.land_cover_actions">
+                                        Change ${action.region.name} (${action.region.category.name}) to ${action.value.name}
+                                    </li>
+                                </ul>
+                            </py:otherwise>
+                        </py:choose>
                     </py:otherwise>
                 </py:choose>
             </div>

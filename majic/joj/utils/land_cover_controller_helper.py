@@ -1,6 +1,8 @@
 """
 header
 """
+from decimal import Decimal, InvalidOperation
+from math import copysign
 import re
 from joj.model import LandCoverAction
 from joj.services.land_cover_service import LandCoverService
@@ -34,7 +36,40 @@ class LandCoverControllerHelper(object):
         tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
             model_run.driving_dataset_id)
 
-    def save_land_covers(self, values, errors, model_run):
+    def add_fractional_land_cover_to_context(self, tmpl_context, errors, model_run):
+        """
+        Add the fractional land cover fields to the template context object
+        :param tmpl_context: Template context object to add fields to
+        :param errors: Object to add any errors to
+        :param model_run: Model run being created
+        :return:
+        """
+        fractional_string = model_run.land_cover_frac
+        if fractional_string is None:
+            raw_frac_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+            fractional_values = self._neaten_default_fractional_values(raw_frac_vals)
+        else:
+            fractional_values = [float(v) for v in fractional_string.split()]
+
+        tmpl_context.land_cover_types = self.land_cover_service.get_land_cover_values()
+        ice_index = self.land_cover_service.find_ice_index(tmpl_context.land_cover_types)
+        tmpl_context.ice_index = ice_index
+
+        tmpl_context.land_cover_values = {}
+        for land_cover_type in tmpl_context.land_cover_types:
+            index = land_cover_type.id
+            try:
+                value = fractional_values[index - 1]
+            except IndexError:
+                # In case we have somehow the wrong number of values
+                value = 0.0
+            if index == ice_index:
+                if value > 0.0:
+                    tmpl_context.land_cover_values['land_cover_ice'] = 1
+            else:
+                tmpl_context.land_cover_values["land_cover_value_" + str(index)] = 100 * value
+
+    def save_land_cover_actions(self, values, errors, model_run):
         """
         Validate and Save requested land cover actions
         :param values: POST dictionary of form values
@@ -49,12 +84,49 @@ class LandCoverControllerHelper(object):
             for key in values:
                 actions += re.findall("^action_(\d+)", key)
             for index in set(actions):
-                lcra = LandCoverAction()
-                lcra.region_id = int(values['action_%s_region' % index])
-                lcra.value_id = int(values['action_%s_value' % index])
-                lcra.order = int(values['action_%s_order' % index])
-                land_cover_actions.append(lcra)
+                lca = LandCoverAction()
+                lca.region_id = int(values['action_%s_region' % index])
+                lca.value_id = int(values['action_%s_value' % index])
+                lca.order = int(values['action_%s_order' % index])
+                land_cover_actions.append(lca)
             self.land_cover_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
+
+    def save_fractional_land_cover(self, values, errors, model_run):
+        """
+        Save the fractional land cover (for user uploaded driving data)
+        :param values: POST values dictionary
+        :param errors: Object to add errors to
+        :param model_run: Model being created
+        :return:
+        """
+        land_cover_val_prefix = "land_cover_value_"
+        land_cover_ice_key = "land_cover_ice"
+
+        types = self.land_cover_service.get_land_cover_values()
+        ntypes = len(types)
+        ice_index = self.land_cover_service.find_ice_index(types)
+
+        sorted_fractional_values = ntypes * [Decimal(0.0)]
+        if land_cover_ice_key in values:
+            sorted_fractional_values[ice_index - 1] = Decimal(1.0)
+        else:
+            for key in values:
+                if land_cover_val_prefix in key:
+                    cover_key = int(key.split(land_cover_val_prefix)[1])
+                    try:
+                        cover_value = Decimal(values[key]) / 100
+                        sorted_fractional_values[cover_key - 1] = cover_value
+                        if cover_value < 0:
+                            errors[key] = "Please enter a positive number"
+                    except InvalidOperation:
+                        errors[key] = "Please enter a number"
+            sorted_fractional_values[ice_index - 1] = Decimal(0.0)
+
+        if not sum(sorted_fractional_values) == 1.0:
+            errors['land_cover_frac'] = 'The sum of all the land cover fractions must be 100%'
+        if len(errors) == 0:
+            fractional_string = '\t'.join([str(val) for val in sorted_fractional_values])
+            self.land_cover_service.save_fractional_land_cover_for_model(model_run, fractional_string)
 
     def _validate_values(self, values, errors, driving_data):
         # Check that:
@@ -86,3 +158,33 @@ class LandCoverControllerHelper(object):
     def _does_region_belong_to_driving_data(self, region_id, driving_data):
         land_cover_region = self.land_cover_service.get_land_cover_region_by_id(region_id)
         return land_cover_region.category.driving_dataset_id == driving_data.id
+
+    def _neaten_default_fractional_values(self, raw_frac_vals):
+        # Sometimes the default fractional cover retrieved from the netCDF file is awkward in that the
+        # fractions are long (11 decimal places) and don't add up to precisely 1.0
+
+        # Set missing values (e.g. -9999) to 0
+        missing_values = False
+        for value in raw_frac_vals:
+            if value < 0:
+                missing_values = True
+                break
+        if missing_values:
+            return len(raw_frac_vals) * [0.0]
+
+        rounded_vals = []
+        non_zero_indices = []
+        for i in range(len(raw_frac_vals)):
+            if raw_frac_vals != 0.0:
+                rounded_vals.append(int(10000 * raw_frac_vals[i]))
+                non_zero_indices.append(i)
+        non_zero_indices.sort(key=lambda i: -rounded_vals[i])
+        increment = copysign(1, (10000 - sum(rounded_vals)))
+        finished = False
+        while not finished:
+            for i in non_zero_indices:
+                if sum(rounded_vals) == 10000:
+                    finished = True
+                    break
+                rounded_vals[i] += increment
+        return [val / 10000.0 for val in rounded_vals]

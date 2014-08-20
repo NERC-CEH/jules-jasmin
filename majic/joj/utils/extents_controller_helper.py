@@ -2,12 +2,14 @@
 header
 """
 import datetime
+
 from pylons import config
+
 from joj.model.non_database.spatial_extent import InvalidSpatialExtent, SpatialExtent
 from joj.model.non_database.temporal_extent import InvalidTemporalExtent, TemporalExtent
 from joj.utils import constants
 from joj.services.dataset import DatasetService
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 
 
 class ExtentsControllerHelper(object):
