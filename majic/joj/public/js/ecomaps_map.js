@@ -171,6 +171,19 @@ var EcomapsMap = (function() {
         });
     };
 
+    var removeDataset = function(key) {
+        removeLayerFromMap(key);
+        var panel = $('li.layer[data-layerid="' + key + '"]');
+        panel.remove();
+
+        var time_controls = $('ul.layer-controls[data-layerid="' + key + '"]');
+        time_controls.remove();
+
+        if ($('li.layer').length == 0) {
+            $('#options-panel').hide();
+        }
+    }
+
     /*
      * loadDataset
      *
@@ -180,9 +193,11 @@ var EcomapsMap = (function() {
     var loadDataset = function() {
 
         // Highlight the selected dataset
-        //$("li.active").removeClass("active");
         if ($(this).closest("li").hasClass("active")) {
-
+            var datasetId = $(this).data("dsid");
+            var layerId = $(this).attr("layer-id")
+            removeDataset(layerId);
+            $(this).closest("li").removeClass("active");
         }
         else {
 
@@ -192,9 +207,10 @@ var EcomapsMap = (function() {
 
             // Let's get some layers!
             var datasetId = $(this).data("dsid");
+            var layerId = $(this).attr("layer-id");
 
             // Load the layers UI straight from the response
-            $.get('/viewdata/layers/' + datasetId, function(result) {
+            $.get('/viewdata/layers/' + datasetId + "_" + layerId, function(result) {
 
                 $("div#layer-container").prepend(result);
                 var dimensionItems = $("div#layer-list").find("li.dimension");
@@ -214,10 +230,10 @@ var EcomapsMap = (function() {
                     for(var i=0; i< data.length; i++){
 
                         // Give it a unique ID for our layer bag
-                        var layerId = "" + datasetId + data[i].name;
+                        var id = "" + layerId;
 
                         // We'll refer back to this when changing styles or visibility
-                        layerDict[layerId] = {
+                        layerDict[id] = {
                             index: currentLayerIndex,
                             data: data[i],
                             visible: true,

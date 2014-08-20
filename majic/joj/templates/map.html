@@ -37,6 +37,7 @@
                 <h3>Visualise Model Runs</h3>
                 <div class="sidebar-nav">
                     <ul class="nav nav-tabs">
+
                         <li py:for="model_run_sort in c.model_run_sorts" id="tab_${model_run_sort['name']}"
                             onclick="selectTab('${model_run_sort['name']}')" >
                             <a href="#" >
@@ -47,32 +48,32 @@
                     <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}">
                         <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']">
                             <li class="nav-header">
-                                <a href="#" onclick="expandCollapse('mod_hdr_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                    ${model_run.name}<div id="mod_hdr_${model_run.id}_icon" style="display:inline"> +</div>
+                                <a href="#" onclick="expandCollapse('mod_hdr_${model_run_sort['name'] + str(model_run.id)}');return false" style="color:rgb(153,153,153)">
+                                    ${model_run.name}<div id="mod_hdr_${model_run_sort['name'] + str(model_run.id)}_icon" style="display:inline"> +</div>
                                 </a>
                             </li>
-                            <div id="mod_hdr_${model_run.id}" style="display:none">
+                            <div id="mod_hdr_${model_run_sort['name'] + str(model_run.id)}" style="display:none">
                                 <ul class="nav nav-list">
                                     <li class="nav-header">
-                                        <a href="#" onclick="expandCollapse('mod_ds_in_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                            Input Datasets<div id="mod_ds_in_${model_run.id}_icon" style="display:inline"> +</div>
+                                        <a href="#" onclick="expandCollapse('mod_ds_in_${model_run_sort['name'] + str(model_run.id)}');return false" style="color:rgb(153,153,153)">
+                                            Input Datasets<div id="mod_ds_in_${model_run_sort['name'] + str(model_run.id)}_icon" style="display:inline"> +</div>
                                         </a>
                                     </li>
-                                    <div id="mod_ds_in_${model_run.id}" class="nav nav-list" style="display:none">
+                                    <div id="mod_ds_in_${model_run_sort['name'] + str(model_run.id)}" class="nav nav-list" style="display:none">
                                         <li py:for="ds in model_run.datasets">
-                                            <a py:if="ds.is_input == 1" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
+                                            <a py:if="ds.is_input == 1" class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
                                         </li>
                                     </div>
                                 </ul>
                                 <ul class="nav nav-list">
                                     <li class="nav-header">
-                                        <a href="#" onclick="expandCollapse('mod_ds_out_${model_run.id}');return false" style="color:rgb(153,153,153)">
-                                            Output Datasets<div id="mod_ds_out_${model_run.id}_icon" style="display:inline"> +</div>
+                                        <a href="#" onclick="expandCollapse('mod_ds_out_${model_run_sort['name'] + str(model_run.id)}');return false" style="color:rgb(153,153,153)">
+                                            Output Datasets<div id="mod_ds_out_${model_run_sort['name'] + str(model_run.id)}_icon" style="display:inline"> +</div>
                                         </a>
                                     </li>
-                                    <div id="mod_ds_out_${model_run.id}" class="nav nav-list" style="display:none">
+                                    <div id="mod_ds_out_${model_run_sort['name'] + str(model_run.id)}" class="nav nav-list" style="display:none">
                                         <li py:for="ds in model_run.datasets">
-                                            <a py:if="ds.is_input == 0" class="dataset" href="#" data-dsid="${ds.id}">${ds.name}</a>
+                                            <a py:if="ds.is_input == 0" class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
                                         </li>
                                     </div>
                                 </ul>
