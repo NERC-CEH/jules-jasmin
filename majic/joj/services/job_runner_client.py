@@ -89,28 +89,50 @@ class JobRunnerClient(object):
         :return: dictionary for the run model
         """
         json_land_cover = {}
-        if land_cover_actions:
-            # Identify the base land cover file, and rename the parameter to be the new file we'll create
-            # Identify the name of the base land cover variable
-            fractional_base_filename = ''
-            fractional_base_variable_key = ''
+
+        # We need to identify if using fractional file, edited land cover or default .nc file
+        # If single cell --> always use a fractional file.
+        # If multicell only use edited .nc if land cover actions saved.
+        multicell = False
+        for parameter in parameters:
+            if parameter.namelist.name == constants.JULES_PARAM_LATLON_REGION[0]:
+                if parameter.name == constants.JULES_PARAM_LATLON_REGION[1]:
+                    multicell = parameter.parameter_values[0].get_value_as_python()
+        if multicell:
+            if land_cover_actions:
+                # Identify the base land cover file, and rename the parameter to be the new file we'll create
+                # Identify the name of the base land cover variable
+                fractional_base_filename = ''
+                fractional_base_variable_key = ''
+                for parameter in parameters:
+                    if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
+                        if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
+                            fractional_base_filename = parameter.parameter_values[0].get_value_as_python()
+                            parameter.parameter_values[0].set_value_from_python(
+                                constants.USER_EDITED_FRACTIONAL_FILENAME)
+                        elif parameter.name == constants.JULES_PARAM_FRAC_NAME[1]:
+                            fractional_base_variable_key = parameter.parameter_values[0].get_value_as_python()
+                json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+                json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
+
+                json_actions = []
+                for action in land_cover_actions:
+                    json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                                   constants.JSON_LAND_COVER_VALUE: action.value_id,
+                                   constants.JSON_LAND_COVER_ORDER: action.order}
+                    json_actions.append(json_action)
+                json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
+        else:
+            # Use fractional file.
+            # Save the fractional file
+            self.start_new_file(run_model.id, constants.FRACTIONAL_FILENAME)
+            self.append_to_file(run_model.id, constants.FRACTIONAL_FILENAME, run_model.land_cover_frac)
+            self.close_file(run_model.id, constants.FRACTIONAL_FILENAME)
+
             for parameter in parameters:
                 if parameter.namelist.name == constants.JULES_PARAM_FRAC_FILE[0]:
                     if parameter.name == constants.JULES_PARAM_FRAC_FILE[1]:
-                        fractional_base_filename = parameter.parameter_values[0].get_value_as_python()
-                        parameter.parameter_values[0].set_value_from_python(constants.USER_EDITED_FRACTIONAL_FILENAME)
-                    elif parameter.name == constants.JULES_PARAM_FRAC_NAME[1]:
-                        fractional_base_variable_key = parameter.parameter_values[0].get_value_as_python()
-            json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
-            json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
-
-            json_actions = []
-            for action in land_cover_actions:
-                json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
-                               constants.JSON_LAND_COVER_VALUE: action.value_id,
-                               constants.JSON_LAND_COVER_ORDER: action.order}
-                json_actions.append(json_action)
-            json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
+                        parameter.parameter_values[0].set_value_from_python(constants.FRACTIONAL_FILENAME)
 
         namelist_files = []
 
