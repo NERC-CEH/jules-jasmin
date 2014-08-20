@@ -50,15 +50,20 @@ var EcomapsMap = (function() {
         {
             var selected_id = $('#selected_id').text();
             if (selected_id) {
-                var mod_hdr = 'mod_hdr_' + selected_id;
-                expandCollapse(mod_hdr);
-                expandCollapse('mod_ds_out_' + selected_id);
-                expandCollapse('mod_ds_in_' + selected_id);
+                var model_run_header = $('div[model-run-id="' + selected_id + '"]');
+                var mod_hdr_id = model_run_header.attr('id');
+                var ds_out_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_out_");
+                var ds_in_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_in_");
+
+                expandCollapse(mod_hdr_id);
+                expandCollapse(ds_out_id);
+                expandCollapse(ds_in_id);
 
                 //find the pane of the first example of the selected model and select that tab
-                var tab_name = $('#' + 'mod_hdr_' + selected_id).parents('.tab-pane').first().prop('id')
+                var tab_name = $('#' + mod_hdr_id).parents('.tab-pane').first().prop('id')
                 selectTab(tab_name.replace('pane_', ''));
-                $('#mod_ds_out_' + selected_id).find('a').first().click();
+                //$('#mod_ds_out_' + selected_id).find('a').first().click();
+                $('#' + ds_out_id).find('a').click();
             }
             else {
                 var tab_name = $('.tab-pane').prop('id');
