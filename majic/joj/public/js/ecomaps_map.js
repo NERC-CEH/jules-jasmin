@@ -641,6 +641,8 @@ var EcomapsMap = (function() {
         $("div#dimension-panel").hide();
         $("div#options-panel").hide();
         $("li.active").removeClass("active");
+
+        hideGraph();
     };
 
     return {
