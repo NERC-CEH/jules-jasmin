@@ -8,20 +8,18 @@
 
     <li py:for="dimension in c.dimensions" class="dimension">
 
-        <ul class="layer-controls" data-layerid="${c.layer_id}">
-            <li class="control-label">${c.dataset.name}: </li>
-            <li>
+        <div class="layer-controls" data-layerid="${c.layer_id}">
+            <span class="control-label">${c.dataset.name}: </span>
+            <br/>
+            <span style="margin-top:-10px">
                 <select data-dimension="${dimension['name']}" class="dimension">
                     <option py:for="value in dimension['dimensionValues']" value="${value}">${value}</option>
                 </select>
-            </li>
-            <div class="clearfix"></div>
-        </ul>
+            </span>
+        </div>
     </li>
 
-    <!--<div class="alert alert-info" py:if="c.analysis_id">-->
-        <!--<i class="icon-list-alt"></i> <a href="#analysis-detail" data-toggle="modal" class="view-analysis" data-analysisid="${c.analysis_id}">View Analysis: ${c.dataset.name}</a>-->
-    <!--</div>-->
+
 
     <li py:for="layer in reversed(c.layers)" class="layer nav-header" data-layerid="${c.layer_id}"><i class="icon-resize-vertical"></i>
         ${layer.title}
@@ -32,6 +30,8 @@
                 <i class="icon-eye-open"></i><input type="checkbox" value="Display" checked="checked" class="layer-toggle" data-layerid="${c.layer_id}" />
                 <i class="icon-picture"></i><input type="checkbox" title="Show Legend" checked="Checked" class="legend-toggle" data-layerid="${c.layer_id}" />
             </li>
+            <br/><br/>
+            <div style="display:inline-block;margin-top:-5px">
             <li class="control-label">Style: </li>
             <li>
                     <select class="style-list" data-layerid="${c.layer_id}">
@@ -39,14 +39,15 @@
                             ${style.name}
                         </option>
                     </select>
-            </li>
-            <div class="clearfix"></div>
+            </li></div>
+            <br/>
+            <div style="display:inline-block; width:250px; margin-top:-5px">
+
             <li class="control-label">Colour range: </li>
             <li>
                 <input class="input-mini scale scale-min" type="text" value="${c.dataset.data_range_from}" /> to <input class="input-mini scale scale-max" type="text" value="${c.dataset.data_range_to}" />
                 <button class="btn btn-mini scale-update" data-layerid="${c.layer_id}"><i class="icon-repeat"></i></button>
-            </li>
-            <div class="clearfix"></div>
+            </li></div>
         </ul>
     </li>
 </ol>

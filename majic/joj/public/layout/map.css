@@ -21,9 +21,9 @@
             margin-top: 250px;
         }
         div#options-panel{
-            position: absolute;
-            top : 10px;
-            right: 10px;
+            //position: absolute;
+            //top : 10px;
+            //right: 10px;
             opacity: 0.9;
             z-index: 999;
         }
