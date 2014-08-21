@@ -55,6 +55,16 @@ class MapController(BaseController):
         """
         models = self._model_run_service.get_models_for_user(self.current_user)
         models_to_view = [m for m in models if m.status.allow_visualise()]
+        counter = 0
+        for model in models_to_view:
+            for dataset in model.datasets:
+                dataset.layer_id = counter
+                counter += 1
+        published_models_to_view = self._model_run_service.get_published_models()
+        for model in published_models_to_view:
+            for dataset in model.datasets:
+                dataset.layer_id = counter
+                counter += 1
         c.model_run_sorts = \
             [
                 {
@@ -63,7 +73,7 @@ class MapController(BaseController):
                 },
                 {
                     'name': "Published",
-                    'model_runs': self._model_run_service.get_published_models()
+                    'model_runs': published_models_to_view
                 }
             ]
         c.id = id

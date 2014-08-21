@@ -6,6 +6,7 @@
 var data;
 // Store the marker and marker layer here so we can move it rather than add more
 var marker, markers;
+var stored_position;
 
 /**
  * Creates and displays an appropriate time series graph in response to a click on the OpenLayers map
@@ -14,7 +15,7 @@ var marker, markers;
  */
 function createGraph(position)
 {
-
+    stored_position = position;
     // Get all the datasets to show
     var datasets = getSelectedLayers();
     if (datasets.length == 0) {
@@ -23,6 +24,21 @@ function createGraph(position)
     setMarker(position);
     createGraphSpace(position);
     getData(datasets, position);
+    return true;
+}
+
+var updateGraph = function() {
+    var graphDiv = $("#graph");
+    //if (graphDiv.is(':visible')) {
+        if (typeof stored_position != 'undefined') {
+            var position = stored_position;
+            var graphs_added = createGraph(position);
+            if (!(graphs_added)) {
+                hideGraph();
+                stored_position = position;
+            }
+        }
+    //}
 }
 
 /**
@@ -58,7 +74,12 @@ function getSelectedLayers()
     $(".dataset").each(function()
     {
         if ($(this).parent().hasClass("active")){
-            dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+            // Check that the graph layer is visible:
+            var layerId = $(this).attr("layer-id");
+            var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
+            if (layerCheckBox.is(':checked')) {
+                dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+            }
         }
     });
     return dataset_ids;
@@ -102,7 +123,7 @@ function hideGraph()
     if (marker) {
         markers.removeMarker(marker);
     }
-
+    stored_position = undefined;
     // Reset the map height
     $("#map").height($("#wrap").height() - 100);
 }

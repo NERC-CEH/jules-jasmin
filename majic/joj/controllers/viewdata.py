@@ -184,10 +184,14 @@ class ViewdataController(WmsvizController):
     def layers(self, id):
         """
         Returns a view on a dataset's map layers
-        :param id: The ID of the dataset to get the layer data for
+        :param id: The ID of the dataset to get the layer data for, and the ID
         :return: rendered layer
         """
-        dataset = self._dataset_service.get_dataset_by_id(id, user_id=self.current_user.id)
+        dsid, layer_id = id.split("_")
+        dsid = int(dsid)
+        c.layer_id = layer_id
+
+        dataset = self._dataset_service.get_dataset_by_id(dsid, user_id=self.current_user.id)
 
         c.dataset = dataset
         c.layers = self.get_layers_for_dataset(dataset)
