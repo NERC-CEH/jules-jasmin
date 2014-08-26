@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JOB_RUNNER_DIR=/group_workspaces/jasmin2/jules_bd/job_runner
+JOB_RUNNER_DIR=/var/local/job_runner
 CONVERT_SCRIPT=$JOB_RUNNER_DIR/jules-jasmin/job_runner/job_runner/post_processing_scripts/Convert1Dto2D.py
 
 files=`ls -S output/*.nc | grep -v dump`

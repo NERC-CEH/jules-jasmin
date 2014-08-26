@@ -5,13 +5,15 @@
 #BSUB -n procs_template
 #BSUB -m lotusr620
 
-JOB_RUNNER_DIR=/group_workspaces/jasmin2/jules_bd/job_runner
+cd model_run_dir_template
+
+JOB_RUNNER_DIR=/var/local/job_runner
 JULES=/group_workspaces/jasmin2/jules_bd/jules_build/jules-vn3.4.1_dailydisagg/build/bin/jules.exe
 
-echo "About to run procs_template procs" >out.log
+echo "About to run procs_template procs in `pwd`" >out.log
 echo "Start Time: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log
 
-mpirun.lotus $JULES 2>> err.log >> out.log
+/usr/local/bin/mpirun.lotus $JULES 2>> err.log >> out.log
 
 echo "Post process begin Time: `date --utc +'%Y-%m-%d %H:%M:%S%z'`" >> out.log
 
