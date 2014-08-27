@@ -239,7 +239,7 @@ def setup_app(command, conf, vars):
             ds.wms_url = conf.local_conf['thredds.server_url'] \
                           + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
                             "?service=WMS&version=1.3.0&request=GetCapabilities"
-            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/" + path
+            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." + path + ".ncml"
             ds.data_range_from = min
             ds.data_range_to = max
             ds.is_categorical = 0
