@@ -574,7 +574,10 @@ class ModelRunController(BaseController):
             c.land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model_run)
 
             land_cover_helper = LandCoverControllerHelper()
-            land_cover_helper.add_fractional_land_cover_to_context(c, {}, model_run)
+            try:
+                land_cover_helper.add_fractional_land_cover_to_context(c, {}, model_run)
+            except ServiceException:
+                pass
 
             output_variables = self._model_run_service.get_output_variables()
             output_variable_dict = dict((x.name, x.description) for x in output_variables)
