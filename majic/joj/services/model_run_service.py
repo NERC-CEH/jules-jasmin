@@ -17,6 +17,7 @@ from joj.services.general import ServiceException
 from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
 from joj.services.land_cover_service import LandCoverService
+from joj.services.parameter_service import ParameterService
 
 log = logging.getLogger(__name__)
 
@@ -37,8 +38,10 @@ class ModelPublished(Exception):
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
 
-    def __init__(self, session=Session, job_runner_client=JobRunnerClient(config)):
+    def __init__(self, session=Session, job_runner_client=JobRunnerClient(config),
+                 parameter_service=ParameterService()):
         super(ModelRunService, self).__init__(session)
+        self.parameter_service = parameter_service
         self._job_runner_client = job_runner_client
 
     def get_models_for_user(self, user):
@@ -171,7 +174,7 @@ class ModelRunService(DatabaseService):
         parameters.append([constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, None])
 
         for constant, value, group_id in parameters:
-            param = self._get_parameter_by_constant(constant, session)
+            param = self.parameter_service.get_parameter_by_constant(constant, session)
             param_value = ParameterValue()
             param_value.parameter = param
             param_value.model_run = model_run
@@ -208,7 +211,8 @@ class ModelRunService(DatabaseService):
                 if model_run.science_configuration_id is not None:
                     old_configuration = \
                         self._get_science_configuration(model_run.science_configuration_id, session)
-                    self._remove_parameter_set_from_model(old_configuration.parameter_values, model_run, session)
+                    self.parameter_service.remove_parameter_set_from_model(old_configuration.parameter_values,
+                                                                           model_run, session)
 
             except NoResultFound:
                 model_run = self._create_new_model_run(session, user)
@@ -331,7 +335,8 @@ class ModelRunService(DatabaseService):
             model_run.driving_data_lon = driving_dataset.driving_data_lon
             model_run.driving_data_rows = driving_dataset.driving_data_rows
             if old_driving_dataset is not None:
-                self._remove_parameter_set_from_model(old_driving_dataset.parameter_values, model_run, session)
+                self.parameter_service.remove_parameter_set_from_model(old_driving_dataset.parameter_values,
+                                                                       model_run, session)
             self._copy_parameter_set_into_model(driving_dataset.parameter_values, model_run, session)
 
     def get_parameter_by_constant(self, param_namelist_and_name):
@@ -342,7 +347,7 @@ class ModelRunService(DatabaseService):
         """
 
         with self.readonly_scope() as session:
-            parameter = self._get_parameter_by_constant(param_namelist_and_name, session)
+            parameter = self.parameter_service.get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
 
     def save_new_parameters(self, params_values, params_to_delete, user):
@@ -360,10 +365,10 @@ class ModelRunService(DatabaseService):
             # Delete any parameters we've been asked to delete
             for parameter in params_to_delete:
                 param_values_to_delete += model_run.get_parameter_values(parameter)
-            self._remove_parameter_set_from_model(param_values_to_delete, model_run, session)
+            self.parameter_service.remove_parameter_set_from_model(param_values_to_delete, model_run, session)
             # And save new parameters
             for parameter in params_values:
-                self._save_parameter(model_run, parameter[0], parameter[1], session)
+                self.parameter_service.save_parameter(model_run, parameter[0], parameter[1], session)
 
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """
@@ -377,47 +382,7 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
             model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
-            self._save_parameter(model_run, param_namelist_name, value, session, group_id=group_id)
-
-    def _save_parameter(self, model_run, param_namelist_name, value, session, group_id=None):
-        """
-        Save parameter using a supplied session
-        :param model_run: Model run to save against
-        :param param_namelist_name: List containing the parameter namelist, name
-        :param session: Session to use
-        :param value: Value to set
-        :param group_id: Specify an optional group_id to group parameters
-        :return:
-        """
-        parameter = self._get_parameter_by_constant(param_namelist_name, session)
-        try:
-            parameter_value = session.query(ParameterValue) \
-                .filter(ParameterValue.model_run_id == model_run.id) \
-                .filter(ParameterValue.group_id == group_id) \
-                .filter(ParameterValue.parameter_id == parameter.id).one()
-        except NoResultFound:
-            parameter_value = ParameterValue()
-            parameter_value.parameter = parameter
-            parameter_value.model_run = model_run
-            parameter_value.group_id = group_id
-        parameter_value.set_value_from_python(value)
-        session.add(parameter_value)
-
-    def _get_parameter_by_constant(self, parameter_constant, session):
-        """
-        Get a JULES parameter by name
-        :param parameter_constant: tuple of Namelist name and Parameter name
-        :param session: Session to use
-        :return: The first matching Parameter
-        """
-        nml_id = session.query(Namelist) \
-            .filter(Namelist.name == parameter_constant[0]) \
-            .one().id
-        parameter = session.query(Parameter) \
-            .filter(Parameter.namelist_id == nml_id) \
-            .filter(Parameter.name == parameter_constant[1]) \
-            .one()
-        return parameter
+            self.parameter_service.save_parameter(model_run, param_namelist_name, value, session, group_id=group_id)
 
     def get_science_configuration_by_id(self, science_config_id):
         """
@@ -513,20 +478,7 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
             model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
-            self._remove_parameter_set_from_model(parameter_values, model_run, session)
-
-    def _remove_parameter_set_from_model(self, parameter_values, model_run, session):
-        """
-        Remove a group of parameters from a model
-        :param parameter_values: the values to remove
-        :param model_run: the model run to remove them from
-        :param session: the session to use
-        :return: nothing
-        """
-        for model_parameter_value in model_run.parameter_values:
-            for parameter_value_to_remove in parameter_values:
-                if parameter_value_to_remove.parameter_id == model_parameter_value.parameter_id:
-                    session.delete(model_parameter_value)
+            self.parameter_service.remove_parameter_set_from_model(parameter_values, model_run, session)
 
     def _copy_parameter_set_into_model(self, parameter_values, model_run, session):
         """
@@ -589,18 +541,21 @@ class ModelRunService(DatabaseService):
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_TYPE)
 
             # Now delete
-            self._remove_parameter_set_from_model(param_values_to_delete, model_run, session)
+            self.parameter_service.remove_parameter_set_from_model(param_values_to_delete, model_run, session)
 
             # Add in parameters
             group_id = 0
             for output_variable_group in output_variable_groups:
                 for param, value in output_variable_group:
-                    self._save_parameter(model_run, param, value, session, group_id=group_id)
-                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NVARS, 1, session, group_id=group_id)
-                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_MAIN_RUN, True, session, group_id=group_id)
-                self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_TYPE, 'M', session, group_id=group_id)
+                    self.parameter_service.save_parameter(model_run, param, value, session, group_id=group_id)
+                self.parameter_service.save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NVARS, 1,
+                                                      session, group_id=group_id)
+                self.parameter_service.save_parameter(model_run, constants.JULES_PARAM_OUTPUT_MAIN_RUN, True,
+                                                      session, group_id=group_id)
+                self.parameter_service.save_parameter(model_run, constants.JULES_PARAM_OUTPUT_TYPE, 'M',
+                                                      session, group_id=group_id)
                 group_id += 1
-            self._save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, session)
+            self.parameter_service.save_parameter(model_run, constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, session)
 
     def get_storage_used(self, user=None):
         """
