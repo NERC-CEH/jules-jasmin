@@ -94,7 +94,8 @@ class DrivingDataController(BaseController):
                 c.namelist[parameter.namelist.name] = {}
             c.namelist[parameter.namelist.name][parameter.id] = parameter.name
         jules_params.add_to_dict(values, c.namelist)
-        c.nvar = values['drive_nvar']
+        c.nvar = values['drive_nvars']
+
         c.param_names = values["param_names"]
         html = render('driving_data/edit.html')
 

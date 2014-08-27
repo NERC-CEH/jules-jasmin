@@ -85,6 +85,7 @@ class DrivingDatasetJulesParams(object):
             'driving_data_end': constants.JULES_PARAM_DRIVE_DATA_END,
             'drive_file': constants.JULES_PARAM_DRIVE_FILE,
             'drive_vars': constants.JULES_PARAM_DRIVE_VAR,
+            'drive_nvars': constants.JULES_PARAM_DRIVE_NVARS,
             'drive_var_names': constants.JULES_PARAM_DRIVE_VAR_NAME,
             'drive_var_templates': constants.JULES_PARAM_DRIVE_TPL_NAME,
             'drive_var_interps': constants.JULES_PARAM_DRIVE_INTERP,
@@ -143,10 +144,16 @@ class DrivingDatasetJulesParams(object):
                 self._extra_parameters[parameter_value.parameter_id] = parameter_value.value
 
     def add_to_dict(self, values, namelists):
+        """
+        Add jules parameters to the values dictionary
+        :param values: the values dictionary to add to
+        :param namelists: the list of namelists with parameters
+        :return: nothing
+        """
 
         for name in self._names_constant_dict.keys():
             if name in self.values:
-                value =self.values[name]
+                value = self.values[name]
                 if type(value) is list:
                     for val, index in zip(value, range(len(value))):
                         values["{}_{}".format(name, str(index))] = val
@@ -155,19 +162,30 @@ class DrivingDatasetJulesParams(object):
             else:
                 values[name] = ''
 
-        if self.values['drive_vars'] is None:
-            values['drive_nvar'] = 0
-        else:
-            values['drive_nvar'] = len(self.values['drive_vars'])
+        if 'drive_nvars' not in values:
+            values['drive_nvars'] = 0
+
+        for index in range(values['drive_nvars']):
+            values['drive_var_id_deleted_{}'.format(str(index))] = False
 
         values['parameters_nvar'] = len(self._extra_parameters)
-        names = []
-        for param_id, val, index in \
-                zip(self._extra_parameters.keys(), self._extra_parameters.values(), range(len(self._extra_parameters))):
-            values["param_id_{}".format(str(index))] = param_id
-            values["param_value_{}".format(str(index))] = val
+
+        params = []
+        for param_id, val in self._extra_parameters.iteritems():
+
+            name = "Unknown"
             for namelist_name, namelist in namelists.iteritems():
                 if param_id in namelist:
-                    names.append(namelist_name + '::' + namelist[param_id])
+                    name = namelist_name + '::' + namelist[param_id]
                     continue
-        values["param_names"] = names
+            params.append([name, param_id, val])
+
+        params = sorted(params, key=lambda param: param[0])
+        index = 0
+        for name, param_id, val in params:
+            values["param_id_{}".format(str(index))] = param_id
+            values["param_value_{}".format(str(index))] = val
+            values["param_is_deleted_{}".format(str(index))] = False
+            index += 1
+
+        values["param_names"] = [param[0] for param in params]

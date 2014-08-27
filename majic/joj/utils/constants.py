@@ -25,7 +25,7 @@ FORGOTTEN_PASSWORD_UUID_VALID_TIME = 24
 PASSWORD_MINIMUM_LENGTH = 10
 
 # The default science configuration to use
-DEFAULT_SCIENCE_CONFIGURATION = 1
+DEFAULT_SCIENCE_CONFIGURATION = 2
 
 # Model Run status descriptions *** If you update these update the same ones in job runner****
 MODEL_RUN_STATUS_CREATED = 'Created'

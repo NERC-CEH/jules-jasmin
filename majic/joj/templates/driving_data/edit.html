@@ -290,6 +290,7 @@
                 </button>
 
                 <fieldset class="fieldset">
+                    ${h.html_tags.hidden('drive_nvars')}
                     <div class="controls-row">
                         <h5 class="span2">Variable </h5>
                         <h5 class="span2">Name</h5>
@@ -301,6 +302,7 @@
                             ${h.html_tags.text('drive_var_names_{}'.format(varnum), placeholder="Variable name", class_="span2")}
                             ${h.html_tags.text('drive_var_templates_{}'.format(varnum), placeholder="Template name", class_="span2")}
                             ${h.html_tags.text('drive_var_interps_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
+                            ${h.html_tags.hidden('drive_var_is_deleted_{}'.format(varnum))}
                             <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>
@@ -381,10 +383,13 @@
 
 
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
-                    <i class="icon-plus"></i>
-                    Add Parameter
-                </button>
+                <div class="well">
+
+                    <button type="button" class="btn control-group" value="masks">
+                        <i class="icon-plus"></i>
+                        Add Parameter
+                    </button>
+                </div>
 
                 <fieldset class="fieldset">
                     <div class="controls-row">
@@ -395,6 +400,7 @@
                         <span class="span5">
                             ${c.param_names[varnum]}
                             ${h.html_tags.hidden('param_id_{}'.format(varnum))}
+                            ${h.html_tags.hidden('param_is_deleted_{}'.format(varnum))}
                         </span>
                         ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
                         <i class="fa fa-times-circle fa-2x ico red span1"></i>
