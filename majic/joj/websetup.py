@@ -187,7 +187,7 @@ def setup_app(command, conf, vars):
         watch_soil_props_file = "data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
         watch_frac_file = "data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc"
         watch_land_frac_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
-        watch_latlon_file = "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"
+        watch_latlon_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
         ancils = [
             [watch_soil_props_file, 'Soil Properties (ancil)', 0, 10],
             [watch_frac_file, 'Land cover map  (ancil)', 0, 10],

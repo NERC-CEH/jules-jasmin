@@ -29,7 +29,11 @@ log = logging.getLogger(__name__)
 class DrivingDataController(BaseController):
     """Provides operations for driving data page actions"""
 
-    def __init__(self, user_service=UserService(), dataset_service=DatasetService(), landcover_service=LandCoverService()):
+    def __init__(self,
+                 user_service=UserService(),
+                 dataset_service=DatasetService(),
+                 landcover_service=LandCoverService(),
+                 model_run_service=ModelRunService()):
         """
         Constructor for the user controller, takes in any services required
         :param user_service: User service to use within the controller
@@ -38,6 +42,7 @@ class DrivingDataController(BaseController):
         """
         super(DrivingDataController, self).__init__(user_service)
 
+        self._model_run_service = model_run_service
         self._dataset_service = dataset_service
         self._landcover_service = landcover_service
 
@@ -80,10 +85,18 @@ class DrivingDataController(BaseController):
             c.masks += 1
 
         jules_params = DrivingDatasetJulesParams()
-        jules_params.create_from(c.driving_data_set)
-        jules_params.add_to_dict(values)
-        c.nvar = values['drive_nvar']
+        jules_params.set_from(c.driving_data_set)
 
+        c.namelist = {}
+        all_parameters = self._model_run_service.get_parameters_for_default_code_version()
+        for parameter in all_parameters:
+            if parameter.namelist.name not in c.namelist:
+                c.namelist[parameter.namelist.name] = {}
+            c.namelist[parameter.namelist.name][parameter.id] = parameter.name
+        jules_params.add_to_dict(values, c.namelist)
+        c.nvar = values['drive_nvars']
+
+        c.param_names = values["param_names"]
         html = render('driving_data/edit.html')
 
         return htmlfill.render(
