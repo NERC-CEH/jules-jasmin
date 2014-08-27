@@ -20,7 +20,6 @@ from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
 from joj.services.model_run_service import ModelRunService
 
-
 def _get_result_image():
     example_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'example_image.txt')
 
@@ -151,11 +150,105 @@ def setup_app(command, conf, vars):
         default_code_version.is_default = True
         session.add(default_code_version)
 
+        #Namelists from docs
         jules_parameter_parser = JulesParameterParser()
         namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", default_code_version)
-
         for namelist_file in namelist_files:
             session.add(namelist_file)
+
+        #Output variable from docs
+        jules_output_variables_parser = JulesOutputVariableParser()
+        output_variables = jules_output_variables_parser.parse("docs/Jules/user_guide/html/output-variables.html")
+        session.add_all(output_variables)
+
+        ## Add WATCH 100 Years run
+        mr1 = ModelRun()
+        mr1.name = "Watch 100 Years Data"
+        mr1.description = "Watch data run over the length of the data"
+        mr1.user = core_user
+        mr1.date_created = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        mr1.date_submitted = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        mr1.date_started = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        mr1.last_status_change = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        mr1.status = stat_published
+        mr1.storage_in_mb = 1000
+
+        watch_driving_data = [
+            ['PSurf_WFD/PSurf_WFD', 'pstar', 'Surface pressure', 30000, 120000],
+            ['Tair_WFD/Tair_WFD', 't', 'Near surface air temperature at 2m', 150, 400],
+            ['Qair_WFD/Qair_WFD', 'q', 'Near surface specific humidity at 2m', 0, 0.1],
+            ['Wind_WFD/Wind_WFD', 'wind', 'Near surface wind speed at 10m', 0, 30],
+            ["LWdown_WFD/LWdown_WFD", 'lw_down', "Surface incident longwave radiation", 0, 2000],
+            ['SWdown_WFD/SWdown_WFD', 'sw_down', 'Surface incident shortwave radiation', 0, 2000],
+            ['Rainf_WFD_GPCC/Rainf_WFD_GPCC', 'tot_rain', 'Rainfall rate', 0, 0.02],
+            ['Snowf_WFD_GPCC/Snowf_WFD_GPCC', 'tot_snow', 'Snowfall rate', 0, 0.004]
+            ]
+
+        watch_soil_props_file = "data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
+        watch_frac_file = "data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc"
+        watch_land_frac_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
+        watch_latlon_file = "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"
+        ancils = [
+            [watch_soil_props_file, 'Soil Properties (ancil)', 0, 10],
+            [watch_frac_file, 'Land cover map  (ancil)', 0, 10],
+            [watch_land_frac_file, 'Land fraction map  (ancil)', 0, 10]
+        ]
+
+        for path, var, name, min, max in watch_driving_data:
+            ds = Dataset()
+            ds.name = name
+            ds.wms_url = conf.local_conf['thredds.server_url'] \
+                          + "wms/model_runs/run1/data/WATCH_2D/driving/" + path + ".ncml"\
+                            "?service=WMS&version=1.3.0&request=GetCapabilities"
+            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/data/WATCH_2D/driving/" + path + ".ncml"
+            ds.data_range_from = min
+            ds.data_range_to = max
+            ds.is_categorical = 0
+            ds.deleted = 0
+            ds.dataset_type = cover_dst
+            ds.is_input = True
+            ds.model_run = mr1
+
+        for path, name, min, max in ancils:
+            ds = Dataset()
+            ds.name = name
+            ds.wms_url = conf.local_conf['thredds.server_url'] \
+                          + "wms/model_runs/run1/" + path + \
+                            "?service=WMS&version=1.3.0&request=GetCapabilities"
+            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/" + path
+            ds.data_range_from = min
+            ds.data_range_to = max
+            ds.is_categorical = 0
+            ds.deleted = 0
+            ds.dataset_type = cover_dst
+            ds.is_input = True
+            ds.model_run = mr1
+
+        outputs = [
+            ['gpp_gb_monthly', 'Gridbox gross primary productivity (Monthly)', 0, 100],
+            ['rad_net_monthly', 'Surface net radiation of land points (Monthly)', 0, 100],
+            ['resp_p_gb_monthly', 'Gridbox plant respiration (Monthly)', 0, 100],
+            ['smc_tot_monthly', 'Gridbox total soil moisture in column (Monthly)', 0, 100],
+            ['sub_surf_roff_monthly', 'Gridbox sub-surface runoff (Monthly)', 0, 100],
+            ['surf_roff_monthly', 'Gridbox surface runoff (Monthly)', 0, 100],
+            ['swet_liq_tot_monthly', 'Gridbox unfrozen soil moisture as fraction of saturation (Monthly)', 0, 100]]
+
+        for path, name, min, max in outputs:
+            ds = Dataset()
+            ds.name = name
+            ds.wms_url = conf.local_conf['thredds.server_url'] \
+                          + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
+                            "?service=WMS&version=1.3.0&request=GetCapabilities"
+            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." + path + ".ncml"
+            ds.data_range_from = min
+            ds.data_range_to = max
+            ds.is_categorical = 0
+            ds.deleted = 0
+            ds.dataset_type = cover_dst
+            ds.is_input = False
+            ds.model_run = mr1
+
+        session.add(mr1)
 
         jules_config_parser = JulesNamelistParser()
         jules_config_parser.parse_all(
@@ -164,52 +257,6 @@ def setup_app(command, conf, vars):
             core_user,
             default_code_version,
             stat_created)
-
-        jules_output_variables_parser = JulesOutputVariableParser()
-        output_variables = jules_output_variables_parser.parse("docs/Jules/user_guide/html/output-variables.html")
-        session.add_all(output_variables)
-
-        ## Add some model runs with datasets
-        ds1 = Dataset()
-        ds1.name = "Land Cover Map 2007"
-        ds1.wms_url = conf.local_conf['thredds.server_url'] \
-                      + "wms/dev/LCM2007_GB_1K_DOM_TAR.nc" \
-                        "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds1.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LCM2007_GB_1K_DOM_TAR.nc"
-        ds1.data_range_from = 1
-        ds1.data_range_to = 30
-        ds1.is_categorical = 0
-        ds1.deleted = 0
-        ds1.dataset_type = cover_dst
-        ds1.is_input = 0
-
-        ds2 = Dataset()
-        ds2.name = "Surface incident longwave radiation"
-        ds2.wms_url = conf.local_conf['thredds.server_url'] + \
-                      "wms/dev/LWdown_TEST_190101.nc" \
-                      "?service=WMS&version=1.3.0&request=GetCapabilities"
-        ds2.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/dev/LWdown_TEST_190101.nc"
-        ds2.data_range_from = 230
-        ds2.data_range_to = 350
-        ds2.is_categorical = 0
-        ds2.deleted = 0
-        ds2.dataset_type = cover_dst
-        ds2.is_input = 1
-
-        mr1 = ModelRun()
-        mr1.name = "Nobel-prize winning run"
-        mr1.description = "This is a description for a run which is going to win me the nobel prize. I have compared " \
-                          "variable X with variable Y and found that..."
-        mr1.user = user
-        mr1.date_created = datetime.datetime(2014, 2, 5, 16, 51, 12)
-        mr1.date_submitted = datetime.datetime(2014, 2, 5, 17, 8, 12)
-        mr1.date_started = datetime.datetime(2014, 2, 5, 19, 11, 54)
-        mr1.last_status_change = datetime.datetime(2014, 2, 6, 9, 17, 12)
-        mr1.status = stat_completed
-        mr1.datasets = [ds1, ds2]
-        mr1.storage_in_mb = 1000
-
-        session.add(mr1)
 
         ## Another Model Run - no datasets needed since failed
 
@@ -419,7 +466,6 @@ def setup_app(command, conf, vars):
         driving_ds_2.description = "The Climate, Hydrochemistry and Economics of Surface-water Systems (CHESS)" \
                                    " project has explored effects of climate change on the water quality of European" \
                                    " rivers, with the purpose of informing future catchment management."
-        driving_ds_2.dataset = ds2
         driving_ds_2.geographic_region = 'Equator'
         driving_ds_2.temporal_resolution = '24 Hours'
         driving_ds_2.spatial_resolution = '1 km'
@@ -435,7 +481,6 @@ def setup_app(command, conf, vars):
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
         driving_ds_3.description = "Driving data set used for QA"
-        driving_ds_3.dataset = ds3
         driving_ds_3.geographic_region = 'Global'
         driving_ds_3.temporal_resolution = '3 Hours'
         driving_ds_3.spatial_resolution = 'Half degree'
@@ -450,12 +495,9 @@ def setup_app(command, conf, vars):
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
-        for name, var in zip(['PSurf_WFD/PSurf_WFD', 'Tair_WFD/Tair_WFD', 'Qair_WFD/Qair_WFD', 'Wind_WFD/Wind_WFD',
-                              'LWdown_WFD/LWdown_WFD', 'SWdown_WFD/SWdown_WFD', 'Rainf_WFD_GPCC/Rainf_WFD_GPCC',
-                              'Snowf_WFD_GPCC/Snowf_WFD_GPCC'],
-                             ['pstar', 't', 'q', 'wind', 'lw_down', 'sw_down', 'tot_rain', 'tot_snow']):
+        for path, var, name, min, max in watch_driving_data:
             location = DrivingDatasetLocation()
-            location.base_url = file_template.format(name)
+            location.base_url = file_template.format(path)
             location.var_name = var
             location.driving_dataset = driving_ds_1
 
@@ -486,19 +528,18 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_INPUT_TIME_DIM_NAME, "'Time'"],
             [constants.JULES_PARAM_INPUT_TYPE_DIM_NAME, "'pseudo'"],
 
-            [constants.JULES_PARAM_LATLON_FILE, "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"],
+            [constants.JULES_PARAM_LATLON_FILE, ("'%s'" % watch_latlon_file)],
             [constants.JULES_PARAM_LATLON_LAT_NAME, "'Grid_lat'"],
             [constants.JULES_PARAM_LATLON_LON_NAME, "'Grid_lon'"],
-            [constants.JULES_PARAM_LAND_FRAC_FILE, "'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'"],
+            [constants.JULES_PARAM_LAND_FRAC_FILE, ("'%s'" % watch_land_frac_file)],
             [constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME, "'land'"],
             [constants.JULES_PARAM_SURF_HGT_ZERO_HEIGHT, ".true."],
 
-            [constants.JULES_PARAM_FRAC_FILE, "'data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc'"],
+            [constants.JULES_PARAM_FRAC_FILE, ("'%s'" % watch_frac_file)],
             [constants.JULES_PARAM_FRAC_NAME, "'frac'"],
 
             [constants.JULES_PARAM_SOIL_PROPS_CONST_Z, ".true."],
-            [constants.JULES_PARAM_SOIL_PROPS_FILE,
-             "'data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc'"],
+            [constants.JULES_PARAM_SOIL_PROPS_FILE, ("'%s'" % watch_soil_props_file)],
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
              "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
