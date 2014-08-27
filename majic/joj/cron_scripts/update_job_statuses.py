@@ -2,6 +2,7 @@
 header
 """
 import logging
+from joj.crowd.client import CrowdClient
 
 from joj.services.job_status_updater import JobStatusUpdaterService
 from joj import model
@@ -27,6 +28,9 @@ if __name__ == "__main__":
     wsgiapp = loadapp('config:' + sys.argv[1], relative_to=conf_dir)
     config = wsgiapp.config
     model.initialise_session(config)
+
+    client = CrowdClient()
+    client.config(config)
 
     job_runner_client = JobRunnerClient(config)
     job_status_updater = JobStatusUpdaterService(job_runner_client, config)
