@@ -4,23 +4,17 @@ header
 
 import logging
 from formencode import htmlfill
-
-from pylons import url, response
+from pylons import url, response, config
 from pylons.decorators import validate, jsonify
-
 from sqlalchemy.orm.exc import NoResultFound
 
-from joj.services.user import UserService
-from joj.lib.base import BaseController, c, request, render, redirect
-from joj.model.model_run_create_form import ModelRunCreateFirst
-from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
-from joj.services.dataset import DatasetService
 from joj.lib import helpers
+from joj.lib.base import BaseController, c, request, render, redirect
+from joj.lib.wmc_util import create_request_and_open_url
+from joj.model.model_run_create_form import ModelRunCreateFirst
+from joj.model.model_run_extent_schema import ModelRunExtentSchema
 from joj.utils import constants
 from joj.utils.error import abort_with_error
-
-from joj.model.model_run_extent_schema import ModelRunExtentSchema
-
 from joj.utils.utils import find_by_id, KeyNotFound
 from joj.utils import output_controller_helper
 from joj.utils import utils
@@ -28,9 +22,12 @@ from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
-from joj.services.general import ServiceException
-from joj.services.land_cover_service import LandCoverService
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
+from joj.services.land_cover_service import LandCoverService
+from joj.services.user import UserService
+from joj.services.dataset import DatasetService
+from joj.services.general import ServiceException
+from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
 
 
 # The prefix given to parameter name in html elements
@@ -577,7 +574,10 @@ class ModelRunController(BaseController):
             c.land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model_run)
 
             land_cover_helper = LandCoverControllerHelper()
-            land_cover_helper.add_fractional_land_cover_to_context(c, {}, model_run)
+            try:
+                land_cover_helper.add_fractional_land_cover_to_context(c, {}, model_run)
+            except ServiceException:
+                pass
 
             output_variables = self._model_run_service.get_output_variables()
             output_variable_dict = dict((x.name, x.description) for x in output_variables)
