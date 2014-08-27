@@ -7,7 +7,7 @@ endpoints to be added and removed.
 
 import copy
 import logging
-from pylons import url
+from pylons import url, config
 import re
 import urllib
 import urllib2
@@ -378,9 +378,9 @@ class Datasets:
             return
 
     def create_ecomaps_data_url(self, dataset_id, query_string=''):
-
-        return "%s?%s" % (url(controller='dataset', action='wms', id=dataset_id, qualified=True),
-                                  query_string)
+        ecomaps_data_url = url(controller='dataset', action='wms', id=dataset_id)
+        ecomaps_data_url = "{}{}".format(config['serverurl'].rstrip('/'), ecomaps_data_url)
+        return "%s?%s" % (ecomaps_data_url, query_string)
 
     def get_ecomaps_layer_data(self, dataset):
         """Looks up layer data in the given WMS url, and returns a layer entity object

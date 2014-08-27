@@ -3,10 +3,10 @@ header
 """
 import sys
 import datetime
-from pylons import config
+
 from joj.utils import constants
 from joj.services.dataset import DatasetService
-from joj.services.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.general import ServiceException
 
 

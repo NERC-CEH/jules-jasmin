@@ -9,31 +9,28 @@ setup-app`) and provides the base testing objects.
 """
 from unittest import TestCase
 import datetime
+import sys
+
 from hamcrest import assert_that, is_
 from mock import Mock
 import os
-import sys
-
 import pylons
 from pylons.i18n.translation import _get_translator
 from paste.deploy import loadapp
 from pylons import url
-from paste.script.appinstall import SetupCommand
 from routes.util import URLGenerator
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
 from webtest import TestApp
 
-from joj.config.environment import load_environment
-from joj.model import User, ModelRun, Dataset, ParameterValue, AccountRequest, ModelRunStatus, \
-    Parameter, Namelist, DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
-    AccountRequest, LandCoverAction, LandCoverRegion, LandCoverValue, LandCoverRegionCategory
+from joj.model import User, Dataset, ParameterValue, ModelRunStatus, \
+    DrivingDatasetParameterValue, DrivingDataset, DrivingDatasetLocation, SystemAlertEmail, \
+    AccountRequest, LandCoverAction, LandCoverRegion, LandCoverRegionCategory
 from joj.services.user import UserService
 from joj.utils import constants, f90_helper
 from joj.services.model_run_service import ModelRunService
 from joj.model import session_scope, Session, ModelRun
-from joj.services.dap_client_factory import DapClientFactory
-from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
+from joj.services.dap_client.dap_client_factory import DapClientFactory
+
 
 TEST_LOG_FORMAT_STRING = '%(name)-20s %(asctime)s ln:%(lineno)-3s %(levelname)-8s\n %(message)s\n'
 
@@ -83,50 +80,51 @@ class TestController(TestCase):
         Cleans the User, ModelRun, Dataset, DrivingDataset and ParameterValue tables in the database
         """
         with session_scope(Session) as session:
-            parameter_to_keep = session\
-                .query(ParameterValue.id)\
-                .join(ModelRun)\
-                .join(User)\
-                .filter(User.username == constants.CORE_USERNAME)\
+            parameter_to_keep = session \
+                .query(ParameterValue.id) \
+                .join(ModelRun) \
+                .join(User) \
+                .filter(User.username == constants.CORE_USERNAME) \
                 .all()
 
             session.query(LandCoverAction).delete()
             session.query(LandCoverRegion).delete()
             session.query(LandCoverRegionCategory).delete()
 
-            session\
-                .query(ParameterValue)\
-                .filter(ParameterValue.id.notin_([x[0] for x in parameter_to_keep]))\
+            session \
+                .query(ParameterValue) \
+                .filter(ParameterValue.id.notin_([x[0] for x in parameter_to_keep])) \
                 .delete(synchronize_session='fetch')
 
             core_user_id = session.query(User.id).filter(User.username == constants.CORE_USERNAME).one()[0]
 
             session.query(Dataset).delete()
 
-            session\
-                .query(ModelRun)\
-                .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None)))\
+            session \
+                .query(ModelRun) \
+                .filter(or_(ModelRun.user_id != core_user_id, ModelRun.user_id.is_(None))) \
                 .delete(synchronize_session='fetch')
 
             session.query(DrivingDatasetLocation).delete()
             session.query(DrivingDatasetParameterValue).delete()
-            session.query(DrivingDataset)\
-                .filter(DrivingDataset.name != constants.USER_UPLOAD_DRIVING_DATASET_NAME)\
+            session.query(DrivingDataset) \
+                .filter(DrivingDataset.name != constants.USER_UPLOAD_DRIVING_DATASET_NAME) \
                 .delete()
 
-            session\
-                .query(User)\
-                .filter(or_(User.username != constants.CORE_USERNAME, User.username.is_(None)))\
+            session \
+                .query(User) \
+                .filter(or_(User.username != constants.CORE_USERNAME, User.username.is_(None))) \
                 .delete()
 
             session.query(AccountRequest).delete()
 
-            emails = session\
+            emails = session \
                 .query(SystemAlertEmail).all()
             for email in emails:
                 email.last_sent = None
-            
-    def assert_model_definition(self, expected_username, expected_science_configuration, expected_name, expected_description):
+
+    def assert_model_definition(self, expected_username, expected_science_configuration, expected_name,
+                                expected_description):
         """
         Check that a model definition is correct in the database. Throws assertion error if there is no match
 
@@ -144,7 +142,7 @@ class TestController(TestCase):
             WHERE s.name=:status
               AND u.username = :username
             """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATED, username = expected_username).one()
+        ).params(status=constants.MODEL_RUN_STATUS_CREATED, username=expected_username).one()
         assert_that(row.username, is_(expected_username), "username")
         assert_that(row.name, is_(expected_name), "model run name")
         assert_that(row.science_configuration_id, is_(expected_science_configuration), "science_configuration_id")
@@ -169,7 +167,7 @@ class TestController(TestCase):
             WHERE s.name=:status
               AND p.id = :parameter_id
             """
-        ).params(status=constants.MODEL_RUN_STATUS_CREATED, parameter_id = parameter_id).one()
+        ).params(status=constants.MODEL_RUN_STATUS_CREATED, parameter_id=parameter_id).one()
         assert_that(row.value, is_(expected_parameter_value), "parameter value")
 
     def _status(self, status_name):
@@ -181,90 +179,96 @@ class TestController(TestCase):
         with session_scope(Session) as session:
             return session.query(ModelRunStatus).filter(ModelRunStatus.name == status_name).one()
 
-    def create_driving_dataset(
-            self,
-            session,
-            jules_params=DrivingDatasetJulesParams(dataperiod=3600, var_interps=8 * ["i"])
-            ):
-        """
-        Create a driving dataset
-        :param session: session to use
-        :param data_period: data period to user (default 3600)
-        :return: dataset
-        """
-        model_run_service = ModelRunService()
-
-        driving1 = DrivingDataset()
-        driving1.name = "driving1"
-        driving1.description = "driving 1 description"
-        driving1.geographic_region = 'European'
-        driving1.spatial_resolution = '1km'
-        driving1.temporal_resolution = '24 hours'
-        driving1.boundary_lat_north = 50
-        driving1.boundary_lat_south = -10
-        driving1.boundary_lon_west = -15
-        driving1.boundary_lon_east = 30
-        driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
-        driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
-        driving1.view_order_index = 100
-        location1 = DrivingDatasetLocation()
-        location1.base_url = "base_url"
-        location1.driving_dataset = driving1
-        location2 = DrivingDatasetLocation()
-        location2.base_url = "base_url2"
-        location2.driving_dataset = driving1
-        jules_params.add_to_driving_dataset(model_run_service, driving1)
-
-        session.add(driving1)
-        session.commit()
-
-        driving_data_filename_param_val = DrivingDatasetParameterValue(
-            model_run_service,
-            driving1,
-            constants.JULES_PARAM_DRIVE_FILE,
-            "'testFileName'")
-        session.add(driving_data_filename_param_val)
-        session.commit()
-
-        return driving1
-
     def create_two_driving_datasets(self):
         """
         Creates two driving datasets with datasets, parameter values etc set up
         :return: nothing
         """
-
+        model_run_service = ModelRunService()
         with session_scope(Session) as session:
-            self.create_driving_dataset(session)
+            ds1 = Dataset()
+            ds1.name = "Driving dataset 1"
+            ds1.netcdf_url = "url1"
+            ds2 = Dataset()
+            ds2.name = "Driving dataset 2"
+            ds2.netcdf_url = "url2"
+            session.add_all([ds1, ds2])
 
-            model_run_service = ModelRunService()
+            driving1 = DrivingDataset()
+            driving1.name = "driving1"
+            driving1.description = "driving 1 description"
+            driving1.dataset = ds1
+            driving1.geographic_region = 'European'
+            driving1.spatial_resolution = '1km'
+            driving1.temporal_resolution = '24 hours'
+            driving1.boundary_lat_north = 50
+            driving1.boundary_lat_south = -10
+            driving1.boundary_lon_west = -15
+            driving1.boundary_lon_east = 30
+            driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
+            driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
+            driving1.view_order_index = 100
+            driving1.usage_order_index = 1
+            location1 = DrivingDatasetLocation()
+            location1.base_url = "base_url"
+            location1.driving_dataset = driving1
+            location2 = DrivingDatasetLocation()
+            location2.base_url = "base_url2"
+            location2.driving_dataset = driving1
 
+            val = f90_helper.python_to_f90_str(8 * ["i"])
+            pv11 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                                constants.JULES_PARAM_DRIVE_INTERP, val)
+            val = f90_helper.python_to_f90_str(3600)
+            pv12 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                                constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+            val = f90_helper.python_to_f90_str("data/driving1/frac.nc")
+            pv13 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                                constants.JULES_PARAM_FRAC_FILE, val)
+            val = f90_helper.python_to_f90_str("frac")
+            pv14 = DrivingDatasetParameterValue(model_run_service, driving1,
+                                                constants.JULES_PARAM_FRAC_NAME, val)
             driving2 = DrivingDataset()
             driving2.name = "driving2"
             driving2.description = "driving 2 description"
+            driving2.dataset = ds2
             driving2.geographic_region = 'Global'
             driving2.spatial_resolution = 'Half degree'
             driving2.temporal_resolution = '3 Hours'
-            driving2.boundary_lat_north = 90
+            driving2.boundary_lat_north = 85
             driving2.boundary_lat_south = -90
             driving2.boundary_lon_west = -180
             driving2.boundary_lon_east = 180
             driving2.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
             driving2.time_end = datetime.datetime(2001, 1, 1, 0, 0, 0)
             driving2.view_order_index = 200
+            driving2.usage_order_index = 2
 
             location3 = DrivingDatasetLocation()
             location3.base_url = "base_url3"
             location3.driving_dataset = driving2
 
             val = f90_helper.python_to_f90_str(8 * ["i"])
-            pv3 = DrivingDatasetParameterValue(model_run_service, driving2,
-                                               constants.JULES_PARAM_DRIVE_INTERP, val)
+            pv21 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                                constants.JULES_PARAM_DRIVE_INTERP, val)
             val = f90_helper.python_to_f90_str(3600)
-            pv4 = DrivingDatasetParameterValue(model_run_service, driving2,
-                                               constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+            pv22 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                                constants.JULES_PARAM_DRIVE_DATA_PERIOD, val)
+            val = f90_helper.python_to_f90_str("data/driving2/frac.nc")
+            pv23 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                                constants.JULES_PARAM_FRAC_FILE, val)
+            val = f90_helper.python_to_f90_str("frac2")
+            pv24 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                                constants.JULES_PARAM_FRAC_NAME, val)
+            session.add_all([driving1, driving2])
+            session.commit()
 
-            session.add(driving2)
+            driving_data_filename_param_val = DrivingDatasetParameterValue(
+                model_run_service,
+                driving1,
+                constants.JULES_PARAM_DRIVE_FILE,
+                "'testFileName'")
+            session.add(driving_data_filename_param_val)
 
     def assert_model_run_status_and_return(self, model_run_id, status):
         """
@@ -295,7 +299,8 @@ class TestController(TestCase):
             model_run = model_run_service._create_new_model_run(session, user)
             session.add(model_run)
             model_run.name = name
-            science_configuration = model_run_service._get_science_configuration(constants.DEFAULT_SCIENCE_CONFIGURATION, session)
+            science_configuration = model_run_service._get_science_configuration(
+                constants.DEFAULT_SCIENCE_CONFIGURATION, session)
             model_run.science_configuration_id = science_configuration.id
             model_run.code_version = science_configuration.code_version
             model_run.description = "testing"
@@ -343,7 +348,8 @@ class TestController(TestCase):
             session.add(self.account_request)
 
         with session_scope() as session:
-            ac = session.query(AccountRequest).filter(AccountRequest.first_name == self.account_request.first_name).one()
+            ac = session.query(AccountRequest).filter(
+                AccountRequest.first_name == self.account_request.first_name).one()
             return ac.id
 
     def add_land_cover_actions(self, land_cover_region, model_run, value_order_pairs, land_cover_service):

@@ -1,16 +1,27 @@
 """
 header
 """
+from pylons import config
 from sqlalchemy import asc
 from sqlalchemy.orm import subqueryload, eagerload
-from joj.services.general import DatabaseService
+
+from joj.services.general import DatabaseService, ServiceException
 from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, LandCoverAction
+from joj.utils import constants
+from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.services.dataset import DatasetService
+from joj.services.dap_client.dap_client import DapClientException
 
 
 class LandCoverService(DatabaseService):
     """
     Provides access to operations on the land cover regions
     """
+
+    def __init__(self, dap_client_factory=DapClientFactory(), dataset_service=DatasetService()):
+        super(LandCoverService, self).__init__()
+        self.dap_client_factory = dap_client_factory
+        self.dataset_service = dataset_service
 
     def get_land_cover_region_by_id(self, id):
         """
@@ -86,3 +97,71 @@ class LandCoverService(DatabaseService):
                 .options(subqueryload(LandCoverAction.value))\
                 .order_by(asc(LandCoverAction.order))\
                 .all()
+
+    def save_fractional_land_cover_for_model(self, model_run, fractional_string):
+        """
+        Save fractional land cover for a model run
+        :param model_run:
+        :param fractional_string:
+        :return:
+        """
+        with self.transaction_scope() as session:
+            model_run.land_cover_frac = fractional_string
+            session.merge(model_run)
+
+    def get_default_fractional_cover(self, model_run):
+        """
+        Get the default fractional land cover for a model run
+        :param model_run: Model run being created
+        :return: Fractional land cover as a list of floats.
+        """
+        latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
+        if latlon is None:
+            raise ServiceException("Could not get default fractional cover: the model run does not have any "
+                                   "saved single cell location information")
+        lat, lon = latlon
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon)
+        if driving_dataset is not None:
+            try:
+                land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
+                land_cover_client = self.dap_client_factory.get_land_cover_dap_client(land_cover_url, land_cover_key)
+                return land_cover_client.get_fractional_cover(lat, lon)
+            except DapClientException as ex:
+                pass
+        ntypes = len(self.get_land_cover_values())
+        return ntypes * [0.0]
+
+    def find_ice_index(self, land_cover_types):
+        """
+        Search through a list of land cover types to find the index of the ice type
+        :param land_cover_types: List of land cover types
+        :return: The 1-based index of the ice type
+        """
+        return [type.index for type in land_cover_types if type.name == constants.FRACTIONAL_ICE_NAME][0]
+
+    def _get_best_matching_dataset_to_use(self, lat, lon):
+        driving_datasets = self.dataset_service.get_driving_datasets()
+        user_upload_ds_id = self.dataset_service.get_id_for_user_upload_driving_dataset()
+        usable_datasets = []
+        for dataset in driving_datasets:
+            if dataset.id == user_upload_ds_id:
+                continue
+            if not dataset.boundary_lat_north >= lat >= dataset.boundary_lat_south:
+                continue
+            if not dataset.boundary_lon_east >= lon >= dataset.boundary_lon_west:
+                continue
+            usable_datasets.append(dataset)
+        sorted_results = sorted(usable_datasets, key=lambda ds: ds.usage_order_index)
+        if len(sorted_results) > 0:
+            return sorted_results[0]
+        else:
+            return None
+
+    def _get_land_cover_url_and_key_for_driving_dataset(self, driving_dataset):
+        # Reload the driving dataset to get all the parameters
+        driving_dataset = self.dataset_service.get_driving_dataset_by_id(driving_dataset.id)
+
+        frac_file = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_FRAC_FILE)
+        frac_name = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_FRAC_NAME)
+        url = config['thredds.server_url'] + "dodsC/model_runs/" + frac_file
+        return url, frac_name

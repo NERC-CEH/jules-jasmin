@@ -1,15 +1,16 @@
 """
 header
 """
-from hamcrest import is_, assert_that, contains_string, is_not
+from urlparse import urlparse
+from hamcrest import is_, assert_that, contains_string, is_not, string_contains_in_order
 from pylons import url
-from sqlalchemy.orm import subqueryload
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
-from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction, DrivingDataset
+from joj.model import session_scope, LandCoverRegionCategory, ModelRun, LandCoverRegion, LandCoverAction, \
+    DrivingDataset, Session, ParameterValue
 from joj.services.dataset import DatasetService
 from joj.services.land_cover_service import LandCoverService
-from joj.utils import constants
+from joj.utils.constants import *
 # noinspection PyProtectedMember
 
 
@@ -22,13 +23,21 @@ class TestModelRunLandCover(TestController):
         with session_scope() as session:
             model_run = ModelRun()
             model_run.name = "model run"
-            model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
+            model_run.change_status(session, MODEL_RUN_STATUS_CREATED)
             model_run.user = self.user
             model_run.driving_dataset_id = dds.id
             session.add(model_run)
             session.commit()
+
             self.model_run_service = ModelRunService()
             model_run = self.model_run_service._get_model_run_being_created(session, self.user)
+
+            parameter_val = ParameterValue()
+            parameter_val.parameter = self.model_run_service.get_parameter_by_constant(JULES_PARAM_LATLON_REGION)
+            parameter_val.set_value_from_python(True)
+            parameter_val.model_run_id = model_run.id
+            session.add(parameter_val)
+
         self.add_land_cover_region(model_run)
 
     def test_GIVEN_land_cover_actions_WHEN_post_THEN_land_cover_action_saved_in_database(self):
@@ -179,43 +188,275 @@ class TestModelRunLandCover(TestController):
         assert (order1 < order2 < order5)
 
     def generate_categories_with_regions(self, driving_dataset):
-            # Add categories
-            cat1 = LandCoverRegionCategory()
-            cat1.driving_dataset_id = driving_dataset.id
-            cat1.name = "Rivers"
-            cat1.id = 1
+        # Add categories
+        cat1 = LandCoverRegionCategory()
+        cat1.driving_dataset_id = driving_dataset.id
+        cat1.name = "Rivers"
+        cat1.id = 1
 
-            region1 = LandCoverRegion()
-            region1.id = 1
-            region1.name = "Thames"
-            region1.category_id = 1
-            region1.category = cat1
+        region1 = LandCoverRegion()
+        region1.id = 1
+        region1.name = "Thames"
+        region1.category_id = 1
+        region1.category = cat1
 
-            region2 = LandCoverRegion()
-            region2.id = 2
-            region2.name = "Itchen"
-            region2.category_id = 1
-            region2.category = cat1
+        region2 = LandCoverRegion()
+        region2.id = 2
+        region2.name = "Itchen"
+        region2.category_id = 1
+        region2.category = cat1
 
-            cat1.regions = [region1, region2]
+        cat1.regions = [region1, region2]
 
-            cat2 = LandCoverRegionCategory()
-            cat2.driving_dataset_id = driving_dataset.id
-            cat2.name = "Counties"
-            cat2.id = 2
+        cat2 = LandCoverRegionCategory()
+        cat2.driving_dataset_id = driving_dataset.id
+        cat2.name = "Counties"
+        cat2.id = 2
 
-            region3 = LandCoverRegion()
-            region3.id = 3
-            region3.name = "Hampshire"
-            region3.category_id = 2
-            region3.category = cat2
+        region3 = LandCoverRegion()
+        region3.id = 3
+        region3.name = "Hampshire"
+        region3.category_id = 2
+        region3.category = cat2
 
-            region4 = LandCoverRegion()
-            region4.id = 4
-            region4.name = "Oxfordshire"
-            region4.category_id = 2
-            region4.category = cat2
+        region4 = LandCoverRegion()
+        region4.id = 4
+        region4.name = "Oxfordshire"
+        region4.category_id = 2
+        region4.category = cat2
 
-            cat2.regions = [region3, region4]
+        cat2.regions = [region3, region4]
 
-            return [cat1, cat2]
+        return [cat1, cat2]
+
+
+class TestModelRunLandCoverSingleCell(TestController):
+    def setUp(self):
+        self.model_run_service = ModelRunService()
+        self.land_cover_service = LandCoverService()
+
+    def set_up_single_cell_model_run(self):
+        self.clean_database()
+        self.user = self.login()
+        self.create_two_driving_datasets()
+        user_upload_id = DatasetService().get_id_for_user_upload_driving_dataset()
+        with session_scope(Session) as session:
+            self.model_run = ModelRun()
+            self.model_run.name = "MR1"
+            self.model_run.status = self._status(MODEL_RUN_STATUS_CREATED)
+            self.model_run.driving_dataset_id = user_upload_id
+            self.model_run.user = self.user
+            self.model_run.driving_data_lat = 51.75
+            self.model_run.driving_data_lon = -0.25
+            self.model_run.driving_data_rows = 248
+
+            param1 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_INTERP)
+            pv1 = ParameterValue()
+            pv1.parameter_id = param1.id
+            pv1.set_value_from_python(8 * ['nf'])
+
+            param2 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_DATA_PERIOD)
+            pv2 = ParameterValue()
+            pv2.parameter_id = param2.id
+            pv2.set_value_from_python(60 * 60)
+
+            param3 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_DATA_START)
+            pv3 = ParameterValue()
+            pv3.parameter_id = param3.id
+            pv3.value = "'1901-01-01 00:00:00'"
+
+            param4 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_DATA_END)
+            pv4 = ParameterValue()
+            pv4.parameter_id = param4.id
+            pv4.value = "'1901-01-31 21:00:00'"
+
+            param5 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_LATLON_REGION)
+            pv5 = ParameterValue()
+            pv5.parameter_id = param5.id
+            pv5.value = ".false."
+
+            param6 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_POINTS_FILE)
+            pv6 = ParameterValue()
+            pv6.parameter_id = param6.id
+            pv6.value = "51.75 -0.25"
+
+            self.model_run.parameter_values = [pv1, pv2, pv3, pv4, pv5, pv6]
+            session.add(self.model_run)
+
+    def test_GIVEN_single_cell_run_WHEN_page_get_THEN_fractional_cover_page_shown(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        assert_that(response.normal_body, contains_string("Fractional Land Cover"))
+
+    def test_GIVEN_land_cover_values_WHEN_page_get_THEN_land_cover_type_names_rendered(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+        names = [val.name for val in lc_vals]
+        assert_that(response.normal_body, string_contains_in_order(*names))
+
+    def test_GIVEN_available_driving_datasets_WHEN_page_get_THEN_default_fractional_cover_rendered(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+        string_names_values = []
+        for val in lc_vals:
+            string_names_values.append(val.name)
+            string_names_values.append('12.5')
+        assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_saved_land_cover_frac_WHEN_page_get_THEN_saved_values_rendered(self):
+        self.set_up_single_cell_model_run()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        frac_string = "0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.72 0.0"
+        self.land_cover_service.save_fractional_land_cover_for_model(model_run, frac_string)
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+
+        string_names_values = []
+        for i in range(len(lc_vals)):
+            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(100 * float(frac_string.split()[i])))
+        assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_saved_land_cover_with_too_few_types_WHEN_page_get_THEN_available_values_rendered(self):
+        self.set_up_single_cell_model_run()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        frac_string = "0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.72"
+        self.land_cover_service.save_fractional_land_cover_for_model(model_run, frac_string)
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+
+        string_names_values = []
+        for i in range(len(lc_vals)):
+            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(100 * float(frac_string.split()[i])))
+        assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_saved_land_cover_with_too_many_types_WHEN_page_get_THEN_some_values_rendered(self):
+        self.set_up_single_cell_model_run()
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        frac_string = "0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.72 0.0 0.0"
+        self.land_cover_service.save_fractional_land_cover_for_model(model_run, frac_string)
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+
+        string_names_values = []
+        for i in range(len(lc_vals)):
+            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(100 * float(frac_string.split()[i])))
+        assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_valid_fractional_cover_WHEN_post_THEN_values_saved(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        assert_that(model_run.land_cover_frac, is_("0.2\t0.25\t0.05\t0.1\t0.1\t0.05\t0.1\t0.15\t0"))
+
+    def test_GIVEN_ice_fractional_cover_WHEN_post_THEN_values_saved(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_ice': u'1'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        assert_that(model_run.land_cover_frac, is_("0\t0\t0\t0\t0\t0\t0\t0\t1"))
+
+    def test_GIVEN_valid_fractional_cover_WHEN_post_THEN_moved_to_next_page(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='output')), "url")
+
+    def test_GIVEN_values_dont_add_up_WHEN_post_THEN_errors_returned_and_values_not_saved(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'40',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        assert_that(model_run.land_cover_frac, is_(None))
+        assert_that(response.normal_body, contains_string("The sum of all the land cover fractions must be 100%"))
+        assert_that(response.normal_body, contains_string("Fractional Land Cover"))
+
+    def test_GIVEN_values_dont_add_up_WHEN_post_THEN_values_still_present_on_page(self):
+        self.set_up_single_cell_model_run()
+        response = self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'40',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+
+        lc_vals = self.land_cover_service.get_land_cover_values()
+        del lc_vals[-1]  # Remove the ice
+        frac_vals = ['40', '25', '5', '10', '10', '5', '10', '15']
+        string_names_values = []
+        for i in range(len(lc_vals)):
+            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(frac_vals[i])
+        assert_that(response.normal_body, string_contains_in_order(*string_names_values))
+
+    def test_GIVEN_no_extents_selected_WHEN_page_get_THEN_redirect(self):
+        self.set_up_single_cell_model_run()
+        param = self.model_run_service.get_parameter_by_constant(JULES_PARAM_POINTS_FILE)
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        with session_scope() as session:
+            session.query(ParameterValue) \
+                .filter(ParameterValue.parameter_id == param.id) \
+                .filter(ParameterValue.model_run_id == model_run.id) \
+                .delete()
+
+        response = self.app.get(url(controller='model_run', action='land_cover'))
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='extents')), "url")

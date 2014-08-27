@@ -2,11 +2,11 @@
 from hamcrest import *
 from mock import Mock
 
-from joj.model import session_scope, Session, ModelRun, Dataset
+from joj.model import session_scope, Session, Dataset
 from joj.utils import constants
 from joj.services.model_run_service import ModelRunService
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
-from joj.services.dap_client import DapClientException
+from joj.services.dap_client.dap_client import DapClientException
 
 
 class TestJobDataUpdaterCreation(TestWithFullModelRun):

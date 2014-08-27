@@ -4,7 +4,10 @@
 
 import logging
 from datetime import datetime
+
 from sqlalchemy.orm import subqueryload
+from dateutil.parser import parse
+
 from joj.services.model_run_service import ModelRunService
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
@@ -13,9 +16,9 @@ from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, D
 from joj.utils import constants
 from joj.utils.utils import KeyNotFound, find_by_id_in_dict
 from joj.utils import email_messages, utils
-from joj.services.dap_client_factory import DapClientFactory
-from dateutil.parser import parse
-from joj.services.dap_client import DapClientException
+from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.services.dap_client.dap_client import DapClientException
+
 
 log = logging.getLogger(__name__)
 
