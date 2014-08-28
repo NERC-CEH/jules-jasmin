@@ -60,16 +60,16 @@ function setMarker(position)
         // Add a new layer if we need to
         markers = new OpenLayers.Layer.Markers( "Markers" );
         map.addLayer(markers);
-        markers.setZIndex(100000);
         currentLayerIndex++;
     }
     if (marker) {
         // Clear the marker before adding a new one
         markers.removeMarker(marker);
     }
+    markers.setZIndex(100000);
     var size = new OpenLayers.Size(21,25);
     var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    var icon = new OpenLayers.Icon('/layout/images/marker.png', size, offset);
+    var icon = new OpenLayers.Icon('/js/img/marker-gold.png', size, offset);
     marker = new OpenLayers.Marker(position, icon);
     markers.addMarker(marker);
 }

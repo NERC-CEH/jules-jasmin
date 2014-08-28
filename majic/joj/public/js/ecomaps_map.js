@@ -175,6 +175,8 @@ var EcomapsMap = (function() {
 
                     index--;
                 });
+                var mapLayer = map.getLayersByName("Markers")[0];
+                map.setLayerIndex(mapLayer, 100000);
                 _super($item, container);
             }
         });
