@@ -9,7 +9,7 @@ import sys
 from joj.services.job_status_updater import JobStatusUpdaterService
 from joj import model
 from joj.services.job_runner_client import JobRunnerClient
-from joj.lib.wmc_util import set_http_openers
+from joj.lib import wmc_util
 
 
 log = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     wsgiapp = loadapp('config:' + sys.argv[1], relative_to=conf_dir)
     config = wsgiapp.config
     model.initialise_session(config)
-    set_http_openers(config)
+    wmc_util.set_http_openers(config)
 
     job_runner_client = JobRunnerClient(config)
     job_status_updater = JobStatusUpdaterService(job_runner_client, config)
