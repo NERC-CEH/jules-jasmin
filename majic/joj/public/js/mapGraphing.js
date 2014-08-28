@@ -51,6 +51,7 @@ function setMarker(position)
         // Add a new layer if we need to
         markers = new OpenLayers.Layer.Markers( "Markers" );
         map.addLayer(markers);
+        markers.setZIndex(100000);
         currentLayerIndex++;
     }
     if (marker) {
@@ -125,7 +126,7 @@ function hideGraph()
     }
     stored_position = undefined;
     // Reset the map height
-    $("#map").height($("#wrap").height() - 100);
+    $("#map").height($("#wrap").height() - 42);
 }
 
 /**

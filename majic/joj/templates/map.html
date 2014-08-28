@@ -30,17 +30,15 @@
 <div id="wrap">
     <xi:include href="nav_bar.html" />
 
-    <div class="container-fluid">
-        <div id="server-offline" class="alert alert-danger hide"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
-        <div class="">
-        <!--<div class="row-fluid">-->
+    <div class="container-fluid" style="padding-top:40px; padding-bottom:0px; padding-right:0px;">
+        <div>
 
-            <table style="height:100%; width:100%; overflow:hidden;">
+            <table class="map-table">
                 <tr>
-                    <td style="display:inline-block; white-space:nowrap;">
-                        <div id="panel-div" style="overflow-y:auto; overflow-x:hidden">
-                        <div class="">
-                            <h3>Visualise Model Runs</h3>
+                    <td id="cell-panel">
+                        <div id="panel-div">
+                        <div>
+                            <h3 style="padding-top:15px;">Visualise Model Runs</h3>
                             <div class="sidebar-nav">
                                 <ul class="nav nav-tabs">
 
@@ -110,7 +108,7 @@
                         </div>
                     </td>
 
-                    <td style="width:99%">
+                    <td id="cell-map">
                         <div>
                 <div id="map">
                     <div id="map-loading">
@@ -119,8 +117,11 @@
                     <div id="legend" class="hide">
 
                     </div>
-
+                    <div id="server-offline">
+                        <div class="alert alert-danger hide" style="display:inline-block"><strong>Map Server Offline:</strong> Majic functionality will be reduced while the map server is offline.</div>
+                    </div>
                 </div>
+
                 <div id="graph" class="graph">
                     <p>Loading graph</p>
                 </div>
@@ -128,9 +129,6 @@
                     </td>
                 </tr>
             </table>
-
-
-
             <div class="pull-right" id="functions-panel">
                 <div class="alert">
                     <a href="#image-panel" id="image-export"><i class="icon-share"></i> Export as image</a>

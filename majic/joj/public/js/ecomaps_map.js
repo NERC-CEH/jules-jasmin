@@ -340,8 +340,8 @@ var EcomapsMap = (function() {
         });
 
         // Stretch the map down the page
-        $("#map").height($("#wrap").height() - 105);
-        $("#panel-div").height($("#wrap").height() - 105);
+        $("#map").height($("#wrap").height() - 42);
+        $("#panel-div").height($("#wrap").height() - 42);
     };
 
     /*
@@ -647,7 +647,7 @@ var EcomapsMap = (function() {
         $("ol#dimension-list").html("");
         $("div#dimension-panel").hide();
         $("div#options-panel").hide();
-        $("li.active").removeClass("active");
+        $(".nav-list").find("li.active").removeClass("active");
 
         hideGraph();
     };
