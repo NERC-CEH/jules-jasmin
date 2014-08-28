@@ -21,17 +21,40 @@
             margin-top: 250px;
         }
         div#options-panel{
-            position: absolute;
-            top : 10px;
-            right: 10px;
             opacity: 0.9;
             z-index: 999;
         }
         div#functions-panel {
             position: absolute;
-            top: 80px;
-            right: 40px;
+            top: 60px;
+            right: 20px;
             z-index: 1000;
+        }
+        div#server-offline {
+            position: relative;
+            top: 20px;
+            left: 50px;
+            z-index: 1000;
+            margin: 0px 0px -59px 0px;
+        }
+        table.map-table {
+            height:100%;
+            width:100%;
+            overflow:hidden;
+        }
+        td#cell-panel {
+            display:inline-block;
+            white-space:nowrap;
+            margin-right:-1px;
+        }
+        td#cell-map {
+            width:99%;
+            padding:0px
+        }
+        div#panel-div {
+            overflow-y:auto;
+            overflow-x:hidden;
+            padding-right:30px
         }
         ul.layer-controls {
             text-transform: none;
