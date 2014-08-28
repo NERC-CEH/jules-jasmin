@@ -138,6 +138,9 @@ var EcomapsMap = (function() {
 
         // Reset button
         $("button#reset-button").click(resetViewer);
+
+        $("button#reset-graph").click(resetGraph);
+        $("button#close-graph").click(hideGraph);
     };
 
     var createSortableList = function() {
