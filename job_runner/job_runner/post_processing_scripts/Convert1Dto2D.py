@@ -18,9 +18,13 @@ NCML_FILE = \
 </netcdf>
 """
 
-
-if not os.path.exists(PROCESSED_PATH):
-    os.mkdir(PROCESSED_PATH)
+# can not just check that the dir exists because in parallel his introduces a race condition so catch the error instead
+import errno
+try:
+    os.makedirs(PROCESSED_PATH)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise  # raises the error again
 
 print "-----------------------------------"
 print "Converting File from 1D to 2D"
