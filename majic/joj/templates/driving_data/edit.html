@@ -374,6 +374,17 @@
 
         <h2>Other values</h2>
 
+                <script>
+                function update_namelist_showing()
+                {
+                    selected_namelist = $('#namelists').val();
+                    $(".parameters").hide();
+                    $("#namelist_" + selected_namelist).show();
+                }
+
+                $(update_namelist_showing)
+                $(function () {$("#namelists").change(update_namelist_showing)})
+                </script>
 
         <div class="control-group">
             <label class="control-label">
@@ -383,13 +394,26 @@
 
 
             <div class="controls">
-                <div class="well">
 
-                    <button type="button" class="btn control-group" value="masks">
-                        <i class="icon-plus"></i>
-                        Add Parameter
-                    </button>
-                </div>
+                <fieldset class="fieldset well">
+
+                    <div class="controls-row" style="">
+
+                        <select id="namelists" class="span4">
+                                <option py:for="namelist in sorted(c.namelist.keys())" value="${namelist}">${namelist}</option>
+                        </select>
+                        <span class="span1"><center><b>::</b></center></span>
+                        <select py:for="namelist_name, namelist_dict in c.namelist.iteritems()" id="namelist_${namelist_name}" class="parameters span4">
+                            <option py:for="value, name in namelist_dict.iteritems()" value="${value}">${name}</option>
+                        </select>
+
+                        <button type="button" class="btn span2" value="masks" onchange="update_namelist_showing()">
+                            <i class="icon-plus"></i>
+                            Add Parameter
+                        </button>
+                    </div>
+                </fieldset>
+
 
                 <fieldset class="fieldset">
                     <div class="controls-row">
