@@ -123,7 +123,7 @@ def GetWebMapCapabilities(endpoint):
     except urllib2.HTTPError, e:            
         log.exception("exception occurred")
         if e.code == 401:
-            log.info ('401 unauthorized error in ecomaps')
+            log.info ('401 unauthorized error in Majic')
             return abort(401) #triggers ndg security framework
         elif e.code == 403:  #TODO: 403 response is UNTESTED.
             # User is authenticated but doesn't have the required permissions
@@ -177,24 +177,41 @@ def GetResponse(url):
     return filehandle.read()    
     
 
-noProxyOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
-try:
-    auth = HTTPSClientAuthHandler(config['majic_certificate_key_path'], config['majic_certificate_path'])
-    ssl_opener = urllib2.build_opener(auth)
-    log.debug("installed client certificate opener")
-except KeyError:
-    # no certificate specified so do not install opener
-    ssl_opener = urllib2.build_opener()
-    pass
+noProxyOpener = None
+ssl_opener = None
+externalOpener = None
 
-try:
-    externalOpener = urllib2.build_opener(
-        urllib2.ProxyHandler({'http': config['external_http_proxy']})
-    )
-    log.info("installed proxed external opener")
-except KeyError:
-    externalOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
-    log.info("installed non-proxed external opener")
+
+def set_http_openers(local_config=config):
+    """
+    Setup the http openers for this module. This can be done using a different config from the python one if required
+    :param local_config: local config to user
+    :return: nothing
+    """
+    global noProxyOpener
+    global ssl_opener
+    global externalOpener
+    noProxyOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+
+    try:
+        auth = HTTPSClientAuthHandler(local_config['majic_certificate_key_path'], local_config['majic_certificate_path'])
+        ssl_opener = urllib2.build_opener(auth)
+        log.info("Created ssl opener with client certificates")
+    except KeyError:
+        ssl_opener = urllib2.build_opener()
+        log.info("Created ssl opener with NO client certificates")
+        pass
+
+    try:
+        externalOpener = urllib2.build_opener(
+            urllib2.ProxyHandler({'http': local_config['external_http_proxy']})
+        )
+        log.info("Created proxied external opener")
+    except KeyError:
+        externalOpener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.ProxyHandler({}))
+        log.info("Created NON-proxied external opener")
+
+set_http_openers(config)
 
 
 def create_request_and_open_url(url_string, external=False, timeout=None):
