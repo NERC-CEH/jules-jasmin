@@ -49,17 +49,17 @@
                                         </a>
                                     </li>
                                 </ul>
-                                <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}">
-                                    <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']">
+                                <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}" style="padding-right:0px;">
+                                    <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']" style="padding:0px">
                                         <li class="nav-header">
-                                            <a href="#" onclick="expandCollapse('mod_hdr_${model_run_sort['name']}${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                            <a href="#" onclick="expandCollapse('mod_hdr_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
                                                 ${model_run.name}<div id="mod_hdr_${model_run_sort['name']}${model_run.id}_icon"  style="display:inline"> +</div>
                                             </a>
                                         </li>
                                         <div id="mod_hdr_${model_run_sort['name']}${model_run.id}"  model-run-id="${model_run.id}" style="display:none">
                                             <ul class="nav nav-list">
                                                 <li class="nav-header">
-                                                    <a href="#" onclick="expandCollapse('mod_ds_in_${model_run_sort['name']}${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                                    <a href="#" onclick="expandCollapse('mod_ds_in_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
                                                         Input Datasets<div id="mod_ds_in_${model_run_sort['name']}${model_run.id}_icon" style="display:inline"> +</div>
                                                     </a>
                                                 </li>
@@ -71,7 +71,7 @@
                                             </ul>
                                             <ul class="nav nav-list">
                                                 <li class="nav-header">
-                                                    <a href="#" onclick="expandCollapse('mod_ds_out_${model_run_sort['name']}${model_run.id}');return false" style="color:rgb(153,153,153)">
+                                                    <a href="#" onclick="expandCollapse('mod_ds_out_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
                                                         Output Datasets<div id="mod_ds_out_${model_run_sort['name']}${model_run.id}_icon" style="display:inline"> +</div>
                                                     </a>
                                                 </li>

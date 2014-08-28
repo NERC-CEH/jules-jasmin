@@ -44,7 +44,6 @@
         }
         td#cell-panel {
             display:inline-block;
-            white-space:nowrap;
             margin-right:-1px;
         }
         td#cell-map {
@@ -54,7 +53,12 @@
         div#panel-div {
             overflow-y:auto;
             overflow-x:hidden;
-            padding-right:30px
+            padding-right:30px;
+            width:300px;
+        }
+        a.dataset-link {
+            color:rgb(153,153,153);
+            padding-left:10px
         }
         ul.layer-controls {
             text-transform: none;
