@@ -183,6 +183,20 @@
             </div>
         </div>
 
+        <div class="control-group">
+            <label for="view" class="control-label">
+                Restricted to Admins
+                <i class="fa fa-info-circle" data-toggle="tooltip" title="Restricted to Admins" data-trigger="click | hover"
+                     data-content="If ticked this driving dataset is viewable only by admins. It is advised that you
+                     test a new driving dataset before unticking this box."></i>
+            </label>
+            <div class="controls">
+               ${h.html_tags.checkbox('is_restricted_to_admins', checked=True)}
+            </div>
+        </div>
+
+
+
 
         <h2>Masks</h2>
 

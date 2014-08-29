@@ -55,6 +55,7 @@ class DrivingDatasetJulesParams(object):
         self.values['driving_data_end'] = data_end
         self.values['drive_file'] = drive_file
         self.values['drive_vars'] = drive_var if drive_var is not None else []
+        self.values['drive_nvars'] = len(self.values['drive_vars'])
         self.values['drive_var_names'] = var_names if var_names is not None else []
         self.values['drive_var_templates'] = var_templates if var_templates is not None else []
         self.values['drive_var_interps'] = var_interps if var_interps is not None else []
@@ -133,6 +134,10 @@ class DrivingDatasetJulesParams(object):
             val = driving_data_set.get_python_parameter_value(constant)
             self.values[name] = val
 
+        #values which can not be none
+        if self.values['drive_nvars'] is None:
+            self.values['drive_nvars'] = 0
+
         for parameter_value in driving_data_set.parameter_values:
             found = False
             for named_param in self._names_constant_dict.values():
@@ -143,10 +148,10 @@ class DrivingDatasetJulesParams(object):
             if not found:
                 self._extra_parameters[parameter_value.parameter_id] = parameter_value.value
 
-    def add_to_dict(self, values, namelists):
+    def add_to_dict(self, values_dict_to_add_to, namelists):
         """
-        Add jules parameters to the values dictionary
-        :param values: the values dictionary to add to
+        Add jules parameters to the values_dict_to_add_to dictionary
+        :param values_dict_to_add_to: the values_dict_to_add_to dictionary to add to
         :param namelists: the list of namelists with parameters
         :return: nothing
         """
@@ -156,19 +161,13 @@ class DrivingDatasetJulesParams(object):
                 value = self.values[name]
                 if type(value) is list:
                     for val, index in zip(value, range(len(value))):
-                        values["{}_{}".format(name, str(index))] = val
+                        values_dict_to_add_to["{}_{}".format(name, str(index))] = val
                 else:
-                    values[name] = value
+                    values_dict_to_add_to[name] = value
             else:
-                values[name] = ''
+                values_dict_to_add_to[name] = ''
 
-        if 'drive_nvars' not in values:
-            values['drive_nvars'] = 0
-
-        for index in range(values['drive_nvars']):
-            values['drive_var_id_deleted_{}'.format(str(index))] = False
-
-        values['parameters_nvar'] = len(self._extra_parameters)
+        values_dict_to_add_to['parameters_nvar'] = len(self._extra_parameters)
 
         params = []
         for param_id, val in self._extra_parameters.iteritems():
@@ -183,10 +182,9 @@ class DrivingDatasetJulesParams(object):
         params = sorted(params, key=lambda param: param[0])
         index = 0
         for name, param_id, val in params:
-            values["param_id_{}".format(str(index))] = param_id
-            values["param_value_{}".format(str(index))] = val
-            values["param_is_deleted_{}".format(str(index))] = False
+            values_dict_to_add_to["param_id_{}".format(str(index))] = param_id
+            values_dict_to_add_to["param_value_{}".format(str(index))] = val
             index += 1
 
-        values["param_names"] = [param[0] for param in params]
-        values['params_count'] = len(params)
+        values_dict_to_add_to["param_names"] = [param[0] for param in params]
+        values_dict_to_add_to['params_count'] = len(params)
