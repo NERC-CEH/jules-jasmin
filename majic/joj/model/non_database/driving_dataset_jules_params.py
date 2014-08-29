@@ -189,3 +189,4 @@ class DrivingDatasetJulesParams(object):
             index += 1
 
         values["param_names"] = [param[0] for param in params]
+        values['params_count'] = len(params)

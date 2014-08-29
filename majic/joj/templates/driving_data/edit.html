@@ -14,6 +14,7 @@
         Driving Data Set</title>
     <link rel="stylesheet" type="text/css" href="../../layout/joj.css"/>
     <link rel="stylesheet" type="text/css" href="../../layout/model_run_extents.css"/>
+    <script src="/js/driving_data/edit.js"></script>
 </head>
 <body id="admin">
     <h1><py:if test="c.driving_data_set.id is None">
@@ -193,15 +194,14 @@
                 <p class="label-explain">Categories, locations and names of masks</p>
             </label>
 
-
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
+                <button type="button" class="btn control-group" value="masks" id="add_mask">
                     <i class="icon-plus"></i>
                     Add Mask
                 </button>
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    <div class="controls-row" id="mask_header">
                         <div class="span3">
                             <h5>Category</h5>
                         </div>
@@ -212,9 +212,10 @@
                             <h5>Path</h5>
                         </div>
                     </div>
+                    ${h.html_tags.hidden('mask_count')}
                     <div py:for="masknum in range(c.masks)" class="controls-row">
                         <div class="span3">
-                            ${h.html_tags.hidden('id_{}'.format(masknum), placeholder="Category")}
+                            ${h.html_tags.hidden('id_{}'.format(masknum))}
                             ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
                         </div>
                         <div class="span3">
@@ -284,14 +285,14 @@
 
 
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
+                <button type="button" class="btn control-group" id="add_variable">
                     <i class="icon-plus"></i>
                     Add Variable
                 </button>
 
                 <fieldset class="fieldset">
                     ${h.html_tags.hidden('drive_nvars')}
-                    <div class="controls-row">
+                    <div class="controls-row" id="drive_vars_header">
                         <h5 class="span2">Variable </h5>
                         <h5 class="span2">Name</h5>
                         <h5 class="span2">Template</h5>
@@ -374,7 +375,6 @@
 
         <h2>Other values</h2>
 
-
         <div class="control-group">
             <label class="control-label">
                 Jules Parameters
@@ -383,24 +383,37 @@
 
 
             <div class="controls">
-                <div class="well">
 
-                    <button type="button" class="btn control-group" value="masks">
-                        <i class="icon-plus"></i>
-                        Add Parameter
-                    </button>
-                </div>
+                <fieldset class="fieldset well">
+
+                    <div class="controls-row" style="">
+
+                        <select id="namelists" class="span4">
+                                <option py:for="namelist in sorted(c.namelist.keys())" value="${namelist}">${namelist}</option>
+                        </select>
+                        <span class="span1"><center><b>::</b></center></span>
+                        <select py:for="namelist_name, namelist_dict in c.namelist.iteritems()" id="namelist_${namelist_name}" class="parameters span4">
+                            <option py:for="value, name in namelist_dict.iteritems()" value="${value}">${name}</option>
+                        </select>
+
+                        <button type="button" class="btn span2" value="masks" id="add_parameter">
+                            <i class="icon-plus"></i>
+                            Add Parameter
+                        </button>
+                    </div>
+                </fieldset>
+
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    <div class="controls-row" id="parameters_header">
                         <h5 class="span5">Parameter </h5>
                         <h5 class="span5">Value</h5>
                     </div>
+                    ${h.html_tags.hidden('params_count')}
                     <div py:for="varnum in range(len(c.param_names))" class="controls-row">
                         <span class="span5">
                             ${c.param_names[varnum]}
                             ${h.html_tags.hidden('param_id_{}'.format(varnum))}
-                            ${h.html_tags.hidden('param_is_deleted_{}'.format(varnum))}
                         </span>
                         ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
                         <i class="fa fa-times-circle fa-2x ico red span1"></i>
