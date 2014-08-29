@@ -14,6 +14,7 @@
         Driving Data Set</title>
     <link rel="stylesheet" type="text/css" href="../../layout/joj.css"/>
     <link rel="stylesheet" type="text/css" href="../../layout/model_run_extents.css"/>
+    <script src="/js/driving_data/edit.js"></script>
 </head>
 <body id="admin">
     <h1><py:if test="c.driving_data_set.id is None">
@@ -193,44 +194,6 @@
                 <p class="label-explain">Categories, locations and names of masks</p>
             </label>
 
-            <script>
-                /* show the correct parameters list for the selected namelist*/
-                function update_namelist_showing()
-                {
-                    selected_namelist = $('#namelists').val();
-                    $(".parameters").hide();
-                    $("#namelist_" + selected_namelist).show();
-                }
-
-                /* Add a mask line*/
-                function add_mask()
-                {
-                    mask_count = $('#mask_count').val();
-                    mask_count = parseInt(mask_count) + 1;
-                    $('#mask_count').val(mask_count);
-                    mask_template = '<div class="controls-row"> <div class="span3"> \
-                                <input id="id_%index%" name="id_%index%" placeholder="Category" type="hidden" value="" /> \
-                                <input id="category_%index%" name="category_%index%" placeholder="Category" type="text" value="" /> \
-                            </div> \
-                            <div class="span3"> \
-                                <input id="name_%index%" name="name_%index%" placeholder="Name" type="text" value="" /> \
-                            </div> \
-                            <div class="span5"> \
-                                <input id="path_%index%" name="path_%index%" placeholder="data/filepath/filename.nc" type="text" value="" /> \
-                            </div> \
-                        </div>';
-                    $("#mask_controls").prepend(mask_template.replace(/%index%/g, mask_count));
-                }
-
-                /* initialise name list and setup click and change functions*/
-                $(function ()
-                  {
-                    update_namelist_showing
-                    $("#namelists").change(update_namelist_showing);
-                    $("#add_mask").click(add_mask);
-                  })
-                </script>
-
             <div class="controls">
                 <button type="button" class="btn control-group" value="masks" id="add_mask">
                     <i class="icon-plus"></i>
@@ -238,7 +201,7 @@
                 </button>
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    <div class="controls-row" id="mask_header">
                         <div class="span3">
                             <h5>Category</h5>
                         </div>
@@ -250,7 +213,7 @@
                         </div>
                     </div>
                     ${h.html_tags.hidden('mask_count')}
-                    <div py:for="masknum in range(c.masks)" class="controls-row" id="mask_controls">
+                    <div py:for="masknum in range(c.masks)" class="controls-row">
                         <div class="span3">
                             ${h.html_tags.hidden('id_{}'.format(masknum))}
                             ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
@@ -322,14 +285,14 @@
 
 
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
+                <button type="button" class="btn control-group" id="add_variable">
                     <i class="icon-plus"></i>
                     Add Variable
                 </button>
 
                 <fieldset class="fieldset">
                     ${h.html_tags.hidden('drive_nvars')}
-                    <div class="controls-row">
+                    <div class="controls-row" id="drive_vars_header">
                         <h5 class="span2">Variable </h5>
                         <h5 class="span2">Name</h5>
                         <h5 class="span2">Template</h5>
@@ -433,7 +396,7 @@
                             <option py:for="value, name in namelist_dict.iteritems()" value="${value}">${name}</option>
                         </select>
 
-                        <button type="button" class="btn span2" value="masks" onchange="update_namelist_showing()">
+                        <button type="button" class="btn span2" value="masks" id="add_parameter">
                             <i class="icon-plus"></i>
                             Add Parameter
                         </button>
@@ -442,15 +405,15 @@
 
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    <div class="controls-row" id="parameters_header">
                         <h5 class="span5">Parameter </h5>
                         <h5 class="span5">Value</h5>
                     </div>
+                    ${h.html_tags.hidden('params_count')}
                     <div py:for="varnum in range(len(c.param_names))" class="controls-row">
                         <span class="span5">
                             ${c.param_names[varnum]}
                             ${h.html_tags.hidden('param_id_{}'.format(varnum))}
-                            ${h.html_tags.hidden('param_is_deleted_{}'.format(varnum))}
                         </span>
                         ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
                         <i class="fa fa-times-circle fa-2x ico red span1"></i>
