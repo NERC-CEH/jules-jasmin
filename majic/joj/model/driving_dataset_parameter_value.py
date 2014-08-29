@@ -34,8 +34,8 @@ class DrivingDatasetParameterValue(Base):
             self.parameter_id = jules_param_constant
         else:
             parameter = model_run_service.get_parameter_by_constant(jules_param_constant)
-            self.driving_dataset = driving_dataset
             self.parameter_id = parameter.id
+        self.driving_dataset = driving_dataset
         self.value = value
 
     def __repr__(self):

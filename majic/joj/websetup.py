@@ -431,6 +431,7 @@ def setup_app(command, conf, vars):
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.view_order_index = 100
         driving_ds_1.usage_order_index = 2
+        driving_ds_1.is_restricted_to_admins = False
 
         cat1 = LandCoverRegionCategory()
         cat1.name = "Test Regions"
@@ -477,6 +478,7 @@ def setup_app(command, conf, vars):
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
         driving_ds_2.view_order_index = 200
         driving_ds_2.usage_order_index = 1
+        driving_ds_2.is_restricted_to_admins = True
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -492,6 +494,7 @@ def setup_app(command, conf, vars):
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
         driving_ds_3.view_order_index = 300
         driving_ds_3.usage_order_index = 100
+        driving_ds_3.is_restricted_to_admins = True
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
