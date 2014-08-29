@@ -24,6 +24,15 @@ function createGraph(position)
     setMarker(position);
     createGraphSpace(position);
     getData(datasets, position);
+
+    // Enable buttons
+    closeBtn = $("button#close-graph");
+    resetBtn = $("button#reset-graph");
+    closeBtn.prop('disabled', false);
+    closeBtn.removeClass('disabled');
+    resetBtn.prop('disabled', false);
+    resetBtn.removeClass('disabled');
+
     return true;
 }
 
@@ -51,6 +60,7 @@ function setMarker(position)
         // Add a new layer if we need to
         markers = new OpenLayers.Layer.Markers( "Markers" );
         map.addLayer(markers);
+        markers.setZIndex(100000);
         currentLayerIndex++;
     }
     if (marker) {
@@ -116,6 +126,14 @@ function createGraphSpace(position)
  */
 function hideGraph()
 {
+    // Disable buttons
+    closeBtn = $("button#close-graph");
+    resetBtn = $("button#reset-graph");
+    closeBtn.prop('disabled', true);
+    closeBtn.addClass('disabled');
+    resetBtn.prop('disabled', true);
+    resetBtn.addClass('disabled');
+
     // Hide graph
     var graphDiv = $("#graph");
     graphDiv.hide();
@@ -125,7 +143,7 @@ function hideGraph()
     }
     stored_position = undefined;
     // Reset the map height
-    $("#map").height($("#wrap").height() - 100);
+    $("#map").height($("#wrap").height() - 42);
 }
 
 /**
@@ -206,12 +224,4 @@ function plotGraph(data)
         },
         legend: {position: "nw"}
     });
-    // Add a close button and reset button
-    var closeButtonHtml = '<div class="alert alert-info" style="position:absolute;right:' + 30 + 'px;top:' + 14 +'px">' +
-        '<a href="#" onclick="hideGraph()" id="graph-close-img"><i class="icon-remove"></i> Close</a></div>';
-    graph.append(closeButtonHtml);
-
-    var resetButtonHtml = '<div class="alert alert-info" style="position:absolute;right:' + 140 + 'px;top:' + 14 +'px">' +
-        '<a href="#" onclick="resetGraph()" id="graph-close-img"><i class="icon-screenshot"></i> Reset</a></div>';
-    graph.append(resetButtonHtml);
 }

@@ -138,6 +138,9 @@ var EcomapsMap = (function() {
 
         // Reset button
         $("button#reset-button").click(resetViewer);
+
+        $("button#reset-graph").click(resetGraph);
+        $("button#close-graph").click(hideGraph);
     };
 
     var createSortableList = function() {
@@ -179,10 +182,11 @@ var EcomapsMap = (function() {
 
     var removeDataset = function(key) {
         removeLayerFromMap(key);
+
         var panel = $('li.layer[data-layerid="' + key + '"]');
         panel.remove();
 
-        var time_controls = $('ul.layer-controls[data-layerid="' + key + '"]');
+        var time_controls = $('div.layer-controls[data-layerid="' + key + '"]');
         time_controls.remove();
 
         if ($('li.layer').length == 0) {
@@ -339,7 +343,8 @@ var EcomapsMap = (function() {
         });
 
         // Stretch the map down the page
-        $("#map").height($("#wrap").height() - 100);
+        $("#map").height($("#wrap").height() - 42);
+        $("#panel-div").height($("#wrap").height() - 42);
     };
 
     /*
@@ -645,7 +650,7 @@ var EcomapsMap = (function() {
         $("ol#dimension-list").html("");
         $("div#dimension-panel").hide();
         $("div#options-panel").hide();
-        $("li.active").removeClass("active");
+        $(".nav-list").find("li.active").removeClass("active");
 
         hideGraph();
     };
