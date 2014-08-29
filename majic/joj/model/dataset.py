@@ -25,6 +25,7 @@ class Dataset(Base):
     is_categorical = Column(Boolean, default=False)
     deleted = Column(Boolean, default=False)
     is_input = Column(Boolean, default=False)
+    is_single_cell = Column(Boolean, default=False)
     model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     dataset_type = relationship("DatasetType", backref="datasets", lazy="joined")
 

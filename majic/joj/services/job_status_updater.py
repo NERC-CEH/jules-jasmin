@@ -183,7 +183,9 @@ class JobStatusUpdaterService(DatabaseService):
         """
 
         run_id = model_run.get_python_parameter_value(constants.JULES_PARAM_OUTPUT_RUN_ID)
+        single_cell = not model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
         selected_output_profile_names = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
+
         selected_output_periods = {}
         for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD):
             selected_output_periods[var.group_id] = var.get_value_as_python()
@@ -200,7 +202,8 @@ class JobStatusUpdaterService(DatabaseService):
 
             profile_name = utils.convert_time_period_to_name(
                 selected_output_periods[selected_output_profile_name.group_id])
-            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server, profile_name)
+            self._create_dataset(dataset_type, filename, is_input, single_cell, model_run, session, thredds_server,
+                                 profile_name)
 
         input_locations = session \
             .query(DrivingDatasetLocation) \
@@ -210,14 +213,16 @@ class JobStatusUpdaterService(DatabaseService):
         for input_location in input_locations:
             filename = input_location.base_url
             is_input = True
-            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server)
+            self._create_dataset(dataset_type, filename, is_input, single_cell, model_run, session, thredds_server)
 
-    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, thredds_server, frequency=None):
+    def _create_dataset(self, dataset_type, filename, is_input, is_single_cell, model_run, session,
+                        thredds_server, frequency=None):
         """
         Create a single dataset
         :param dataset_type: the dataset type
         :param filename: filename of the dataset
         :param is_input: true if this is an input dataset
+        :param is_single_cell: Is a single cell dataset
         :param model_run: the model run
         :param session: the session
         :param thredds_server: url of the thredds server
@@ -230,19 +235,22 @@ class JobStatusUpdaterService(DatabaseService):
         dataset.is_categorical = False
         dataset.is_input = is_input
         dataset.viewable_by_user_id = model_run.user.id
-        dataset.wms_url = \
-            "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
-            "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
-            .format(
+        dataset.wms_url = None
+        dataset.is_single_cell = is_single_cell
+        if not is_single_cell:
+            dataset.wms_url = \
+                "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
+                "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
+                .format(
                 thredds_server_url=thredds_server,
                 model_run_id=model_run.id,
                 filename=filename)
         dataset.netcdf_url = \
             "{thredds_server_url}/dodsC/model_runs/run{model_run_id}/{filename}" \
             .format(
-                thredds_server_url=thredds_server,
-                model_run_id=model_run.id,
-                filename=filename)
+            thredds_server_url=thredds_server,
+            model_run_id=model_run.id,
+            filename=filename)
 
         dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
         if frequency:
