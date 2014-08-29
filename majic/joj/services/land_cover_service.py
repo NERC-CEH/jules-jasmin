@@ -10,7 +10,8 @@ from joj.model import LandCoverRegion, LandCoverValue, LandCoverRegionCategory, 
 from joj.utils import constants
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.dataset import DatasetService
-from joj.services.dap_client.dap_client import DapClientException
+from joj.services.dap_client.base_dap_client import DapClientException
+from joj.services.parameter_service import ParameterService
 
 
 class LandCoverService(DatabaseService):
@@ -18,10 +19,12 @@ class LandCoverService(DatabaseService):
     Provides access to operations on the land cover regions
     """
 
-    def __init__(self, dap_client_factory=DapClientFactory(), dataset_service=DatasetService()):
+    def __init__(self, dap_client_factory=DapClientFactory(), dataset_service=DatasetService(),
+                 parameter_service=ParameterService()):
         super(LandCoverService, self).__init__()
         self.dap_client_factory = dap_client_factory
         self.dataset_service = dataset_service
+        self.parameter_service = parameter_service
 
     def get_land_cover_region_by_id(self, id):
         """
@@ -126,10 +129,45 @@ class LandCoverService(DatabaseService):
                 land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
                 land_cover_client = self.dap_client_factory.get_land_cover_dap_client(land_cover_url, land_cover_key)
                 return land_cover_client.get_fractional_cover(lat, lon)
-            except DapClientException as ex:
+            except DapClientException:
                 pass
         ntypes = len(self.get_land_cover_values())
         return ntypes * [0.0]
+
+    def save_default_soil_properties(self, model_run):
+        """
+        Retrieve and save default soil properties for a single cell model run
+        :param model_run: Model run to save default soil properties for
+        :return:
+        """
+        latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
+        if latlon is None:
+            raise ServiceException("Could not get default soil properties: the model run does not have any "
+                                   "saved single cell location information")
+        lat, lon = latlon
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon)
+        if driving_dataset is not None:
+            nvars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
+            vars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR)
+            use_file = nvars * [False]
+            soil_file = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_FILE)
+            try:
+                url = self.dap_client_factory.get_full_url_for_file(soil_file)
+                soil_props_client = self.dap_client_factory.get_soil_properties_dap_client(url)
+                vals = soil_props_client.get_soil_properties(lat, lon)
+                if vals is not None:
+                    params_vals = [[constants.JULES_PARAM_SOIL_PROPS_NVARS, nvars],
+                                   [constants.JULES_PARAM_SOIL_PROPS_VAR, vars],
+                                   [constants.JULES_PARAM_SOIL_USE_FILE, use_file],
+                                   [constants.JULES_PARAM_SOIL_CONST_VALS, vals]]
+                    old_param_vals = [constants.JULES_PARAM_SOIL_PROPS_NVARS,
+                                      constants.JULES_PARAM_SOIL_PROPS_VAR,
+                                      constants.JULES_PARAM_SOIL_USE_FILE,
+                                      constants.JULES_PARAM_SOIL_CONST_VALS]
+                    self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run)
+            except DapClientException:
+                # We don't want to do anything because we'll just leave whatever defaults are already present.
+                return
 
     def find_ice_index(self, land_cover_types):
         """
@@ -153,15 +191,16 @@ class LandCoverService(DatabaseService):
             usable_datasets.append(dataset)
         sorted_results = sorted(usable_datasets, key=lambda ds: ds.usage_order_index)
         if len(sorted_results) > 0:
-            return sorted_results[0]
+            # Reload the driving dataset to get all the parameters
+            driving_dataset = self.dataset_service.get_driving_dataset_by_id(sorted_results[0].id)
+            return driving_dataset
         else:
             return None
 
     def _get_land_cover_url_and_key_for_driving_dataset(self, driving_dataset):
-        # Reload the driving dataset to get all the parameters
-        driving_dataset = self.dataset_service.get_driving_dataset_by_id(driving_dataset.id)
 
         frac_file = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_FRAC_FILE)
         frac_name = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_FRAC_NAME)
-        url = config['thredds.server_url'] + "dodsC/model_runs/" + frac_file
+        url = self.dap_client_factory.get_full_url_for_file(frac_file)
+
         return url, frac_name

@@ -14,7 +14,7 @@ from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, Mode
     LandCoverRegion
 from joj.model.meta import Base, Session
 from joj.utils import constants
-from model.system_alert_email import SystemAlertEmail
+from joj.model.system_alert_email import SystemAlertEmail
 from websetup_jules_output_variables import JulesOutputVariableParser
 from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
@@ -598,6 +598,7 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
             [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
 
+            # Default soil properties, hopefully overridden in the background when the user sets the land cover.
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
              "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],

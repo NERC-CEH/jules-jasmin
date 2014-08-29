@@ -1,3 +1,6 @@
+"""
+header
+"""
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -17,7 +20,9 @@ setup(
         "lxml",
         "pytz",
         "shapely",
-        "python-dateutil"
+        "python-dateutil",
+        'netCDF4',
+        'numpy'
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
