@@ -267,8 +267,12 @@ class TestController(TestCase):
                                                 'hcap', 'hcon', 'albsoil'])
             pv26 = DrivingDatasetParameterValue(model_run_service, driving2,
                                                 constants.JULES_PARAM_SOIL_PROPS_VAR, val)
-            val = f90_helper.python_to_f90_str("data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc")
+            val = f90_helper.python_to_f90_str(['bexp', 'sathh', 'satcon', 'vsat', 'vcrit', 'vwilt',
+                                                'hcap', 'hcon', 'albsoil'])
             pv27 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                                constants.JULES_PARAM_SOIL_PROPS_VAR_NAME, val)
+            val = f90_helper.python_to_f90_str("data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc")
+            pv28 = DrivingDatasetParameterValue(model_run_service, driving2,
                                                 constants.JULES_PARAM_SOIL_PROPS_FILE, val)
             session.add_all([driving1, driving2])
             session.commit()

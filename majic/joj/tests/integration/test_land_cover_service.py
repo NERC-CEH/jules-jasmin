@@ -27,7 +27,8 @@ class MockLandCoverDapClient(object):
 
         if self.url == config['thredds.server_url'] + "dodsC/model_runs/data/driving1/frac.nc" and self.key == 'frac':
             self.return_values[(0, 0)] = [0.02, 0.11, 0.02, 0.05, 0.35, 0.19, 0.22, 0.04, 0.0]
-        elif self.url == config['thredds.server_url'] + "dodsC/model_runs/data/driving2/frac.nc" and self.key == 'frac2':
+        elif self.url == config[
+            'thredds.server_url'] + "dodsC/model_runs/data/driving2/frac.nc" and self.key == 'frac2':
             self.return_values[(70, 0)] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
             self.return_values[(80, 120)] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         else:
@@ -46,12 +47,13 @@ class MockSoilPropertiesDapClient(object):
     """
     Mock Dap client for soil properties
     """
-    expected_url = "http://jules-bd1-dev:8080/thredds/dodsC/model_runs/" \
-                   "data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
-    expected_lat = 51
-    expected_lon = 0
 
     def __init__(self, url):
+        self.expected_url = config['thredds.server_url'] + "dodsC/model_runs/data/WATCH_2D/ancils/" \
+                                                           "soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
+        self.expected_lat = 51
+        self.expected_lon = 0
+
         if not url == self.expected_url:
             raise DapClientException("URL not found")
 
@@ -63,7 +65,8 @@ class MockSoilPropertiesDapClient(object):
         :return:
         """
         if lat == self.expected_lat and lon == self.expected_lon:
-            return [0.9, 0.0, 0.0, 50.0, 275.0, 278.0, 10.0, 0.0]
+            return {'bexp': 0.9, 'sathh': 0.0, 'satcon': 0.0, 'vsat': 50.0, 'vcrit': 275.0, 'vwilt': 278.0,
+                    'hcap': 10.0, 'hcon': 0.0, 'albsoil': 0.5}
         else:
             return 9 * [10]
 
@@ -338,7 +341,7 @@ class TestLandCoverService(TestWithFullModelRun):
         assert_that(nvars, is_(9))
         assert_that(var, is_(['b', 'sathh', 'satcon', 'sm_sat', 'sm_crit', 'sm_wilt', 'hcap', 'hcon', 'albsoil']))
         assert_that(use_file, is_(9 * [False]))
-        assert_that(const_val, is_([0.9, 0.0, 0.0, 50.0, 275.0, 278.0, 10.0, 0.0]))
+        assert_that(const_val, is_([0.9, 0.0, 0.0, 50.0, 275.0, 278.0, 10.0, 0.0, 0.5]))
 
     def test_GIVEN_no_appropriate_driving_data_WHEN_set_default_soil_properties_THEN_values_not_set(self):
         self.clean_database()
