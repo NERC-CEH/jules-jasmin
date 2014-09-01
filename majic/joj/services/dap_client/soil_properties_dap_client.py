@@ -21,7 +21,7 @@ class SoilPropertiesDapClient(BaseDapClient):
         Get the soil properties at a point
         :param lat: Latitude
         :param lon: Longitude
-        :return: List of soil property values for each of the soil property variables
+        :return: Dictionary of soil property values for each of the soil property variables
         """
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
             return

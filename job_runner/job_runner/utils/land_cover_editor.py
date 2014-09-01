@@ -8,6 +8,7 @@ import os
 import shutil
 from job_runner.utils import constants
 from job_runner.services.service_exception import ServiceException
+from job_runner.utils.netcdf_utils import NetCdfHelper
 
 log = logging.getLogger(__name__)
 
@@ -16,6 +17,9 @@ class LandCoverEditor(object):
     """
     Edits land cover files
     """
+
+    def __init__(self):
+        self.nc_helper = NetCdfHelper()
 
     def apply_land_cover_action(self, base_file_path, mask_file_path, value, key='frac'):
         """
@@ -56,6 +60,41 @@ class LandCoverEditor(object):
         base_frac[:, :, :] = base_frac_array
 
         region.close()
+        base.close()
+
+    def apply_single_point_fractional_cover(self, base_file_path, fractional_cover, lat, lon, key='frac'):
+        """
+        Change the fractional land cover at a single point in the file
+        :param base_file_path: Path of the base land cover file to edit
+        :param fractional_cover: List of fractional cover values to set the point to
+        :param lat: Latitude of point to edit
+        :param lon: Longitude of point to edit
+        :param key: The name of the fractional cover variable in the land cover file
+        :raise ServiceException:
+        """
+        base = Dataset(base_file_path, 'r+')
+        base_frac = base.variables[key]
+        base_frac_array = base_frac[:, :, :]
+
+        # Get the indices of the latitude and longitude position
+        lat_key = self.nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LATITUDE)
+        lon_key = self.nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LONGITUDE)
+        if lat_key is None or lon_key is None:
+            log.exception("Could not apply land cover edit: could not identify latitude and longitude variables")
+            raise ServiceException("Could not apply land cover edit: could not identify "
+                                   "latitude and longitude variables")
+        lat_index = self.nc_helper.get_closest_value_index(base.variables[lat_key][:], lat)
+        lon_index = self.nc_helper.get_closest_value_index(base.variables[lon_key][:], lon)
+
+        n_pseudo = base_frac.shape[0]
+        if n_pseudo != len(fractional_cover):
+            log.exception("Could not apply land cover edit: the number of fractional values supplied did not match "
+                          "the number of types in the netCDF file.")
+            raise ServiceException("Could not apply land cover edit: the number of fractional values supplied did not "
+                                   "match the number of types in the netCDF file.")
+        for pseudo in np.arange(n_pseudo):
+            base_frac_array[pseudo, lat_index, lon_index] = fractional_cover[pseudo]
+        base_frac[:, :, :] = base_frac_array
         base.close()
 
     def copy_land_cover_base_map(self, base_file_name, run_directory):
