@@ -391,4 +391,4 @@ class TestController(TestCase):
 
     def _add_model_run_being_created(self, user):
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.update_model_run(user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)

@@ -35,7 +35,7 @@ class TestModelRunParametersController(TestController):
         user = self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, "test", 1)
+        model_run_service.update_model_run(user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
 
         response = self.app.get(
             url(controller='model_run', action='parameters'))
