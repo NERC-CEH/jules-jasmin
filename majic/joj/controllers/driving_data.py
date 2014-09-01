@@ -2,7 +2,9 @@
 # header
 """
 import logging
+from formencode.validators import Invalid
 from pylons.controllers.util import redirect
+from pylons.decorators import validate
 from sqlalchemy.orm.exc import NoResultFound
 from pylons import tmpl_context as c, url
 from formencode import htmlfill
@@ -22,6 +24,8 @@ from joj.services.general import ServiceException
 from joj.model import DrivingDataset
 from joj.services.land_cover_service import LandCoverService
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
+from joj.model.schemas.driving_dataset_edit import DrivingDatasetEdit
+from joj.model.non_database.datetime_period_validator import DatetimePeriodValidator
 
 log = logging.getLogger(__name__)
 
@@ -67,35 +71,49 @@ class DrivingDataController(BaseController):
         values = {}
         errors = {}
 
-        if id is None:
-            c.driving_data_set = DrivingDataset()
-            c.regions = []
-        else:
-            c.driving_data_set = self._dataset_service.get_driving_dataset_by_id(id)
-            c.regions = self._landcover_service.get_land_cover_regions(id)
-
-        values = c.driving_data_set.__dict__
-
-        c.masks = 0
-        for region in c.regions:
-            values['id_{}'.format(c.masks)] = region.id
-            values['name_{}'.format(c.masks)] = region.name
-            values['path_{}'.format(c.masks)] = region.mask_file
-            values['category_{}'.format(c.masks)] = region.category.name
-            c.masks += 1
-        values['mask_count'] = c.masks
-        jules_params = DrivingDatasetJulesParams()
-        jules_params.set_from(c.driving_data_set)
-
         c.namelist = {}
         all_parameters = self._model_run_service.get_parameters_for_default_code_version()
         for parameter in all_parameters:
             if parameter.namelist.name not in c.namelist:
                 c.namelist[parameter.namelist.name] = {}
             c.namelist[parameter.namelist.name][parameter.id] = parameter.name
-        jules_params.add_to_dict(values, c.namelist)
-        c.nvar = values['drive_nvars']
 
+        c.driving_dataset_id = id
+        if request.POST:
+            values = dict(request.params)
+
+            schema = DrivingDatasetEdit()
+            result = None
+            try:
+                result = schema.to_python(dict(request.params), c)
+            except Invalid, e:
+                errors.update(e.unpack_errors())
+
+            date_period_validator = DatetimePeriodValidator(errors)
+            date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
+
+            if len(errors) == 0:
+                driving_dataset_jules_params = DrivingDatasetJulesParams()
+                driving_dataset = driving_dataset_jules_params.create_driving_dataset_from_dict(values)
+                self._dataset_service.create_driving_dataset(driving_dataset)
+                redirect(url(controller="driving_data", acion="index"))
+            values["param_names"] = []
+        else:
+            if id is None:
+                driving_dataset = DrivingDataset()
+                c.regions = []
+
+            else:
+                driving_dataset = self._dataset_service.get_driving_dataset_by_id(id)
+                c.regions = self._landcover_service.get_land_cover_regions(id)
+
+            jules_params = DrivingDatasetJulesParams()
+            jules_params.set_from(driving_dataset, c.regions)
+
+            values = jules_params.create_values_dict(c.namelist)
+
+        c.masks = int(values['mask_count'])
+        c.nvar = int(values['drive_nvars'])
         c.param_names = values["param_names"]
         html = render('driving_data/edit.html')
 

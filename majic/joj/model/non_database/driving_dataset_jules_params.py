@@ -1,7 +1,7 @@
 """
 header
 """
-from joj.model import DrivingDatasetParameterValue
+from joj.model import DrivingDatasetParameterValue, DrivingDataset
 from joj.utils import f90_helper, constants
 
 
@@ -78,6 +78,9 @@ class DrivingDatasetJulesParams(object):
 
         self.values['soil_props_file'] = soil_props_file
 
+        self.regions = []
+        self.driving_dataset = None
+
         self._extra_parameters = extra_parameters if extra_parameters is not None else {}
 
         self._names_constant_dict = {
@@ -123,22 +126,23 @@ class DrivingDatasetJulesParams(object):
                 val = f90_helper.python_to_f90_str(value)
                 DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, val)
 
-    def set_from(self, driving_data_set):
+    def set_from(self, driving_dataset, regions):
         """
         Set values from a driving set with parameters in
-        :param driving_data_set: the driving data set
+        :param driving_dataset: the driving data set
+        :param regions: regions foe the driving dataset
         :return: nothing
         """
 
         for name, constant in self._names_constant_dict.iteritems():
-            val = driving_data_set.get_python_parameter_value(constant)
+            val = driving_dataset.get_python_parameter_value(constant)
             self.values[name] = val
 
         #values which can not be none
         if self.values['drive_nvars'] is None:
             self.values['drive_nvars'] = 0
 
-        for parameter_value in driving_data_set.parameter_values:
+        for parameter_value in driving_dataset.parameter_values:
             found = False
             for named_param in self._names_constant_dict.values():
                     if named_param[0] == parameter_value.parameter.namelist.name \
@@ -148,26 +152,30 @@ class DrivingDatasetJulesParams(object):
             if not found:
                 self._extra_parameters[parameter_value.parameter_id] = parameter_value.value
 
-    def add_to_dict(self, values_dict_to_add_to, namelists):
+        self.regions = regions
+        self.driving_dataset = driving_dataset
+
+    def create_values_dict(self, namelists):
         """
-        Add jules parameters to the values_dict_to_add_to dictionary
-        :param values_dict_to_add_to: the values_dict_to_add_to dictionary to add to
+        Create a jules parameters values dictionary
         :param namelists: the list of namelists with parameters
-        :return: nothing
+        :return: values dictionary
         """
+
+        values_dict = self.driving_dataset.__dict__
 
         for name in self._names_constant_dict.keys():
             if name in self.values:
                 value = self.values[name]
                 if type(value) is list:
                     for val, index in zip(value, range(len(value))):
-                        values_dict_to_add_to["{}_{}".format(name, str(index))] = val
+                        values_dict["{}_{}".format(name, str(index))] = val
                 else:
-                    values_dict_to_add_to[name] = value
+                    values_dict[name] = value
             else:
-                values_dict_to_add_to[name] = ''
+                values_dict[name] = ''
 
-        values_dict_to_add_to['parameters_nvar'] = len(self._extra_parameters)
+        values_dict['parameters_nvar'] = len(self._extra_parameters)
 
         params = []
         for param_id, val in self._extra_parameters.iteritems():
@@ -182,9 +190,30 @@ class DrivingDatasetJulesParams(object):
         params = sorted(params, key=lambda param: param[0])
         index = 0
         for name, param_id, val in params:
-            values_dict_to_add_to["param_id_{}".format(str(index))] = param_id
-            values_dict_to_add_to["param_value_{}".format(str(index))] = val
+            values_dict["param_id_{}".format(str(index))] = param_id
+            values_dict["param_value_{}".format(str(index))] = val
             index += 1
 
-        values_dict_to_add_to["param_names"] = [param[0] for param in params]
-        values_dict_to_add_to['params_count'] = len(params)
+        values_dict["param_names"] = [param[0] for param in params]
+        values_dict['params_count'] = len(params)
+
+        mask_count = 0
+        for region in self.regions:
+            values_dict['id_{}'.format(mask_count)] = region.id
+            values_dict['name_{}'.format(mask_count)] = region.name
+            values_dict['path_{}'.format(mask_count)] = region.mask_file
+            values_dict['category_{}'.format(mask_count)] = region.category.name
+            mask_count += 1
+        values_dict['mask_count'] = mask_count
+
+        return values_dict
+
+    def create_driving_dataset_from_dict(self, values):
+        """
+        Create a driving dataset object from a values dictionary
+        :param values: the values
+        :return: the driving dataset
+        """
+        driving_dataset = DrivingDataset()
+        driving_dataset.name = values["name"]
+        return driving_dataset

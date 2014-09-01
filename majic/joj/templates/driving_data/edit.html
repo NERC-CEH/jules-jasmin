@@ -5,10 +5,10 @@
 <xi:include href="../layout.html" />
 <head>
     <title>
-        <py:if test="c.driving_data_set.id is None">
+        <py:if test="c.driving_dataset_id is None">
             New
         </py:if>
-        <py:if test="c.driving_data_set.id is not None">
+        <py:if test="c.driving_dataset_id is not None">
         Edit
         </py:if>
         Driving Data Set</title>
@@ -17,10 +17,10 @@
     <script src="/js/driving_data/edit.js"></script>
 </head>
 <body id="admin">
-    <h1><py:if test="c.driving_data_set.id is None">
+    <h1><py:if test="c.driving_dataset_id is None">
             New
         </py:if>
-        <py:if test="c.driving_data_set.id is not None">
+        <py:if test="c.driving_dataset_id is not None">
         Edit
         </py:if> Driving Data</h1>
 

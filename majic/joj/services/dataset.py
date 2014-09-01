@@ -8,8 +8,7 @@ from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
 from joj.utils import constants
-
-__author__ = 'Phil Jenkins (Tessella)'
+from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 
 class DatasetService(DatabaseService):
@@ -221,3 +220,14 @@ class DatasetService(DatabaseService):
                 .filter(DrivingDataset.name == constants.USER_UPLOAD_DRIVING_DATASET_NAME)\
                 .one()
         return driving_dataset.id
+
+    def create_driving_dataset(self, driving_dataset):
+        """
+        Create a driving dataset in the database
+        :param driving_dataset: the drivingdata set to create
+        :return: nothing
+        """
+
+        with self.transaction_scope() as session:
+
+            session.add(driving_dataset)

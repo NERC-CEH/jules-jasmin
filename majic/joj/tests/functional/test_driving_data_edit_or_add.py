@@ -1,10 +1,11 @@
 """
 # header
 """
+import datetime
 from hamcrest import *
 from joj.tests import *
 from joj.utils import constants, utils
-from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory
+from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory, DrivingDataset, Session
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 
@@ -133,3 +134,77 @@ class TestDrivingDataEditOrAdd(TestController):
         assert_that(response.normal_body, contains_string(category.name))
         assert_that(response.normal_body, contains_string(region.name))
         assert_that(response.normal_body, contains_string(region.mask_file))
+
+    def create_valid_post_values(self):
+        self.new_driving_dataset = DrivingDataset()
+        self.new_driving_dataset.name = "new_driving_dataset"
+        self.new_driving_dataset.description = "description"
+        self.new_driving_dataset.geographic_region = "geographic_region"
+        self.new_driving_dataset.spatial_resolution = "spatial_resolution"
+        self.new_driving_dataset.temporal_resolution = "temporal_resolution"
+        self.new_driving_dataset.boundary_lat_north = 30
+        self.new_driving_dataset.boundary_lat_south = -30
+        self.new_driving_dataset.boundary_lon_east = 30
+        self.new_driving_dataset.boundary_lon_west = -30
+
+        self.new_driving_dataset.is_restricted_to_admins = True
+
+        jules_params = DrivingDatasetJulesParams(
+            data_start=str(datetime.datetime(2013, 1, 1, 0, 0, 0)),
+            data_end=str(datetime.datetime(2013, 2, 1, 0, 0, 0)))
+        jules_params.set_from(self.new_driving_dataset, [])
+        valid_params = jules_params.create_values_dict({})
+        return valid_params
+
+    def test_GIVEN_valid_data_WHEN_create_new_THEN_new_set_created(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        valid_params = self.create_valid_post_values()
+
+        response = self.app.post(
+            url=url(controller='driving_data', action='edit'),
+            params=valid_params,
+            expect_errors=True
+        )
+
+        with session_scope(Session) as session:
+            driving_dataset = session\
+                .query(DrivingDataset)\
+                .filter(DrivingDataset.name == self.new_driving_dataset.name)\
+                .one()
+
+        assert_that(response.status_code, is_(302), "redirect after successful post")
+        assert_that(driving_dataset.name, is_(self.new_driving_dataset.name), "name")
+
+    def test_GIVEN_invalid_data_WHEN_create_new_THEN_error(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+        invalid_values = \
+            [
+                ["name", "", "enter a value"],
+                ["description", "", "enter a value"],
+                ["geographic_region", "", "enter a value"],
+                ["spatial_resolution", "", "enter a value"],
+                ["temporal_resolution", "", "enter a value"],
+                ["boundary_lat_north", "nan", "enter a number"],
+                ["boundary_lat_south", "1000", "enter a number that is 90 or smaller"],
+                ["boundary_lon_east", "-800", "enter a number that is -180 or greater"],
+                ["boundary_lon_west", "", "enter a value"],
+                ["driving_data_start", "", "Please enter a date"],
+                ["driving_data_end", "n.a.t.", "Enter date as YYYY-MM-DD HH:MM"]
+            ]
+
+        for invalid_key, invalid_value, invalid_error in invalid_values:
+
+            valid_params = self.create_valid_post_values()
+            valid_params[invalid_key] = invalid_value
+
+            response = self.app.post(
+                url=url(controller='driving_data', action='edit'),
+                params=valid_params,
+                expect_errors=True
+            )
+
+            assert_that(response.status_code, is_(200), "no redirect after error for key '%s'" % invalid_key)
+            assert_that(response.normal_body, contains_string(invalid_error), "In '%s'" % invalid_key)

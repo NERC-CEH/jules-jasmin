@@ -15,11 +15,11 @@ class DrivingDataset(Base):
     __tablename__ = 'driving_datasets'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(constants.DB_LONG_STRING_SIZE))
+    name = Column(String(constants.DB_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
-    geographic_region = Column(String(constants.DB_LONG_STRING_SIZE))
-    spatial_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
-    temporal_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
+    geographic_region = Column(String(constants.DB_STRING_SIZE))
+    spatial_resolution = Column(String(constants.DB_STRING_SIZE))
+    temporal_resolution = Column(String(constants.DB_STRING_SIZE))
     boundary_lat_north = Column(Float)
     boundary_lat_south = Column(Float)
     boundary_lon_east = Column(Float)
