@@ -14,7 +14,6 @@ import re
 from job_runner.utils.constants import *
 from job_runner.model.log_file_parser import LogFileParser
 from job_runner.model.bjobs_parser import BjobsParser
-from job_runner.utils.constants import JULES_PARAM_POINTS_FILE
 from job_runner.utils.land_cover_editor import LandCoverEditor
 from job_runner.services.service_exception import ServiceException
 
@@ -135,7 +134,7 @@ class JobService(object):
         :return: job id
         :exception ServiceError: if there is a problem submitting the job
         """
-        
+
         run_directory = self.get_run_dir(model_run_json[JSON_MODEL_RUN_ID])
 
         #create run directory
@@ -347,6 +346,7 @@ class JobService(object):
         f.close()
 
     def _edit_land_cover_file(self, land_cover_json_dict, run_directory):
+
         base_file_name = land_cover_json_dict[JSON_LAND_COVER_BASE_FILE]
         base_file_frac_key = land_cover_json_dict[JSON_LAND_COVER_BASE_KEY]
 
@@ -354,11 +354,23 @@ class JobService(object):
         base_file_path = self.land_cover_editor.copy_land_cover_base_map(base_file_name, run_directory)
 
         land_cover_actions = land_cover_json_dict[JSON_LAND_COVER_ACTIONS]
-        # Sort by order
-        sorted_actions = sorted(land_cover_actions, key=lambda action: action[JSON_LAND_COVER_ORDER])
-        for land_cover_action in sorted_actions:
-            mask_file = land_cover_action[JSON_LAND_COVER_MASK_FILE]
-            value = land_cover_action[JSON_LAND_COVER_VALUE]
-            mask_file_path = os.path.join(run_directory, mask_file)
-            self.land_cover_editor.apply_land_cover_action(base_file_path, mask_file_path,
-                                                           value, key=base_file_frac_key)
+        land_cover_point_edit = land_cover_json_dict[JSON_LAND_COVER_POINT_EDIT]
+
+        if len(land_cover_actions) > 0:
+            # We need to edit the file using land cover regions
+            # Sort by order
+            sorted_actions = sorted(land_cover_actions, key=lambda action: action[JSON_LAND_COVER_ORDER])
+            for land_cover_action in sorted_actions:
+                mask_file = land_cover_action[JSON_LAND_COVER_MASK_FILE]
+                value = land_cover_action[JSON_LAND_COVER_VALUE]
+                mask_file_path = os.path.join(run_directory, mask_file)
+                self.land_cover_editor.apply_land_cover_action(base_file_path, mask_file_path,
+                                                               value, key=base_file_frac_key)
+        elif land_cover_point_edit:
+            lat = land_cover_point_edit[JSON_LAND_COVER_LAT]
+            lon = land_cover_point_edit[JSON_LAND_COVER_LON]
+            values = land_cover_point_edit[JSON_LAND_COVER_FRACTIONAL_VALS]
+
+            # We just set a single value
+            self.land_cover_editor.apply_single_point_fractional_cover(base_file_path, values,
+                                                                       lat, lon, base_file_frac_key)

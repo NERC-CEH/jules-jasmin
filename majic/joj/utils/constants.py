@@ -78,6 +78,10 @@ JSON_LAND_COVER_BASE_FILE = 'land_cover_base_file'
 JSON_LAND_COVER_BASE_KEY = 'land_cover_base_key'
 JSON_LAND_COVER_VALUE = 'land_cover_value'
 JSON_LAND_COVER_ORDER = 'land_cover_order'
+JSON_LAND_COVER_POINT_EDIT = "land_cover_point_edit"
+JSON_LAND_COVER_FRACTIONAL_VALS = "land_cover_fractional_vals"
+JSON_LAND_COVER_LAT = "land_cover_lat"
+JSON_LAND_COVER_LON = "land_cover_lon"
 
 # Constants for reading netCDF files
 NETCDF_LATITUDE = ['Latitude', 'lat']

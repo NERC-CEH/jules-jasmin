@@ -187,6 +187,10 @@ class TestJobRunnerClient(TestController):
         expected_parameter_value2 = "'frac'"
         parameter2.parameter_values = [ParameterValue(value=expected_parameter_value2)]
 
+        parameter3 = Parameter(name='latlon_region')
+        expected_parameter_value3 = ".true."
+        parameter3.parameter_values = [ParameterValue(value=expected_parameter_value3)]
+
         namelist = Namelist(name='JULES_FRAC')
         namelist_file = NamelistFile(filename='filename')
         expected_index = 3
@@ -195,12 +199,20 @@ class TestJobRunnerClient(TestController):
         namelist.namelist_file = namelist_file
         namelist.index_in_file = expected_index
 
+        namelist2 = Namelist(name='JULES_MODEL_GRID')
+        namelist_file = NamelistFile(filename='filename')
+        expected_index = 3
+
+        namelist2.parameters = [parameter3]
+        namelist2.namelist_file = namelist_file
+        namelist2.index_in_file = expected_index
+
         model_run = ModelRun()
         model_run.id = 101
         code_version = CodeVersion(name='Jules v3.4.1')
 
         model_run.code_version = code_version
-        code_version.parameters = [parameter, parameter2]
+        code_version.parameters = [parameter, parameter2, parameter3]
 
         user = User()
         user.id = 1

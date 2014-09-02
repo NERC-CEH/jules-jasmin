@@ -106,7 +106,8 @@ class TestJobService(TestController):
                                                       JSON_LAND_COVER_ORDER: '2'},
                                                      {JSON_LAND_COVER_MASK_FILE: 'data/masks/mask2.nc',
                                                       JSON_LAND_COVER_VALUE: '5',
-                                                      JSON_LAND_COVER_ORDER: '1'}]}
+                                                      JSON_LAND_COVER_ORDER: '1'}],
+                           JSON_LAND_COVER_POINT_EDIT: {}}
         model_run_json = self.model_run
         model_run_json[JSON_LAND_COVER] = land_cover_dict
 
@@ -135,3 +136,29 @@ class TestJobService(TestController):
         assert_that(called_base, is_(expected_copied_base_path))
         assert_that(called_mask, is_(self.run_dir + '/data/masks/mask1.nc'))
         assert_that(called_value, is_('9'))
+
+    def test_GIVEN_single_point_land_cover_edit_WHEN_submit_job_THEN_land_cover_editor_called_correctly(self):
+        land_cover_dict = {JSON_LAND_COVER_BASE_FILE: 'data/ancils/frac.nc',
+                           JSON_LAND_COVER_BASE_KEY: 'frac',
+                           JSON_LAND_COVER_ACTIONS: [],
+                           JSON_LAND_COVER_POINT_EDIT: {JSON_LAND_COVER_LAT: 51.75,
+                                                        JSON_LAND_COVER_LON: -0.25,
+                                                        JSON_LAND_COVER_FRACTIONAL_VALS: 8 * [0.0] + [1.0]}}
+        model_run_json = self.model_run
+        model_run_json[JSON_LAND_COVER] = land_cover_dict
+
+        expected_copied_base_path = self.run_dir + '/user_edited_land_cover_fractional_file.nc'
+
+        land_cover_editor = LandCoverEditor()
+        land_cover_editor.copy_land_cover_base_map = MagicMock(return_value=expected_copied_base_path)
+        land_cover_editor.apply_land_cover_action = MagicMock()
+        land_cover_editor.apply_single_point_fractional_cover = MagicMock()
+
+        job_service = JobService(land_cover_editor=land_cover_editor)
+        job_service.submit(model_run_json)
+
+        c_path, c_vals, c_lat, c_lon, c_key = land_cover_editor.apply_single_point_fractional_cover.call_args_list[0][0]
+        assert_that(c_path, is_(expected_copied_base_path))
+        assert_that(c_lat, is_(51.75))
+        assert_that(c_lon, is_(-0.25))
+        assert_that(c_vals, is_(8 * [0.0] + [1.0]))
