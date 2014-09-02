@@ -31,6 +31,8 @@ def f90_str_to_python(value, is_list=False):
     :param is_list: Indicates whether the value is a list
     :return: Corresponding Python object
     """
+    if value is None:
+        return None
     if type(value) == unicode:
         value = str(value)
     if is_list:

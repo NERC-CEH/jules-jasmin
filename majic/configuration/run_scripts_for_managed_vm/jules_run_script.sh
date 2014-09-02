@@ -22,7 +22,7 @@ rm hosts.txt
 export myhosts=($LSB_HOSTS)
 for hostName in ${myhosts[*]};do echo $hostName >> hosts.txt ; done
 
-blaunch -u hosts.txt $JOB_RUNNER_DIR/run_scripts/post_process.sh >> out.log 2>> err.log
+blaunch -u hosts.txt ./post_process.sh >> out.log 2>> err.log
 
 rm hosts.txt
 

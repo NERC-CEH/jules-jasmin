@@ -5,7 +5,7 @@ import urllib
 import datetime
 
 from decorator import decorator
-from hamcrest import assert_that, is_
+from hamcrest import assert_that, is_, has_entries
 from pylons import config
 
 from joj.services.dap_client.dap_client_factory import DapClientFactory
@@ -206,3 +206,31 @@ class TestLandCoverDapClient(BaseDapClientTest):
         expected_cover = 9 * [-9999.99]
         returned_cover = self.dap_client.get_fractional_cover(lat, lon)
         assert_that(returned_cover, is_(expected_cover))
+
+
+# noinspection PyArgumentList
+class TestSoilPropsDapClient(BaseDapClientTest):
+
+    @skip_if_thredds_down
+    def setUp(self):
+        test_dataset = "/dodsC/model_runs/data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
+        url = config['thredds.server_url'] + test_dataset
+        self.dap_client = self.dap_client_factory.get_soil_properties_dap_client(url)
+
+    def test_GIVEN_location_WHEN_get_soil_properties_THEN_soil_properties_returned(self):
+        lat, lon = 51.75, -0.25  # 215, 359
+        expected_soil_props = {
+            'albsoil': 0.1389661282300949,
+            'bexp': 8.749199867248535,
+            'csoil': 12.100000381469727,
+            'hcap': 1105759.25,
+            'hcon': 0.21882377564907074,
+            'satcon': 0.0035789860412478447,
+            'sathh': 0.1827763468027115,
+            'vcrit': 0.3086773455142975,
+            'vsat': 0.43060800433158875,
+            'vwilt': 0.1995505690574646
+        }
+        returned_soil_props = self.dap_client.get_soil_properties(lat, lon)
+        assert_that(len(returned_soil_props), is_(10))
+        assert_that(returned_soil_props, has_entries(expected_soil_props))

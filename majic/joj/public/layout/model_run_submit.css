@@ -4,19 +4,21 @@
 
 .summary:hover {
     cursor:pointer;
+    color:#08C;
 }
 
 .summary:hover .page-group {
    border-color:#08c;
 }
 
-.summary:hover i {
+.summary:hover i, .summary:hover p, .summary:hover h3, .summary:hover ul {
     color:#08C;
 }
 
 .page-group {
     border-left: 5px solid #DDD;
-    padding-left: 15px
+    padding-left: 15px;
+    color: black;
 }
 
 div.icon {

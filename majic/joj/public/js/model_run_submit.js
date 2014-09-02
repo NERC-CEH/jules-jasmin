@@ -12,10 +12,4 @@ $(document).ready(function() {
             var height = $(this).parent().height();
             edit_div.height(height);
         });
-
-    // Set the click handler for the rows
-    $('.summary').click(function() {
-        var url = $(this).find('a').attr('href');
-        window.location = (url);
-    });
 });

@@ -7,7 +7,7 @@ from joj.services.dap_client.base_dap_client import BaseDapClient
 
 class LandCoverDapClient(BaseDapClient):
     """
-    Secialised DAP Client class for accessing land cover data via THREDDS
+    Specialised DAP Client class for accessing land cover data via THREDDS
     """
 
     def __init__(self, url, key):

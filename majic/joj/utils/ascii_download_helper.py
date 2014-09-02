@@ -83,7 +83,7 @@ class AsciiDownloadHelper(object):
                                     description=description,
                                     period=period,
                                     vars=vars,
-                                    interps=interps)
+                                    interps=interps).replace('\n', '\r\n')
         yield str(header)
         line_date = actual_start
         while line_date <= actual_end:
@@ -192,7 +192,7 @@ class AsciiDownloadHelper(object):
         for dap_client in self._dap_clients:
             data = dap_client.get_data_at(lat, lon, date)
             data_values.append((data))
-        return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\n"
+        return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\r\n"
 
     def _create_dap_clients_if_missing(self, driving_data):
         if self._dap_clients is None or len(self._dap_clients) == 0:

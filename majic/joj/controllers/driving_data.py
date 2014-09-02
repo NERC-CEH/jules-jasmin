@@ -83,7 +83,7 @@ class DrivingDataController(BaseController):
             values['path_{}'.format(c.masks)] = region.mask_file
             values['category_{}'.format(c.masks)] = region.category.name
             c.masks += 1
-
+        values['mask_count'] = c.masks
         jules_params = DrivingDatasetJulesParams()
         jules_params.set_from(c.driving_data_set)
 

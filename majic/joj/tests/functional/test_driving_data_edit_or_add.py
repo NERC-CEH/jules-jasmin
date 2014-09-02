@@ -13,7 +13,7 @@ class TestDrivingDataEditOrAdd(TestController):
     def setUp(self):
         super(TestDrivingDataEditOrAdd, self).setUp()
         self.clean_database()
-        self.extra_parameter = "extra_parameter"
+        self.extra_parameter = "an extra parameter value"
         self.driving_dataset_jules_params = DrivingDatasetJulesParams(
             dataperiod=1800,
             drive_file="jules_param_drive_file",
@@ -97,6 +97,8 @@ class TestDrivingDataEditOrAdd(TestController):
         assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['soil_props_file']))
 
         assert_that(response.normal_body, contains_string(self.extra_parameter))
+
+        assert_that(response.normal_body, contains_string('Restricted to Admins'))
 
     def test_GIVEN_no_data_set_WHEN_list_THEN_returns_empty_data_set(self):
 

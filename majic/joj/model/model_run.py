@@ -88,7 +88,8 @@ class ModelRun(Base):
         :param is_list: Indicates whether the value is a list, overrides constant
         :return parameter value as python or None
         """
-        return utils.find_parameter_values(self.parameter_values, parameter_namelist_name, is_list)
+        return utils.find_first_parameter_value_in_param_vals_list(
+            self.parameter_values, parameter_namelist_name, is_list)
 
     def __repr__(self):
         """ String representation of the model run """

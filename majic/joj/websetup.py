@@ -14,7 +14,7 @@ from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, Mode
     LandCoverRegion
 from joj.model.meta import Base, Session
 from joj.utils import constants
-from model.system_alert_email import SystemAlertEmail
+from joj.model.system_alert_email import SystemAlertEmail
 from websetup_jules_output_variables import JulesOutputVariableParser
 from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
@@ -431,6 +431,7 @@ def setup_app(command, conf, vars):
             driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
         driving_ds_1.view_order_index = 100
         driving_ds_1.usage_order_index = 2
+        driving_ds_1.is_restricted_to_admins = False
 
         cat1 = LandCoverRegionCategory()
         cat1.name = "Test Regions"
@@ -477,6 +478,7 @@ def setup_app(command, conf, vars):
         driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
         driving_ds_2.view_order_index = 200
         driving_ds_2.usage_order_index = 1
+        driving_ds_2.is_restricted_to_admins = True
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -492,6 +494,7 @@ def setup_app(command, conf, vars):
         driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
         driving_ds_3.view_order_index = 300
         driving_ds_3.usage_order_index = 100
+        driving_ds_3.is_restricted_to_admins = True
 
         file_template = 'data/WATCH_2D/driving/{}.ncml'
 
@@ -639,6 +642,7 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
             [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
 
+            # Default soil properties, hopefully overridden in the background when the user sets the land cover.
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
              "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],

@@ -22,7 +22,7 @@ class TestModelRunSummaryController(TestWithFullModelRun):
         assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='create')), "url")
 
     def test_GIVEN_select_previous_WHEN_post_THEN_redirect_to_output_page(self):
-        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
         response = self.app.post(
@@ -32,13 +32,13 @@ class TestModelRunSummaryController(TestWithFullModelRun):
             }
         )
 
-        assert_that(response.status_code, is_(302), "Respose is redirect")
+        assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='output')), "url")
 
     def test_GIVEN_select_previous_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page(self):
         self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
-        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
         response = self.app.post(
@@ -53,8 +53,9 @@ class TestModelRunSummaryController(TestWithFullModelRun):
                     is_(url(controller='model_run', action='index')), "url")
 
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
-        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
+        self.model_run_service.save_new_parameters([[constants.JULES_PARAM_LATLON_REGION, True]], [], self.user)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
@@ -80,7 +81,7 @@ class TestModelRunSummaryController(TestWithFullModelRun):
 
     def test_GIVEN_select_submit_and_user_over_quota_WHEN_post_THEN_redirect_to_index_page_job_not_submitted(self):
         big_model_run = self.create_run_model(storage_in_mb=self.user.storage_quota_in_gb * 1024 + 1, name="big_run", user=self.user)
-        self.model_run_service.update_model_run(self.user, "test", 1)
+        self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
 
         response = self.app.post(

@@ -15,13 +15,13 @@ class TestJobRunnerClient(TestController):
 
         job_runner_client = JobRunnerClient(config)
 
-        parameter = Parameter(name='param1')
-        expected_parameter_value = '12'
+        parameter = Parameter(name=constants.JULES_PARAM_POINTS_FILE[1])
+        expected_parameter_value = '51 0.5'
         expected_index = 3
         #There is only one parameter value per run:
         parameter.parameter_values = [ParameterValue(value=expected_parameter_value)]
 
-        namelist = Namelist(name='NAME_LIST')
+        namelist = Namelist(name=constants.JULES_PARAM_POINTS_FILE[0])
         namelist_file = NamelistFile(filename='filename')
 
         namelist.parameters = [parameter]
@@ -30,6 +30,7 @@ class TestJobRunnerClient(TestController):
 
         model_run = ModelRun()
         model_run.id = 101
+        model_run.land_cover_frac = "1 2 3 4 5 6 7 8 9"
         code_version = CodeVersion(name='Jules v3.4.1')
 
         model_run.code_version = code_version
@@ -66,10 +67,14 @@ class TestJobRunnerClient(TestController):
         nml_output_profile = Namelist(name=constants.JULES_NML_OUTPUT_PROFILE)
         nml_output.namelist_file = nml_output_profile.namelist_file = NamelistFile(filename="output.nml")
 
+        nml_model_grid = Namelist(name=constants.JULES_PARAM_LATLON_REGION[0])
+        nml_model_grid.namelist_file = NamelistFile(filename="model_grid.nml")
+
         # Set the parameters here:
         param_nprofiles = Parameter(name=constants.JULES_PARAM_OUTPUT_NPROFILES[1])
         param_profile_name = Parameter(name=constants.JULES_PARAM_OUTPUT_PROFILE_NAME[1])
         param_var = Parameter(name=constants.JULES_PARAM_OUTPUT_VAR[1])
+        param_latlon_region = Parameter(name=constants.JULES_PARAM_LATLON_REGION[1])
 
         # Set the parameter values
         param_nprofiles.parameter_values = [ParameterValue(value=2)]
@@ -78,10 +83,12 @@ class TestJobRunnerClient(TestController):
 
         param_var.parameter_values = [ParameterValue(value='"emis_gb", "ftl_gb"', group_id=0),
                                       ParameterValue(value='"snow_mass_gb", "tstar_gb"', group_id=1)]
+        param_latlon_region.parameter_values = [ParameterValue(value=".true.")]
 
         # Assign the parameters to namelists
         nml_output.parameters = [param_nprofiles]
         nml_output_profile.parameters = [param_profile_name, param_var]
+        nml_model_grid.parameters = [param_latlon_region]
 
         model_run = ModelRun()
         model_run.id = 101
@@ -94,7 +101,7 @@ class TestJobRunnerClient(TestController):
         model_run.user = user
 
         model_run.code_version = code_version
-        code_version.parameters = [param_profile_name, param_var, param_nprofiles]
+        code_version.parameters = [param_profile_name, param_var, param_nprofiles, param_latlon_region]
 
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, [])
 
@@ -146,6 +153,14 @@ class TestJobRunnerClient(TestController):
         namelist = Namelist(name='NAME_LIST')
         namelist_file = NamelistFile(filename='filename')
 
+        # Need this to run
+        parameter2 = Parameter(name=constants.JULES_PARAM_LATLON_REGION[1])
+        parameter2.parameter_values = [ParameterValue(value='.true.')]
+        namelist2 = Namelist(name=constants.JULES_PARAM_LATLON_REGION[0])
+        namelist_file = NamelistFile(filename='filename')
+        namelist2.parameters = [parameter2]
+        namelist2.namelist_file = namelist_file
+
         namelist.parameters = [parameter]
         namelist.namelist_file = namelist_file
 
@@ -160,7 +175,7 @@ class TestJobRunnerClient(TestController):
         model_run.user = user
 
         model_run.code_version = code_version
-        code_version.parameters = [parameter]
+        code_version.parameters = [parameter, parameter2]
 
         result = job_runner_client.convert_model_to_dictionary(model_run, code_version.parameters, [])
 
@@ -187,6 +202,10 @@ class TestJobRunnerClient(TestController):
         expected_parameter_value2 = "'frac'"
         parameter2.parameter_values = [ParameterValue(value=expected_parameter_value2)]
 
+        parameter3 = Parameter(name='latlon_region')
+        expected_parameter_value3 = ".true."
+        parameter3.parameter_values = [ParameterValue(value=expected_parameter_value3)]
+
         namelist = Namelist(name='JULES_FRAC')
         namelist_file = NamelistFile(filename='filename')
         expected_index = 3
@@ -195,12 +214,20 @@ class TestJobRunnerClient(TestController):
         namelist.namelist_file = namelist_file
         namelist.index_in_file = expected_index
 
+        namelist2 = Namelist(name='JULES_MODEL_GRID')
+        namelist_file = NamelistFile(filename='filename')
+        expected_index = 3
+
+        namelist2.parameters = [parameter3]
+        namelist2.namelist_file = namelist_file
+        namelist2.index_in_file = expected_index
+
         model_run = ModelRun()
         model_run.id = 101
         code_version = CodeVersion(name='Jules v3.4.1')
 
         model_run.code_version = code_version
-        code_version.parameters = [parameter, parameter2]
+        code_version.parameters = [parameter, parameter2, parameter3]
 
         user = User()
         user.id = 1

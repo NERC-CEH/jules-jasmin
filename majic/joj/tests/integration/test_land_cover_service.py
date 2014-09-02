@@ -27,7 +27,8 @@ class MockLandCoverDapClient(object):
 
         if self.url == config['thredds.server_url'] + "dodsC/model_runs/data/driving1/frac.nc" and self.key == 'frac':
             self.return_values[(0, 0)] = [0.02, 0.11, 0.02, 0.05, 0.35, 0.19, 0.22, 0.04, 0.0]
-        elif self.url == config['thredds.server_url'] + "dodsC/model_runs/data/driving2/frac.nc" and self.key == 'frac2':
+        elif self.url == config[
+            'thredds.server_url'] + "dodsC/model_runs/data/driving2/frac.nc" and self.key == 'frac2':
             self.return_values[(70, 0)] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
             self.return_values[(80, 120)] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]
         else:
@@ -42,10 +43,39 @@ class MockLandCoverDapClient(object):
         return self.return_values[(lat, lon)]
 
 
+class MockSoilPropertiesDapClient(object):
+    """
+    Mock Dap client for soil properties
+    """
+
+    def __init__(self, url):
+        self.expected_url = config['thredds.server_url'] + "dodsC/model_runs/data/WATCH_2D/ancils/" \
+                                                           "soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
+        self.expected_lat = 51
+        self.expected_lon = 0
+
+        if not url == self.expected_url:
+            raise DapClientException("URL not found")
+
+    def get_soil_properties(self, lat, lon):
+        """
+        Mock get soil properties method
+        :param lat:
+        :param lon:
+        :return:
+        """
+        if lat == self.expected_lat and lon == self.expected_lon:
+            return {'bexp': 0.9, 'sathh': 0.0, 'satcon': 0.0, 'vsat': 50.0, 'vcrit': 275.0, 'vwilt': 278.0,
+                    'hcap': 10.0, 'hcon': 0.0, 'albsoil': 0.5}
+        else:
+            return 9 * [10]
+
+
 class TestLandCoverService(TestWithFullModelRun):
     def setUp(self):
         dap_client_factory = DapClientFactory()
         dap_client_factory.get_land_cover_dap_client = self._mock_get_land_cover_dap_client
+        dap_client_factory.get_soil_properties_dap_client = self._mock_get_soil_properties_dap_client
         self.land_cover_service = LandCoverService(dap_client_factory=dap_client_factory)
         self.model_run_service = ModelRunService()
         self.dataset_service = DatasetService()
@@ -56,6 +86,10 @@ class TestLandCoverService(TestWithFullModelRun):
     @staticmethod
     def _mock_get_land_cover_dap_client(url, key):
         return MockLandCoverDapClient(url, key)
+
+    @staticmethod
+    def _mock_get_soil_properties_dap_client(url):
+        return MockSoilPropertiesDapClient(url)
 
     def test_GIVEN_land_cover_regions_exist_WHEN_get_land_cover_region_by_id_THEN_land_cover_region_returned(self):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
@@ -288,6 +322,47 @@ class TestLandCoverService(TestWithFullModelRun):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         with self.assertRaises(ServiceException):
             self.land_cover_service.get_default_fractional_cover(model_run)
+
+    def test_GIVEN_user_uploaded_driving_data_WHEN_set_default_soil_properties_THEN_soil_cover_set(self):
+        self.clean_database()
+        self.user = self.login()
+        self.create_model_run_with_user_uploaded_driving_data()
+
+        model_run = self.set_model_run_latlon(self.user, 51, 0)
+
+        self.land_cover_service.save_default_soil_properties(model_run)
+
+        #self.land_cover_service.dap_client_factory.get_soil_properties_dap_client = _mock_get_soil_props_client
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
+        var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)
+        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_USE_FILE, is_list=True)
+        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+
+        assert_that(nvars, is_(9))
+        assert_that(var, is_(['b', 'sathh', 'satcon', 'sm_sat', 'sm_crit', 'sm_wilt', 'hcap', 'hcon', 'albsoil']))
+        assert_that(use_file, is_(9 * [False]))
+        assert_that(const_val, is_([0.9, 0.0, 0.0, 50.0, 275.0, 278.0, 10.0, 0.0, 0.5]))
+
+    def test_GIVEN_no_appropriate_driving_data_WHEN_set_default_soil_properties_THEN_values_not_set(self):
+        self.clean_database()
+        self.user = self.login()
+        self.create_model_run_with_user_uploaded_driving_data()
+
+        model_run = self.set_model_run_latlon(self.user, 90, 0)
+
+        self.land_cover_service.save_default_soil_properties(model_run)
+
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
+        var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR)
+        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_USE_FILE, is_list=True)
+        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+
+        assert_that(nvars, is_(None))
+        assert_that(var, is_(None))
+        assert_that(use_file, is_(None))
+        assert_that(const_val, is_(None))
 
     def set_model_run_latlon(self, user, lat, lon):
         params_to_save = [[constants.JULES_PARAM_POINTS_FILE, [lat, lon]]]
