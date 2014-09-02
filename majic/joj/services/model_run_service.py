@@ -608,3 +608,17 @@ class ModelRunService(DatabaseService):
             session.delete(model_run)
 
         return model_run_name
+
+    def get_parameters_for_default_code_version(self):
+        """
+        get parameters for the default_code_version
+        :return: a list of parameters
+        """
+        with self.readonly_scope() as session:
+            code_version = session.query(CodeVersion) \
+                .filter(CodeVersion.is_default == True) \
+                .one()
+        return session.query(Parameter) \
+            .options(subqueryload(Parameter.namelist).subqueryload(Namelist.namelist_file)) \
+            .filter(Parameter.code_versions.contains(code_version)) \
+            .all()

@@ -25,7 +25,7 @@ FORGOTTEN_PASSWORD_UUID_VALID_TIME = 24
 PASSWORD_MINIMUM_LENGTH = 10
 
 # The default science configuration to use
-DEFAULT_SCIENCE_CONFIGURATION = 1
+DEFAULT_SCIENCE_CONFIGURATION = 2
 
 # Model Run status descriptions *** If you update these update the same ones in job runner****
 MODEL_RUN_STATUS_CREATED = 'Created'
@@ -128,6 +128,7 @@ JULES_MONTHLY_PERIOD = -1
 JULES_DAILY_PERIOD = 24 * 60 * 60
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
+# 3 tuple, name list name, parameter name, if present True/false is this a list
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_USE_SUBGRID = [JULES_NML_MODEL_GRID, "use_subgrid"]
 JULES_PARAM_LATLON_REGION = [JULES_NML_MODEL_GRID, "latlon_region"]
@@ -188,10 +189,10 @@ JULES_PARAM_DRIVE_DATA_END = [JULES_NML_DRIVE, "data_end"]
 JULES_PARAM_DRIVE_DATA_PERIOD = [JULES_NML_DRIVE, "data_period"]
 JULES_PARAM_DRIVE_FILE = [JULES_NML_DRIVE, "file"]
 JULES_PARAM_DRIVE_NVARS = [JULES_NML_DRIVE, "nvars"]
-JULES_PARAM_DRIVE_VAR = [JULES_NML_DRIVE, "var"]
-JULES_PARAM_DRIVE_VAR_NAME = [JULES_NML_DRIVE, "var_name"]
-JULES_PARAM_DRIVE_TPL_NAME = [JULES_NML_DRIVE, "tpl_name"]
-JULES_PARAM_DRIVE_INTERP = [JULES_NML_DRIVE, "interp"]
+JULES_PARAM_DRIVE_VAR = [JULES_NML_DRIVE, "var", True]
+JULES_PARAM_DRIVE_VAR_NAME = [JULES_NML_DRIVE, "var_name", True]
+JULES_PARAM_DRIVE_TPL_NAME = [JULES_NML_DRIVE, "tpl_name", True]
+JULES_PARAM_DRIVE_INTERP = [JULES_NML_DRIVE, "interp", True]
 JULES_PARAM_DRIVE_Z1_UV_IN = [JULES_NML_DRIVE, "z1_uv_in"]
 JULES_PARAM_DRIVE_Z1_TQ_IN = [JULES_NML_DRIVE, "z1_tq_in"]
 

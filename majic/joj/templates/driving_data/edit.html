@@ -14,6 +14,7 @@
         Driving Data Set</title>
     <link rel="stylesheet" type="text/css" href="../../layout/joj.css"/>
     <link rel="stylesheet" type="text/css" href="../../layout/model_run_extents.css"/>
+    <script src="/js/driving_data/edit.js"></script>
 </head>
 <body id="admin">
     <h1><py:if test="c.driving_data_set.id is None">
@@ -87,7 +88,7 @@
                         </div>
                         <div class="span7">
                             <div class="" >
-                                ${h.html_tags.text('boundary_lat_north')}
+                                ${h.html_tags.text('boundary_lat_north', placeholder="Northern latitude")}
                             </div>
                         </div>
                     </div>
@@ -97,7 +98,7 @@
                         </div>
                         <div class="span7">
                             <div class="" >
-                                ${h.html_tags.text('boundary_lat_south')}
+                                ${h.html_tags.text('boundary_lat_south', placeholder="Southern latitude")}
                             </div>
                         </div>
                     </div>
@@ -106,7 +107,7 @@
                             <p>Western Bounding Longitude <small>(&deg;E)</small></p>
                         </div>
                         <div class="span7">
-                            ${h.html_tags.text('boundary_lon_west')}
+                            ${h.html_tags.text('boundary_lon_west', placeholder="Western longitude")}
                         </div>
                     </div>
                     <div class="controls-row">
@@ -114,7 +115,7 @@
                             <p>Eastern Bounding Longitude <small>(&deg;E)</small></p>
                         </div>
                         <div class="span7">
-                            ${h.html_tags.text('boundary_lon_east')}
+                            ${h.html_tags.text('boundary_lon_east', placeholder="Eastern longitude")}
                         </div>
                     </div>
                 </fieldset>
@@ -141,9 +142,7 @@
                             <p>Start Date and Time</p>
                         </div>
                         <div class="span7">
-                            <div class="" >
-                                ${h.html_tags.text('time_start', placeholder="YYYY-MM-DD HH:MM")}
-                            </div>
+                                ${h.html_tags.text('driving_data_start', placeholder="YYYY-MM-DD HH:MM")}
                         </div>
                     </div>
                     <div class="controls-row">
@@ -152,7 +151,7 @@
                         </div>
                         <div class="span7">
                             <div class="" >
-                                ${h.html_tags.text('time_end', placeholder="YYYY-MM-DD HH:MM")}
+                                ${h.html_tags.text('driving_data_end', placeholder="YYYY-MM-DD HH:MM")}
                             </div>
                         </div>
                     </div>
@@ -184,6 +183,20 @@
             </div>
         </div>
 
+        <div class="control-group">
+            <label for="view" class="control-label">
+                Restricted to Admins
+                <i class="fa fa-info-circle" data-toggle="tooltip" title="Restricted to Admins" data-trigger="click | hover"
+                     data-content="If ticked this driving dataset is viewable only by admins. It is advised that you
+                     test a new driving dataset before unticking this box."></i>
+            </label>
+            <div class="controls">
+               ${h.html_tags.checkbox('is_restricted_to_admins', checked=True)}
+            </div>
+        </div>
+
+
+
 
         <h2>Masks</h2>
 
@@ -195,15 +208,14 @@
                 <p class="label-explain">Categories, locations and names of masks</p>
             </label>
 
-
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
+                <button type="button" class="btn control-group" value="masks" id="add_mask">
                     <i class="icon-plus"></i>
                     Add Mask
                 </button>
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    <div class="controls-row" id="mask_header">
                         <div class="span3">
                             <h5>Category</h5>
                         </div>
@@ -214,9 +226,10 @@
                             <h5>Path</h5>
                         </div>
                     </div>
+                    ${h.html_tags.hidden('mask_count')}
                     <div py:for="masknum in range(c.masks)" class="controls-row">
                         <div class="span3">
-                            ${h.html_tags.hidden('id_{}'.format(masknum), placeholder="Category")}
+                            ${h.html_tags.hidden('id_{}'.format(masknum))}
                             ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
                         </div>
                         <div class="span3">
@@ -240,7 +253,7 @@
             </div>
         </div>
         <div class="control-group">
-            <label for="drive_file" class="control-label">Drivinf data filename or template</label>
+            <label for="drive_file" class="control-label">Driving data filename or template</label>
             <div class="controls">
                ${h.html_tags.text('drive_file', placeholder='data/filepath/template.nc', class_='input-xxlarge')}
             </div>
@@ -286,34 +299,146 @@
 
 
             <div class="controls">
-                <button type="button" class="btn control-group" value="masks">
+                <button type="button" class="btn control-group" id="add_variable">
                     <i class="icon-plus"></i>
                     Add Variable
                 </button>
 
                 <fieldset class="fieldset">
-                    <div class="controls-row">
+                    ${h.html_tags.hidden('drive_nvars')}
+                    <div class="controls-row" id="drive_vars_header">
                         <h5 class="span2">Variable </h5>
                         <h5 class="span2">Name</h5>
                         <h5 class="span2">Template</h5>
                         <h5 class="span2">Interpolation</h5>
                     </div>
                     <div py:for="varnum in range(c.nvar)" class="controls-row">
-                            ${h.html_tags.text('drive_var_{}'.format(varnum), placeholder="Variable", class_="span2")}
-                            ${h.html_tags.text('drive_var_name_{}'.format(varnum), placeholder="Variable name", class_="span2")}
-                            ${h.html_tags.text('drive_var_template_{}'.format(varnum), placeholder="Template name", class_="span2")}
-                            ${h.html_tags.text('drive_var_interp_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
+                            ${h.html_tags.text('drive_vars_{}'.format(varnum), placeholder="Variable", class_="span2")}
+                            ${h.html_tags.text('drive_var_names_{}'.format(varnum), placeholder="Variable name", class_="span2")}
+                            ${h.html_tags.text('drive_var_templates_{}'.format(varnum), placeholder="Template name", class_="span2")}
+                            ${h.html_tags.text('drive_var_interps_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
+                            ${h.html_tags.hidden('drive_var_is_deleted_{}'.format(varnum))}
                             <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>
             </div>
         </div>
 
+        <h2>Ancillary Files</h2>
+
+
+        <div class="control-group">
+            <label for="latlon_file" class="control-label">Lat-Lon Filename</label>
+            <div class="controls">
+               ${h.html_tags.text('latlon_file', placeholder='data/filepath/ancil/name.nc', class_='input-xxlarge')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="latlon_lat_name" class="control-label">Latitude Variable Name</label>
+            <div class="controls">
+               ${h.html_tags.text('latlon_lat_name', placeholder='Variable name')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="latlon_lat_name" class="control-label">Longitude Variable Name</label>
+            <div class="controls">
+               ${h.html_tags.text('latlon_lon_name', placeholder='Variable name')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="land_frac_file" class="control-label">Land Fraction Filename</label>
+            <div class="controls">
+               ${h.html_tags.text('land_frac_file', placeholder='data/filepath/ancil/name.nc', class_='input-xxlarge')}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="land_frac_frac_name" class="control-label">Land Fraction Variable Name</label>
+            <div class="controls">
+               ${h.html_tags.text('land_frac_frac_name', placeholder='Variable name')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="frac_file" class="control-label">Land Cover Fraction Filename</label>
+            <div class="controls">
+               ${h.html_tags.text('frac_file', placeholder='data/filepath/ancil/name.nc', class_='input-xxlarge')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="frac_frac_name" class="control-label">Land Fraction Cover Variable Name</label>
+            <div class="controls">
+               ${h.html_tags.text('frac_frac_name', placeholder='Variable name')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="frac_type_dim_name" class="control-label">Land Fraction Cover Dimension Name</label>
+            <div class="controls">
+               ${h.html_tags.text('frac_type_dim_name', placeholder='Dimension name')}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="soil_props_file" class="control-label">Soil Properties Filename</label>
+            <div class="controls">
+               ${h.html_tags.text('soil_props_file', placeholder='data/filepath/ancil/name.nc', class_='input-xxlarge')}
+            </div>
+        </div>
+
+        <h2>Other values</h2>
+
+        <div class="control-group">
+            <label class="control-label">
+                Jules Parameters
+                <p class="explain">Values are as they would appear in the fortran, i.e. strings need to be quoted</p>
+            </label>
+
+
+            <div class="controls">
+
+                <fieldset class="fieldset well">
+
+                    <div class="controls-row" style="">
+
+                        <select id="namelists" class="span4">
+                                <option py:for="namelist in sorted(c.namelist.keys())" value="${namelist}">${namelist}</option>
+                        </select>
+                        <span class="span1"><center><b>::</b></center></span>
+                        <select py:for="namelist_name, namelist_dict in c.namelist.iteritems()" id="namelist_${namelist_name}" class="parameters span4">
+                            <option py:for="value, name in namelist_dict.iteritems()" value="${value}">${name}</option>
+                        </select>
+
+                        <button type="button" class="btn span2" value="masks" id="add_parameter">
+                            <i class="icon-plus"></i>
+                            Add Parameter
+                        </button>
+                    </div>
+                </fieldset>
+
+
+                <fieldset class="fieldset">
+                    <div class="controls-row" id="parameters_header">
+                        <h5 class="span5">Parameter </h5>
+                        <h5 class="span5">Value</h5>
+                    </div>
+                    ${h.html_tags.hidden('params_count')}
+                    <div py:for="varnum in range(len(c.param_names))" class="controls-row">
+                        <span class="span5">
+                            ${c.param_names[varnum]}
+                            ${h.html_tags.hidden('param_id_{}'.format(varnum))}
+                        </span>
+                        ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
+                        <i class="fa fa-times-circle fa-2x ico red span1"></i>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
 
         <div class="controls">
             <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
         </div>
-
     </form>
 </body>
 </html>

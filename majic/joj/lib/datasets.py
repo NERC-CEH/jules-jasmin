@@ -378,7 +378,6 @@ class Datasets:
             return
 
     def create_ecomaps_data_url(self, dataset_id, query_string=''):
-
         return "%s?%s" % (url(controller='dataset', action='wms', id=dataset_id, qualified=True),
                                   query_string)
 

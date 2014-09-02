@@ -50,15 +50,20 @@ var EcomapsMap = (function() {
         {
             var selected_id = $('#selected_id').text();
             if (selected_id) {
-                var mod_hdr = 'mod_hdr_' + selected_id;
-                expandCollapse(mod_hdr);
-                expandCollapse('mod_ds_out_' + selected_id);
-                expandCollapse('mod_ds_in_' + selected_id);
+                var model_run_header = $('div[model-run-id="' + selected_id + '"]');
+                var mod_hdr_id = model_run_header.attr('id');
+                var ds_out_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_out_");
+                var ds_in_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_in_");
+
+                expandCollapse(mod_hdr_id);
+                expandCollapse(ds_out_id);
+                expandCollapse(ds_in_id);
 
                 //find the pane of the first example of the selected model and select that tab
-                var tab_name = $('#' + 'mod_hdr_' + selected_id).parents('.tab-pane').first().prop('id')
+                var tab_name = $('#' + mod_hdr_id).parents('.tab-pane').first().prop('id')
                 selectTab(tab_name.replace('pane_', ''));
-                $('#mod_ds_out_' + selected_id).find('a').first().click();
+                //$('#mod_ds_out_' + selected_id).find('a').first().click();
+                $('#' + ds_out_id).find('a').click();
             }
             else {
                 var tab_name = $('.tab-pane').prop('id');
@@ -88,6 +93,7 @@ var EcomapsMap = (function() {
         // Toggle the layer on or off
         layerContainer.on("click", "input.layer-toggle", function(){
            toggleLayerDisplay($(this).data("layerid"));
+           updateGraph();
         });
 
         // Toggle legend display on/off
@@ -132,6 +138,9 @@ var EcomapsMap = (function() {
 
         // Reset button
         $("button#reset-button").click(resetViewer);
+
+        $("button#reset-graph").click(resetGraph);
+        $("button#close-graph").click(hideGraph);
     };
 
     var createSortableList = function() {
@@ -171,6 +180,20 @@ var EcomapsMap = (function() {
         });
     };
 
+    var removeDataset = function(key) {
+        removeLayerFromMap(key);
+
+        var panel = $('li.layer[data-layerid="' + key + '"]');
+        panel.remove();
+
+        var time_controls = $('div.layer-controls[data-layerid="' + key + '"]');
+        time_controls.remove();
+
+        if ($('li.layer').length == 0) {
+            $('#options-panel').hide();
+        }
+    }
+
     /*
      * loadDataset
      *
@@ -180,9 +203,12 @@ var EcomapsMap = (function() {
     var loadDataset = function() {
 
         // Highlight the selected dataset
-        //$("li.active").removeClass("active");
         if ($(this).closest("li").hasClass("active")) {
-
+            var datasetId = $(this).data("dsid");
+            var layerId = $(this).attr("layer-id")
+            removeDataset(layerId);
+            $(this).closest("li").removeClass("active");
+            updateGraph();
         }
         else {
 
@@ -192,9 +218,10 @@ var EcomapsMap = (function() {
 
             // Let's get some layers!
             var datasetId = $(this).data("dsid");
+            var layerId = $(this).attr("layer-id");
 
             // Load the layers UI straight from the response
-            $.get('/viewdata/layers/' + datasetId, function(result) {
+            $.get('/viewdata/layers/' + datasetId + "_" + layerId, function(result) {
 
                 $("div#layer-container").prepend(result);
                 var dimensionItems = $("div#layer-list").find("li.dimension");
@@ -205,6 +232,7 @@ var EcomapsMap = (function() {
                 }
                 $("div#options-panel").show();
                 createSortableList();
+                updateGraph();
             });
 
             // Make the request for the WMS layer data
@@ -214,10 +242,10 @@ var EcomapsMap = (function() {
                     for(var i=0; i< data.length; i++){
 
                         // Give it a unique ID for our layer bag
-                        var layerId = "" + datasetId + data[i].name;
+                        var id = "" + layerId;
 
                         // We'll refer back to this when changing styles or visibility
-                        layerDict[layerId] = {
+                        layerDict[id] = {
                             index: currentLayerIndex,
                             data: data[i],
                             visible: true,
@@ -315,7 +343,8 @@ var EcomapsMap = (function() {
         });
 
         // Stretch the map down the page
-        $("#map").height($("#wrap").height() - 100);
+        $("#map").height($("#wrap").height() - 42);
+        $("#panel-div").height($("#wrap").height() - 42);
     };
 
     /*
@@ -621,7 +650,9 @@ var EcomapsMap = (function() {
         $("ol#dimension-list").html("");
         $("div#dimension-panel").hide();
         $("div#options-panel").hide();
-        $("li.active").removeClass("active");
+        $(".nav-list").find("li.active").removeClass("active");
+
+        hideGraph();
     };
 
     return {

@@ -1,7 +1,7 @@
 """
-header
+#header
 """
-from mock import MagicMock
+from mock import Mock
 
 import os
 import shutil
@@ -54,8 +54,8 @@ class TestJobService(TestController):
         result = self.job_service.submit(self.model_run)
 
         assert_that(os.path.exists(self.run_dir), is_(True), "directory '%s' exists" % self.run_dir)
-        assert_that(os.path.exists(self.run_dir + '/submit_jules_3_4_1.sh'), is_(True),
-                    'submit_jules_3_4_1.sh in run directory')
+        assert_that(os.path.exists(self.run_dir + '/jules_run.sh'), is_(True), 'jules_run.sh in run directory')
+        assert_that(os.path.exists(self.run_dir + '/data'), is_(True), 'data in run directory')
         assert_that(os.path.exists(self.run_dir + '/timesteps.nml'), is_(True), 'timesteps.nml in run directory')
         assert_that(result, greater_than(0), "PID is greater than 0")
 
@@ -75,28 +75,40 @@ class TestJobService(TestController):
             self.job_service.submit(self.model_run)
 
     def test_GIVEN_code_version_script_doesnt_submit_job_but_runs_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceException):
+        try:
             VALID_CODE_VERSIONS['invalid_script'] = 'invalid_script.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'
 
             local_job_service.submit(self.model_run)
+        except ServiceException as ex:
+            assert_that(ex.message, is_("Problem submitting job, unexpected output."), "error message does not contain details")
+            return
+        self.fail("Should have thrown an exception")
 
     def test_GIVEN_code_version_script_doesnt_exist_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceException):
+        try:
             VALID_CODE_VERSIONS['invalid_script'] = 'doesnt exist.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'
 
             local_job_service.submit(self.model_run)
+        except ServiceException as ex:
+            assert_that(ex.message, is_("Problem submitting job."), "error message does not contain details")
+            return
+        self.fail("Should have thrown an exception")
 
     def test_GIVEN_code_version_script_errors_WHEN_submit_job_is_submitted_THEN_error_thrown(self):
-        with self.assertRaises(ServiceException):
+        try:
             VALID_CODE_VERSIONS['invalid_script'] = 'error_submit.sh'
             local_job_service = JobService(VALID_CODE_VERSIONS)
             self.model_run['code_version'] = 'invalid_script'
 
             local_job_service.submit(self.model_run)
+        except ServiceException as ex:
+            assert_that(ex.message, is_("Problem submitting job, unknown error."), "error message does not contain details")
+            return
+        self.fail("Should have thrown an exception")
 
     def test_GIVEN_land_cover_actions_WHEN_submit_job_THEN_land_cover_editor_called_correctly(self):
         land_cover_dict = {JSON_LAND_COVER_BASE_FILE: 'data/ancils/frac.nc',
@@ -114,8 +126,8 @@ class TestJobService(TestController):
         expected_copied_base_path = self.run_dir + '/user_edited_land_cover_fractional_file.nc'
 
         land_cover_editor = LandCoverEditor()
-        land_cover_editor.copy_land_cover_base_map = MagicMock(return_value=expected_copied_base_path)
-        land_cover_editor.apply_land_cover_action = MagicMock()
+        land_cover_editor.copy_land_cover_base_map = Mock(return_value=expected_copied_base_path)
+        land_cover_editor.apply_land_cover_action = Mock()
 
         job_service = JobService(land_cover_editor=land_cover_editor)
         job_service.submit(model_run_json)

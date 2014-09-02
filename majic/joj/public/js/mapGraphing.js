@@ -6,6 +6,7 @@
 var data;
 // Store the marker and marker layer here so we can move it rather than add more
 var marker, markers;
+var stored_position;
 
 /**
  * Creates and displays an appropriate time series graph in response to a click on the OpenLayers map
@@ -14,7 +15,7 @@ var marker, markers;
  */
 function createGraph(position)
 {
-
+    stored_position = position;
     // Get all the datasets to show
     var datasets = getSelectedLayers();
     if (datasets.length == 0) {
@@ -23,6 +24,30 @@ function createGraph(position)
     setMarker(position);
     createGraphSpace(position);
     getData(datasets, position);
+
+    // Enable buttons
+    closeBtn = $("button#close-graph");
+    resetBtn = $("button#reset-graph");
+    closeBtn.prop('disabled', false);
+    closeBtn.removeClass('disabled');
+    resetBtn.prop('disabled', false);
+    resetBtn.removeClass('disabled');
+
+    return true;
+}
+
+var updateGraph = function() {
+    var graphDiv = $("#graph");
+    //if (graphDiv.is(':visible')) {
+        if (typeof stored_position != 'undefined') {
+            var position = stored_position;
+            var graphs_added = createGraph(position);
+            if (!(graphs_added)) {
+                hideGraph();
+                stored_position = position;
+            }
+        }
+    //}
 }
 
 /**
@@ -35,6 +60,7 @@ function setMarker(position)
         // Add a new layer if we need to
         markers = new OpenLayers.Layer.Markers( "Markers" );
         map.addLayer(markers);
+        markers.setZIndex(100000);
         currentLayerIndex++;
     }
     if (marker) {
@@ -58,7 +84,12 @@ function getSelectedLayers()
     $(".dataset").each(function()
     {
         if ($(this).parent().hasClass("active")){
-            dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+            // Check that the graph layer is visible:
+            var layerId = $(this).attr("layer-id");
+            var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
+            if (layerCheckBox.is(':checked')) {
+                dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+            }
         }
     });
     return dataset_ids;
@@ -95,6 +126,14 @@ function createGraphSpace(position)
  */
 function hideGraph()
 {
+    // Disable buttons
+    closeBtn = $("button#close-graph");
+    resetBtn = $("button#reset-graph");
+    closeBtn.prop('disabled', true);
+    closeBtn.addClass('disabled');
+    resetBtn.prop('disabled', true);
+    resetBtn.addClass('disabled');
+
     // Hide graph
     var graphDiv = $("#graph");
     graphDiv.hide();
@@ -102,9 +141,9 @@ function hideGraph()
     if (marker) {
         markers.removeMarker(marker);
     }
-
+    stored_position = undefined;
     // Reset the map height
-    $("#map").height($("#wrap").height() - 100);
+    $("#map").height($("#wrap").height() - 42);
 }
 
 /**
@@ -185,12 +224,4 @@ function plotGraph(data)
         },
         legend: {position: "nw"}
     });
-    // Add a close button and reset button
-    var closeButtonHtml = '<div class="alert alert-info" style="position:absolute;right:' + 30 + 'px;top:' + 14 +'px">' +
-        '<a href="#" onclick="hideGraph()" id="graph-close-img"><i class="icon-remove"></i> Close</a></div>';
-    graph.append(closeButtonHtml);
-
-    var resetButtonHtml = '<div class="alert alert-info" style="position:absolute;right:' + 140 + 'px;top:' + 14 +'px">' +
-        '<a href="#" onclick="resetGraph()" id="graph-close-img"><i class="icon-screenshot"></i> Reset</a></div>';
-    graph.append(resetButtonHtml);
 }

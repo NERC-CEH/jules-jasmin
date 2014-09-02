@@ -2,7 +2,6 @@
 # Header
 """
 from datetime import datetime
-import glob
 import logging
 import subprocess
 import shutil
@@ -144,9 +143,9 @@ class JobService(object):
         #create output dir
         os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
 
-        #create softlinks
-        for src in glob.glob(os.path.join(config['jules_files_to_softlink_dir'], '*')):
-            os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
+        #create softlinks to data
+        src = os.path.join(config['jules_run_data_dir'])
+        os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
         if model_run_json[JSON_LAND_COVER]:
             self._edit_land_cover_file(model_run_json[JSON_LAND_COVER], run_directory)
 
@@ -174,21 +173,27 @@ class JobService(object):
         :exception ServiceError: when there is a problem submiting the job
         """
         try:
+            script_directory = config['jules_run_script_dir']
             if single_processor:
-                script = os.path.join(run_directory, self._valid_single_processor_code_version[code_version])
+                script = os.path.join(script_directory, self._valid_single_processor_code_version[code_version])
             else:
-                script = os.path.join(run_directory, self._valid_code_version[code_version])
+                script = os.path.join(script_directory, self._valid_code_version[code_version])
             output = subprocess.check_output([script], stderr=subprocess.STDOUT, cwd=run_directory)
             #Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)
             if match is None:
-                raise ServiceException('Problem in job script. "%s"' % output)
+                log.error('Problem submitting job, unexpected output. "%s"' % output)
+                raise ServiceException('Problem submitting job, unexpected output.')
             return match.group(1)
 
         except subprocess.CalledProcessError, ex:
-            raise ServiceException('Problem running job script. "%s"' % ex.output)
-        except Exception, ex:
-            raise ServiceException('Problem submitting job script. "%s"' % ex.message)
+            log.exception('Problem submitting job, unknown error. "%s"' % ex.output)
+            raise ServiceException('Problem submitting job, unknown error.')
+        except ServiceException as ex:
+            raise ex
+        except Exception:
+            log.exception('Problem submitting job, unknown exception.')
+            raise ServiceException('Problem submitting job.')
 
     def _create_namelist_file(self, namelist_file, run_directory):
         """

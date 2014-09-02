@@ -76,7 +76,7 @@ class TestModelRunController(TestController):
         duplicate_name = u'duplicate name'
         user = self.login()
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, duplicate_name, 1, "description which is unique")
+        model_run_service.update_model_run(user, duplicate_name, constants.DEFAULT_SCIENCE_CONFIGURATION, "description which is unique")
         model_run = model_run_service.get_model_run_being_created_or_default(user)
         with model_run_service.transaction_scope() as session:
             model_run.change_status(session, constants.MODEL_RUN_STATUS_COMPLETED)
@@ -85,7 +85,7 @@ class TestModelRunController(TestController):
             url=url(controller='model_run', action='create'),
             params={
                 'name': duplicate_name,
-                'science_configuration': u'1',
+                'science_configuration': unicode(constants.DEFAULT_SCIENCE_CONFIGURATION),
                 'description': u'a description'
             }
         )
@@ -97,7 +97,7 @@ class TestModelRunController(TestController):
         duplicate_name = u'duplicate name'
         user = self.login("test_different")
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, duplicate_name, 1, "description which is unique")
+        model_run_service.update_model_run(user, duplicate_name, constants.DEFAULT_SCIENCE_CONFIGURATION, "description which is unique")
         model_run = model_run_service.get_model_run_being_created_or_default(user)
         with model_run_service.transaction_scope() as session:
             model_run.change_status(session, constants.MODEL_RUN_STATUS_COMPLETED)
@@ -107,7 +107,7 @@ class TestModelRunController(TestController):
             url=url(controller='model_run', action='create'),
             params={
                 'name': duplicate_name,
-                'science_configuration': u'1',
+                'science_configuration': unicode(constants.DEFAULT_SCIENCE_CONFIGURATION),
                 'description': u'a description'
             }
         )
@@ -118,7 +118,7 @@ class TestModelRunController(TestController):
     def test_GIVEN_details_are_correct_WHEN_post_THEN_new_model_run_created_and_redirect_to_parameters_page(self):
 
         expected_name = u'name'
-        expected_science_configuration = 1
+        expected_science_configuration = constants.DEFAULT_SCIENCE_CONFIGURATION
         expected_description = u'This is a description'
         self.login()
         response = self.app.post(
@@ -141,7 +141,7 @@ class TestModelRunController(TestController):
         self.create_run_model(storage_in_mb=user.storage_quota_in_gb * 1024 + 1, name="big_run", user=user)
 
         expected_name = u'name'
-        expected_science_configuration = 1
+        expected_science_configuration = constants.DEFAULT_SCIENCE_CONFIGURATION
         expected_description = u'This is a description'
         response = self.app.post(
             url=url(controller='model_run', action='create'),
@@ -161,13 +161,13 @@ class TestModelRunController(TestController):
         user = self.login()
 
         model_run_service = ModelRunService()
-        model_run_service.update_model_run(user, 'test', 1, "description which is unique")
+        model_run_service.update_model_run(user, 'test', constants.DEFAULT_SCIENCE_CONFIGURATION, "description which is unique")
 
         response = self.app.get(
             url(controller='model_run', action='create'))
 
         assert_that(response.normal_body, contains_string("test"))
-        assert_that(response.normal_body, contains_string("1"))
+        assert_that(response.normal_body, contains_string(str(constants.DEFAULT_SCIENCE_CONFIGURATION)))
         assert_that(response.normal_body, contains_string("description which is unique"))
 
     def test_GIVEN_model_already_being_created_WHEN_update_THEN_model_data_overwritten(self):
@@ -177,7 +177,7 @@ class TestModelRunController(TestController):
         model_run_service.update_model_run(user, 'not test', 2, "a different description")
 
         expected_name = u'name'
-        expected_science_configuration = 1
+        expected_science_configuration = constants.DEFAULT_SCIENCE_CONFIGURATION
         expected_description = u'descr'
 
         response = self.app.post(

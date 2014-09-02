@@ -4,13 +4,12 @@ header
 
 import logging
 from formencode import htmlfill
-from pylons import url, response, config
+from pylons import url, response
 from pylons.decorators import validate, jsonify
 from sqlalchemy.orm.exc import NoResultFound
 
 from joj.lib import helpers
 from joj.lib.base import BaseController, c, request, render, redirect
-from joj.lib.wmc_util import create_request_and_open_url
 from joj.model.model_run_create_form import ModelRunCreateFirst
 from joj.model.model_run_extent_schema import ModelRunExtentSchema
 from joj.utils import constants

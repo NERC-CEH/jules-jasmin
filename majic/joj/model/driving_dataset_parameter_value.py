@@ -20,13 +20,23 @@ class DrivingDatasetParameterValue(Base):
     driving_dataset_id = Column(Integer, ForeignKey('driving_datasets.id'))
     driving_dataset = relationship("DrivingDataset", backref=backref('parameter_values', order_by=id))
 
-
     def __init__(self, model_run_service,  driving_dataset, jules_param_constant, value):
+        """
+        Initialise
+        :param model_run_service: model run service
+        :param driving_dataset: driving data set to add parameter value to
+        :param jules_param_constant: either constant tuple for a namelist parameter or the parameters id
+        :param value: python value
+        :return:nothing
+        """
         super(DrivingDatasetParameterValue, self).__init__()
-        parameter = model_run_service.get_parameter_by_constant(jules_param_constant)
-        self.driving_dataset=driving_dataset
-        self.parameter_id=parameter.id
-        self.value=value
+        if type(jules_param_constant) is int:
+            self.parameter_id = jules_param_constant
+        else:
+            parameter = model_run_service.get_parameter_by_constant(jules_param_constant)
+            self.parameter_id = parameter.id
+        self.driving_dataset = driving_dataset
+        self.value = value
 
     def __repr__(self):
         return "<DrivingDatasetParameterValue(parameter_id=%s, value=%s>" % self.parameter_id, self.value
