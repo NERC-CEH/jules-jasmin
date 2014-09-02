@@ -1,7 +1,7 @@
 """
 #header
 """
-from mock import Mock
+from mock import Mock, MagicMock
 
 import os
 import shutil
