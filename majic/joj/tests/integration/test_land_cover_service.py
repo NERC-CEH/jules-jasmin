@@ -332,6 +332,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         self.land_cover_service.save_default_soil_properties(model_run)
 
+        #self.land_cover_service.dap_client_factory.get_soil_properties_dap_client = _mock_get_soil_props_client
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
         var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)

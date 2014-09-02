@@ -420,7 +420,6 @@ class TestLandCoverControllerHelper(BaseTest):
         context = self.Context()
         self.land_cover_helper.add_fractional_land_cover_to_context(context, {}, self.model_run)
         context_vals = [context.land_cover_values[key] for key in sorted(context.land_cover_values) if 'land_cover_value' in key]
-        assert_that(context_vals[2], is_(46.12))
         assert sum(context_vals) - 100.0 < 0.00000001
 
     def test_GIVEN_missing_fractional_cover_WHEN_add_cover_to_context_THEN_zeros_returned(self):

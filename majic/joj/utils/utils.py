@@ -115,7 +115,8 @@ def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist
     for parameter in parameters:
         if parameter.namelist.name == parameter_namelist_name[0]:
             if parameter.name == parameter_namelist_name[1]:
-                return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+                if len(parameter.parameter_values) > 0:
+                    return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
 
 
 def set_parameter_value_in_parameter_list(parameters, parameter_namelist_name, python_value):
@@ -129,4 +130,5 @@ def set_parameter_value_in_parameter_list(parameters, parameter_namelist_name, p
     for parameter in parameters:
         if parameter.namelist.name == parameter_namelist_name[0]:
             if parameter.name == parameter_namelist_name[1]:
-                parameter.parameter_values[0].set_value_from_python(python_value)
+                if len(parameter.parameter_values) > 0:
+                    parameter.parameter_values[0].set_value_from_python(python_value)

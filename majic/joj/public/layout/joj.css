@@ -163,17 +163,21 @@ body#admin a#nav-admin
 
 .green
 {
-    color: #38761d;
+    color: #38761d !important;
 }
 .purple
 {
-    color: #711780;
+    color: #711780 !important;
 }
 .yellow
 {
-    color: #f6b26b;
+    color: #f6b26b !important;
 }
 .red
 {
-    color: #990000;
+    color: #990000 !important;
+}
+
+a {
+    cursor:pointer;
 }

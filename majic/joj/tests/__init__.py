@@ -266,7 +266,7 @@ class TestController(TestCase):
             driving2.geographic_region = 'Global'
             driving2.spatial_resolution = 'Half degree'
             driving2.temporal_resolution = '3 Hours'
-            driving2.boundary_lat_north = 90
+            driving2.boundary_lat_north = 85
             driving2.boundary_lat_south = -90
             driving2.boundary_lon_west = -180
             driving2.boundary_lon_east = 180
@@ -292,6 +292,20 @@ class TestController(TestCase):
             val = f90_helper.python_to_f90_str("frac2")
             pv4 = DrivingDatasetParameterValue(model_run_service, driving2,
                                                constants.JULES_PARAM_FRAC_NAME, val)
+            val = f90_helper.python_to_f90_str(['b', 'sathh', 'satcon', 'sm_sat', 'sm_crit',
+                                                'sm_wilt', 'hcap', 'hcon', 'albsoil'])
+            pv5 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_SOIL_PROPS_VAR, val)
+            val = f90_helper.python_to_f90_str(['bexp', 'sathh', 'satcon', 'vsat', 'vcrit',
+                                                'vwilt', 'hcap', 'hcon', 'albsoil'])
+            pv6 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_SOIL_PROPS_VAR_NAME, val)
+            val = f90_helper.python_to_f90_str(9)
+            pv7 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_SOIL_PROPS_NVARS, val)
+            val = f90_helper.python_to_f90_str("data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc")
+            pv7 = DrivingDatasetParameterValue(model_run_service, driving2,
+                                               constants.JULES_PARAM_SOIL_PROPS_FILE, val)
             session.add(driving2)
             session.commit()
 
