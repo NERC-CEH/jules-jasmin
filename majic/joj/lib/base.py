@@ -75,6 +75,8 @@ class BaseController(WSGIController):
         problems on our forms).
         :param error: the error to format
         """
+        if error is None:
+            return ""
         return '<span class="error-message">%s</span>\n' % html_quote(error)
 
     def get_model_run_being_created_or_redirect(self, model_run_service):

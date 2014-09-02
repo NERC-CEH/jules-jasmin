@@ -227,16 +227,16 @@
                         </div>
                     </div>
                     ${h.html_tags.hidden('mask_count')}
-                    <div py:for="masknum in range(c.masks)" class="controls-row">
+                    <div py:for="masknum in reversed(range(c.masks))" class="controls-row">
                         <div class="span3">
-                            ${h.html_tags.hidden('id_{}'.format(masknum))}
-                            ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
+                            ${h.html_tags.hidden('region-{}.id'.format(masknum))}
+                            ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category")}
                         </div>
                         <div class="span3">
-                            ${h.html_tags.text('name_{}'.format(masknum), placeholder="Name")}
+                            ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name")}
                         </div>
                         <div class="span5">
-                            ${h.html_tags.text('path_{}'.format(masknum), placeholder="data/filepath/filename.nc")}
+                            ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc")}
                         </div>
                     </div>
                 </fieldset>

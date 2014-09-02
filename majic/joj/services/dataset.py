@@ -221,13 +221,21 @@ class DatasetService(DatabaseService):
                 .one()
         return driving_dataset.id
 
-    def create_driving_dataset(self, driving_dataset):
+    def create_driving_dataset(self, results, model_run_service, land_cover_service):
+
         """
-        Create a driving dataset in the database
-        :param driving_dataset: the drivingdata set to create
+        Create a driving dataset object from a results dictionary
+        :param results: the results
+        :param model_run_service: model run service
+        :param land_cover_service: land cover service
         :return: nothing
         """
 
         with self.transaction_scope() as session:
-
+            driving_dataset_jules_params = DrivingDatasetJulesParams()
+            driving_dataset = driving_dataset_jules_params.create_driving_dataset_from_dict(
+                session,
+                model_run_service,
+                land_cover_service,
+                results)
             session.add(driving_dataset)

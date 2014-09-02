@@ -3,6 +3,7 @@
 """
 import logging
 from formencode.validators import Invalid
+from formencode import variabledecode
 from pylons.controllers.util import redirect
 from pylons.decorators import validate
 from sqlalchemy.orm.exc import NoResultFound
@@ -83,21 +84,31 @@ class DrivingDataController(BaseController):
             values = dict(request.params)
 
             schema = DrivingDatasetEdit()
-            result = None
+            result = {}
             try:
                 result = schema.to_python(dict(request.params), c)
             except Invalid, e:
                 errors.update(e.unpack_errors())
 
             date_period_validator = DatetimePeriodValidator(errors)
-            date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
+            result["driving_data_start"], result["driving_data_end"] = \
+                date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
 
             if len(errors) == 0:
-                driving_dataset_jules_params = DrivingDatasetJulesParams()
-                driving_dataset = driving_dataset_jules_params.create_driving_dataset_from_dict(values)
-                self._dataset_service.create_driving_dataset(driving_dataset)
+                self._dataset_service.create_driving_dataset(result, self._model_run_service, self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
             values["param_names"] = []
+            if result.get('drive_nvars') is None:
+                values['drive_nvars'] = 0
+
+            # reformat errors so they appear on region line not for all field in line
+            region_errors = errors.get("region")
+            if region_errors is not None:
+                for region_error, index in zip(region_errors, range(len(region_errors))):
+                    if region_error is not None:
+                        errors["region-{}.path".format(index)] = "Please correct"
+                del errors["region"]
+
         else:
             if id is None:
                 driving_dataset = DrivingDataset()
@@ -120,5 +131,5 @@ class DrivingDataController(BaseController):
         return htmlfill.render(
             html,
             defaults=values,
-            errors=errors,
+            errors=variabledecode.variable_encode(errors, add_repetitions=False),
             auto_error_formatter=BaseController.error_formatter)

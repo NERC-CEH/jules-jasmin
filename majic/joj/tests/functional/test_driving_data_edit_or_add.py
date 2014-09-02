@@ -7,6 +7,8 @@ from joj.tests import *
 from joj.utils import constants, utils
 from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory, DrivingDataset, Session
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
+from joj.services.dataset import DatasetService
+from joj.services.land_cover_service import LandCoverService
 
 
 class TestDrivingDataEditOrAdd(TestController):
@@ -147,12 +149,40 @@ class TestDrivingDataEditOrAdd(TestController):
         self.new_driving_dataset.boundary_lon_east = 30
         self.new_driving_dataset.boundary_lon_west = -30
 
+        self.new_driving_dataset.view_order_index = 1
+        self.new_driving_dataset.usage_order_index = 1
+
         self.new_driving_dataset.is_restricted_to_admins = True
 
+        self.new_driving_dataset.time_start = datetime.datetime(2010, 1, 1, 10, 00)
+        self.new_driving_dataset.time_end = datetime.datetime(2010, 2, 1, 10, 00)
+
         jules_params = DrivingDatasetJulesParams(
-            data_start=str(datetime.datetime(2013, 1, 1, 0, 0, 0)),
-            data_end=str(datetime.datetime(2013, 2, 1, 0, 0, 0)))
-        jules_params.set_from(self.new_driving_dataset, [])
+            driving_dateset=self.new_driving_dataset,
+            data_start="2010-01-01 10:00",
+            data_end="2010-02-01 10:00",
+            dataperiod=1800,
+            drive_file="jules_param_drive_file",
+            drive_var=['drive var 1', 'drive var 2'],
+            var_names=['name1', 'name2'],
+            var_templates=['template1', 'template2'],
+            var_interps=['interp1', 'interp2'],
+            nx=10,
+            ny=20,
+            x_dim_name='jules_param_x_dim_name',
+            y_dim_name='jules_param_y_dim_name',
+            time_dim_name='jules_param_time_dim_name',
+            latlon_file='latlon_file',
+            latlon_lat_name='latlon_lat_name',
+            latlon_lon_name='latlon_lon_name',
+            land_frac_file='land_frac_file',
+            land_frac_frac_name='land_frac_frac_name',
+            frac_file='frac_file_file_name',
+            frac_frac_dim_name='frac_frac_dim_name',
+            frac_type_dim_name='frac_type_dim_name',
+            soil_props_file='soil_props_file',
+            extra_parameters={1: self.extra_parameter}
+            )
         valid_params = jules_params.create_values_dict({})
         return valid_params
 
@@ -168,14 +198,35 @@ class TestDrivingDataEditOrAdd(TestController):
             expect_errors=True
         )
 
+        assert_that(response.status_code, is_(302), "no redirect after successful post got %s" % response.normal_body)
+
         with session_scope(Session) as session:
-            driving_dataset = session\
+            driving_dataset_id = session\
                 .query(DrivingDataset)\
                 .filter(DrivingDataset.name == self.new_driving_dataset.name)\
-                .one()
+                .one().id
+            driving_dataset = DatasetService().get_driving_dataset_by_id(driving_dataset_id)
 
-        assert_that(response.status_code, is_(302), "redirect after successful post")
         assert_that(driving_dataset.name, is_(self.new_driving_dataset.name), "name")
+        assert_that(driving_dataset.description, is_(self.new_driving_dataset.description), "description")
+        assert_that(driving_dataset.geographic_region, is_(self.new_driving_dataset.geographic_region), "geographic_region")
+        assert_that(driving_dataset.spatial_resolution, is_(self.new_driving_dataset.spatial_resolution), "spatial_resolution")
+        assert_that(driving_dataset.temporal_resolution, is_(self.new_driving_dataset.temporal_resolution), "temporal_resolution")
+        assert_that(driving_dataset.boundary_lat_north, is_(self.new_driving_dataset.boundary_lat_north), "boundary_lat_north")
+        assert_that(driving_dataset.boundary_lat_south, is_(self.new_driving_dataset.boundary_lat_south), "boundary_lat_south")
+        assert_that(driving_dataset.boundary_lon_east, is_(self.new_driving_dataset.boundary_lon_east), "boundary_lon_east")
+        assert_that(driving_dataset.boundary_lon_west, is_(self.new_driving_dataset.boundary_lon_west), "boundary_lon_west")
+        assert_that(driving_dataset.view_order_index, is_(self.new_driving_dataset.view_order_index), "view_order_index")
+        assert_that(driving_dataset.usage_order_index, is_(self.new_driving_dataset.usage_order_index), "usage_order_index")
+        assert_that(driving_dataset.time_start, is_(self.new_driving_dataset.time_start), "start time")
+        assert_that(driving_dataset.time_end, is_(self.new_driving_dataset.time_end), "end time")
+
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_START),
+                    is_(self.new_driving_dataset.time_start), "start time")
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_DATA_END),
+                    is_(self.new_driving_dataset.time_end), "end time")
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_NX),
+                    is_(valid_params["drive_nx"]), "nx")
 
     def test_GIVEN_invalid_data_WHEN_create_new_THEN_error(self):
 
@@ -192,8 +243,14 @@ class TestDrivingDataEditOrAdd(TestController):
                 ["boundary_lon_east", "-800", "enter a number that is -180 or greater"],
                 ["boundary_lon_west", "", "enter a value"],
                 ["driving_data_start", "", "Please enter a date"],
-                ["driving_data_end", "n.a.t.", "Enter date as YYYY-MM-DD HH:MM"]
+                ["driving_data_end", "n.a.t.", "Enter date as YYYY-MM-DD HH:MM"],
+                ["view_order_index", "", "enter a value"],
+                ["usage_order_index", "nan", "Please enter an integer value"]
             ]
+
+        for name, const in DrivingDatasetJulesParams()._names_constant_dict.iteritems():
+            if name not in ['driving_data_start', 'driving_data_end', 'drive_var_interps', 'drive_var_names', 'drive_var_templates', 'drive_vars']:
+                invalid_values.append([name, "", "enter a value"])
 
         for invalid_key, invalid_value, invalid_error in invalid_values:
 
@@ -206,5 +263,62 @@ class TestDrivingDataEditOrAdd(TestController):
                 expect_errors=True
             )
 
-            assert_that(response.status_code, is_(200), "no redirect after error for key '%s'" % invalid_key)
+            assert_that(response.status_code, is_(200), "status code for page '%s'" % invalid_key)
             assert_that(response.normal_body, contains_string(invalid_error), "In '%s'" % invalid_key)
+
+    def test_GIVEN_invalid_region_data_WHEN_create_new_THEN_error(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        invalid_values = ["region-0.name", "region-0.category", "region-0.path"]
+
+        for invalid_key in invalid_values:
+
+            valid_params = self.create_valid_post_values()
+            valid_params["mask_count"] = 1
+            valid_params["region-0.name"] = "a value"
+            valid_params["region-0.category"] = "a value"
+            valid_params["region-0.path"] = "a value"
+            valid_params["region-0.id"] = ""
+            valid_params[invalid_key] = ""
+
+
+            response = self.app.post(
+                url=url(controller='driving_data', action='edit'),
+                params=valid_params,
+                expect_errors=True
+            )
+
+            assert_that(response.status_code, is_(200), "status code for page '%s'" % invalid_key)
+            assert_that(response.normal_body, contains_string("Correct values"), "error message for '%s'" % invalid_key)
+
+    def test_GIVEN_valid_data_with_masks_WHEN_create_new_THEN_masks_are_created(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        valid_params = self.create_valid_post_values()
+        valid_params["mask_count"] = 1
+        valid_params["region-0.id"] = ""
+        valid_params["region-0.name"] = "name0"
+        valid_params["region-0.category"] = "category0"
+        valid_params["region-0.path"] = "path0"
+
+        response = self.app.post(
+            url=url(controller='driving_data', action='edit'),
+            params=valid_params,
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(302), "no redirect after successful post got %s" % response.normal_body)
+
+        with session_scope() as session:
+            driving_dataset_id = session\
+                .query(DrivingDataset)\
+                .filter(DrivingDataset.name == self.new_driving_dataset.name)\
+                .one().id
+            regions = LandCoverService().get_land_cover_regions(driving_dataset_id)
+
+        assert_that(len(regions), is_(1), "number of regions")
+        assert_that(regions[0].name, is_(valid_params["region-0.name"]), "name of region")
+        assert_that(regions[0].category.name, is_(valid_params["region-0.category"]), "category of region")
+        assert_that(regions[0].mask_file, is_(valid_params["region-0.path"]), "path of region")

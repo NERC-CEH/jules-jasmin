@@ -10,10 +10,10 @@ function update_namelist_showing()
 
 function add_list_item(mask_template, count_input_id, controls_id) {
     count = $('#' + count_input_id).val();
-    count = parseInt(count) + 1;
-    $('#' + count_input_id).val(count);
     $("#" + controls_id).after(mask_template.replace(/%template%/g, count));
     $("#" + controls_id).parent().find(".fa-times-circle").first().click(delete_line);
+    count = parseInt(count) + 1;
+    $('#' + count_input_id).val(count);
 }
 
 /* Add a mask line*/
@@ -21,14 +21,14 @@ function add_mask()
 {
     mask_template = '<div class="controls-row"> \
             <div class="span3"> \
-                <input id="id_%template%" name="id_%template%" placeholder="Category" type="hidden" value="" /> \
-                <input id="category_%template%" name="category_%template%" placeholder="Category" type="text" value="" /> \
+                <input id="region-%template%.id" name="region-%template%.id" placeholder="Category" type="hidden" value="" /> \
+                <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" /> \
             </div> \
             <div class="span3"> \
-                <input id="name_%template%" name="name_%template%" placeholder="Name" type="text" value="" /> \
+                <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" /> \
             </div> \
             <div class="span5"> \
-                <input id="path_%template%" name="path_%template%" placeholder="data/filepath/filename.nc" type="text" value="" /> \
+                <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" /> \
             </div> \
         </div>';
     add_list_item(mask_template, "mask_count", "mask_header");

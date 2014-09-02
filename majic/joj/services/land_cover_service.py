@@ -30,10 +30,7 @@ class LandCoverService(DatabaseService):
         :return: LandCoverRegion
         """
         with self.readonly_scope() as session:
-            return session.query(LandCoverRegion)\
-                .filter(LandCoverRegion.id == id)\
-                .options(subqueryload(LandCoverRegion.category))\
-                .one()
+            return self._get_land_cover_region_by_id_in_session(id, session)
 
     def get_land_cover_values(self):
         """
@@ -43,6 +40,17 @@ class LandCoverService(DatabaseService):
         with self.readonly_scope() as session:
             return session.query(LandCoverValue).all()
 
+    def _get_land_cover_categories_in_session(self, driving_data_id, session):
+        """
+        Return all available land cover categories for a given driving dataset
+        :param driving_data_id: Database ID of chosen driving dataset
+        :return: List of LandCoverCategories (with Regions loaded)
+        """
+        return session.query(LandCoverRegionCategory) \
+            .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id) \
+            .options(subqueryload(LandCoverRegionCategory.regions)) \
+            .all()
+
     def get_land_cover_categories(self, driving_data_id):
         """
         Return all available land cover categories for a given driving dataset
@@ -50,10 +58,7 @@ class LandCoverService(DatabaseService):
         :return: List of LandCoverCategories (with Regions loaded)
         """
         with self.readonly_scope() as session:
-            return session.query(LandCoverRegionCategory)\
-                .filter(LandCoverRegionCategory.driving_dataset_id == driving_data_id)\
-                .options(subqueryload(LandCoverRegionCategory.regions))\
-                .all()
+            return self._get_land_cover_categories_in_session(driving_data_id, session)
 
     def get_land_cover_regions(self, driving_data_id):
         """
@@ -126,7 +131,8 @@ class LandCoverService(DatabaseService):
                 land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
                 land_cover_client = self.dap_client_factory.get_land_cover_dap_client(land_cover_url, land_cover_key)
                 return land_cover_client.get_fractional_cover(lat, lon)
-            except DapClientException as ex:
+            except DapClientException:
+                # if we get a dap exception just use the defaults
                 pass
         ntypes = len(self.get_land_cover_values())
         return ntypes * [0.0]
@@ -138,6 +144,25 @@ class LandCoverService(DatabaseService):
         :return: The 1-based index of the ice type
         """
         return [type.index for type in land_cover_types if type.name == constants.FRACTIONAL_ICE_NAME][0]
+
+    def update_regions_and_categories_in_session(self, session, driving_dataset, regions):
+        """
+        Create or modify the regions and categories for a driving dataset
+        :param session: the session to use
+        :param driving_dataset: the driving dataset that the categories belong to
+        :param regions: a regions list containing parameter dictionaries
+        :return: nothing
+        """
+
+        categoies = self._get_land_cover_categories_in_session(driving_dataset.id, session)
+        for region in regions:
+            category = self._get_or_create_category(categoies, driving_dataset, region["category"])
+            self._update_or_create_region(category, region, session)
+
+        # remove empty categories
+        for category in categoies:
+            if len(category.regions) == 0:
+                session.delete(category)
 
     def _get_best_matching_dataset_to_use(self, lat, lon):
         driving_datasets = self.dataset_service.get_driving_datasets()
@@ -165,3 +190,51 @@ class LandCoverService(DatabaseService):
         frac_name = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_FRAC_NAME)
         url = config['thredds.server_url'] + "dodsC/model_runs/" + frac_file
         return url, frac_name
+
+    def _get_land_cover_region_by_id_in_session(self, id, session):
+        """
+        Get the land cover region by id using a specific session
+        :param id: id of the land cover
+        :param session: session
+        :return: land cover region
+        """
+        return session.query(LandCoverRegion) \
+            .filter(LandCoverRegion.id == id) \
+            .options(subqueryload(LandCoverRegion.category)) \
+            .one()
+
+    def _get_or_create_category(self, categoies, driving_dataset, category_name):
+        """
+        Gets a category with the given name. Either by finding it or creating it
+        :param categoies: current list of categories (updated if new one is added)
+        :param driving_dataset: the driving dataset to set for the category
+        :param category_name: the name of the category
+        :return: the category
+        """
+        found_category = None
+        for category in categoies:
+            if category.name == category_name:
+                found_category = category
+                break
+        if found_category is None:
+            found_category = LandCoverRegionCategory(name=category_name)
+            found_category.driving_dataset = driving_dataset
+            categoies.append(found_category)
+        return found_category
+
+    def _update_or_create_region(self, category, region, session):
+        """
+        Update or create a land cover region
+        :param category: category for the region
+        :param region: a dictionry of region parameters
+        :param session: the session
+        :return: nothing
+        """
+        existing_region_id = region.get("id")
+        if existing_region_id is not None and existing_region_id is not "":
+            region_in_db = self._get_land_cover_region_by_id_in_session(existing_region_id, session)
+        else:
+            region_in_db = LandCoverRegion()
+        region_in_db.category = category
+        region_in_db.name = region["name"]
+        region_in_db.mask_file = region["path"]

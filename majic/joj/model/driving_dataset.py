@@ -44,5 +44,26 @@ class DrivingDataset(Base):
         """
         return utils.find_parameter_values(self.parameter_values, parameter_namelist_name, is_list)
 
+    def set_from(self, results):
+        """
+        Set from a dictionary of results
+        :param results: the results dictionary
+        :return:nothing
+        """
+        self.name = results.get("name")
+        self.description = results.get("description")
+        self.geographic_region = results.get("geographic_region")
+        self.spatial_resolution = results.get("spatial_resolution")
+        self.temporal_resolution = results.get("temporal_resolution")
+        self.boundary_lat_north = results.get("boundary_lat_north")
+        self.boundary_lat_south = results.get("boundary_lat_south")
+        self.boundary_lon_east = results.get("boundary_lon_east")
+        self.boundary_lon_west = results.get("boundary_lon_west")
+        self.time_start = results.get("time_start")
+        self.time_end = results.get("time_end")
+        self.view_order_index = results.get("view_order_index")
+        self.usage_order_index = results.get("usage_order_index")
+        self.is_restricted_to_admins = results.get("is_restricted_to_admins")
+
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name
