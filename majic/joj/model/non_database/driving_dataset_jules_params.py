@@ -4,6 +4,9 @@ header
 from joj.model import DrivingDatasetParameterValue, DrivingDataset
 from joj.utils import f90_helper, constants
 
+# prefix of driving var variables
+PREFIX_FOR_DRIVING_VARS = 'drive_var_'
+
 
 class DrivingDatasetJulesParams(object):
     """
@@ -56,7 +59,7 @@ class DrivingDatasetJulesParams(object):
             'driving_data_start': constants.JULES_PARAM_DRIVE_DATA_START,
             'driving_data_end': constants.JULES_PARAM_DRIVE_DATA_END,
             'drive_file': constants.JULES_PARAM_DRIVE_FILE,
-            'drive_vars': constants.JULES_PARAM_DRIVE_VAR,
+            'drive_var_vars': constants.JULES_PARAM_DRIVE_VAR,
             'drive_nvars': constants.JULES_PARAM_DRIVE_NVARS,
             'drive_var_names': constants.JULES_PARAM_DRIVE_VAR_NAME,
             'drive_var_templates': constants.JULES_PARAM_DRIVE_TPL_NAME,
@@ -88,7 +91,7 @@ class DrivingDatasetJulesParams(object):
             'driving_data_start': data_start,
             'driving_data_end': data_end,
             'drive_file': drive_file,
-            'drive_vars': drive_var if drive_var is not None else [],
+            'drive_var_vars': drive_var if drive_var is not None else [],
             'drive_var_names': var_names if var_names is not None else [],
             'drive_var_templates': var_templates if var_templates is not None else [],
             'drive_var_interps': var_interps if var_interps is not None else [],
@@ -107,7 +110,7 @@ class DrivingDatasetJulesParams(object):
             'land_frac_frac_name': land_frac_frac_name,
             'soil_props_file': soil_props_file})
 
-        self.values['drive_nvars'] = len(self.values['drive_vars'])
+        self.values['drive_nvars'] = len(self.values['drive_var_vars'])
 
         if extra_parameters is not None:
             self._extra_parameters.update(extra_parameters)
@@ -159,6 +162,15 @@ class DrivingDatasetJulesParams(object):
         self.regions = regions
         self.driving_dataset = driving_dataset
 
+    def _get_driving_var_variable_field_name(self, name):
+        """
+        Get the driving variable name e.g. drive_var_interps interps is returned
+        :param name: full name
+        :return: field name
+        """
+
+        return name[len(PREFIX_FOR_DRIVING_VARS):]
+
     def create_values_dict(self, namelists):
         """
         Create a jules parameters values dictionary
@@ -171,9 +183,10 @@ class DrivingDatasetJulesParams(object):
         for name in self._names_constant_dict.keys():
             if name in self.values:
                 value = self.values[name]
-                if type(value) is list:
+                if name.startswith(PREFIX_FOR_DRIVING_VARS) and value is not None:
                     for val, index in zip(value, range(len(value))):
-                        values_dict["{}_{}".format(name, str(index))] = val
+                        values_dict["{}-{}.{}".format(PREFIX_FOR_DRIVING_VARS, str(index),
+                                                      self._get_driving_var_variable_field_name(name))] = val
                 else:
                     values_dict[name] = value
             else:
@@ -229,18 +242,12 @@ class DrivingDatasetJulesParams(object):
         driving_dataset.time_end = results.get("driving_data_end")
 
         for name, jules_parameter_constant in self._names_constant_dict.iteritems():
-            if name in results:
-                if len(jules_parameter_constant) >= 3:
-                    is_list = jules_parameter_constant[2]
-                else:
-                    is_list = False
-
-                if is_list:
-                    raise Exception()
-                else:
-                    value = results[name]
-
+            if name.startswith(PREFIX_FOR_DRIVING_VARS) and PREFIX_FOR_DRIVING_VARS in results:
+                field_name = self._get_driving_var_variable_field_name(name)
+                value = [result[field_name] for result in results[PREFIX_FOR_DRIVING_VARS]]
                 self.values[name] = value
+            elif name in results:
+                self.values[name] = results[name]
 
         self.add_to_driving_dataset(model_run_service, driving_dataset)
 

@@ -77,7 +77,7 @@ class TestDrivingDataEditOrAdd(TestController):
         assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_x_dim_name']))
         assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_y_dim_name']))
         assert_that(response.normal_body, contains_string(self.driving_dataset_jules_params.values['drive_time_dim_name']))
-        for drive_var in self.driving_dataset_jules_params.values['drive_vars']:
+        for drive_var in self.driving_dataset_jules_params.values['drive_var_vars']:
             assert_that(response.normal_body, contains_string(drive_var))
         for drive_var_name in self.driving_dataset_jules_params.values['drive_var_names']:
             assert_that(response.normal_body, contains_string(drive_var_name))
@@ -157,13 +157,14 @@ class TestDrivingDataEditOrAdd(TestController):
         self.new_driving_dataset.time_start = datetime.datetime(2010, 1, 1, 10, 00)
         self.new_driving_dataset.time_end = datetime.datetime(2010, 2, 1, 10, 00)
 
+        self.drive_var = ['drive var 1', 'drive var 2']
         jules_params = DrivingDatasetJulesParams(
             driving_dateset=self.new_driving_dataset,
             data_start="2010-01-01 10:00",
             data_end="2010-02-01 10:00",
             dataperiod=1800,
             drive_file="jules_param_drive_file",
-            drive_var=['drive var 1', 'drive var 2'],
+            drive_var=self.drive_var,
             var_names=['name1', 'name2'],
             var_templates=['template1', 'template2'],
             var_interps=['interp1', 'interp2'],
@@ -227,6 +228,10 @@ class TestDrivingDataEditOrAdd(TestController):
                     is_(self.new_driving_dataset.time_end), "end time")
         assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_INPUT_GRID_NX),
                     is_(valid_params["drive_nx"]), "nx")
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_NVARS),
+                    is_(valid_params["drive_nvars"]), "drive_nvars")
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR),
+                    is_(self.drive_var), "vars")
 
     def test_GIVEN_invalid_data_WHEN_create_new_THEN_error(self):
 
@@ -249,7 +254,7 @@ class TestDrivingDataEditOrAdd(TestController):
             ]
 
         for name, const in DrivingDatasetJulesParams()._names_constant_dict.iteritems():
-            if name not in ['driving_data_start', 'driving_data_end', 'drive_var_interps', 'drive_var_names', 'drive_var_templates', 'drive_vars']:
+            if name not in ['driving_data_start', 'driving_data_end', 'drive_var_interps', 'drive_var_names', 'drive_var_templates', 'drive_var_vars']:
                 invalid_values.append([name, "", "enter a value"])
 
         for invalid_key, invalid_value, invalid_error in invalid_values:
@@ -290,7 +295,7 @@ class TestDrivingDataEditOrAdd(TestController):
             )
 
             assert_that(response.status_code, is_(200), "status code for page '%s'" % invalid_key)
-            assert_that(response.normal_body, contains_string("Correct values"), "error message for '%s'" % invalid_key)
+            assert_that(response.normal_body, contains_string("Please correct"), "error message for '%s'" % invalid_key)
 
     def test_GIVEN_valid_data_with_masks_WHEN_create_new_THEN_masks_are_created(self):
 

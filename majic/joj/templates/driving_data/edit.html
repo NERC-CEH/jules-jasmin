@@ -312,12 +312,11 @@
                         <h5 class="span2">Template</h5>
                         <h5 class="span2">Interpolation</h5>
                     </div>
-                    <div py:for="varnum in range(c.nvar)" class="controls-row">
-                            ${h.html_tags.text('drive_vars_{}'.format(varnum), placeholder="Variable", class_="span2")}
-                            ${h.html_tags.text('drive_var_names_{}'.format(varnum), placeholder="Variable name", class_="span2")}
-                            ${h.html_tags.text('drive_var_templates_{}'.format(varnum), placeholder="Template name", class_="span2")}
-                            ${h.html_tags.text('drive_var_interps_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
-                            ${h.html_tags.hidden('drive_var_is_deleted_{}'.format(varnum))}
+                    <div py:for="varnum in reversed(range(c.nvar))" class="controls-row">
+                            ${h.html_tags.text('drive_var_-{}.vars'.format(varnum), placeholder="Variable", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.names'.format(varnum), placeholder="Variable name", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.templates'.format(varnum), placeholder="Template name", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
                             <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>

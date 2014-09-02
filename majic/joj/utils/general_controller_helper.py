@@ -20,17 +20,30 @@ def must_be_admin(func, self, *args, **kwargs):
     :return: rendered html
     """
 
-    access_is_ok = False
     try:
         access_is_ok = self.current_user is not None and self.current_user.is_admin()
+        if access_is_ok:
+            return func(self, *args, **kwargs)
     except Exception:
         log.exception("Exception when accessing a admin only page")
-        access_is_ok = False
-
-    if access_is_ok:
-        return func(self, *args, **kwargs)
 
     return render('not_found.html')
+
+
+def put_errors_in_table_on_line(errors, error_key, field_name):
+    """
+    Make a set of errors which are in one category onto one input
+    :param errors: the errors list
+    :param error_key: main key for the error, e.g. region which would be a list of region error dictionaries
+    :param field_name: name of the field to add the errors too
+    """
+
+    region_errors = errors.get(error_key)
+    if region_errors is not None:
+        for region_error, index in zip(region_errors, range(len(region_errors))):
+            if region_error is not None:
+                errors["{}-{}.{}".format(error_key, index, field_name)] = "Please correct"
+        del errors[error_key]
 
 
 class InTestDoNothing(object):

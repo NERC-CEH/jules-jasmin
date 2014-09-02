@@ -19,6 +19,18 @@ class Region(Schema):
     path = validators.String(not_empty=True, max=constants.DB_PATH_SIZE, strip=True)
 
 
+class DriveVar(Schema):
+    """
+    Driving data variables validation schema
+    """
+    allow_extra_fields = False
+    filter_extra_fields = True
+    vars = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    names = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    templates = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    interps = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+
+
 class DrivingDatasetEdit(Schema):
     """Used to validate data for the model run create form"""
 
@@ -62,3 +74,4 @@ class DrivingDatasetEdit(Schema):
     soil_props_file = validators.String(not_empty=True, max=constants.DB_PARAMETER_VALUE_STRING_SIZE)
 
     region = ForEach(Region())
+    drive_var_ = ForEach(DriveVar())

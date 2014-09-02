@@ -45,11 +45,10 @@ function add_variable()
 {
     var_template = ' \
     <div class="controls-row"> \
-            <input class="span2" id="drive_vars_%template%" name="drive_vars_%template%" placeholder="Variable" type="text" value="" /> \
-            <input class="span2" id="drive_var_names_%template%" name="drive_var_names_%template%" placeholder="Variable name" type="text" value="" /> \
-            <input class="span2" id="drive_var_templates_%template%" name="drive_var_templates_%template%" placeholder="Template name" type="text" value="" /> \
-            <input class="span2" id="drive_var_interps_%template%" name="drive_var_interps_%template%" placeholder="Interpolation" type="text" value="" /> \
-            <input id="drive_var_is_deleted_%template%" name="drive_var_is_deleted_%template%" type="hidden" value="" /> \
+            <input class="span2" id="drive_var_-%template%.vars" name="drive_var_-%template%.vars" placeholder="Variable" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.names" name="drive_var_-%template%.names" placeholder="Variable name" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.templates" name="drive_var_-%template%.templates" placeholder="Template name" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.interps" name="drive_var_-%template%.interps" placeholder="Interpolation" type="text" value="" /> \
             <i class="fa fa-times-circle fa-2x ico red span1" onclick="delete_line(this)"></i> \
     </div>';
     add_list_item(var_template, "drive_nvars", "drive_vars_header");

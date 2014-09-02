@@ -5,23 +5,14 @@ import logging
 from formencode.validators import Invalid
 from formencode import variabledecode
 from pylons.controllers.util import redirect
-from pylons.decorators import validate
-from sqlalchemy.orm.exc import NoResultFound
 from pylons import tmpl_context as c, url
 from formencode import htmlfill
-import formencode
 
-from joj.crowd.client import ClientException
 from joj.lib.base import BaseController, request, render
-from joj.lib import helpers
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
-from joj.model.create_new_user_form import CreateUserForm, UpdateUserForm
-from joj.utils import constants, utils
-from joj.utils.general_controller_helper import must_be_admin
+from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line
 from joj.services.model_run_service import ModelRunService
-from joj.services.account_request_service import AccountRequestService
-from joj.services.general import ServiceException
 from joj.model import DrivingDataset
 from joj.services.land_cover_service import LandCoverService
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
@@ -51,6 +42,7 @@ class DrivingDataController(BaseController):
         self._dataset_service = dataset_service
         self._landcover_service = landcover_service
 
+    # noinspection PyArgumentList
     @must_be_admin
     def index(self):
         """
@@ -61,6 +53,7 @@ class DrivingDataController(BaseController):
         c.driving_data_sets = self._dataset_service.get_driving_datasets()
         return render('driving_data/list.html')
 
+    # noinspection PyArgumentList
     @must_be_admin
     def edit(self, id=None):
         """
@@ -68,8 +61,6 @@ class DrivingDataController(BaseController):
         :param id: id of the data ste or none for new dataset
         :return: html to render
         """
-
-        values = {}
         errors = {}
 
         c.namelist = {}
@@ -98,16 +89,9 @@ class DrivingDataController(BaseController):
                 self._dataset_service.create_driving_dataset(result, self._model_run_service, self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
             values["param_names"] = []
-            if result.get('drive_nvars') is None:
-                values['drive_nvars'] = 0
 
-            # reformat errors so they appear on region line not for all field in line
-            region_errors = errors.get("region")
-            if region_errors is not None:
-                for region_error, index in zip(region_errors, range(len(region_errors))):
-                    if region_error is not None:
-                        errors["region-{}.path".format(index)] = "Please correct"
-                del errors["region"]
+            put_errors_in_table_on_line(errors, "region", "path")
+            put_errors_in_table_on_line(errors, "drive_var_", "vars")
 
         else:
             if id is None:
