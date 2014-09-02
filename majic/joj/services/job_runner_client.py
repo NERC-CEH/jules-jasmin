@@ -7,6 +7,7 @@ import requests
 import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
+from joj.utils import utils
 
 log = logging.getLogger(__name__)
 
@@ -80,31 +81,6 @@ class JobRunnerClient(object):
         else:
             raise ServiceException(response.text)
 
-    def _get_parameter_value_from_parameter_list(self, parameters, parameter_namelist_name, is_list=False):
-        """
-        Get a parameter value from a list of parameters
-        :param parameters: List of parameters
-        :param parameter_namelist_name: namelist and name of parameter to get
-        :return:
-        """
-        for parameter in parameters:
-            if parameter.namelist.name == parameter_namelist_name[0]:
-                if parameter.name == parameter_namelist_name[1]:
-                    return parameter.parameter_values[0].get_value_as_python(is_list=is_list)
-
-    def _set_parameter_value_in_parameter_list(self, parameters, parameter_namelist_name, python_value):
-        """
-        Set a parameter value in a list of parameters
-        :param parameters: List of parameters
-        :param parameter_namelist_name: namelist and name of parameter to set
-        :param python_value: value to set
-        :return:
-        """
-        for parameter in parameters:
-            if parameter.namelist.name == parameter_namelist_name[0]:
-                if parameter.name == parameter_namelist_name[1]:
-                    parameter.parameter_values[0].set_value_from_python(python_value)
-
     def convert_model_to_dictionary(self, run_model, parameters, land_cover_actions):
         """
         Convert the run model from the database object to a dictionary that can be sent to the job runner service
@@ -119,60 +95,21 @@ class JobRunnerClient(object):
         # If multicell AND no land cover actions saved --> leave the .nc file as is
         # If single cell AND user uploaded --> use a fractional.dat file.
         # If single cell AND not user uploaded --> use an edited fractional.nc file
-        multicell = self._get_parameter_value_from_parameter_list(
+        multicell = utils.get_first_parameter_value_from_parameter_list(
             parameters, constants.JULES_PARAM_LATLON_REGION) or False
-        user_uploaded = self._get_parameter_value_from_parameter_list(
+        user_uploaded = utils.get_first_parameter_value_from_parameter_list(
             parameters, constants.JULES_PARAM_DRIVE_FILE) == constants.USER_UPLOAD_FILE_NAME
 
         json_land_cover = {}
 
         if multicell:
             if land_cover_actions:
-                # Identify the base land cover file, and rename the parameter to be the new file we'll create
-                # Identify the name of the base land cover variable
-                fractional_base_filename = self._get_parameter_value_from_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_FILE)
-                self._set_parameter_value_in_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_FILE, constants.USER_EDITED_FRACTIONAL_FILENAME)
-                fractional_base_variable_key = self._get_parameter_value_from_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_NAME)
-
-                json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
-                json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
-                json_actions = []
-                for action in land_cover_actions:
-                    json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
-                                   constants.JSON_LAND_COVER_VALUE: action.value_id,
-                                   constants.JSON_LAND_COVER_ORDER: action.order}
-                    json_actions.append(json_action)
-                json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
-                json_land_cover[constants.JSON_LAND_COVER_POINT_EDIT] = {}
+                json_land_cover = self._create_json_land_cover_with_land_cover_actions(land_cover_actions, parameters)
         else:
             if user_uploaded:
-                # Save the fractional file
-                self.start_new_file(run_model.id, constants.FRACTIONAL_FILENAME)
-                self.append_to_file(run_model.id, constants.FRACTIONAL_FILENAME, run_model.land_cover_frac)
-                self.close_file(run_model.id, constants.FRACTIONAL_FILENAME)
-                self._set_parameter_value_in_parameter_list(parameters, constants.JULES_PARAM_FRAC_FILE,
-                                                            constants.FRACTIONAL_FILENAME)
+                json_land_cover = self._create_fractional_file_and_set_parameters(parameters, run_model)
             else:
-                fractional_base_filename = self._get_parameter_value_from_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_FILE)
-                self._set_parameter_value_in_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_FILE, constants.USER_EDITED_FRACTIONAL_FILENAME)
-                fractional_base_variable_key = self._get_parameter_value_from_parameter_list(
-                    parameters, constants.JULES_PARAM_FRAC_NAME)
-
-                lat, lon = self._get_parameter_value_from_parameter_list(
-                    parameters, constants.JULES_PARAM_POINTS_FILE, is_list=True)
-                vals = [float(val) for val in run_model.land_cover_frac.split()]
-                json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
-                json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
-                json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = []
-                land_cover_point_edit = {constants.JSON_LAND_COVER_LAT: lat,
-                                         constants.JSON_LAND_COVER_LON: lon,
-                                         constants.JSON_LAND_COVER_FRACTIONAL_VALS: vals}
-                json_land_cover[constants.JSON_LAND_COVER_POINT_EDIT] = land_cover_point_edit
+                json_land_cover = self._create_json_land_cover_with_single_point_edits(parameters, run_model)
 
         namelist_files = []
 
@@ -204,6 +141,85 @@ class JobRunnerClient(object):
                 constants.JSON_USER_EMAIL: run_model.user.email,
                 constants.JSON_LAND_COVER: json_land_cover
             }
+
+    def _create_json_land_cover_with_land_cover_actions(self, land_cover_actions, parameters):
+        """
+        Create JSON land cover object with land cover actions
+        :param land_cover_actions: List of land cover actions to be applied
+        :param parameters: List of parameters for model run
+        :return: JSON land cover object.
+        """
+        # Identify the base land cover file, and rename the parameter to be the new file we'll create
+        # Identify the name of the base land cover variable
+        json_land_cover = self._create_json_land_cover(parameters)
+
+        # Add the land cover actions
+        json_actions = []
+        for action in land_cover_actions:
+            json_action = {constants.JSON_LAND_COVER_MASK_FILE: action.region.mask_file,
+                           constants.JSON_LAND_COVER_VALUE: action.value_id,
+                           constants.JSON_LAND_COVER_ORDER: action.order}
+            json_actions.append(json_action)
+        json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = json_actions
+        json_land_cover[constants.JSON_LAND_COVER_POINT_EDIT] = {}
+        return json_land_cover
+
+    def _create_fractional_file_and_set_parameters(self, parameters, run_model):
+        """
+        Create a land cover fractional ASCII file on the job runner and set the appropriate parameter
+        in the parameter list
+        :param parameters: List of parameters for model run
+        :param run_model: Model run
+        :return: JSON land cover object (empty)
+        """
+        # Save the fractional file
+        self.start_new_file(run_model.id, constants.FRACTIONAL_FILENAME)
+        self.append_to_file(run_model.id, constants.FRACTIONAL_FILENAME, run_model.land_cover_frac)
+        self.close_file(run_model.id, constants.FRACTIONAL_FILENAME)
+        utils.set_parameter_value_in_parameter_list(
+            parameters, constants.JULES_PARAM_FRAC_FILE, constants.FRACTIONAL_FILENAME)
+        return {}
+
+    def _create_json_land_cover_with_single_point_edits(self, parameters, run_model):
+        """
+        Create a JSON land cover object for single point land cover edits
+        :param parameters: List of parameters
+        :param run_model: Model run
+        :return: JSON land cover object
+        """
+        json_land_cover = self._create_json_land_cover(parameters)
+
+        lat, lon = utils.get_first_parameter_value_from_parameter_list(
+            parameters, constants.JULES_PARAM_POINTS_FILE, is_list=True)
+        vals = [float(val) for val in run_model.land_cover_frac.split()]
+        land_cover_point_edit = {constants.JSON_LAND_COVER_LAT: lat,
+                                 constants.JSON_LAND_COVER_LON: lon,
+                                 constants.JSON_LAND_COVER_FRACTIONAL_VALS: vals}
+        json_land_cover[constants.JSON_LAND_COVER_POINT_EDIT] = land_cover_point_edit
+        return json_land_cover
+
+    def _create_json_land_cover(self, parameters):
+        """
+        Create a JSON land cover object with the land cover base filename, variable key and empty
+        actions and single point edits
+        :param parameters: Parameters for model run
+        :return: JSON land cover object
+        """
+        json_land_cover = {}
+
+        fractional_base_filename = utils.get_first_parameter_value_from_parameter_list(
+            parameters, constants.JULES_PARAM_FRAC_FILE)
+        utils.set_parameter_value_in_parameter_list(
+            parameters, constants.JULES_PARAM_FRAC_FILE, constants.USER_EDITED_FRACTIONAL_FILENAME)
+        fractional_base_variable_key = utils.get_first_parameter_value_from_parameter_list(
+            parameters, constants.JULES_PARAM_FRAC_NAME)
+
+        # Create the land cover JSON object
+        json_land_cover[constants.JSON_LAND_COVER_BASE_FILE] = fractional_base_filename
+        json_land_cover[constants.JSON_LAND_COVER_BASE_KEY] = fractional_base_variable_key
+        json_land_cover[constants.JSON_LAND_COVER_ACTIONS] = []
+        json_land_cover[constants.JSON_LAND_COVER_POINT_EDIT] = {}
+        return json_land_cover
 
     def _find_or_create_namelist_file(self, namelist_files, namelist_filename):
         """

@@ -76,7 +76,17 @@ def convert_time_period_to_name(time_in_seconds):
     return 'Every {} seconds'.format(time_in_seconds)
 
 
-def find_parameter_values(parameter_values, parameter_namelist_name, is_list=None):
+def _is_list(is_list, parameter_namelist_name):
+    is_list_local = is_list
+    if is_list is None:
+        if len(parameter_namelist_name) >= 3:
+            is_list_local = parameter_namelist_name[2]
+        else:
+            is_list_local = False
+    return is_list_local
+
+
+def find_first_parameter_value_in_param_vals_list(parameter_values, parameter_namelist_name, is_list=None):
     """
         Gets the value of the first matching parameter value as a python object
         :param parameter_values: parameter value to search through
@@ -85,14 +95,38 @@ def find_parameter_values(parameter_values, parameter_namelist_name, is_list=Non
         :param is_list: Indicates whether the value is a list, overrides constant
         :return parameter value as python or None
         """
-    is_list_local = is_list
-    if is_list is None:
-        if len(parameter_namelist_name) >= 3:
-            is_list_local = parameter_namelist_name[2]
-        else:
-            is_list_local = False
+    is_list_local = _is_list(is_list, parameter_namelist_name)
     for param_val in parameter_values:
         if param_val.parameter.name == parameter_namelist_name[1]:
             if param_val.parameter.namelist.name == parameter_namelist_name[0]:
                 return param_val.get_value_as_python(is_list=is_list_local)
     return None
+
+
+def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist_name, is_list=False):
+    """
+    Get a parameter value from a list of parameters
+    :param parameters: List of parameters
+    :param parameter_namelist_name: namelist and name of parameter to get
+    :param is_list: Return as list
+    :return: First matching parameter value as Python
+    """
+    is_list_local = _is_list(is_list, parameter_namelist_name)
+    for parameter in parameters:
+        if parameter.namelist.name == parameter_namelist_name[0]:
+            if parameter.name == parameter_namelist_name[1]:
+                return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+
+
+def set_parameter_value_in_parameter_list(parameters, parameter_namelist_name, python_value):
+    """
+    Set a parameter value in a list of parameters
+    :param parameters: List of parameters
+    :param parameter_namelist_name: namelist and name of parameter to set
+    :param python_value: value to set
+    :return:
+    """
+    for parameter in parameters:
+        if parameter.namelist.name == parameter_namelist_name[0]:
+            if parameter.name == parameter_namelist_name[1]:
+                parameter.parameter_values[0].set_value_from_python(python_value)
