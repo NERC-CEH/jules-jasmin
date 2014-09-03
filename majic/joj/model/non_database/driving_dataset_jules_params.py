@@ -4,9 +4,6 @@ header
 from joj.model import DrivingDatasetParameterValue, DrivingDataset
 from joj.utils import f90_helper, constants
 
-# prefix of driving var variables
-PREFIX_FOR_DRIVING_VARS = 'drive_var_'
-
 
 class DrivingDatasetJulesParams(object):
     """
@@ -169,7 +166,7 @@ class DrivingDatasetJulesParams(object):
         :return: field name
         """
 
-        return name[len(PREFIX_FOR_DRIVING_VARS):]
+        return name[len(constants.PREFIX_FOR_DRIVING_VARS):]
 
     def create_values_dict(self, namelists):
         """
@@ -183,9 +180,9 @@ class DrivingDatasetJulesParams(object):
         for name in self._names_constant_dict.keys():
             if name in self.values:
                 value = self.values[name]
-                if name.startswith(PREFIX_FOR_DRIVING_VARS) and value is not None:
+                if name.startswith(constants.PREFIX_FOR_DRIVING_VARS) and value is not None:
                     for val, index in zip(value, range(len(value))):
-                        values_dict["{}-{}.{}".format(PREFIX_FOR_DRIVING_VARS, str(index),
+                        values_dict["{}-{}.{}".format(constants.PREFIX_FOR_DRIVING_VARS, str(index),
                                                       self._get_driving_var_variable_field_name(name))] = val
                 else:
                     values_dict[name] = value
@@ -242,9 +239,9 @@ class DrivingDatasetJulesParams(object):
         driving_dataset.time_end = results.get("driving_data_end")
 
         for name, jules_parameter_constant in self._names_constant_dict.iteritems():
-            if name.startswith(PREFIX_FOR_DRIVING_VARS) and PREFIX_FOR_DRIVING_VARS in results:
+            if name.startswith(constants.PREFIX_FOR_DRIVING_VARS) and constants.PREFIX_FOR_DRIVING_VARS in results:
                 field_name = self._get_driving_var_variable_field_name(name)
-                value = [result[field_name] for result in results[PREFIX_FOR_DRIVING_VARS]]
+                value = [result[field_name] for result in results[constants.PREFIX_FOR_DRIVING_VARS]]
                 self.values[name] = value
             elif name in results:
                 self.values[name] = results[name]

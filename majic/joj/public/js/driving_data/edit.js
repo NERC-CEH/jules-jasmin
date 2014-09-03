@@ -59,7 +59,7 @@ function add_parameter()
 {
     param_template = ' \
     <div class="controls-row"> \
-        <span class="span5"> \
+        <span class="span4"> \
             %name% \
             <input type="hidden" value="%id%" name="param-%template%.id" id="param-%template%.id" /> \
         </span> \

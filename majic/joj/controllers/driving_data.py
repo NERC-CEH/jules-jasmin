@@ -11,13 +11,14 @@ from formencode import htmlfill
 from joj.lib.base import BaseController, request, render
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
-from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line
+from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line, remove_deleted_keys
 from joj.services.model_run_service import ModelRunService
 from joj.model import DrivingDataset
 from joj.services.land_cover_service import LandCoverService
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 from joj.model.schemas.driving_dataset_edit import DrivingDatasetEdit
 from joj.model.non_database.datetime_period_validator import DatetimePeriodValidator
+from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -89,16 +90,23 @@ class DrivingDataController(BaseController):
                 self._dataset_service.create_driving_dataset(result, self._model_run_service, self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
 
+            remove_deleted_keys(
+                values,
+                'drive_nvars',
+                constants.PREFIX_FOR_DRIVING_VARS,
+                ['vars', 'names', 'templates', 'interps'])
+            remove_deleted_keys(values, 'params_count', 'param', ['id', 'value'])
+
+            put_errors_in_table_on_line(errors, "region", "path")
+            put_errors_in_table_on_line(errors, constants.PREFIX_FOR_DRIVING_VARS, "interps")
+            put_errors_in_table_on_line(errors, "param", "value")
+
             values["param_names"] = []
             for parameter in all_parameters:
                 for parameter_index in range(int(values["params_count"])):
-                    parameter_id = values["param-{}.id".format(str(parameter_index))]
+                    parameter_id = values.get("param-{}.id".format(str(parameter_index)))
                     if str(parameter.id) == parameter_id:
                         values["param_names"].append("{}::{}".format(parameter.namelist.name, parameter.name))
-
-            put_errors_in_table_on_line(errors, "region", "path")
-            put_errors_in_table_on_line(errors, "drive_var_", "interps")
-            put_errors_in_table_on_line(errors, "param", "value")
 
         else:
             if id is None:
@@ -119,6 +127,7 @@ class DrivingDataController(BaseController):
             c.nvar = int(values['drive_nvars'])
         except ValueError or KeyError:
             c.nvar = 0
+
         c.param_names = values["param_names"]
         html = render('driving_data/edit.html')
 

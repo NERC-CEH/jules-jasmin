@@ -118,6 +118,9 @@ RUN_ID = "majic"
 # Set the name of the output directory (if changed copy to job_runner)
 OUTPUT_DIR = 'output'
 
+# prefix of driving var variables
+PREFIX_FOR_DRIVING_VARS = 'drive_var_'
+
 # Periods for jules output
 JULES_YEARLY_PERIOD = -2
 JULES_MONTHLY_PERIOD = -1
