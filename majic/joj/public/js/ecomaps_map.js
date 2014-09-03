@@ -213,66 +213,85 @@ var EcomapsMap = (function() {
             updateGraph();
         }
         else {
-
+            var isSingleCell = $(this).attr("single-cell") == "True";
+            var datasetId = $(this).data("dsid");
+            var layerId = $(this).attr("layer-id");
             $(this).closest("li").addClass("active");
             // Plop the loading panel over the map
             setLoadingState(true);
 
-            // Let's get some layers!
-            var datasetId = $(this).data("dsid");
-            var layerId = $(this).attr("layer-id");
-
-            // Load the layers UI straight from the response
-            $.get('/viewdata/layers/' + datasetId + "_" + layerId, function(result) {
-
-                $("div#layer-container").prepend(result);
-                var dimensionItems = $("div#layer-list").find("li.dimension");
-
-                if(dimensionItems.length > 0){
-                    dimensionItems.detach().appendTo("ol#dimension-list");
-                    $("div#dimension-panel").show();
-                }
-                $("div#options-panel").show();
-                createSortableList();
-                updateGraph();
-            });
-
-            // Make the request for the WMS layer data
-            $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
-                function(data){
-
-                    for(var i=0; i< data.length; i++){
-
-                        // Give it a unique ID for our layer bag
-                        var id = "" + layerId;
-
-                        // We'll refer back to this when changing styles or visibility
-                        layerDict[id] = {
-                            index: currentLayerIndex,
-                            data: data[i],
-                            visible: true,
-                            wmsObject: null,
-                            legendURL: null,
-                            scaleMin: data[i].data_range_from,
-                            scaleMax: data[i].data_range_to,
-                            styleName: data[i].styles[0].name,
-                            isCategorical: data[i].is_categorical
-                        };
-
-                        // Now to add to the map, and set a default style
-                        addLayerToMap(layerId);
-                        setLayerStyle(layerId);
-                    }
-
-                    // All done
-                    setLoadingState(false);
-                }
-            ) .fail(function() {
-                    alert("An error occurred loading the dataset, please try again.");
-                    setLoadingState(false);
-                });
+            if (isSingleCell) {
+                loadSingleCellDataset();
+            } else {
+                loadMultiCellDataset(datasetId, layerId);
+            }
+            // All done
+            setLoadingState(false);
         }
     };
+
+    var loadSingleCellDataset = function() {
+        alert("Loading single cell DS");
+
+
+        // THINGS TO DO:
+        // Move map marker (& position var) to desired location
+        // Add my layer to the graph
+        // (Remove any previous single site data from graph - AND deselect? - But only if lat and lon are different? or from different model run)?
+        // Show the graph if not visible
+
+    }
+
+    var loadMultiCellDataset = function(datasetId, layerId) {
+
+        // Load the layers UI straight from the response
+        $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
+
+            $("div#layer-container").prepend(result);
+            var dimensionItems = $("div#layer-list").find("li.dimension");
+
+            if(dimensionItems.length > 0){
+                dimensionItems.detach().appendTo("ol#dimension-list");
+                $("div#dimension-panel").show();
+            }
+            $("div#options-panel").show();
+            createSortableList();
+            updateGraph();
+        });
+
+        // Make the request for the WMS layer data
+        $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
+            function(data){
+
+                for(var i=0; i< data.length; i++){
+
+                    // Give it a unique ID for our layer bag
+                    var id = "" + layerId;
+
+                    // We'll refer back to this when changing styles or visibility
+                    layerDict[id] = {
+                        index: currentLayerIndex,
+                        data: data[i],
+                        visible: true,
+                        wmsObject: null,
+                        legendURL: null,
+                        scaleMin: data[i].data_range_from,
+                        scaleMax: data[i].data_range_to,
+                        styleName: data[i].styles[0].name,
+                        isCategorical: data[i].is_categorical
+                    };
+
+                    // Now to add to the map, and set a default style
+                    addLayerToMap(layerId);
+                    setLayerStyle(layerId);
+                }
+
+            }
+        ).fail(function() {
+                alert("An error occurred loading the dataset, please try again.");
+                setLoadingState(false);
+            });
+    }
 
     /*
      * initMap

@@ -9,6 +9,7 @@
     <link href="/layout/joj.css" rel="stylesheet" media="screen" />
     <link href="/layout/sortable.css" rel="stylesheet" media="screen" />
     <link href="/layout/map.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
 
     <script type="text/javascript" src="/js/jquery.js"></script>
     <script type="text/javascript" src="/js/jquery-sortable-min.js"></script>
@@ -65,7 +66,9 @@
                                                 </li>
                                                 <div id="mod_ds_in_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
-                                                        <a py:if="ds.is_input == 1" class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
+                                                        <py:if test="ds.is_input == 1">
+                                                        <a  class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
+                                                        </py:if>
                                                     </li>
                                                 </div>
                                             </ul>
@@ -77,7 +80,17 @@
                                                 </li>
                                                 <div id="mod_ds_out_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
-                                                        <a py:if="ds.is_input == 0" class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
+                                                        <a py:if="ds.is_input == 0" class="dataset" href="#" layer-id="${ds.layer_id}"
+                                                           data-dsid="${ds.id}" single-cell="${ds.is_single_cell}">
+                                                        <py:choose >
+                                                            <py:when test="ds.is_single_cell == 1">
+                                                                <i class="fa fa-map-marker"></i>
+                                                            </py:when>
+                                                            <py:otherwise>
+                                                                <i class="fa fa-globe"></i>
+                                                            </py:otherwise>
+                                                        </py:choose>
+                                                        &nbsp;&nbsp;${ds.name}</a>
                                                     </li>
                                                 </div>
                                             </ul>

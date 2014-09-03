@@ -187,11 +187,10 @@ class ViewdataController(WmsvizController):
         :param id: The ID of the dataset to get the layer data for, and the ID
         :return: rendered layer
         """
-        dsid, layer_id = id.split("_")
-        dsid = int(dsid)
-        c.layer_id = layer_id
+        dataset_id = request.params['dsid']
+        c.layer_id = request.params['layerid']
 
-        dataset = self._dataset_service.get_dataset_by_id(dsid, user_id=self.current_user.id)
+        dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
 
         c.dataset = dataset
         c.layers = self.get_layers_for_dataset(dataset)

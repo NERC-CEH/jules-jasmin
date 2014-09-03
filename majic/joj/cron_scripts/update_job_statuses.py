@@ -20,7 +20,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     if len(sys.argv) is not 2 or sys.argv[1] == '-h':
-        print "Usage: update_job_statueses <config filename>"
+        print "Usage: update_job_statuses <config filename>"
         print "       updates the job statuses in the database from the jobs service"
         print "       config filename: filename of the configuration file e.g. development.ini"
         exit()
