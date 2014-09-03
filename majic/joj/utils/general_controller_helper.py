@@ -19,13 +19,16 @@ def must_be_admin(func, self, *args, **kwargs):
     :param kwargs: dictionary for the functions
     :return: rendered html
     """
-
+    access_is_ok = False
     try:
         access_is_ok = self.current_user is not None and self.current_user.is_admin()
-        if access_is_ok:
-            return func(self, *args, **kwargs)
     except Exception:
+        access_is_ok = False
         log.exception("Exception when accessing a admin only page")
+
+    # call to render page must be outside exception block otherwise redirects do not work
+    if access_is_ok:
+        return func(self, *args, **kwargs)
 
     return render('not_found.html')
 

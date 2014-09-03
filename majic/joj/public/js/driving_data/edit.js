@@ -61,9 +61,9 @@ function add_parameter()
     <div class="controls-row"> \
         <span class="span5"> \
             %name% \
-            <input type="hidden" value="%id%" name="param_id_%template%" id="param_id_%template%" /> \
+            <input type="hidden" value="%id%" name="param-%template%.id" id="param-%template%.id" /> \
         </span> \
-        <input type="text" value="" placeholder="Fortran namelist value" name="param_value_%template%" id="param_value_%template%" class="span5" /> \
+        <input type="text" value="" placeholder="Fortran namelist value" name="param-%template%.value" id="param-%template%.value" class="span4" /> \
         <i class="fa fa-times-circle fa-2x ico red span1"></i> \
     </div>';
 

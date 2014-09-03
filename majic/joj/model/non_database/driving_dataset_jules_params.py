@@ -204,11 +204,11 @@ class DrivingDatasetJulesParams(object):
                     continue
             params.append([name, param_id, val])
 
-        params = sorted(params, key=lambda param: param[0])
+        params = sorted(params, key=lambda param: param[0], reverse=True)
         index = 0
         for name, param_id, val in params:
-            values_dict["param_id_{}".format(str(index))] = param_id
-            values_dict["param_value_{}".format(str(index))] = val
+            values_dict["param-{}.id".format(str(index))] = param_id
+            values_dict["param-{}.value".format(str(index))] = val
             index += 1
 
         values_dict["param_names"] = [param[0] for param in params]
@@ -248,6 +248,10 @@ class DrivingDatasetJulesParams(object):
                 self.values[name] = value
             elif name in results:
                 self.values[name] = results[name]
+
+        if 'param' in results:
+            for result in results['param']:
+                self._extra_parameters[result['id']] = result['value']
 
         self.add_to_driving_dataset(model_run_service, driving_dataset)
 

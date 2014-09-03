@@ -39,7 +39,7 @@ class DrivingDatasetParameterValue(Base):
         self.value = value
 
     def __repr__(self):
-        return "<DrivingDatasetParameterValue(parameter_id=%s, value=%s>" % self.parameter_id, self.value
+        return "<DrivingDatasetParameterValue(parameter_id=%s, value=%s>" % (self.parameter_id, self.value)
 
     def set_value_from_python(self, value):
         """

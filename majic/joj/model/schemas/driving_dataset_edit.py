@@ -31,6 +31,16 @@ class DriveVar(Schema):
     interps = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
 
 
+class ExtraParameter(Schema):
+    """
+    Extra parameters validation schema
+    """
+    allow_extra_fields = False
+    filter_extra_fields = True
+    id = validators.Int()
+    value = validators.String(not_empty=True, max=constants.DB_PARAMETER_VALUE_STRING_SIZE, strip=True)
+
+
 class DrivingDatasetEdit(Schema):
     """Used to validate data for the model run create form"""
 
@@ -75,3 +85,4 @@ class DrivingDatasetEdit(Schema):
 
     region = ForEach(Region())
     drive_var_ = ForEach(DriveVar())
+    param = ForEach(ExtraParameter())

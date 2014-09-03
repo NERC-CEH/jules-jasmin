@@ -33,5 +33,10 @@ class DatetimeValidator(object):
             try:
                 return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT)
             except ValueError:
+                pass
+
+            try:
+                return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT + ':%S')
+            except ValueError:
                 self._errors[key] = 'Enter date as YYYY-MM-DD HH:MM'
             return None

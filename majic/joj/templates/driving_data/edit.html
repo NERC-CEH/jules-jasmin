@@ -423,12 +423,12 @@
                         <h5 class="span5">Value</h5>
                     </div>
                     ${h.html_tags.hidden('params_count')}
-                    <div py:for="varnum in range(len(c.param_names))" class="controls-row">
-                        <span class="span5">
+                    <div py:for="varnum in reversed(range(len(c.param_names)))" class="controls-row">
+                        <span class="span4">
                             ${c.param_names[varnum]}
-                            ${h.html_tags.hidden('param_id_{}'.format(varnum))}
+                            ${h.html_tags.hidden('param-{}.id'.format(varnum))}
                         </span>
-                        ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
+                        ${h.html_tags.text('param-{}.value'.format(varnum), placeholder='Fortran namelist value', class_='span4')}
                         <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>

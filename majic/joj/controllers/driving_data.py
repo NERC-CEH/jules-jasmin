@@ -88,10 +88,17 @@ class DrivingDataController(BaseController):
             if len(errors) == 0:
                 self._dataset_service.create_driving_dataset(result, self._model_run_service, self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
+
             values["param_names"] = []
+            for parameter in all_parameters:
+                for parameter_index in range(int(values["params_count"])):
+                    parameter_id = values["param-{}.id".format(str(parameter_index))]
+                    if str(parameter.id) == parameter_id:
+                        values["param_names"].append("{}::{}".format(parameter.namelist.name, parameter.name))
 
             put_errors_in_table_on_line(errors, "region", "path")
-            put_errors_in_table_on_line(errors, "drive_var_", "vars")
+            put_errors_in_table_on_line(errors, "drive_var_", "interps")
+            put_errors_in_table_on_line(errors, "param", "value")
 
         else:
             if id is None:
@@ -108,7 +115,10 @@ class DrivingDataController(BaseController):
             values = jules_params.create_values_dict(c.namelist)
 
         c.masks = int(values['mask_count'])
-        c.nvar = int(values['drive_nvars'])
+        try:
+            c.nvar = int(values['drive_nvars'])
+        except ValueError or KeyError:
+            c.nvar = 0
         c.param_names = values["param_names"]
         html = render('driving_data/edit.html')
 
@@ -116,4 +126,5 @@ class DrivingDataController(BaseController):
             html,
             defaults=values,
             errors=variabledecode.variable_encode(errors, add_repetitions=False),
-            auto_error_formatter=BaseController.error_formatter)
+            auto_error_formatter=BaseController.error_formatter,
+            prefix_error=False)

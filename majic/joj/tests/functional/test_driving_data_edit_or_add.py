@@ -327,3 +327,50 @@ class TestDrivingDataEditOrAdd(TestController):
         assert_that(regions[0].name, is_(valid_params["region-0.name"]), "name of region")
         assert_that(regions[0].category.name, is_(valid_params["region-0.category"]), "category of region")
         assert_that(regions[0].mask_file, is_(valid_params["region-0.path"]), "path of region")
+
+    def test_GIVEN_invalid_extra_parameter_data_WHEN_create_new_THEN_error(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        valid_params = self.create_valid_post_values()
+        valid_params["params_count"] = 1
+        valid_params["param-0.id"] = "23"
+        valid_params["param-0.value"] = ""
+
+        response = self.app.post(
+            url=url(controller='driving_data', action='edit'),
+            params=valid_params,
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(200), "status code for page")
+        assert_that(response.normal_body, contains_string("enter a value"), "error message for ")
+
+    def test_GIVEN_valid_data_with_extra_parameters_WHEN_create_new_THEN_extra_parameters_are_created(self):
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        valid_params = self.create_valid_post_values()
+        valid_params["params_count"] = 1
+        parameter_id = 23
+        valid_params["param-0.id"] = str(parameter_id)
+        valid_params["param-0.value"] = "value"
+
+        response = self.app.post(
+            url=url(controller='driving_data', action='edit'),
+            params=valid_params,
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(302), "no redirect after successful post got %s" % response.normal_body)
+
+        with session_scope(Session) as session:
+            driving_dataset_id = session\
+                .query(DrivingDataset)\
+                .filter(DrivingDataset.name == self.new_driving_dataset.name)\
+                .one().id
+            driving_dataset = DatasetService().get_driving_dataset_by_id(driving_dataset_id)
+
+        value = [parameter_value for parameter_value in driving_dataset.parameter_values if parameter_value.parameter_id == parameter_id]
+        assert_that(len(value), is_(1), "number of parameter values")
+        assert_that(value[0].get_value_as_python(), is_(valid_params["param-0.value"]), "parameter value")
