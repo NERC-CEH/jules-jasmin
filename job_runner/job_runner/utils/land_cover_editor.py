@@ -4,6 +4,7 @@ header
 import logging
 from netCDF4 import Dataset
 import numpy as np
+from numpy.numarray import ma
 import os
 import shutil
 from job_runner.utils import constants
@@ -18,15 +19,16 @@ class LandCoverEditor(object):
     Edits land cover files
     """
 
-    def __init__(self):
-        self.nc_helper = NetCdfHelper()
+    def __init__(self, nc_helper=NetCdfHelper()):
+        self._nc_helper = nc_helper
 
-    def apply_land_cover_action(self, base_file_path, mask_file_path, value, key='frac'):
+    def apply_land_cover_action(self, base_file_path, mask_file_path, value, ice_index, key='frac'):
         """
         Apply a land cover action to a base land cover file.
         :param base_file_path: Path of the base land cover file to edit
         :param mask_file_path: Path of the mask file for the region to apply the action over
         :param value: Land cover value to set the region to
+        :param ice_index: Index of the ice
         :param key: The name of the fractional cover variable in the land cover file
         :return:
         """
@@ -45,7 +47,8 @@ class LandCoverEditor(object):
                           "was the wrong shape for the land cover map." % mask_file_path)
             raise ServiceException("Could not apply land cover edit: the mask file was the wrong "
                                    "shape for the land cover map.")
-        combined_mask = base_mask | region_mask
+        ice_mask = self._create_ice_mask(base_frac_array, ice_index)
+        combined_mask = base_mask | region_mask | ice_mask
         base_frac_array.mask = combined_mask
         base_frac_array.harden_mask()
 
@@ -77,14 +80,14 @@ class LandCoverEditor(object):
         base_frac_array = base_frac[:, :, :]
 
         # Get the indices of the latitude and longitude position
-        lat_key = self.nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LATITUDE)
-        lon_key = self.nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LONGITUDE)
+        lat_key = self._nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LATITUDE)
+        lon_key = self._nc_helper.look_for_key(base.variables.keys(), constants.NETCDF_LONGITUDE)
         if lat_key is None or lon_key is None:
             log.exception("Could not apply land cover edit: could not identify latitude and longitude variables")
             raise ServiceException("Could not apply land cover edit: could not identify "
                                    "latitude and longitude variables")
-        lat_index = self.nc_helper.get_closest_value_index(base.variables[lat_key][:], lat)
-        lon_index = self.nc_helper.get_closest_value_index(base.variables[lon_key][:], lon)
+        lat_index = self._nc_helper.get_closest_value_index(base.variables[lat_key][:], lat)
+        lon_index = self._nc_helper.get_closest_value_index(base.variables[lon_key][:], lon)
 
         n_pseudo = base_frac.shape[0]
         if n_pseudo != len(fractional_cover):
@@ -108,3 +111,8 @@ class LandCoverEditor(object):
         dest_file_path = os.path.join(run_directory, constants.USER_EDITED_FRACTIONAL_FILENAME)
         shutil.copyfile(base_file_path, dest_file_path)
         return dest_file_path
+
+    def _create_ice_mask(self, frac_array, ice_index):
+        ice_array = frac_array[ice_index - 1]
+        masked_ice_array = ma.masked_greater(ice_array, 0)
+        return masked_ice_array.mask

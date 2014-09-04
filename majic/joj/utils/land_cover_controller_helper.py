@@ -32,7 +32,7 @@ class LandCoverControllerHelper(object):
             tmpl_context.land_cover_actions = []
         else:
             tmpl_context.land_cover_actions = land_cover_actions
-        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values()
+        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values(return_ice=False)
         tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
             model_run.driving_dataset_id)
 

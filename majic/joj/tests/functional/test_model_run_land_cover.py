@@ -112,7 +112,7 @@ class TestModelRunLandCover(TestController):
     def test_GIVEN_nothing_WHEN_get_THEN_values_rendered(self):
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        values = LandCoverService().get_land_cover_values()
+        values = LandCoverService().get_land_cover_values(return_ice=False)
         for value in values:
             assert_that(response.normal_body, contains_string(str(value.name)))
 
@@ -125,10 +125,10 @@ class TestModelRunLandCover(TestController):
             action = LandCoverAction()
             action.model_run = model_run
             action.region_id = 1  # Thames
-            action.value_id = 9  # Ice
+            action.value_id = 5  # Shrub
 
         response = self.app.get(url(controller='model_run', action='land_cover'))
-        assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Ice</b>"))
+        assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Shrub</b>"))
 
     def test_GIVEN_invalid_land_cover_actions_already_saved_WHEN_get_THEN_errors_returned_no_actions_rendered(self):
         with session_scope() as session:
@@ -160,7 +160,7 @@ class TestModelRunLandCover(TestController):
             action = LandCoverAction()
             action.model_run = model_run
             action.region_id = 1  # Thames
-            action.value_id = 9  # Ice
+            action.value_id = 5  # Shrub
             action.order = 5
             session.add(action)
             session.commit()
@@ -184,7 +184,7 @@ class TestModelRunLandCover(TestController):
         response = self.app.get(url(controller='model_run', action='land_cover'))
         order1 = response.normal_body.index("Change <b>Itchen (Rivers)</b> to <b>Broad-leaved Tree</b>")
         order2 = response.normal_body.index("Change <b>Hampshire (Counties)</b> to <b>Urban</b>")
-        order5 = response.normal_body.index("Change <b>Thames (Rivers)</b> to <b>Ice</b>")
+        order5 = response.normal_body.index("Change <b>Thames (Rivers)</b> to <b>Shrub</b>")
         assert (order1 < order2 < order5)
 
     def generate_categories_with_regions(self, driving_dataset):

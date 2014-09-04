@@ -113,6 +113,7 @@ class TestJobService(TestController):
     def test_GIVEN_land_cover_actions_WHEN_submit_job_THEN_land_cover_editor_called_correctly(self):
         land_cover_dict = {JSON_LAND_COVER_BASE_FILE: 'data/ancils/frac.nc',
                            JSON_LAND_COVER_BASE_KEY: 'frac',
+                           JSON_LAND_COVER_ICE_INDEX: 9,
                            JSON_LAND_COVER_ACTIONS: [{JSON_LAND_COVER_MASK_FILE: 'data/masks/mask1.nc',
                                                       JSON_LAND_COVER_VALUE: '9',
                                                       JSON_LAND_COVER_ORDER: '2'},
@@ -138,13 +139,13 @@ class TestJobService(TestController):
         assert_that(called_run_directory, is_(self.run_dir))
 
         # Check that the apply action was called correctly the first time
-        called_base, called_mask, called_value = land_cover_editor.apply_land_cover_action.call_args_list[0][0]
+        called_base, called_mask, called_value, ice = land_cover_editor.apply_land_cover_action.call_args_list[0][0]
         assert_that(called_base, is_(expected_copied_base_path))
         assert_that(called_mask, is_(self.run_dir + '/data/masks/mask2.nc'))
         assert_that(called_value, is_('5'))
 
         # Check that the apply actions was called correctly the second time
-        called_base, called_mask, called_value = land_cover_editor.apply_land_cover_action.call_args_list[1][0]
+        called_base, called_mask, called_value, ice = land_cover_editor.apply_land_cover_action.call_args_list[1][0]
         assert_that(called_base, is_(expected_copied_base_path))
         assert_that(called_mask, is_(self.run_dir + '/data/masks/mask1.nc'))
         assert_that(called_value, is_('9'))

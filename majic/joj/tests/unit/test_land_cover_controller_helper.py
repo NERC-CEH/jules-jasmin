@@ -41,7 +41,7 @@ class TestLandCoverControllerHelper(BaseTest):
         pass
 
     @staticmethod
-    def _mock_get_land_cover_values():
+    def _mock_get_land_cover_values(return_ice=False):
         land_cover_values = []
         types = {1: 'BT', 2: 'NT', 3: 'C3G', 4: 'C4G', 5: 'Shrub', 6: 'Urban', 7: 'Lake', 8: 'Soil',
                  9: 'Ice'}
