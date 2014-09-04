@@ -375,6 +375,24 @@ class TestModelRunLandCoverSingleCell(TestController):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         assert_that(model_run.land_cover_frac, is_("0.2\t0.25\t0.05\t0.1\t0.1\t0.05\t0.1\t0.15\t0"))
 
+    def test_GIVEN_valid_fractional_cover_WHEN_post_THEN_default_soil_props_saved(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        soil_props = model_run.get_python_parameter_value(JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+        assert_that(soil_props, is_([0.9, 0.0, 0.0, 50.0, 275.0, 300.0, 10.0, 0.0, 0.5]))
+
     def test_GIVEN_ice_fractional_cover_WHEN_post_THEN_values_saved(self):
         self.set_up_single_cell_model_run()
         self.app.post(

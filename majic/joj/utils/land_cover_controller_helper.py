@@ -127,6 +127,7 @@ class LandCoverControllerHelper(object):
         if len(errors) == 0:
             fractional_string = '\t'.join([str(val) for val in sorted_fractional_values])
             self.land_cover_service.save_fractional_land_cover_for_model(model_run, fractional_string)
+            self.land_cover_service.save_default_soil_properties(model_run)
 
     def _validate_values(self, values, errors, driving_data):
         # Check that:
@@ -171,6 +172,10 @@ class LandCoverControllerHelper(object):
                 break
         if missing_values:
             return len(raw_frac_vals) * [0.0]
+
+        if sum(raw_frac_vals) < 0.9 or sum(raw_frac_vals) > 1.1:
+            # This is more than just a rounding error
+            return raw_frac_vals
 
         rounded_vals = []
         non_zero_indices = []
