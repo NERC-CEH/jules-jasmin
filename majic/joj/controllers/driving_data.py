@@ -74,11 +74,17 @@ class DrivingDataController(BaseController):
         c.driving_dataset_id = id
         if request.POST:
             values = dict(request.params)
+            remove_deleted_keys(
+                values,
+                'drive_nvars',
+                constants.PREFIX_FOR_DRIVING_VARS,
+                ['vars', 'names', 'templates', 'interps'])
+            remove_deleted_keys(values, 'params_count', 'param', ['id', 'value'])
 
             schema = DrivingDatasetEdit()
             result = {}
             try:
-                result = schema.to_python(dict(request.params), c)
+                result = schema.to_python(values, c)
             except Invalid, e:
                 errors.update(e.unpack_errors())
 
@@ -87,15 +93,12 @@ class DrivingDataController(BaseController):
                 date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
 
             if len(errors) == 0:
-                self._dataset_service.create_driving_dataset(result, self._model_run_service, self._landcover_service)
+                self._dataset_service.create_driving_dataset(
+                    id,
+                    result,
+                    self._model_run_service,
+                    self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
-
-            remove_deleted_keys(
-                values,
-                'drive_nvars',
-                constants.PREFIX_FOR_DRIVING_VARS,
-                ['vars', 'names', 'templates', 'interps'])
-            remove_deleted_keys(values, 'params_count', 'param', ['id', 'value'])
 
             put_errors_in_table_on_line(errors, "region", "path")
             put_errors_in_table_on_line(errors, constants.PREFIX_FOR_DRIVING_VARS, "interps")
@@ -125,7 +128,7 @@ class DrivingDataController(BaseController):
         c.masks = int(values['mask_count'])
         try:
             c.nvar = int(values['drive_nvars'])
-        except ValueError or KeyError:
+        except (ValueError, KeyError):
             c.nvar = 0
 
         c.param_names = values["param_names"]

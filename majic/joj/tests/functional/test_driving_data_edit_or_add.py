@@ -5,10 +5,12 @@ import datetime
 from hamcrest import *
 from joj.tests import *
 from joj.utils import constants, utils
-from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory, DrivingDataset, Session
+from joj.model import session_scope, LandCoverRegion, LandCoverRegionCategory, DrivingDataset, Session, \
+    DrivingDatasetParameterValue
 from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 from joj.services.dataset import DatasetService
 from joj.services.land_cover_service import LandCoverService
+from joj.services.model_run_service import ModelRunService
 
 
 class TestDrivingDataEditOrAdd(TestController):
@@ -201,7 +203,7 @@ class TestDrivingDataEditOrAdd(TestController):
 
         assert_that(response.status_code, is_(302), "no redirect after successful post got %s" % response.normal_body)
 
-        with session_scope(Session) as session:
+        with session_scope() as session:
             driving_dataset_id = session\
                 .query(DrivingDataset)\
                 .filter(DrivingDataset.name == self.new_driving_dataset.name)\
@@ -344,7 +346,7 @@ class TestDrivingDataEditOrAdd(TestController):
         )
 
         assert_that(response.status_code, is_(200), "status code for page")
-        assert_that(response.normal_body, contains_string("enter a value"), "error message for ")
+        assert_that(response.normal_body, contains_string("Please correct"), "error message for ")
 
     def test_GIVEN_valid_data_with_extra_parameters_WHEN_create_new_THEN_extra_parameters_are_created(self):
 
@@ -373,9 +375,9 @@ class TestDrivingDataEditOrAdd(TestController):
 
         value = [parameter_value for parameter_value in driving_dataset.parameter_values if parameter_value.parameter_id == parameter_id]
         assert_that(len(value), is_(1), "number of parameter values")
-        assert_that(value[0].get_value_as_python(), is_(valid_params["param-0.value"]), "parameter value")
+        assert_that(value[0].value, is_(valid_params["param-0.value"]), "parameter value")
 
-    def test_GIVEN_valid_data_with_extra_parameters_where_one_has_been_deleted_WHEN_create_new_THEN_extra_parameters_are_created(self):
+    def test_GIVEN_valid_data_with_extra_parameters_where_one_has_been_deleted_WHEN_create_new_THEN_error(self):
 
         self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
 
@@ -394,11 +396,71 @@ class TestDrivingDataEditOrAdd(TestController):
 
         assert_that(response.status_code, is_(200), "status code for page")
 
-        with session_scope(Session) as session:
-            driving_dataset_id = session\
-                .query(DrivingDataset)\
-                .filter(DrivingDataset.name == self.new_driving_dataset.name)\
-                .one().id
-            driving_dataset = DatasetService().get_driving_dataset_by_id(driving_dataset_id)
+    def test_GIVEN_valid_data_with_extra_parameters_WHEN_update_THEN_parameters_are_updated(self):
 
-        assert_that(response.normal_body, contains_string("enter a value"), "error message for ")
+        with session_scope(Session) as session:
+            original_count = session\
+                .query(DrivingDataset).count()
+
+            parameter_value = DrivingDatasetParameterValue(ModelRunService(), self.driving_dataset, 23, "old value")
+            param_id_to_delete = 1
+            parameter_value = DrivingDatasetParameterValue(ModelRunService(), self.driving_dataset, param_id_to_delete,
+                                                           "to be deleted")
+
+        self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        valid_params = self.create_valid_post_values()
+        valid_params["params_count"] = 1
+        parameter_id = 23
+        valid_params["param-0.id"] = str(parameter_id)
+        valid_params["param-0.value"] = "expected extra parameter value"
+
+        valid_params["mask_count"] = 1
+        valid_params["region-0.name"] = "a value"
+        valid_params["region-0.category"] = "a value"
+        valid_params["region-0.path"] = "a value"
+        valid_params["region-0.id"] = ""
+
+        expected_nvars = len(self.drive_var) + 1
+        last_index = len(self.drive_var) + 4
+        valid_params["drive_nvars"] = last_index + 1
+        valid_params["drive_var_-{}.vars".format(last_index)] = 'blah'
+        valid_params["drive_var_-{}.names".format(last_index)] = 'blah'
+        valid_params["drive_var_-{}.templates".format(last_index)] = 'blah'
+        valid_params["drive_var_-{}.interps".format(last_index)] = 'blah'
+
+        response = self.app.post(
+            url=url(controller='driving_data', action='edit', id=str(self.driving_dataset.id)),
+            params=valid_params,
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(302), "status code for page")
+
+        with session_scope(Session) as session:
+            final_count = session\
+                .query(DrivingDataset).count()
+
+        assert_that(final_count, is_(original_count), "number of driving datasets (before and after update)")
+
+        with session_scope(Session) as session:
+            driving_dataset = DatasetService().get_driving_dataset_by_id(self.driving_dataset.id)
+        regions = LandCoverService().get_land_cover_regions(self.driving_dataset.id)
+
+        assert_that(driving_dataset.name, is_(self.new_driving_dataset.name), "name has changed")
+        value = [parameter_value for parameter_value in driving_dataset.parameter_values if parameter_value.parameter_id == parameter_id]
+        assert_that(len(value), is_(1), "number of parameter values")
+        assert_that(value[0].value, is_(valid_params["param-0.value"]), "parameter value")
+
+
+        assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_NVARS), is_(expected_nvars), "nvars")
+
+        for parameter_value in driving_dataset.parameter_values:
+            if parameter_value.parameter_id == param_id_to_delete:
+                self.fail("Parameter should have been deleted but wasn't")
+
+
+        assert_that(len(regions), is_(1), "number of regions")
+        assert_that(regions[0].name, is_(valid_params["region-0.name"]), "name of region")
+        assert_that(regions[0].category.name, is_(valid_params["region-0.category"]), "category of region")
+        assert_that(regions[0].mask_file, is_(valid_params["region-0.path"]), "path of region")

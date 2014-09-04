@@ -221,7 +221,7 @@ class TestController(TestCase):
         location2 = DrivingDatasetLocation()
         location2.base_url = "base_url2"
         location2.driving_dataset = driving1
-        jules_params.add_to_driving_dataset(model_run_service, driving1)
+        jules_params.add_to_driving_dataset(model_run_service, driving1, session)
 
         session.add(driving1)
         session.commit()

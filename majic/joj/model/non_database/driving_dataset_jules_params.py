@@ -1,7 +1,7 @@
 """
 header
 """
-from joj.model import DrivingDatasetParameterValue, DrivingDataset
+from joj.model import DrivingDatasetParameterValue
 from joj.utils import f90_helper, constants
 
 
@@ -112,23 +112,28 @@ class DrivingDatasetJulesParams(object):
         if extra_parameters is not None:
             self._extra_parameters.update(extra_parameters)
 
-    def add_to_driving_dataset(self, model_run_service, driving_dataset):
+    def add_to_driving_dataset(self, model_run_service, driving_dataset, session):
         """
         Create driving data set parameters for non-none parameters set and add them to the driving dataset
         :param model_run_service: model run service to use
         :param driving_dataset: the driving dataset to add the parameters to
+        :param session: database session to use
         :return:nothing
         """
 
         for key, value in self.values.iteritems():
             if value is not None and value != []:
                 val = f90_helper.python_to_f90_str(value)
-                DrivingDatasetParameterValue(model_run_service, driving_dataset, self._names_constant_dict[key], val)
+                DrivingDatasetParameterValue(
+                    model_run_service,
+                    driving_dataset,
+                    self._names_constant_dict[key],
+                    val,
+                    session)
 
         for parameter_id, value in self._extra_parameters.iteritems():
             if value is not None and value != []:
-                val = f90_helper.python_to_f90_str(value)
-                DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, val)
+                DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, value, session)
 
     def set_from(self, driving_dataset, regions):
         """
@@ -222,9 +227,16 @@ class DrivingDatasetJulesParams(object):
 
         return values_dict
 
-    def create_driving_dataset_from_dict(self, session, model_run_service, land_cover_service, results):
+    def update_driving_dataset_from_dict(
+            self,
+            driving_dataset,
+            session,
+            model_run_service,
+            land_cover_service,
+            results):
         """
-        Create a driving dataset object from a results dictionary
+        Update a driving dataset object from a results dictionary
+        :param driving_dataset: the driving dataset to update
         :param results: the results
         :param session: session to use
         :param model_run_service: model run service
@@ -232,7 +244,6 @@ class DrivingDatasetJulesParams(object):
         :return: the driving dataset
         """
 
-        driving_dataset = DrivingDataset()
         driving_dataset.set_from(results)
 
         driving_dataset.time_start = results.get("driving_data_start")
@@ -250,7 +261,7 @@ class DrivingDatasetJulesParams(object):
             for result in results['param']:
                 self._extra_parameters[result['id']] = result['value']
 
-        self.add_to_driving_dataset(model_run_service, driving_dataset)
+        self.add_to_driving_dataset(model_run_service, driving_dataset, session)
 
         land_cover_service\
             .update_regions_and_categories_in_session(session, driving_dataset, results["region"])

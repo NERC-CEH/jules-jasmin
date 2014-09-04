@@ -171,7 +171,7 @@ class ModelRunService(DatabaseService):
         parameters.append([constants.JULES_PARAM_OUTPUT_NPROFILES, group_id, None])
 
         for constant, value, group_id in parameters:
-            param = self._get_parameter_by_constant(constant, session)
+            param = self.get_parameter_by_constant_in_session(constant, session)
             param_value = ParameterValue()
             param_value.parameter = param
             param_value.model_run = model_run
@@ -342,7 +342,7 @@ class ModelRunService(DatabaseService):
         """
 
         with self.readonly_scope() as session:
-            parameter = self._get_parameter_by_constant(param_namelist_and_name, session)
+            parameter = self.get_parameter_by_constant_in_session(param_namelist_and_name, session)
             return parameter
 
     def save_new_parameters(self, params_values, params_to_delete, user):
@@ -389,7 +389,7 @@ class ModelRunService(DatabaseService):
         :param group_id: Specify an optional group_id to group parameters
         :return:
         """
-        parameter = self._get_parameter_by_constant(param_namelist_name, session)
+        parameter = self.get_parameter_by_constant_in_session(param_namelist_name, session)
         try:
             parameter_value = session.query(ParameterValue) \
                 .filter(ParameterValue.model_run_id == model_run.id) \
@@ -403,7 +403,7 @@ class ModelRunService(DatabaseService):
         parameter_value.set_value_from_python(value)
         session.add(parameter_value)
 
-    def _get_parameter_by_constant(self, parameter_constant, session):
+    def get_parameter_by_constant_in_session(self, parameter_constant, session):
         """
         Get a JULES parameter by name
         :param parameter_constant: tuple of Namelist name and Parameter name

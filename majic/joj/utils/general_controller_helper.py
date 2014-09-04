@@ -57,8 +57,14 @@ def remove_deleted_keys(values, count_key, var_prefix, fieldnames):
      :param var_prefix: the prefix for the variables
      :param fieldnames: the fields associated with the prefix
     """
+
+    try:
+        current_count = int(values[count_key])
+    except (KeyError, ValueError):
+        current_count = 0
+
     new_index = 0
-    for i in range(int(values[count_key])):
+    for i in range(current_count):
                 name = "{}-{}.{}"
                 if name.format(var_prefix, i, fieldnames[0]) in values:
                     if new_index != i:
