@@ -177,7 +177,7 @@ class LandCoverService(DatabaseService):
                                       constants.JULES_PARAM_SOIL_PROPS_VAR,
                                       constants.JULES_PARAM_SOIL_USE_FILE,
                                       constants.JULES_PARAM_SOIL_CONST_VALS]
-                    self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run)
+                    self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run.user_id)
             except DapClientException:
                 # We don't want to do anything because we'll just leave whatever defaults are already present.
                 return

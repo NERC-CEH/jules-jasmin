@@ -31,6 +31,7 @@ class TestLandCoverControllerHelper(BaseTest):
         self.land_cover_service.get_land_cover_actions_for_model = self._mock_lcs_get_actions_for_model_run
         self.land_cover_service.save_fractional_land_cover_for_model = MagicMock()
         self.land_cover_service.get_default_fractional_cover = self._mock_lcs_get_default_fractional_cover
+        self.land_cover_service.save_default_soil_properties = MagicMock()
 
         self.land_cover_helper = LandCoverControllerHelper(land_cover_service=self.land_cover_service)
 

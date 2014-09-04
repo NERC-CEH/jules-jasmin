@@ -13,6 +13,7 @@ from joj.services.dap_client.dap_client import DapClientException
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.utils import constants
 from joj.services.general import ServiceException
+from joj.services.parameter_service import ParameterService
 
 
 class MockLandCoverDapClient(object):
@@ -79,6 +80,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.land_cover_service = LandCoverService(dap_client_factory=dap_client_factory)
         self.model_run_service = ModelRunService()
         self.dataset_service = DatasetService()
+        self.parameter_service = ParameterService()
         self.clean_database()
         self.user = self.login()
         self.create_model_run_ready_for_submit()
@@ -374,6 +376,6 @@ class TestLandCoverService(TestWithFullModelRun):
     def set_model_run_latlon(self, user, lat, lon):
         params_to_save = [[constants.JULES_PARAM_POINTS_FILE, [lat, lon]]]
         params_to_del = constants.JULES_PARAM_POINTS_FILE
-        self.model_run_service.save_new_parameters(params_to_save, params_to_del, user)
+        self.parameter_service.save_new_parameters(params_to_save, params_to_del, user.id)
 
         return self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)

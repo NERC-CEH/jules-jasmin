@@ -2,9 +2,11 @@
 header
 """
 import logging
+from sqlalchemy.orm import subqueryload, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from joj.services.general import DatabaseService
-from joj.model import Session, ParameterValue, Namelist, Parameter
+from joj.model import Session, ParameterValue, Namelist, Parameter, ModelRun, User, ModelRunStatus
+from joj.utils import constants
 
 log = logging.getLogger(__name__)
 
@@ -15,16 +17,17 @@ class ParameterService(DatabaseService):
     def __init__(self, session=Session):
         super(ParameterService, self).__init__(session)
 
-    def save_new_parameters(self, params_values, params_to_delete, model_run):
+    def save_new_parameters(self, params_values, params_to_delete, user_id):
         """
         Save a list of parameters against the model currently being created and delete old parameters
         in the same transaction.
         :param params_values: List of parameter namelist / name pair and value
         in the form [[[parameter namelist, name], value]]
         :param params_to_delete: List of parameter namelist / name pairs to delete
-        :param model_run: The model run to save against
+        :param user_id: The current user id
         """
         with self.transaction_scope() as session:
+            model_run = self.get_model_being_created_with_non_default_parameter_values(user_id, session)
             param_values_to_delete = []
             # Delete any parameters we've been asked to delete
             for parameter in params_to_delete:
@@ -86,3 +89,23 @@ class ParameterService(DatabaseService):
             .filter(Parameter.name == parameter_constant[1]) \
             .one()
         return parameter
+
+    def get_model_being_created_with_non_default_parameter_values(self, user_id, session):
+        """
+        Get the current model run being created including all parameter_value which are not defaults
+        Uses a supplied session
+        :param user_id: Logged in user
+        :param session: Session
+        :return: Model run with parameters populated
+        """
+        return session.query(ModelRun) \
+            .join(User) \
+            .join(ModelRun.status) \
+            .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
+            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
+            .filter(ModelRun.user_id == user_id) \
+            .options(subqueryload(ModelRun.code_version)) \
+            .options(contains_eager(ModelRun.parameter_values)
+                     .contains_eager(ParameterValue.parameter)
+                     .contains_eager(Parameter.namelist))\
+            .one()

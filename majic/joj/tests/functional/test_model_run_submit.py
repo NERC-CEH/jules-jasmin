@@ -8,10 +8,12 @@ from joj.tests import *
 from joj.tests.test_with_create_full_model_run import TestWithFullModelRun
 from joj.model import Session, session_scope, LandCoverRegion, LandCoverRegionCategory, LandCoverAction
 from joj.utils import constants
+from joj.services.parameter_service import ParameterService
 
 
 class TestModelRunSummaryController(TestWithFullModelRun):
     def setUp(self):
+        self.parameter_service = ParameterService()
         super(TestModelRunSummaryController, self).setUp()
 
     def test_GIVEN_no_defining_model_WHEN_navigate_to_summary_THEN_redirect_to_create_model_run(self):
@@ -55,7 +57,7 @@ class TestModelRunSummaryController(TestWithFullModelRun):
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
         self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
-        self.model_run_service.save_new_parameters([[constants.JULES_PARAM_LATLON_REGION, True]], [], self.user)
+        self.parameter_service.save_new_parameters([[constants.JULES_PARAM_LATLON_REGION, True]], [], self.user.id)
 
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
