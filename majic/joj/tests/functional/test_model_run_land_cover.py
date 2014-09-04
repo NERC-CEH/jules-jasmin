@@ -421,6 +421,33 @@ class TestModelRunLandCoverSingleCell(TestController):
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='output')), "url")
 
+    def test_GIVEN_fractional_cover_saved_WHEN_reset_THEN_cover_reset(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        initial_cover = model_run.land_cover_frac
+        assert initial_cover is not None
+        response = self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'reset_fractional_cover': u'1'})
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='land_cover')), "url")
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        final_cover = model_run.land_cover_frac
+        assert_that(final_cover, is_(None))
+
     def test_GIVEN_values_dont_add_up_WHEN_post_THEN_errors_returned_and_values_not_saved(self):
         self.set_up_single_cell_model_run()
         response = self.app.post(

@@ -193,3 +193,11 @@ class LandCoverControllerHelper(object):
                     break
                 rounded_vals[i] += increment
         return [val / 10000.0 for val in rounded_vals]
+
+    def reset_fractional_cover(self, model_run):
+        """
+        Reset the fractional cover as if it had never been set
+        :param model_run: Model run to reset
+        :return:
+        """
+        self.land_cover_service.save_fractional_land_cover_for_model(model_run, None)
