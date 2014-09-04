@@ -158,13 +158,13 @@ class ExtentsControllerHelper(object):
         tmpl_context.start_date = self._get_acceptable_start_datetime(model_run, driving_data, is_user_data).date()
         tmpl_context.end_date = self._get_acceptable_end_datetime(model_run, driving_data, is_user_data).date()
 
-    def save_extents_against_model_run(self, values, driving_data, model_run, model_run_service, user):
+    def save_extents_against_model_run(self, values, driving_data, model_run, parameter_service, user):
         """
         Save spatial and temporal extents against the model run currently being created
         :param values: The extents page POST values
         :param driving_data: Chosen driving data
         :param model_run: The model run currently being used
-        :param model_run_service: Model run service to use
+        :param parameter_service: Model run service to use
         :param user: Currently logged in user
         :return: Nothing
         """
@@ -209,7 +209,7 @@ class ExtentsControllerHelper(object):
                                                                               is_user_data).time())
         params_to_save.append([constants.JULES_PARAM_RUN_START, run_start])
         params_to_save.append([constants.JULES_PARAM_RUN_END, run_end])
-        model_run_service.save_new_parameters(params_to_save, params_to_delete, user)
+        parameter_service.save_new_parameters(params_to_save, params_to_delete, user.id)
 
     def validate_extents_form_values(self, values, model_run, driving_data, errors):
         """

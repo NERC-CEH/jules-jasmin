@@ -112,7 +112,7 @@ class TestModelRunLandCover(TestController):
     def test_GIVEN_nothing_WHEN_get_THEN_values_rendered(self):
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        values = LandCoverService().get_land_cover_values()
+        values = LandCoverService().get_land_cover_values(return_ice=False)
         for value in values:
             assert_that(response.normal_body, contains_string(str(value.name)))
 
@@ -125,10 +125,10 @@ class TestModelRunLandCover(TestController):
             action = LandCoverAction()
             action.model_run = model_run
             action.region_id = 1  # Thames
-            action.value_id = 9  # Ice
+            action.value_id = 5  # Shrub
 
         response = self.app.get(url(controller='model_run', action='land_cover'))
-        assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Ice</b>"))
+        assert_that(response.normal_body, contains_string("Change <b>Thames (Rivers)</b> to <b>Shrub</b>"))
 
     def test_GIVEN_invalid_land_cover_actions_already_saved_WHEN_get_THEN_errors_returned_no_actions_rendered(self):
         with session_scope() as session:
@@ -160,7 +160,7 @@ class TestModelRunLandCover(TestController):
             action = LandCoverAction()
             action.model_run = model_run
             action.region_id = 1  # Thames
-            action.value_id = 9  # Ice
+            action.value_id = 5  # Shrub
             action.order = 5
             session.add(action)
             session.commit()
@@ -184,7 +184,7 @@ class TestModelRunLandCover(TestController):
         response = self.app.get(url(controller='model_run', action='land_cover'))
         order1 = response.normal_body.index("Change <b>Itchen (Rivers)</b> to <b>Broad-leaved Tree</b>")
         order2 = response.normal_body.index("Change <b>Hampshire (Counties)</b> to <b>Urban</b>")
-        order5 = response.normal_body.index("Change <b>Thames (Rivers)</b> to <b>Ice</b>")
+        order5 = response.normal_body.index("Change <b>Thames (Rivers)</b> to <b>Shrub</b>")
         assert (order1 < order2 < order5)
 
     def generate_categories_with_regions(self, driving_dataset):
@@ -375,6 +375,24 @@ class TestModelRunLandCoverSingleCell(TestController):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         assert_that(model_run.land_cover_frac, is_("0.2\t0.25\t0.05\t0.1\t0.1\t0.05\t0.1\t0.15\t0"))
 
+    def test_GIVEN_valid_fractional_cover_WHEN_post_THEN_default_soil_props_saved(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        soil_props = model_run.get_python_parameter_value(JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+        assert_that(soil_props, is_([0.9, 0.0, 0.0, 50.0, 275.0, 300.0, 10.0, 0.0, 0.5]))
+
     def test_GIVEN_ice_fractional_cover_WHEN_post_THEN_values_saved(self):
         self.set_up_single_cell_model_run()
         self.app.post(
@@ -402,6 +420,33 @@ class TestModelRunLandCoverSingleCell(TestController):
         assert_that(response.status_code, is_(302), "Response is redirect")
         assert_that(urlparse(response.response.location).path,
                     is_(url(controller='model_run', action='output')), "url")
+
+    def test_GIVEN_fractional_cover_saved_WHEN_reset_THEN_cover_reset(self):
+        self.set_up_single_cell_model_run()
+        self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'submit': u'Next',
+                    'fractional_cover': u'1',
+                    'land_cover_value_1': u'20',
+                    'land_cover_value_2': u'25',
+                    'land_cover_value_3': u'5',
+                    'land_cover_value_4': u'10',
+                    'land_cover_value_5': u'10',
+                    'land_cover_value_6': u'5',
+                    'land_cover_value_7': u'10',
+                    'land_cover_value_8': u'15'})
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        initial_cover = model_run.land_cover_frac
+        assert initial_cover is not None
+        response = self.app.post(
+            url(controller='model_run', action='land_cover'),
+            params={'reset_fractional_cover': u'1'})
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path,
+                    is_(url(controller='model_run', action='land_cover')), "url")
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
+        final_cover = model_run.land_cover_frac
+        assert_that(final_cover, is_(None))
 
     def test_GIVEN_values_dont_add_up_WHEN_post_THEN_errors_returned_and_values_not_saved(self):
         self.set_up_single_cell_model_run()

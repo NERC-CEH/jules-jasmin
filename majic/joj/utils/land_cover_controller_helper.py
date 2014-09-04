@@ -32,7 +32,7 @@ class LandCoverControllerHelper(object):
             tmpl_context.land_cover_actions = []
         else:
             tmpl_context.land_cover_actions = land_cover_actions
-        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values()
+        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values(return_ice=False)
         tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
             model_run.driving_dataset_id)
 
@@ -127,6 +127,7 @@ class LandCoverControllerHelper(object):
         if len(errors) == 0:
             fractional_string = '\t'.join([str(val) for val in sorted_fractional_values])
             self.land_cover_service.save_fractional_land_cover_for_model(model_run, fractional_string)
+            self.land_cover_service.save_default_soil_properties(model_run)
 
     def _validate_values(self, values, errors, driving_data):
         # Check that:
@@ -172,6 +173,10 @@ class LandCoverControllerHelper(object):
         if missing_values:
             return len(raw_frac_vals) * [0.0]
 
+        if sum(raw_frac_vals) < 0.9 or sum(raw_frac_vals) > 1.1:
+            # This is more than just a rounding error
+            return raw_frac_vals
+
         rounded_vals = []
         non_zero_indices = []
         for i in range(len(raw_frac_vals)):
@@ -188,3 +193,11 @@ class LandCoverControllerHelper(object):
                     break
                 rounded_vals[i] += increment
         return [val / 10000.0 for val in rounded_vals]
+
+    def reset_fractional_cover(self, model_run):
+        """
+        Reset the fractional cover as if it had never been set
+        :param model_run: Model run to reset
+        :return:
+        """
+        self.land_cover_service.save_fractional_land_cover_for_model(model_run, None)

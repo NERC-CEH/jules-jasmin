@@ -368,9 +368,10 @@ class JobService(object):
             for land_cover_action in sorted_actions:
                 mask_file = land_cover_action[JSON_LAND_COVER_MASK_FILE]
                 value = land_cover_action[JSON_LAND_COVER_VALUE]
+                ice_index = land_cover_json_dict[JSON_LAND_COVER_ICE_INDEX]
                 mask_file_path = os.path.join(run_directory, mask_file)
                 self.land_cover_editor.apply_land_cover_action(base_file_path, mask_file_path,
-                                                               value, key=base_file_frac_key)
+                                                               value, ice_index, key=base_file_frac_key)
         elif land_cover_point_edit:
             lat = land_cover_point_edit[JSON_LAND_COVER_LAT]
             lon = land_cover_point_edit[JSON_LAND_COVER_LON]

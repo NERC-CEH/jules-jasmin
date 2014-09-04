@@ -279,7 +279,7 @@ class ModelRunService(DatabaseService):
         :return:model run with parameters populated
         """
         with self.readonly_scope() as session:
-            return self._get_model_being_created_with_non_default_parameter_values(user, session)
+            return self.parameter_service.get_model_being_created_with_non_default_parameter_values(user.id, session)
 
     def submit_model_run(self, user):
         """
@@ -350,26 +350,6 @@ class ModelRunService(DatabaseService):
             parameter = self.parameter_service.get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
 
-    def save_new_parameters(self, params_values, params_to_delete, user):
-        """
-        Save a list of parameters against the model currently being created and delete old parameters
-        in the same transaction.
-        :param params_values: List of parameter namelist / name pair and value
-        in the form [[[parameter namelist, name], value]]
-        :param params_to_delete: List of parameter namelist / name pairs to delete
-        :param user: The currently logged in user
-        """
-        with self.transaction_scope() as session:
-            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
-            param_values_to_delete = []
-            # Delete any parameters we've been asked to delete
-            for parameter in params_to_delete:
-                param_values_to_delete += model_run.get_parameter_values(parameter)
-            self.parameter_service.remove_parameter_set_from_model(param_values_to_delete, model_run, session)
-            # And save new parameters
-            for parameter in params_values:
-                self.parameter_service.save_parameter(model_run, parameter[0], parameter[1], session)
-
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """
         Save a parameter against the model currently being created
@@ -381,7 +361,8 @@ class ModelRunService(DatabaseService):
         :return:
         """
         with self.transaction_scope() as session:
-            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            model_run = self.parameter_service.get_model_being_created_with_non_default_parameter_values(
+                user.id, session)
             self.parameter_service.save_parameter(model_run, param_namelist_name, value, session, group_id=group_id)
 
     def get_science_configuration_by_id(self, science_config_id):
@@ -409,26 +390,6 @@ class ModelRunService(DatabaseService):
             .options(contains_eager(ModelRun.parameter_values)) \
             .one()
         return science_configuration
-
-    def _get_model_being_created_with_non_default_parameter_values(self, user, session):
-        """
-        Get the current model run being created including all parameter_value which are not defaults
-        Uses a supplied session
-        :param user: Logged in user
-        :param session: Session
-        :return: Model run with parameters populated
-        """
-        return session.query(ModelRun) \
-            .join(User) \
-            .join(ModelRun.status) \
-            .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
-            .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_CREATED) \
-            .filter(ModelRun.user == user) \
-            .options(subqueryload(ModelRun.code_version)) \
-            .options(contains_eager(ModelRun.parameter_values)
-                     .contains_eager(ParameterValue.parameter)
-                     .contains_eager(Parameter.namelist))\
-            .one()
 
     def _get_parameters_for_creating_model(self, session, user):
         """
@@ -477,7 +438,7 @@ class ModelRunService(DatabaseService):
         :return: nothing
         """
         with self.transaction_scope() as session:
-            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            model_run = self.parameter_service.get_model_being_created_with_non_default_parameter_values(user.id, session)
             self.parameter_service.remove_parameter_set_from_model(parameter_values, model_run, session)
 
     def _copy_parameter_set_into_model(self, parameter_values, model_run, session):
@@ -527,7 +488,8 @@ class ModelRunService(DatabaseService):
         :return: nothing
         """
         with self.transaction_scope() as session:
-            model_run = self._get_model_being_created_with_non_default_parameter_values(user, session)
+            model_run = self.parameter_service.get_model_being_created_with_non_default_parameter_values(
+                user.id, session)
 
             # The first thing we need to do is clear any existing parameters
             # Get the list of ParameterValues we want to delete

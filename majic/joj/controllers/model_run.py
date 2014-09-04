@@ -27,6 +27,7 @@ from joj.services.user import UserService
 from joj.services.dataset import DatasetService
 from joj.services.general import ServiceException
 from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
+from joj.services.parameter_service import ParameterService
 
 
 # The prefix given to parameter name in html elements
@@ -44,7 +45,7 @@ class ModelRunController(BaseController):
     """Provides operations for model runs"""
 
     def __init__(self, user_service=UserService(), model_run_service=ModelRunService(),
-                 dataset_service=DatasetService()):
+                 dataset_service=DatasetService(), parameter_service=ParameterService()):
         """Constructor
             Params:
                 user_service: service to access user details
@@ -53,6 +54,7 @@ class ModelRunController(BaseController):
         super(ModelRunController, self).__init__(user_service)
         self._model_run_service = model_run_service
         self._dataset_service = dataset_service
+        self._parameter_service = parameter_service
         self._model_run_controller_helper = ModelRunControllerHelper(model_run_service)
 
     def index(self):
@@ -383,7 +385,7 @@ class ModelRunController(BaseController):
                     auto_error_formatter=BaseController.error_formatter)
 
             extents_controller_helper.save_extents_against_model_run(values, driving_data, model_run,
-                                                                     self._model_run_service, self.current_user)
+                                                                     self._parameter_service, self.current_user)
             # Get the action to perform
             self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
@@ -404,6 +406,11 @@ class ModelRunController(BaseController):
         errors = {}
         multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION) \
             and not 'fractional_cover' in values
+
+        if 'reset_fractional_cover' in values:
+            land_cover_controller_helper = LandCoverControllerHelper()
+            land_cover_controller_helper.reset_fractional_cover(model_run)
+            redirect(url(controller='model_run', action='land_cover'))
 
         if multicell:
             return self._land_cover(model_run, values, errors)

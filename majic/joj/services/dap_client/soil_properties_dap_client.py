@@ -24,13 +24,18 @@ class SoilPropertiesDapClient(BaseDapClient):
         :return: Dictionary of soil property values for each of the soil property variables
         """
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
-            return
+            return {'bexp': 0.9, 'sathh': 0.0, 'satcon': 0.0, 'vsat': 50.0, 'vcrit': 275.0, 'vwilt': 300.0,
+                    'hcap': 10.0, 'hcon': 0.0, 'albsoil': 0.5}
         lat_index = self._get_closest_value_index(self._lat, lat)
         lon_index = self._get_closest_value_index(self._lon, lon)
         soil_props = {}
         for key in self._dataset.keys():
             if key not in (self._get_key(constants.NETCDF_LATITUDE), self._get_key(constants.NETCDF_LONGITUDE)):
-                value_as_grid = self._dataset[key][lat_index, lon_index]
+                variable = self._dataset[key]
+                missing_value = variable.missing_value
+                value_as_grid = variable[lat_index, lon_index]
                 value = value_as_grid[key][0][0]
+                if value == missing_value:
+                    return None
                 soil_props[key] = value
         return soil_props
