@@ -4,7 +4,7 @@
 
 import logging
 
-from pylons import config, request
+from pylons import request
 from pylons.decorators import jsonify
 
 from joj.lib.base import BaseController, render, c
@@ -12,7 +12,6 @@ from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
 from joj.services.dap_client.dap_client_factory import DapClientFactory
-from joj.lib.wmc_util import create_request_and_open_url
 
 
 log = logging.getLogger(__name__)
