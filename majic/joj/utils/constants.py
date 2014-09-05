@@ -126,6 +126,9 @@ JULES_YEARLY_PERIOD = -2
 JULES_MONTHLY_PERIOD = -1
 JULES_DAILY_PERIOD = 24 * 60 * 60
 
+#Month abbreviations for templates
+JULES_MONTH_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
 # Constants for Jules Parameters (so we can easily update if they change name etc)
 # 3 tuple, name list name, parameter name, if present True/false is this a list
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"

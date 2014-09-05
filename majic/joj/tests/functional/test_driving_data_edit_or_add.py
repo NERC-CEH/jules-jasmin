@@ -256,7 +256,7 @@ class TestDrivingDataEditOrAdd(TestController):
             ]
 
         for name, const in DrivingDatasetJulesParams()._names_constant_dict.iteritems():
-            if name not in ['driving_data_start', 'driving_data_end', 'drive_var_interps', 'drive_var_names', 'drive_var_templates', 'drive_var_vars']:
+            if name not in ['driving_data_start', 'driving_data_end', 'drive_nvars', 'drive_var_interps', 'drive_var_names', 'drive_var_templates', 'drive_var_vars']:
                 invalid_values.append([name, "", "enter a value"])
 
         for invalid_key, invalid_value, invalid_error in invalid_values:

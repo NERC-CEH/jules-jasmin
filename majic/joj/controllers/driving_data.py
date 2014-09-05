@@ -8,7 +8,7 @@ from pylons.controllers.util import redirect
 from pylons import tmpl_context as c, url
 from formencode import htmlfill
 
-from joj.lib.base import BaseController, request, render
+from joj.lib.base import BaseController, request, render, helpers
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
 from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line, remove_deleted_keys
@@ -19,6 +19,8 @@ from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJu
 from joj.model.schemas.driving_dataset_edit import DrivingDatasetEdit
 from joj.model.non_database.datetime_period_validator import DatetimePeriodValidator
 from joj.utils import constants
+from joj.model.non_database.driving_data_file_location_validator import DrivingDataFileLocationValidator
+from joj.services.general import ServiceException
 
 log = logging.getLogger(__name__)
 
@@ -82,20 +84,25 @@ class DrivingDataController(BaseController):
             remove_deleted_keys(values, 'params_count', 'param', ['id', 'value'])
 
             schema = DrivingDatasetEdit()
-            result = {}
+            results = {}
+            service_exception = False
             try:
-                result = schema.to_python(values, c)
+                results = schema.to_python(values, c)
+                locations = DrivingDataFileLocationValidator(errors).get_file_locations(results)
             except Invalid, e:
                 errors.update(e.unpack_errors())
+            except ServiceException as ex:
+                helpers.error_flash("Could not save: %s" % ex.message)
+                service_exception = True
 
             date_period_validator = DatetimePeriodValidator(errors)
-            result["driving_data_start"], result["driving_data_end"] = \
+            results["driving_data_start"], results["driving_data_end"] = \
                 date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
 
-            if len(errors) == 0:
+            if len(errors) == 0 and not service_exception:
                 self._dataset_service.create_driving_dataset(
                     id,
-                    result,
+                    results,
                     self._model_run_service,
                     self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
