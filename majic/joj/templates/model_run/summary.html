@@ -64,7 +64,7 @@
 <hr class="status-banner-top"/>
 <!--<div class="well">-->
 <div class="row">
-    <div class="span3 status-span" style="text-align: left">
+    <div class="span4 status-span" style="text-align: left">
         <h2 class="status status-color">${c.model_run.status.name}</h2>
         <span class="date" py:if="not c.model_run.status.is_published()">
             ${h.display_date(c.model_run.last_status_change, "%d %b %Y at %X")}
@@ -73,7 +73,7 @@
             by ${c.model_run.user.name}
         </span>
     </div>
-    <div class="span7"></div>
+    <div class="span6"></div>
     <div class="span2 ico-span">
         <div class="row">
             <!--The Publish Icon-->
