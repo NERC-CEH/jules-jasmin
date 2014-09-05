@@ -92,16 +92,3 @@ class MapController(BaseController):
         url = dataset.netcdf_url
         dap_client = self._dap_factory.get_graphing_dap_client(url)
         return dap_client.get_graph_data(lat, lon)
-
-    @jsonify
-    def test(self):
-        """
-            Tests the connection to the map server
-        """
-        try:
-            create_request_and_open_url(
-                config['thredds.server_url'],
-                timeout=int(config['thredds.server_timeout'])).read()
-            return True
-        except:
-            return False

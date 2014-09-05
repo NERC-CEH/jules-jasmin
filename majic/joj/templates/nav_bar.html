@@ -8,9 +8,13 @@
             <div class="container">
 
                     <a class="btn pull-right" href="${h.url(controller='account', action='logout')}">Log out</a>
-                    <p id="status" class="navbar-text pull-right">
-                        Map server status <span id="status-message" class="label">Testing...</span>
-                    </p>
+
+                <ul class="nav pull-right">
+                    <li>
+                        <a id="nav-help" href="${h.url(controller='home', action='faq')}">
+                            <i class="fa fa-question-circle help-icon"></i>&nbsp;Help</a>
+                    </li>
+                </ul>
                 <a class="brand" href="${h.url(controller='home')}">Majic</a>
 
                 <ul class="nav">

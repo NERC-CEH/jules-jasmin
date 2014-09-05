@@ -160,6 +160,12 @@ body#admin a#nav-admin
     color: #0088CC;
 }
 
+.help-icon {
+    color: yellow;
+    font-size:1.5em;
+    margin: -3px 3px;
+}
+
 
 .green
 {

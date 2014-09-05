@@ -22,13 +22,14 @@ from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
+from joj.utils.general_controller_helper import show_error_if_thredds_down
 from joj.services.land_cover_service import LandCoverService
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
 from joj.services.general import ServiceException
 from joj.services.model_run_service import ModelRunService, DuplicateName, ModelPublished
 from joj.services.parameter_service import ParameterService
-
+from joj.services.dap_client.base_dap_client import DapClientException
 
 # The prefix given to parameter name in html elements
 
@@ -288,7 +289,7 @@ class ModelRunController(BaseController):
                     # This will stream the file to the browser without loading it all in memory
                     # BUT only if the .ini file does not have 'debug=true' enabled
                     return file_generator
-                except ServiceException as e:
+                except (DapClientException, ServiceException) as e:
                     helpers.error_flash("Couldn't download data: %s." % e.message)
                     redirect(url(controller='model_run', action='driving_data'))
             else:
@@ -337,6 +338,7 @@ class ModelRunController(BaseController):
                 else:
                     redirect(url(controller='model_run', action='create'))
 
+    @show_error_if_thredds_down
     @validate(schema=ModelRunExtentSchema(), form='extents', post_only=False, on_get=False, prefix_error=False,
               auto_error_formatter=BaseController.error_formatter)
     def extents(self):
@@ -383,9 +385,17 @@ class ModelRunController(BaseController):
                     defaults=values,
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
+            try:
+                extents_controller_helper.save_extents_against_model_run(values, driving_data, model_run,
+                                                                         self._parameter_service, self.current_user)
+            except DapClientException as ex:
+                helpers.error_flash("Error submitting extents: %s" % ex.message)
+                return htmlfill.render(
+                    render('model_run/extents.html'),
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
 
-            extents_controller_helper.save_extents_against_model_run(values, driving_data, model_run,
-                                                                     self._parameter_service, self.current_user)
             # Get the action to perform
             self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
@@ -447,6 +457,7 @@ class ModelRunController(BaseController):
                 else:
                     redirect(url(controller='model_run', action='extents'))
 
+    @show_error_if_thredds_down
     def _single_cell_land_cover(self, model_run, values, errors):
         land_cover_controller_helper = LandCoverControllerHelper()
         if not request.POST:
