@@ -4,7 +4,7 @@
 
 import logging
 
-from pylons import config, request
+from pylons import request
 from pylons.decorators import jsonify
 
 from joj.lib.base import BaseController, render, c
@@ -12,7 +12,6 @@ from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
 from joj.services.dap_client.dap_client_factory import DapClientFactory
-from joj.lib.wmc_util import create_request_and_open_url
 
 
 log = logging.getLogger(__name__)
@@ -92,16 +91,3 @@ class MapController(BaseController):
         url = dataset.netcdf_url
         dap_client = self._dap_factory.get_graphing_dap_client(url)
         return dap_client.get_graph_data(lat, lon)
-
-    @jsonify
-    def test(self):
-        """
-            Tests the connection to the map server
-        """
-        try:
-            create_request_and_open_url(
-                config['thredds.server_url'],
-                timeout=int(config['thredds.server_timeout'])).read()
-            return True
-        except:
-            return False

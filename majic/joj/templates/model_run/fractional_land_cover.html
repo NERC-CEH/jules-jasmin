@@ -10,20 +10,19 @@
 </head>
 <body id="land_cover">
 <h1>Fractional Land Cover</h1>
-<p>Set the fractional land cover of your single cell calculation, or set the whole cell to be ice.<br/>
-    If the cell is not ice then the separate fractions must add up to 100%</p>
+<p>Set the fractional land cover of your single cell calculation. The separate fractions must add up to 100%</p>
+<form id="reset-form" method="POST" action="${url(controller='model_run', action='land_cover')}">
+    <input type="hidden" id="reset_fractional_cover" name="reset_fractional_cover" value="1"/>
+    <button id="uploadBtn" type="submit" class="btn btn-info" name="submit" value="Upload" form="reset-form">
+        <i class="fa fa-undo"></i>&nbsp;&nbsp;Reset fractional cover to default for chosen location
+    </button>
+</form>
 
 <form method="POST" action="${url(controller='model_run', action='land_cover')}">
-    <div class="rows ice-div">
-        <div class="span2 value-label">
-            <span><b>This cell is ice</b></span>
-        </div>
-        <div class="span9">
-            <i id="check_ice" class="fa fa-check-square-o fa-2x green checkbox"></i>
-            <input type="checkbox" id="land_cover_ice" name="land_cover_ice"
-                   py:attrs="{'checked': 'true'} if 'land_cover_ice' in c.land_cover_values else {}"/>
-        </div>
-    </div>
+    <py:if test="'land_cover_ice' in c.land_cover_values">
+        <input type="hidden" id="land_cover_ice" value="1" name="land_cover_ice"/>
+        <div class="alert alert-info">This cell location is <b>ice</b> - you cannot change the fractional cover for it.</div>
+    </py:if>
     <div id="fractional_vals">
     <py:for each="lc_val in c.land_cover_types">
         <py:if test="lc_val.id != c.ice_index">

@@ -47,6 +47,13 @@ class HomeController(BaseController):
         else:
             return render("about/about-external.html")
 
+    def faq(self):
+        """
+        Frequently asked questions page
+        :return:
+        """
+        return render("about/faq.html")
+
     def password(self, id=None):
         """
         Action for when the user selects password

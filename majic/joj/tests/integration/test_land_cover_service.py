@@ -13,6 +13,7 @@ from joj.services.dap_client.dap_client import DapClientException
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.utils import constants
 from joj.services.general import ServiceException
+from joj.services.parameter_service import ParameterService
 
 
 class MockLandCoverDapClient(object):
@@ -79,6 +80,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.land_cover_service = LandCoverService(dap_client_factory=dap_client_factory)
         self.model_run_service = ModelRunService()
         self.dataset_service = DatasetService()
+        self.parameter_service = ParameterService()
         self.clean_database()
         self.user = self.login()
         self.create_model_run_ready_for_submit()
@@ -121,7 +123,14 @@ class TestLandCoverService(TestWithFullModelRun):
         assert_that(len(lc_values), is_(9))
         names = [lc_value.name for lc_value in lc_values]
         assert 'Urban' in names
-        assert 'Ice' in names
+        assert constants.FRACTIONAL_ICE_NAME in names
+
+    def test_GIVEN_return_no_ice_WHEN_get_land_cover_values_THEN_land_cover_values_returned(self):
+        lc_values = self.land_cover_service.get_land_cover_values(return_ice=False)
+        assert_that(len(lc_values), is_(8))
+        names = [lc_value.name for lc_value in lc_values]
+        assert 'Urban' in names
+        assert constants.FRACTIONAL_ICE_NAME not in names
 
     def test_GIVEN_multiple_land_cover_categories_WHEN_get_categories_THEN_correct_categories_returned(self):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
@@ -332,7 +341,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         self.land_cover_service.save_default_soil_properties(model_run)
 
-        #self.land_cover_service.dap_client_factory.get_soil_properties_dap_client = _mock_get_soil_props_client
+        #self._land_cover_service.dap_client_factory.get_soil_properties_dap_client = _mock_get_soil_props_client
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
         var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)
@@ -367,6 +376,6 @@ class TestLandCoverService(TestWithFullModelRun):
     def set_model_run_latlon(self, user, lat, lon):
         params_to_save = [[constants.JULES_PARAM_POINTS_FILE, [lat, lon]]]
         params_to_del = constants.JULES_PARAM_POINTS_FILE
-        self.model_run_service.save_new_parameters(params_to_save, params_to_del, user)
+        self.parameter_service.save_new_parameters(params_to_save, params_to_del, user.id)
 
         return self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)

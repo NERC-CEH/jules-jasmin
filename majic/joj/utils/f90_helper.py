@@ -3,6 +3,7 @@ header
 """
 import datetime
 from f90nml import to_f90str
+from numpy import float64
 import re
 
 DATE_TIME_FORMAT = "%Y-%m-%d %X"
@@ -18,6 +19,8 @@ def python_to_f90_str(value):
         return '    '.join([python_to_f90_str(v) for v in value])
     elif type(value) == datetime.datetime:
         return to_f90str(value.strftime(DATE_TIME_FORMAT))
+    elif type(value) == float64:
+        return to_f90str(float(value))
     elif type(value) == unicode:
         return to_f90str(str(value))
     else:

@@ -37,13 +37,23 @@ class LandCoverService(DatabaseService):
                 .options(subqueryload(LandCoverRegion.category))\
                 .one()
 
-    def get_land_cover_values(self):
+    def get_land_cover_values(self, return_ice=True):
         """
         Return all available land cover values
         :return: List of Land Cover Values
+        :param return_ice: Whether to return the ice value
         """
         with self.readonly_scope() as session:
-            return session.query(LandCoverValue).all()
+            land_cover_values = session.query(LandCoverValue).all()
+        if return_ice:
+            return land_cover_values
+        else:
+            ice_index = self.find_ice_index(land_cover_values)
+            non_ice_values = []
+        for land_cover_value in land_cover_values:
+            if land_cover_value.index != ice_index:
+                non_ice_values.append(land_cover_value)
+        return non_ice_values
 
     def get_land_cover_categories(self, driving_data_id):
         """
@@ -130,7 +140,7 @@ class LandCoverService(DatabaseService):
                 return land_cover_client.get_fractional_cover(lat, lon)
             except DapClientException:
                 pass
-        ntypes = len(self.get_land_cover_values())
+        ntypes = len(self.get_land_cover_values(return_ice=True))
         return ntypes * [0.0]
 
     def save_default_soil_properties(self, model_run):
@@ -167,7 +177,7 @@ class LandCoverService(DatabaseService):
                                       constants.JULES_PARAM_SOIL_PROPS_VAR,
                                       constants.JULES_PARAM_SOIL_USE_FILE,
                                       constants.JULES_PARAM_SOIL_CONST_VALS]
-                    self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run)
+                    self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run.user_id)
             except DapClientException:
                 # We don't want to do anything because we'll just leave whatever defaults are already present.
                 return

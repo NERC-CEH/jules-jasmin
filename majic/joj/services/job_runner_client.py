@@ -8,6 +8,7 @@ import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
 from joj.utils import utils
+from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
@@ -17,8 +18,9 @@ class JobRunnerClient(object):
     Client to contact the job runner service
     """
 
-    def __init__(self, config):
+    def __init__(self, config, land_cover_service=LandCoverService()):
         self._config = config
+        self._land_cover_service = land_cover_service
         self._file_lines_store = ''  # Store line text until it reaches the chunk size
 
     def submit(self, model, parameters, land_cover_actions):
@@ -152,6 +154,11 @@ class JobRunnerClient(object):
         # Identify the base land cover file, and rename the parameter to be the new file we'll create
         # Identify the name of the base land cover variable
         json_land_cover = self._create_json_land_cover(parameters)
+
+        # Add the ice index
+        lc_types = self._land_cover_service.get_land_cover_values(return_ice=True)
+        ice_index = self._land_cover_service.find_ice_index(lc_types)
+        json_land_cover[constants.JSON_LAND_COVER_ICE_INDEX] = ice_index
 
         # Add the land cover actions
         json_actions = []

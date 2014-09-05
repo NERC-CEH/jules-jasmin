@@ -52,6 +52,7 @@ JSON_LAND_COVER_POINT_EDIT = "land_cover_point_edit"
 JSON_LAND_COVER_FRACTIONAL_VALS = "land_cover_fractional_vals"
 JSON_LAND_COVER_LAT = "land_cover_lat"
 JSON_LAND_COVER_LON = "land_cover_lon"
+JSON_LAND_COVER_ICE_INDEX = "land_cover_ice_index"
 
 # Model run statuses
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'

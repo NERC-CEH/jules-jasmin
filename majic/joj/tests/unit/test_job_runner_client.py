@@ -256,6 +256,7 @@ class TestJobRunnerClient(TestController):
 
         assert_that(result_lc[constants.JSON_LAND_COVER_BASE_FILE], is_("base_frac_file.nc"))
         assert_that(result_lc[constants.JSON_LAND_COVER_BASE_KEY], is_("frac"))
+        assert_that(result_lc[constants.JSON_LAND_COVER_ICE_INDEX], is_(9))
         result_lc_actions = result_lc[constants.JSON_LAND_COVER_ACTIONS]
 
         assert_that(len(result_lc_actions), is_(2))
