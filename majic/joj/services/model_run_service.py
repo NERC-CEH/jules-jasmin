@@ -360,6 +360,15 @@ class ModelRunService(DatabaseService):
             parameter = self.parameter_service.get_parameter_by_constant(param_namelist_and_name, session)
             return parameter
 
+    def get_parameter_by_constant_in_session(self, param_namelist_and_name, session):
+        """
+        Look up the parameter for a given parameter name and namelist in session
+        :param param_namelist_and_name: Parameter namelist and name (in that order in a tuple)
+        :param session: the session
+        :return: The first matching parameter
+        """
+        return self.parameter_service.get_parameter_by_constant(param_namelist_and_name, session)
+
     def save_parameter(self, param_namelist_name, value, user, group_id=None):
         """
         Save a parameter against the model currently being created
@@ -448,7 +457,8 @@ class ModelRunService(DatabaseService):
         :return: nothing
         """
         with self.transaction_scope() as session:
-            model_run = self.parameter_service.get_model_being_created_with_non_default_parameter_values(user.id, session)
+            model_run = self.parameter_service.\
+                get_model_being_created_with_non_default_parameter_values(user.id, session)
             self.parameter_service.remove_parameter_set_from_model(parameter_values, model_run, session)
 
     def _copy_parameter_set_into_model(self, parameter_values, model_run, session):

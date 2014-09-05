@@ -213,7 +213,8 @@ class JobStatusUpdaterService(DatabaseService):
         for input_location in input_locations:
             filename = input_location.base_url
             is_input = True
-            self._create_dataset(dataset_type, filename, is_input, single_cell, model_run, session, thredds_server)
+            self._create_dataset(input_location.dataset_type, filename, is_input, single_cell, model_run, session,
+                                 thredds_server)
 
     def _create_dataset(self, dataset_type, filename, is_input, is_single_cell, model_run, session,
                         thredds_server, frequency=None):

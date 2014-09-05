@@ -15,11 +15,11 @@ class DrivingDataset(Base):
     __tablename__ = 'driving_datasets'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(constants.DB_LONG_STRING_SIZE))
+    name = Column(String(constants.DB_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
-    geographic_region = Column(String(constants.DB_LONG_STRING_SIZE))
-    spatial_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
-    temporal_resolution = Column(String(constants.DB_LONG_STRING_SIZE))
+    geographic_region = Column(String(constants.DB_STRING_SIZE))
+    spatial_resolution = Column(String(constants.DB_STRING_SIZE))
+    temporal_resolution = Column(String(constants.DB_STRING_SIZE))
     boundary_lat_north = Column(Float)
     boundary_lat_south = Column(Float)
     boundary_lon_east = Column(Float)
@@ -44,6 +44,27 @@ class DrivingDataset(Base):
         """
         return utils.find_first_parameter_value_in_param_vals_list(
             self.parameter_values, parameter_namelist_name, is_list)
+
+    def set_from(self, results):
+        """
+        Set from a dictionary of results
+        :param results: the results dictionary
+        :return:nothing
+        """
+        self.name = results.get("name")
+        self.description = results.get("description")
+        self.geographic_region = results.get("geographic_region")
+        self.spatial_resolution = results.get("spatial_resolution")
+        self.temporal_resolution = results.get("temporal_resolution")
+        self.boundary_lat_north = results.get("boundary_lat_north")
+        self.boundary_lat_south = results.get("boundary_lat_south")
+        self.boundary_lon_east = results.get("boundary_lon_east")
+        self.boundary_lon_west = results.get("boundary_lon_west")
+        self.time_start = results.get("time_start")
+        self.time_end = results.get("time_end")
+        self.view_order_index = results.get("view_order_index")
+        self.usage_order_index = results.get("usage_order_index")
+        self.is_restricted_to_admins = results.get("is_restricted_to_admins")
 
     def __repr__(self):
         return "<DrivingDataset(name=%s)>" % self.name

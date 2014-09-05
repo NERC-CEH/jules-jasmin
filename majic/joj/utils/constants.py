@@ -123,10 +123,16 @@ RUN_ID = "majic"
 # Set the name of the output directory (if changed copy to job_runner)
 OUTPUT_DIR = 'output'
 
+# prefix of driving var variables
+PREFIX_FOR_DRIVING_VARS = 'drive_var_'
+
 # Periods for jules output
 JULES_YEARLY_PERIOD = -2
 JULES_MONTHLY_PERIOD = -1
 JULES_DAILY_PERIOD = 24 * 60 * 60
+
+#Month abbreviations for templates
+JULES_MONTH_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
 # 3 tuple, name list name, parameter name, if present True/false is this a list
@@ -222,3 +228,7 @@ JULES_NML_SWITCHES = "JULES_SWITCHES"
 JULES_PARAM_SWITCHES_L_POINT_DATA = [JULES_NML_SWITCHES, "l_point_data"]
 
 DATASET_TYPE_COVERAGE = 'Coverage'
+DATASET_TYPE_SINGLE_CELL = 'Single Cell'
+DATASET_TYPE_TRANSECTS = 'Transects'
+DATASET_TYPE_LAND_COVER_FRAC = 'Land Cover Fraction'
+DATASET_TYPE_SOIL_PROP = 'Soil Properties File'
