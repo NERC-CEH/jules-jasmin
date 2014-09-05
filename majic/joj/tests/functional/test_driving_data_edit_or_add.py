@@ -234,6 +234,7 @@ class TestDrivingDataEditOrAdd(TestController):
                     is_(valid_params["drive_nvars"]), "drive_nvars")
         assert_that(driving_dataset.get_python_parameter_value(constants.JULES_PARAM_DRIVE_VAR),
                     is_(self.drive_var), "vars")
+        assert_that(len(driving_dataset.locations), is_(4), "number of locations (2 ancils 2 driving datasets)")
 
     def test_GIVEN_invalid_data_WHEN_create_new_THEN_error(self):
 
@@ -464,3 +465,5 @@ class TestDrivingDataEditOrAdd(TestController):
         assert_that(regions[0].name, is_(valid_params["region-0.name"]), "name of region")
         assert_that(regions[0].category.name, is_(valid_params["region-0.category"]), "category of region")
         assert_that(regions[0].mask_file, is_(valid_params["region-0.path"]), "path of region")
+
+        assert_that(len(driving_dataset.locations), is_(expected_nvars + 2), 'driving dataset locations (+ 2 ancils)l')

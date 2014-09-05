@@ -12,31 +12,38 @@ class DrivingDataFileLocationValidator(object):
     Validator for driving data file locations
     """
 
-    def __init__(self, errors, file_server_client=FileServerClient()):
+    def __init__(self, errors, dataset_types, file_server_client=FileServerClient()):
         """
         Initialise
         :param file_server_client: file service client
         :param errors: errors list
+        :param dataset_types: dictionary of dataset types (key is name, value is id)
         :return: list of locations
         """
         self._errors = errors
         self._file_server_client = file_server_client
+        self._dataset_types = dataset_types
 
-    def _check_location(self, key, locations, filename):
+    def _check_location(self, key, locations, filename, errors, dataset_type_id):
         """
         Check the location and add a key error if not found or add to location is found
         :param key: key
-        :param locations: locations list
+        :param locations: locations list (None if we location shouldn't be added)
         :param filename: filename to check
+        :param errors: error list to add error to
+        :param dataset_type_id: datasets type
         :return: true if valid, false otherwise
         """
-        if filename is not None:
-            if self._file_server_client.file_exists(filename):
-                locations.append(DrivingDatasetLocation(base_url=filename))
-                return True
-            else:
-                self._errors[key] = "Please check, file does not exist"
-                return False
+        if filename is None:
+            return True
+
+        if not self._file_server_client.file_exists("model_runs/" + filename):
+            errors[key] = "Please check, file does not exist"
+            return False
+
+        if locations is not None:
+            locations.append(DrivingDatasetLocation(base_url=filename, dataset_type_id=dataset_type_id))
+        return True
 
     def get_file_locations(self, results):
         """
@@ -47,23 +54,56 @@ class DrivingDataFileLocationValidator(object):
         """
         locations = []
 
-        for key in ['land_frac_file', 'latlon_file', 'frac_file', 'soil_props_file']:
-            self._check_location(key, locations, results.get(key))
+        self._check_location('frac_file', locations, results.get('frac_file'),
+                             self._errors, self._dataset_types[constants.DATASET_TYPE_LAND_COVER_FRAC])
+        self._check_location('soil_props_file', locations, results.get('soil_props_file'), self._errors,
+                             self._dataset_types[constants.DATASET_TYPE_SOIL_PROP])
 
-        region_regex = re.compile('region-\d+\.path')
-        driving_var_template_regex = re.compile('drive_var_-\d+\.templates')
-        for key in results.keys():
-            if region_regex.match(key) is not None:
-                self._check_location(key, locations, results.get(key))
+        for key in ['land_frac_file', 'latlon_file']:
+            self._check_location(key, None, results.get(key), self._errors, None)
 
-            if driving_var_template_regex.match(key) is not None:
-                variable_name = results.get(key)
-                drive_file = results.get('drive_file')
-                start_date = results.get('driving_data_start')
-                end_date = results.get('driving_data_end')
-                for filename in self._get_drive_filenames(variable_name, drive_file, start_date, end_date):
-                    if not self._check_location(key, locations, filename):
-                        break
+        regions = results.get('region', [])
+        region_errors = []
+        region_error = False
+        for region, index in zip(regions, range(len(regions))):
+            region_errors.append({})
+            local_error = not self._check_location('path', None, region['path'], region_errors[index], None)
+            region_error = region_error or local_error
+        if region_error:
+            self._errors['region'] = region_errors
+
+        driving_data_vars = results.get(constants.PREFIX_FOR_DRIVING_VARS, [])
+        driving_data_errors = []
+        driving_data_error = False
+        drive_file = results.get('drive_file')
+        start_date = results.get('driving_data_start')
+        end_date = results.get('driving_data_end')
+        for driving_data, index in zip(driving_data_vars, range(len(driving_data_vars))):
+            driving_data_errors.append({})
+
+            ncml_filename = self._get_ncml_filename(driving_data['templates'], drive_file)
+
+            local_error = not self._check_location(
+                'templates',
+                locations,
+                ncml_filename,
+                driving_data_errors[index],
+                self._dataset_types[constants.DATASET_TYPE_COVERAGE])
+            driving_data_error = driving_data_error or local_error
+
+            for filename in self._get_drive_filenames(driving_data['templates'], drive_file, start_date, end_date):
+                local_error = not self._check_location(
+                    'templates',
+                    None,
+                    filename,
+                    driving_data_errors[index],
+                    None)
+                if local_error:
+                    driving_data_error = True
+                    break
+
+        if driving_data_error:
+            self._errors[constants.PREFIX_FOR_DRIVING_VARS] = driving_data_errors
 
         return locations
 
@@ -128,3 +168,17 @@ class DrivingDataFileLocationValidator(object):
                 .replace('%mc', "{}".format(constants.JULES_MONTH_ABBREVIATIONS[month - 1]))
             filenames.append(final_filename)
         return filenames
+
+    def _get_ncml_filename(self, variable_name, drive_file):
+        """
+        Generate the ncml filename for a driving data set
+        :param variable_name: the variable name
+        :param drive_file: drive file
+        :return:name
+        """
+        filename = drive_file.replace('%vv', variable_name)
+        if filename.endswith('.nc'):
+            filename += 'ml'
+        else:
+            filename += '.ncml'
+        return re.sub('_?((%y4)|(%y2)|(%m2)|(%m1)|(%mc))', '', filename)

@@ -233,7 +233,8 @@ class DrivingDatasetJulesParams(object):
             session,
             model_run_service,
             land_cover_service,
-            results):
+            results,
+            locations):
         """
         Update a driving dataset object from a results dictionary
         :param driving_dataset: the driving dataset to update
@@ -241,6 +242,7 @@ class DrivingDatasetJulesParams(object):
         :param session: session to use
         :param model_run_service: model run service
         :param land_cover_service: land cover service
+        :param locations: file locations for driving dataset
         :return: the driving dataset
         """
 
@@ -265,5 +267,7 @@ class DrivingDatasetJulesParams(object):
 
         land_cover_service\
             .update_regions_and_categories_in_session(session, driving_dataset, results["region"])
+
+        driving_dataset.locations = locations
 
         return driving_dataset

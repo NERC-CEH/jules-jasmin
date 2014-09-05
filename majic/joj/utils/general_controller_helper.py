@@ -43,7 +43,7 @@ def put_errors_in_table_on_line(errors, error_key, field_name):
     region_errors = errors.get(error_key)
     if region_errors is not None:
         for region_error, index in zip(region_errors, range(len(region_errors))):
-            if region_error is not None:
+            if len(region_error) is not 0:
                 errors["{}-{}.{}".format(error_key, index, field_name)] = "Please correct"
         del errors[error_key]
 

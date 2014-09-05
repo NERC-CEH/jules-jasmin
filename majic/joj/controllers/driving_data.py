@@ -88,7 +88,6 @@ class DrivingDataController(BaseController):
             service_exception = False
             try:
                 results = schema.to_python(values, c)
-                locations = DrivingDataFileLocationValidator(errors).get_file_locations(results)
             except Invalid, e:
                 errors.update(e.unpack_errors())
             except ServiceException as ex:
@@ -98,11 +97,14 @@ class DrivingDataController(BaseController):
             date_period_validator = DatetimePeriodValidator(errors)
             results["driving_data_start"], results["driving_data_end"] = \
                 date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
+            validator = DrivingDataFileLocationValidator(errors, self._dataset_service.get_dataset_types_dictionary())
+            locations = validator.get_file_locations(results)
 
             if len(errors) == 0 and not service_exception:
                 self._dataset_service.create_driving_dataset(
                     id,
                     results,
+                    locations,
                     self._model_run_service,
                     self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))

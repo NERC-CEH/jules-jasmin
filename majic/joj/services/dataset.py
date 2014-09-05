@@ -230,11 +230,12 @@ class DatasetService(DatabaseService):
                 .one()
         return driving_dataset.id
 
-    def create_driving_dataset(self, driving_dataset_id, results, model_run_service, land_cover_service):
+    def create_driving_dataset(self, driving_dataset_id, results, locations, model_run_service, land_cover_service):
 
         """
         Create a driving dataset object from a results dictionary
         :param driving_dataset_id: id of the driving dataset to edit (None for create new)
+        :param locations: locations list to use
         :param results: the results
         :param model_run_service: model run service
         :param land_cover_service: land cover service
@@ -259,4 +260,16 @@ class DatasetService(DatabaseService):
                 session,
                 model_run_service,
                 land_cover_service,
-                results)
+                results,
+                locations)
+
+    def get_dataset_types_dictionary(self):
+        """
+        Get the dataset types as a dictionary, index is name value is database id
+        :return: dictionary
+        """
+
+        dataset_types_dictionary = {}
+        for dataset in self.get_dataset_types():
+            dataset_types_dictionary[dataset.type] = dataset.id
+        return  dataset_types_dictionary
