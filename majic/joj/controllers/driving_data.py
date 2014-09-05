@@ -54,7 +54,7 @@ class DrivingDataController(BaseController):
         :return: html to render
         """
 
-        c.driving_data_sets = self._dataset_service.get_driving_datasets()
+        c.driving_data_sets = self._dataset_service.get_driving_datasets(self.current_user)
         return render('driving_data/list.html')
 
     @must_be_admin

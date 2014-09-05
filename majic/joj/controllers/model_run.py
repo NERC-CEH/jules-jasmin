@@ -142,7 +142,7 @@ class ModelRunController(BaseController):
         c.user = self.current_user
         model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         summary_helper = SummaryControllerHelper(model_run_service=self._model_run_service)
-        summary_helper.add_summary_fields_to_context(model_run, c)
+        summary_helper.add_summary_fields_to_context(model_run, c, self.current_user)
 
         return render("model_run/summary.html")
 
@@ -215,7 +215,7 @@ class ModelRunController(BaseController):
             helpers.error_flash(u"You must create a model run before you can choose a driving data set")
             redirect(url(controller='model_run', action='create'))
 
-        driving_datasets = self._dataset_service.get_driving_datasets()
+        driving_datasets = self._dataset_service.get_driving_datasets(self.current_user)
         user_upload_ds_id = self._dataset_service.get_id_for_user_upload_driving_dataset()
         errors = {}
 
@@ -465,14 +465,18 @@ class ModelRunController(BaseController):
         land_cover_controller_helper = LandCoverControllerHelper()
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "land_cover")
-            land_cover_controller_helper.add_fractional_land_cover_to_context(c, errors, model_run)
+            land_cover_controller_helper.add_fractional_land_cover_to_context(c, errors, model_run, self.current_user)
             return render('model_run/fractional_land_cover.html')
         else:
-            land_cover_controller_helper.save_fractional_land_cover(values, errors, model_run)
+            land_cover_controller_helper.save_fractional_land_cover(values, errors, model_run, self.current_user)
             if len(errors) > 0:
                 if 'land_cover_frac' in errors:
                     helpers.error_flash(errors['land_cover_frac'])
-                land_cover_controller_helper.add_fractional_land_cover_to_context(c, errors, model_run)
+                land_cover_controller_helper.add_fractional_land_cover_to_context(
+                    c,
+                    errors,
+                    model_run,
+                    self.current_user)
                 c.land_cover_values = values
                 del values['submit']
                 html = render('model_run/fractional_land_cover.html')
@@ -581,7 +585,7 @@ class ModelRunController(BaseController):
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "submit")
             summmary_helper = SummaryControllerHelper(model_run_service=self._model_run_service)
-            summmary_helper.add_summary_fields_to_context(model_run, c)
+            summmary_helper.add_summary_fields_to_context(model_run, c, self.current_user)
         else:
             self._model_run_controller_helper.check_user_quota(self.current_user)
             if request.params.getone('submit') == u'Submit':

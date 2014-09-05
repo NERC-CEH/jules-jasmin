@@ -50,7 +50,7 @@ class TestWithFullModelRun(TestController):
         # The Driving Data page
         self.create_two_driving_datasets()
         dataset_service = DatasetService()
-        driving_datasets = dataset_service.get_driving_datasets()
+        driving_datasets = dataset_service.get_driving_datasets(self.user)
         self.driving_data = [dds for dds in driving_datasets if dds.name == "driving1"][0]
         response = self.app.post(url(controller='model_run', action='driving_data'),
                                  params={
@@ -105,7 +105,7 @@ class TestWithFullModelRun(TestController):
         # The Driving Data page
         self.create_two_driving_datasets()
         dataset_service = DatasetService()
-        driving_datasets = dataset_service.get_driving_datasets()
+        driving_datasets = dataset_service.get_driving_datasets(self.user)
         self.driving_data = [dds for dds in driving_datasets if dds.name == "driving2"][0]
         response = self.app.post(url(controller='model_run', action='driving_data'),
                                  params={

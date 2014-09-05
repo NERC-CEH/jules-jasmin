@@ -1,7 +1,6 @@
 """
 header
 """
-from pylons import config
 from sqlalchemy import asc
 from sqlalchemy.orm import subqueryload, eagerload
 
@@ -127,10 +126,11 @@ class LandCoverService(DatabaseService):
             model_run.land_cover_frac = fractional_string
             session.merge(model_run)
 
-    def get_default_fractional_cover(self, model_run):
+    def get_default_fractional_cover(self, model_run, user):
         """
         Get the default fractional land cover for a model run
         :param model_run: Model run being created
+        :param user: user
         :return: Fractional land cover as a list of floats.
         """
         latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
@@ -138,7 +138,7 @@ class LandCoverService(DatabaseService):
             raise ServiceException("Could not get default fractional cover: the model run does not have any "
                                    "saved single cell location information")
         lat, lon = latlon
-        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon)
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user)
         if driving_dataset is not None:
             try:
                 land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
@@ -150,10 +150,11 @@ class LandCoverService(DatabaseService):
         ntypes = len(self.get_land_cover_values(return_ice=True))
         return ntypes * [0.0]
 
-    def save_default_soil_properties(self, model_run):
+    def save_default_soil_properties(self, model_run, user):
         """
         Retrieve and save default soil properties for a single cell model run
         :param model_run: Model run to save default soil properties for
+        :param user: the user
         :return:
         """
         latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
@@ -161,7 +162,7 @@ class LandCoverService(DatabaseService):
             raise ServiceException("Could not get default soil properties: the model run does not have any "
                                    "saved single cell location information")
         lat, lon = latlon
-        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon)
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user)
         if driving_dataset is not None:
             nvars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
             vars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)
@@ -216,8 +217,8 @@ class LandCoverService(DatabaseService):
             if len(category.regions) == 0:
                 session.delete(category)
 
-    def _get_best_matching_dataset_to_use(self, lat, lon):
-        driving_datasets = self.dataset_service.get_driving_datasets()
+    def _get_best_matching_dataset_to_use(self, lat, lon, user):
+        driving_datasets = self.dataset_service.get_driving_datasets(user)
         user_upload_ds_id = self.dataset_service.get_id_for_user_upload_driving_dataset()
         usable_datasets = []
         for dataset in driving_datasets:

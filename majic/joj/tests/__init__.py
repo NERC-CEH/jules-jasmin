@@ -192,7 +192,8 @@ class TestController(TestCase):
     def create_driving_dataset(
             self,
             session,
-            jules_params=DrivingDatasetJulesParams(dataperiod=3600, var_interps=8 * ["i"])):
+            jules_params=DrivingDatasetJulesParams(dataperiod=3600, var_interps=8 * ["i"]),
+            is_restricted_to_admins=False):
         """
         Create a driving dataset
         :param session: session to use
@@ -214,7 +215,7 @@ class TestController(TestCase):
         driving1.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
         driving1.time_end = datetime.datetime(2010, 1, 1, 0, 0, 0)
         driving1.view_order_index = 100
-        driving1.is_restricted_to_admins = False
+        driving1.is_restricted_to_admins = is_restricted_to_admins
         location1 = DrivingDatasetLocation()
         location1.base_url = "base_url"
         location1.driving_dataset = driving1

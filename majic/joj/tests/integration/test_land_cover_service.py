@@ -134,7 +134,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
     def test_GIVEN_multiple_land_cover_categories_WHEN_get_categories_THEN_correct_categories_returned(self):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        datasets = self.dataset_service.get_driving_datasets()
+        datasets = self.dataset_service.get_driving_datasets(self.user)
 
         with session_scope() as session:
             cat1 = LandCoverRegionCategory()
@@ -277,7 +277,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         model_run = self.set_model_run_latlon(self.user, 70, 0)
 
-        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run, self.user)
         assert_that(fractional_vals, is_([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]))
 
     def test_GIVEN_two_matching_datasets_WHEN_get_default_cover_THEN_higher_priority_fractional_cover_returned(self):
@@ -286,7 +286,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.create_model_run_with_user_uploaded_driving_data()
 
         model_run = self.set_model_run_latlon(self.user, 0, 0)
-        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run, self.user)
         assert_that(fractional_vals, is_([0.02, 0.11, 0.02, 0.05, 0.35, 0.19, 0.22, 0.04, 0.0]))
 
     def test_GIVEN_no_matching_datasets_WHEN_get_default_cover_THEN_zeros_returned(self):
@@ -295,7 +295,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.create_model_run_with_user_uploaded_driving_data()
 
         model_run = self.set_model_run_latlon(self.user, 88, 0)
-        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run, self.user)
         assert_that(fractional_vals, is_([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
     def test_GIVEN_thredds_not_working_WHEN_get_default_cover_THEN_zeros_returned(self):
@@ -311,7 +311,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.land_cover_service = LandCoverService(dap_client_factory=dap_client_factory)
 
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run, self.user)
         assert_that(fractional_vals, is_([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
     def test_GIVEN_using_provided_driving_data_WHEN_get_default_fractional_cover_THEN_fractional_cover_returned(self):
@@ -320,7 +320,7 @@ class TestLandCoverService(TestWithFullModelRun):
         self.create_alternate_model_run()
 
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+        fractional_vals = self.land_cover_service.get_default_fractional_cover(model_run, self.user)
         assert_that(fractional_vals, is_([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]))
 
     def test_GIVEN_multicell_model_run_WHEN_get_default_fractional_cover_THEN_ServiceException_raised(self):
@@ -330,7 +330,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         with self.assertRaises(ServiceException):
-            self.land_cover_service.get_default_fractional_cover(model_run)
+            self.land_cover_service.get_default_fractional_cover(model_run, self.user)
 
     def test_GIVEN_user_uploaded_driving_data_WHEN_set_default_soil_properties_THEN_soil_cover_set(self):
         self.clean_database()
@@ -339,7 +339,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         model_run = self.set_model_run_latlon(self.user, 51, 0)
 
-        self.land_cover_service.save_default_soil_properties(model_run)
+        self.land_cover_service.save_default_soil_properties(model_run, self.user)
 
         #self._land_cover_service.dap_client_factory.get_soil_properties_dap_client = _mock_get_soil_props_client
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
@@ -360,7 +360,7 @@ class TestLandCoverService(TestWithFullModelRun):
 
         model_run = self.set_model_run_latlon(self.user, 90, 0)
 
-        self.land_cover_service.save_default_soil_properties(model_run)
+        self.land_cover_service.save_default_soil_properties(model_run, self.user)
 
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)

@@ -155,17 +155,20 @@ class DatasetService(DatabaseService):
 
             session.add(dataset)
 
-    def get_driving_datasets(self):
+    def get_driving_datasets(self, user):
         """
-        Returns all the driving datasets
+        Returns a list of availiable driving datasets
+         If you are an admin this is all of them, if you are a normal user this is only the published ones
         :return: List of driving datasets
         """
 
         with self.readonly_scope() as session:
-            return session.query(DrivingDataset)\
+            query = session.query(DrivingDataset)\
                 .options(joinedload(DrivingDataset.parameter_values))\
-                .order_by(DrivingDataset.view_order_index)\
-                .all()
+                .order_by(DrivingDataset.view_order_index)
+            if not user.is_admin():
+                query = query.filter(DrivingDataset.is_restricted_to_admins == False)
+            return query.all()
 
     def _get_driving_dataset_by_id_in_session(self, driving_dataset_id, session):
         """

@@ -17,12 +17,13 @@ class SummaryControllerHelper(object):
     def __init__(self, model_run_service=ModelRunService()):
         self._model_run_service = model_run_service
 
-    def add_summary_fields_to_context(self, model_run, context):
+    def add_summary_fields_to_context(self, model_run, context, user):
         """
         Add summary information to a template context, containing basic information
         for each of the pages in the workflow.
         :param model_run: Model run being created
         :param context: Context to summary fields to
+        :param user: user
         :return:
         """
         # Create page
@@ -43,7 +44,7 @@ class SummaryControllerHelper(object):
         context.land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model_run)
         land_cover_helper = LandCoverControllerHelper()
         try:
-            land_cover_helper.add_fractional_land_cover_to_context(context, {}, model_run)
+            land_cover_helper.add_fractional_land_cover_to_context(context, {}, model_run, user)
         except ServiceException:
             pass
 

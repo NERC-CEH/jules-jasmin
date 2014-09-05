@@ -644,6 +644,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
                                         "single cell site"
         driving_ds_upload.view_order_index = 1000
+        driving_ds_upload.is_restricted_to_admins = False
 
         parameters_upload = [
 

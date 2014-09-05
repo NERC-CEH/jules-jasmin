@@ -36,17 +36,18 @@ class LandCoverControllerHelper(object):
         tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
             model_run.driving_dataset_id)
 
-    def add_fractional_land_cover_to_context(self, tmpl_context, errors, model_run):
+    def add_fractional_land_cover_to_context(self, tmpl_context, errors, model_run, user):
         """
         Add the fractional land cover fields to the template context object
         :param tmpl_context: Template context object to add fields to
         :param errors: Object to add any errors to
         :param model_run: Model run being created
+        :param user: user
         :return:
         """
         fractional_string = model_run.land_cover_frac
         if fractional_string is None:
-            raw_frac_vals = self.land_cover_service.get_default_fractional_cover(model_run)
+            raw_frac_vals = self.land_cover_service.get_default_fractional_cover(model_run, user)
             fractional_values = self._neaten_default_fractional_values(raw_frac_vals)
         else:
             fractional_values = [float(v) for v in fractional_string.split()]
@@ -91,12 +92,13 @@ class LandCoverControllerHelper(object):
                 land_cover_actions.append(lca)
             self.land_cover_service.save_land_cover_actions_for_model(model_run, land_cover_actions)
 
-    def save_fractional_land_cover(self, values, errors, model_run):
+    def save_fractional_land_cover(self, values, errors, model_run, user):
         """
         Save the fractional land cover (for user uploaded driving data)
         :param values: POST values dictionary
         :param errors: Object to add errors to
         :param model_run: Model being created
+        :param user: user
         :return:
         """
         land_cover_val_prefix = "land_cover_value_"
@@ -127,7 +129,7 @@ class LandCoverControllerHelper(object):
         if len(errors) == 0:
             fractional_string = '\t'.join([str(val) for val in sorted_fractional_values])
             self.land_cover_service.save_fractional_land_cover_for_model(model_run, fractional_string)
-            self.land_cover_service.save_default_soil_properties(model_run)
+            self.land_cover_service.save_default_soil_properties(model_run, user)
 
     def _validate_values(self, values, errors, driving_data):
         # Check that:

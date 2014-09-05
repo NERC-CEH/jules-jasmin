@@ -19,7 +19,7 @@ class TestModelRunLandCover(TestController):
         self.clean_database()
         self.user = self.login()
         self.create_two_driving_datasets()
-        dds = DatasetService().get_driving_datasets()[0]
+        dds = DatasetService().get_driving_datasets(self.user)[0]
         with session_scope() as session:
             model_run = ModelRun()
             model_run.name = "model run"
@@ -72,7 +72,7 @@ class TestModelRunLandCover(TestController):
 
     def test_GIVEN_invalid_land_cover_actions_WHEN_post_THEN_error_shown_and_stay_on_page(self):
         # Add some regions to another driving dataset
-        dds = DatasetService().get_driving_datasets()[1]
+        dds = DatasetService().get_driving_datasets(self.user)[1]
         with session_scope() as session:
             land_cat = LandCoverRegionCategory()
             land_cat.driving_dataset = dds
