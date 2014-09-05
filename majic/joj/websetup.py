@@ -187,9 +187,8 @@ def setup_app(command, conf, vars):
         watch_land_frac_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
         watch_latlon_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
         ancils = [
-            [watch_soil_props_file, 'Soil Properties (ancil)', 0, 10],
-            [watch_frac_file, 'Land cover map  (ancil)', 0, 10],
-            [watch_land_frac_file, 'Land fraction map  (ancil)', 0, 10]
+            [watch_soil_props_file, 'Soil Properties (ancil)', 0, 10, soild_prop_dst],
+            [watch_frac_file, 'Land cover map  (ancil)', 0, 10, land_cover_frac_dst]
         ]
 
         for path, var, name, min, max in watch_driving_data:
@@ -207,7 +206,7 @@ def setup_app(command, conf, vars):
             ds.is_input = True
             ds.model_run = mr1
 
-        for path, name, min, max in ancils:
+        for path, name, min, max, dataset_type in ancils:
             ds = Dataset()
             ds.name = name
             ds.wms_url = conf.local_conf['thredds.server_url'] \
@@ -218,7 +217,7 @@ def setup_app(command, conf, vars):
             ds.data_range_to = max
             ds.is_categorical = 0
             ds.deleted = 0
-            ds.dataset_type = cover_dst
+            ds.dataset_type = dataset_type
             ds.is_input = True
             ds.model_run = mr1
 
@@ -499,8 +498,18 @@ def setup_app(command, conf, vars):
         for path, var, name, min, max in watch_driving_data:
             location = DrivingDatasetLocation()
             location.base_url = file_template.format(path)
-            location.var_name = var
+            location.dataset_type = cover_dst
             location.driving_dataset = driving_ds_1
+
+        DrivingDatasetLocation(
+            dataset_type=soild_prop_dst,
+            base_url=watch_soil_props_file,
+            driving_dataset=driving_ds_1)
+
+        DrivingDatasetLocation(
+            dataset_type=land_cover_frac_dst,
+            base_url=watch_land_frac_file,
+            driving_dataset=driving_ds_1)
 
         parameters1 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
@@ -627,6 +636,7 @@ def setup_app(command, conf, vars):
                      'SWdown_WFDEI_land', 'Rainf_WFDEI_GPCC_land', 'Snowf_WFDEI_land']:
             location = DrivingDatasetLocation()
             location.base_url = file_template.format(name)
+            location.dataset_type = cover_dst
             location.driving_dataset = driving_ds_3
 
         driving_ds_upload = DrivingDataset()

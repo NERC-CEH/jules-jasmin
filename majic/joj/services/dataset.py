@@ -3,7 +3,8 @@ header
 """
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, contains_eager, subqueryload
-from joj.model import Dataset, DatasetType, DrivingDataset, DrivingDatasetParameterValue, Parameter
+from joj.model import Dataset, DatasetType, DrivingDataset, DrivingDatasetParameterValue, Parameter, \
+    DrivingDatasetLocation
 from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
@@ -250,6 +251,10 @@ class DatasetService(DatabaseService):
                 session\
                     .query(DrivingDatasetParameterValue)\
                     .filter(DrivingDatasetParameterValue.driving_dataset_id == driving_dataset_id)\
+                    .delete()
+                session\
+                    .query(DrivingDatasetLocation)\
+                    .filter(DrivingDatasetLocation.driving_dataset_id == driving_dataset_id)\
                     .delete()
                 driving_dataset = self._get_driving_dataset_by_id_in_session(driving_dataset_id, session)
 

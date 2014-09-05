@@ -11,7 +11,8 @@ from formencode import htmlfill
 from joj.lib.base import BaseController, request, render, helpers
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
-from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line, remove_deleted_keys
+from joj.utils.general_controller_helper import must_be_admin, put_errors_in_table_on_line, remove_deleted_keys, \
+    show_error_if_thredds_down
 from joj.services.model_run_service import ModelRunService
 from joj.model import DrivingDataset
 from joj.services.land_cover_service import LandCoverService
@@ -56,8 +57,8 @@ class DrivingDataController(BaseController):
         c.driving_data_sets = self._dataset_service.get_driving_datasets()
         return render('driving_data/list.html')
 
-    # noinspection PyArgumentList
     @must_be_admin
+    @show_error_if_thredds_down
     def edit(self, id=None):
         """
         Allow an admin to edit a driving data se
