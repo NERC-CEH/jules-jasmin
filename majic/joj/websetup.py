@@ -110,18 +110,16 @@ def setup_app(command, conf, vars):
 
         session.add(core_user)
 
-        point_dst = DatasetType()
-        point_dst.type = 'Point'
-
-        cover_dst = DatasetType()
-        cover_dst.type = constants.DATASET_TYPE_COVERAGE
-
-        result_dst = DatasetType()
-        result_dst.type = 'Result'
-
-        session.add(point_dst)
+        cover_dst = DatasetType(type=constants.DATASET_TYPE_COVERAGE)
         session.add(cover_dst)
-        session.add(result_dst)
+        land_cover_frac_dst = DatasetType(type=constants.DATASET_TYPE_LAND_COVER_FRAC)
+        session.add(land_cover_frac_dst)
+        soild_prop_dst = DatasetType(type=constants.DATASET_TYPE_SOIL_PROP)
+        session.add(soild_prop_dst)
+        single_cell_dst = DatasetType(type=constants.DATASET_TYPE_SINGLE_CELL)
+        session.add(single_cell_dst)
+        transects_dst = DatasetType(type=constants.DATASET_TYPE_TRANSECTS)
+        session.add(transects_dst)
 
         level = UserLevel()
         level.name = 'Beginner'

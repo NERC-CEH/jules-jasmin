@@ -8,8 +8,7 @@ from joj.services.general import DatabaseService
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.model.non_database.temporal_extent import TemporalExtent
 from joj.utils import constants
-
-__author__ = 'Phil Jenkins (Tessella)'
+from joj.model.non_database.driving_dataset_jules_params import DrivingDatasetJulesParams
 
 
 class DatasetService(DatabaseService):
@@ -167,6 +166,22 @@ class DatasetService(DatabaseService):
                 .order_by(DrivingDataset.view_order_index)\
                 .all()
 
+    def _get_driving_dataset_by_id_in_session(self, driving_dataset_id, session):
+        """
+        get a driving dataset by id inside a session
+        :param driving_dataset_id: the driving dataset id
+        :param session: the session o use
+        :return:a driving dataset
+        """
+        return session.query(DrivingDataset) \
+            .outerjoin(DrivingDataset.parameter_values, "parameter", "namelist") \
+            .options(contains_eager(DrivingDataset.parameter_values)
+                     .contains_eager(DrivingDatasetParameterValue.parameter)
+                     .contains_eager(Parameter.namelist)) \
+            .options(subqueryload(DrivingDataset.locations)) \
+            .filter(DrivingDataset.id == driving_dataset_id) \
+            .one()
+
     def get_driving_dataset_by_id(self, id):
         """
         Get a driving dataset specified by an ID
@@ -174,14 +189,7 @@ class DatasetService(DatabaseService):
         :return: DrivingDataset
         """
         with self.readonly_scope() as session:
-            return session.query(DrivingDataset)\
-                .outerjoin(DrivingDataset.parameter_values, "parameter", "namelist") \
-                .options(contains_eager(DrivingDataset.parameter_values)
-                         .contains_eager(DrivingDatasetParameterValue.parameter)
-                         .contains_eager(Parameter.namelist))\
-                .options(subqueryload(DrivingDataset.locations))\
-                .filter(DrivingDataset.id == id)\
-                .one()
+            return self._get_driving_dataset_by_id_in_session(id, session)
 
     def get_spatial_extent(self, driving_dataset_id):
         """
@@ -221,3 +229,47 @@ class DatasetService(DatabaseService):
                 .filter(DrivingDataset.name == constants.USER_UPLOAD_DRIVING_DATASET_NAME)\
                 .one()
         return driving_dataset.id
+
+    def create_driving_dataset(self, driving_dataset_id, results, locations, model_run_service, land_cover_service):
+
+        """
+        Create a driving dataset object from a results dictionary
+        :param driving_dataset_id: id of the driving dataset to edit (None for create new)
+        :param locations: locations list to use
+        :param results: the results
+        :param model_run_service: model run service
+        :param land_cover_service: land cover service
+        :return: nothing
+        """
+
+        with self.transaction_scope() as session:
+            if driving_dataset_id is None:
+                driving_dataset = DrivingDataset()
+                session.add(driving_dataset)
+            else:
+                session\
+                    .query(DrivingDatasetParameterValue)\
+                    .filter(DrivingDatasetParameterValue.driving_dataset_id == driving_dataset_id)\
+                    .delete()
+                driving_dataset = self._get_driving_dataset_by_id_in_session(driving_dataset_id, session)
+
+            driving_dataset_jules_params = DrivingDatasetJulesParams()
+
+            driving_dataset_jules_params.update_driving_dataset_from_dict(
+                driving_dataset,
+                session,
+                model_run_service,
+                land_cover_service,
+                results,
+                locations)
+
+    def get_dataset_types_dictionary(self):
+        """
+        Get the dataset types as a dictionary, index is name value is database id
+        :return: dictionary
+        """
+
+        dataset_types_dictionary = {}
+        for dataset in self.get_dataset_types():
+            dataset_types_dictionary[dataset.type] = dataset.id
+        return  dataset_types_dictionary

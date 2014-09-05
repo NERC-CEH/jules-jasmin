@@ -11,6 +11,7 @@ from joj.services.job_runner_client import JobRunnerClient
 from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.ascii_download_helper import AsciiDownloadHelper
+from joj.model.non_database.datetime_period_validator import DatetimePeriodValidator
 
 
 class DrivingDataParsingException(Exception):
@@ -104,8 +105,10 @@ class DrivingDataControllerHelper(object):
         model_run_service.save_driving_dataset_for_new_model(new_driving_dataset, old_driving_dataset, user)
 
     def _validate_download_values(self, driving_data, errors, values):
-        start = self._validate_date(errors, 'dt_start', values)
-        end = self._validate_date(errors, 'dt_end', values)
+
+        date_period_validator = DatetimePeriodValidator(errors)
+        start, end = date_period_validator.get_valid_start_end_datetimes('dt_start', 'dt_end', values)
+
         if start is not None and end is not None:
             self.ascii_download_helper.get_actual_data_start(driving_data, start)
             self.ascii_download_helper.get_actual_data_end(driving_data, end)
@@ -276,14 +279,8 @@ class DrivingDataControllerHelper(object):
         :param values: POST values dictionary
         :param errors: Object to add errors to
         """
-
-        # Validate the dates
-        start_date = self._validate_date(errors, 'dt_start', values)
-        end_date = self._validate_date(errors, 'dt_end', values)
-
-        if end_date is not None and start_date is not None:
-            if start_date > end_date:
-                errors['dt_end'] = 'End date must not be before the start date'
+        date_period_validator = DatetimePeriodValidator(errors)
+        date_period_validator.get_valid_start_end_datetimes('dt_start', 'dt_end', values)
 
         # Validate the lat lon:
         if 'lat' not in values or values['lat'] == '':
@@ -298,17 +295,6 @@ class DrivingDataControllerHelper(object):
         file = values['driving-file']
         if file == u'':
             errors['driving-file'] = "You must select a driving data file"
-
-    def _validate_date(self, errors, key, values):
-        if key not in values or values[key] == '':
-            errors[key] = 'Please enter a date'
-        else:
-            date_str = values[key]
-            try:
-                return datetime.datetime.strptime(date_str, constants.USER_UPLOAD_DATE_FORMAT)
-            except ValueError:
-                errors[key] = 'Enter date in the format YYYY-MM-DD HH:MM'
-            return None
 
     def _validate_lat_lon(self, errors, lat, lon):
         # FormEncode should have already converted these to floats

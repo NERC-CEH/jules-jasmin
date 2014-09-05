@@ -33,7 +33,9 @@ class DrivingDatasetJulesParams(object):
                  frac_frac_dim_name='frac',
                  frac_type_dim_name='psuedo',
                  soil_props_file=None,
-                 extra_parameters=None):
+                 extra_parameters=None,
+                 driving_dateset=None,
+                 regions=None):
         """
         Initialise
         :param dataperiod: the period of each time step
@@ -49,43 +51,12 @@ class DrivingDatasetJulesParams(object):
         :param time_dim_name: time dimension name
         :return: nothing
         """
-        self.values = {}
-        self.values['driving_data_period'] = dataperiod
-        self.values['driving_data_start'] = data_start
-        self.values['driving_data_end'] = data_end
-        self.values['drive_file'] = drive_file
-        self.values['drive_vars'] = drive_var if drive_var is not None else []
-        self.values['drive_nvars'] = len(self.values['drive_vars'])
-        self.values['drive_var_names'] = var_names if var_names is not None else []
-        self.values['drive_var_templates'] = var_templates if var_templates is not None else []
-        self.values['drive_var_interps'] = var_interps if var_interps is not None else []
-        self.values['drive_nx'] = nx
-        self.values['drive_ny'] = ny
-        self.values['drive_x_dim_name'] = x_dim_name
-        self.values['drive_y_dim_name'] = y_dim_name
-        self.values['drive_time_dim_name'] = time_dim_name
-
-        self.values['latlon_file'] = latlon_file
-        self.values['latlon_lat_name'] = latlon_lat_name
-        self.values['latlon_lon_name'] = latlon_lon_name
-
-        self.values['frac_file'] = frac_file
-        self.values['frac_frac_name'] = frac_frac_dim_name
-        self.values['frac_type_dim_name'] = frac_type_dim_name
-
-        self.values['land_frac_file'] = land_frac_file
-        self.values['land_frac_frac_name'] = land_frac_frac_name
-
-        self.values['soil_props_file'] = soil_props_file
-
-        self._extra_parameters = extra_parameters if extra_parameters is not None else {}
-
         self._names_constant_dict = {
             'driving_data_period': constants.JULES_PARAM_DRIVE_DATA_PERIOD,
             'driving_data_start': constants.JULES_PARAM_DRIVE_DATA_START,
             'driving_data_end': constants.JULES_PARAM_DRIVE_DATA_END,
             'drive_file': constants.JULES_PARAM_DRIVE_FILE,
-            'drive_vars': constants.JULES_PARAM_DRIVE_VAR,
+            'drive_var_vars': constants.JULES_PARAM_DRIVE_VAR,
             'drive_nvars': constants.JULES_PARAM_DRIVE_NVARS,
             'drive_var_names': constants.JULES_PARAM_DRIVE_VAR_NAME,
             'drive_var_templates': constants.JULES_PARAM_DRIVE_TPL_NAME,
@@ -105,40 +76,82 @@ class DrivingDatasetJulesParams(object):
             'land_frac_frac_name': constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME,
             'soil_props_file': constants.JULES_PARAM_SOIL_PROPS_FILE}
 
-    def add_to_driving_dataset(self, model_run_service, driving_dataset):
+        self.values = {}
+        self._extra_parameters = {}
+
+        self.driving_dataset = driving_dateset
+        if driving_dateset is not None:
+            self.set_from(driving_dateset, regions if regions is not None else [])
+
+        self.values.update({
+            'driving_data_period': dataperiod,
+            'driving_data_start': data_start,
+            'driving_data_end': data_end,
+            'drive_file': drive_file,
+            'drive_var_vars': drive_var if drive_var is not None else [],
+            'drive_var_names': var_names if var_names is not None else [],
+            'drive_var_templates': var_templates if var_templates is not None else [],
+            'drive_var_interps': var_interps if var_interps is not None else [],
+            'drive_nx': nx,
+            'drive_ny': ny,
+            'drive_x_dim_name': x_dim_name,
+            'drive_y_dim_name': y_dim_name,
+            'drive_time_dim_name': time_dim_name,
+            'latlon_file': latlon_file,
+            'latlon_lat_name': latlon_lat_name,
+            'latlon_lon_name': latlon_lon_name,
+            'frac_file': frac_file,
+            'frac_frac_name': frac_frac_dim_name,
+            'frac_type_dim_name': frac_type_dim_name,
+            'land_frac_file': land_frac_file,
+            'land_frac_frac_name': land_frac_frac_name,
+            'soil_props_file': soil_props_file})
+
+        self.values['drive_nvars'] = len(self.values['drive_var_vars'])
+
+        if extra_parameters is not None:
+            self._extra_parameters.update(extra_parameters)
+
+    def add_to_driving_dataset(self, model_run_service, driving_dataset, session):
         """
         Create driving data set parameters for non-none parameters set and add them to the driving dataset
         :param model_run_service: model run service to use
         :param driving_dataset: the driving dataset to add the parameters to
+        :param session: database session to use
         :return:nothing
         """
 
         for key, value in self.values.iteritems():
             if value is not None and value != []:
                 val = f90_helper.python_to_f90_str(value)
-                DrivingDatasetParameterValue(model_run_service, driving_dataset, self._names_constant_dict[key], val)
+                DrivingDatasetParameterValue(
+                    model_run_service,
+                    driving_dataset,
+                    self._names_constant_dict[key],
+                    val,
+                    session)
 
         for parameter_id, value in self._extra_parameters.iteritems():
             if value is not None and value != []:
-                val = f90_helper.python_to_f90_str(value)
-                DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, val)
+                DrivingDatasetParameterValue(model_run_service, driving_dataset, parameter_id, value, session)
 
-    def set_from(self, driving_data_set):
+    def set_from(self, driving_dataset, regions):
         """
         Set values from a driving set with parameters in
-        :param driving_data_set: the driving data set
+        :param driving_dataset: the driving data set
+        :param regions: regions foe the driving dataset
         :return: nothing
         """
 
         for name, constant in self._names_constant_dict.iteritems():
-            val = driving_data_set.get_python_parameter_value(constant)
+            val = driving_dataset.get_python_parameter_value(constant)
             self.values[name] = val
 
         #values which can not be none
         if self.values['drive_nvars'] is None:
             self.values['drive_nvars'] = 0
 
-        for parameter_value in driving_data_set.parameter_values:
+        for parameter_value in driving_dataset.parameter_values:
             found = False
             for named_param in self._names_constant_dict.values():
                     if named_param[0] == parameter_value.parameter.namelist.name \
@@ -148,26 +161,40 @@ class DrivingDatasetJulesParams(object):
             if not found:
                 self._extra_parameters[parameter_value.parameter_id] = parameter_value.value
 
-    def add_to_dict(self, values_dict_to_add_to, namelists):
+        self.regions = regions
+        self.driving_dataset = driving_dataset
+
+    def _get_driving_var_variable_field_name(self, name):
         """
-        Add jules parameters to the values_dict_to_add_to dictionary
-        :param values_dict_to_add_to: the values_dict_to_add_to dictionary to add to
+        Get the driving variable name e.g. drive_var_interps interps is returned
+        :param name: full name
+        :return: field name
+        """
+
+        return name[len(constants.PREFIX_FOR_DRIVING_VARS):]
+
+    def create_values_dict(self, namelists):
+        """
+        Create a jules parameters values dictionary
         :param namelists: the list of namelists with parameters
-        :return: nothing
+        :return: values dictionary
         """
+
+        values_dict = self.driving_dataset.__dict__
 
         for name in self._names_constant_dict.keys():
             if name in self.values:
                 value = self.values[name]
-                if type(value) is list:
+                if name.startswith(constants.PREFIX_FOR_DRIVING_VARS) and value is not None:
                     for val, index in zip(value, range(len(value))):
-                        values_dict_to_add_to["{}_{}".format(name, str(index))] = val
+                        values_dict["{}-{}.{}".format(constants.PREFIX_FOR_DRIVING_VARS, str(index),
+                                                      self._get_driving_var_variable_field_name(name))] = val
                 else:
-                    values_dict_to_add_to[name] = value
+                    values_dict[name] = value
             else:
-                values_dict_to_add_to[name] = ''
+                values_dict[name] = ''
 
-        values_dict_to_add_to['parameters_nvar'] = len(self._extra_parameters)
+        values_dict['parameters_nvar'] = len(self._extra_parameters)
 
         params = []
         for param_id, val in self._extra_parameters.iteritems():
@@ -179,12 +206,68 @@ class DrivingDatasetJulesParams(object):
                     continue
             params.append([name, param_id, val])
 
-        params = sorted(params, key=lambda param: param[0])
+        params = sorted(params, key=lambda param: param[0], reverse=True)
         index = 0
         for name, param_id, val in params:
-            values_dict_to_add_to["param_id_{}".format(str(index))] = param_id
-            values_dict_to_add_to["param_value_{}".format(str(index))] = val
+            values_dict["param-{}.id".format(str(index))] = param_id
+            values_dict["param-{}.value".format(str(index))] = val
             index += 1
 
-        values_dict_to_add_to["param_names"] = [param[0] for param in params]
-        values_dict_to_add_to['params_count'] = len(params)
+        values_dict["param_names"] = [param[0] for param in params]
+        values_dict['params_count'] = len(params)
+
+        mask_count = 0
+        for region in self.regions:
+            values_dict['region-{}.id'.format(mask_count)] = region.id
+            values_dict['region-{}.name'.format(mask_count)] = region.name
+            values_dict['region-{}.path'.format(mask_count)] = region.mask_file
+            values_dict['region-{}.category'.format(mask_count)] = region.category.name
+            mask_count += 1
+        values_dict['mask_count'] = mask_count
+
+        return values_dict
+
+    def update_driving_dataset_from_dict(
+            self,
+            driving_dataset,
+            session,
+            model_run_service,
+            land_cover_service,
+            results,
+            locations):
+        """
+        Update a driving dataset object from a results dictionary
+        :param driving_dataset: the driving dataset to update
+        :param results: the results
+        :param session: session to use
+        :param model_run_service: model run service
+        :param land_cover_service: land cover service
+        :param locations: file locations for driving dataset
+        :return: the driving dataset
+        """
+
+        driving_dataset.set_from(results)
+
+        driving_dataset.time_start = results.get("driving_data_start")
+        driving_dataset.time_end = results.get("driving_data_end")
+
+        for name, jules_parameter_constant in self._names_constant_dict.iteritems():
+            if name.startswith(constants.PREFIX_FOR_DRIVING_VARS) and constants.PREFIX_FOR_DRIVING_VARS in results:
+                field_name = self._get_driving_var_variable_field_name(name)
+                value = [result[field_name] for result in results[constants.PREFIX_FOR_DRIVING_VARS]]
+                self.values[name] = value
+            elif name in results:
+                self.values[name] = results[name]
+
+        if 'param' in results:
+            for result in results['param']:
+                self._extra_parameters[result['id']] = result['value']
+
+        self.add_to_driving_dataset(model_run_service, driving_dataset, session)
+
+        land_cover_service\
+            .update_regions_and_categories_in_session(session, driving_dataset, results["region"])
+
+        driving_dataset.locations = locations
+
+        return driving_dataset

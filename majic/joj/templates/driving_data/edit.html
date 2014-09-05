@@ -5,10 +5,10 @@
 <xi:include href="../layout.html" />
 <head>
     <title>
-        <py:if test="c.driving_data_set.id is None">
+        <py:if test="c.driving_dataset_id is None">
             New
         </py:if>
-        <py:if test="c.driving_data_set.id is not None">
+        <py:if test="c.driving_dataset_id is not None">
         Edit
         </py:if>
         Driving Data Set</title>
@@ -17,10 +17,10 @@
     <script src="/js/driving_data/edit.js"></script>
 </head>
 <body id="admin">
-    <h1><py:if test="c.driving_data_set.id is None">
+    <h1><py:if test="c.driving_dataset_id is None">
             New
         </py:if>
-        <py:if test="c.driving_data_set.id is not None">
+        <py:if test="c.driving_dataset_id is not None">
         Edit
         </py:if> Driving Data</h1>
 
@@ -227,16 +227,16 @@
                         </div>
                     </div>
                     ${h.html_tags.hidden('mask_count')}
-                    <div py:for="masknum in range(c.masks)" class="controls-row">
+                    <div py:for="masknum in reversed(range(c.masks))" class="controls-row">
                         <div class="span3">
-                            ${h.html_tags.hidden('id_{}'.format(masknum))}
-                            ${h.html_tags.text('category_{}'.format(masknum), placeholder="Category")}
+                            ${h.html_tags.hidden('region-{}.id'.format(masknum))}
+                            ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category")}
                         </div>
                         <div class="span3">
-                            ${h.html_tags.text('name_{}'.format(masknum), placeholder="Name")}
+                            ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name")}
                         </div>
                         <div class="span5">
-                            ${h.html_tags.text('path_{}'.format(masknum), placeholder="data/filepath/filename.nc")}
+                            ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc")}
                         </div>
                     </div>
                 </fieldset>
@@ -312,12 +312,11 @@
                         <h5 class="span2">Template</h5>
                         <h5 class="span2">Interpolation</h5>
                     </div>
-                    <div py:for="varnum in range(c.nvar)" class="controls-row">
-                            ${h.html_tags.text('drive_vars_{}'.format(varnum), placeholder="Variable", class_="span2")}
-                            ${h.html_tags.text('drive_var_names_{}'.format(varnum), placeholder="Variable name", class_="span2")}
-                            ${h.html_tags.text('drive_var_templates_{}'.format(varnum), placeholder="Template name", class_="span2")}
-                            ${h.html_tags.text('drive_var_interps_{}'.format(varnum), placeholder="Interpolation", class_="span2")}
-                            ${h.html_tags.hidden('drive_var_is_deleted_{}'.format(varnum))}
+                    <div py:for="varnum in reversed(range(c.nvar))" class="controls-row">
+                            ${h.html_tags.text('drive_var_-{}.vars'.format(varnum), placeholder="Variable", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.names'.format(varnum), placeholder="Variable name", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.templates'.format(varnum), placeholder="Template name", class_="span2")}
+                            ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
                             <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>
@@ -424,12 +423,12 @@
                         <h5 class="span5">Value</h5>
                     </div>
                     ${h.html_tags.hidden('params_count')}
-                    <div py:for="varnum in range(len(c.param_names))" class="controls-row">
-                        <span class="span5">
+                    <div py:for="varnum in reversed(range(len(c.param_names)))" class="controls-row">
+                        <span class="span4">
                             ${c.param_names[varnum]}
-                            ${h.html_tags.hidden('param_id_{}'.format(varnum))}
+                            ${h.html_tags.hidden('param-{}.id'.format(varnum))}
                         </span>
-                        ${h.html_tags.text('param_value_{}'.format(varnum), placeholder='Fortran namelist value', class_='span5')}
+                        ${h.html_tags.text('param-{}.value'.format(varnum), placeholder='Fortran namelist value', class_='span4')}
                         <i class="fa fa-times-circle fa-2x ico red span1"></i>
                     </div>
                 </fieldset>

@@ -10,10 +10,10 @@ function update_namelist_showing()
 
 function add_list_item(mask_template, count_input_id, controls_id) {
     count = $('#' + count_input_id).val();
-    count = parseInt(count) + 1;
-    $('#' + count_input_id).val(count);
     $("#" + controls_id).after(mask_template.replace(/%template%/g, count));
     $("#" + controls_id).parent().find(".fa-times-circle").first().click(delete_line);
+    count = parseInt(count) + 1;
+    $('#' + count_input_id).val(count);
 }
 
 /* Add a mask line*/
@@ -21,14 +21,14 @@ function add_mask()
 {
     mask_template = '<div class="controls-row"> \
             <div class="span3"> \
-                <input id="id_%template%" name="id_%template%" placeholder="Category" type="hidden" value="" /> \
-                <input id="category_%template%" name="category_%template%" placeholder="Category" type="text" value="" /> \
+                <input id="region-%template%.id" name="region-%template%.id" placeholder="Category" type="hidden" value="" /> \
+                <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" /> \
             </div> \
             <div class="span3"> \
-                <input id="name_%template%" name="name_%template%" placeholder="Name" type="text" value="" /> \
+                <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" /> \
             </div> \
             <div class="span5"> \
-                <input id="path_%template%" name="path_%template%" placeholder="data/filepath/filename.nc" type="text" value="" /> \
+                <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" /> \
             </div> \
         </div>';
     add_list_item(mask_template, "mask_count", "mask_header");
@@ -45,11 +45,10 @@ function add_variable()
 {
     var_template = ' \
     <div class="controls-row"> \
-            <input class="span2" id="drive_vars_%template%" name="drive_vars_%template%" placeholder="Variable" type="text" value="" /> \
-            <input class="span2" id="drive_var_names_%template%" name="drive_var_names_%template%" placeholder="Variable name" type="text" value="" /> \
-            <input class="span2" id="drive_var_templates_%template%" name="drive_var_templates_%template%" placeholder="Template name" type="text" value="" /> \
-            <input class="span2" id="drive_var_interps_%template%" name="drive_var_interps_%template%" placeholder="Interpolation" type="text" value="" /> \
-            <input id="drive_var_is_deleted_%template%" name="drive_var_is_deleted_%template%" type="hidden" value="" /> \
+            <input class="span2" id="drive_var_-%template%.vars" name="drive_var_-%template%.vars" placeholder="Variable" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.names" name="drive_var_-%template%.names" placeholder="Variable name" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.templates" name="drive_var_-%template%.templates" placeholder="Template name" type="text" value="" /> \
+            <input class="span2" id="drive_var_-%template%.interps" name="drive_var_-%template%.interps" placeholder="Interpolation" type="text" value="" /> \
             <i class="fa fa-times-circle fa-2x ico red span1" onclick="delete_line(this)"></i> \
     </div>';
     add_list_item(var_template, "drive_nvars", "drive_vars_header");
@@ -60,11 +59,11 @@ function add_parameter()
 {
     param_template = ' \
     <div class="controls-row"> \
-        <span class="span5"> \
+        <span class="span4"> \
             %name% \
-            <input type="hidden" value="%id%" name="param_id_%template%" id="param_id_%template%" /> \
+            <input type="hidden" value="%id%" name="param-%template%.id" id="param-%template%.id" /> \
         </span> \
-        <input type="text" value="" placeholder="Fortran namelist value" name="param_value_%template%" id="param_value_%template%" class="span5" /> \
+        <input type="text" value="" placeholder="Fortran namelist value" name="param-%template%.value" id="param-%template%.value" class="span4" /> \
         <i class="fa fa-times-circle fa-2x ico red span1"></i> \
     </div>';
 
