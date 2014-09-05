@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/">
+
+    <p py:if="c.model_run.date_created is not None">
+        <b>Date created - </b> ${h.display_date(c.model_run.date_created, "%d %b %Y at %X")}
+    </p>
+
+    <p>
+        <b>Date submitted - </b>
+        <py:choose>
+            <py:when test="c.model_run.date_submitted is not None">
+                ${h.display_date(c.model_run.date_submitted, "%d %b %Y at %X")}
+            </py:when>
+            <py:otherwise>
+                Not yet submitted
+            </py:otherwise>
+        </py:choose>
+    </p>
+
+    <p>
+        <b>Date started - </b>
+        <py:choose>
+            <py:when test="c.model_run.date_started is not None">
+                ${h.display_date(c.model_run.date_started, "%d %b %Y at %X")}
+            </py:when>
+            <py:otherwise>
+                Not yet started
+            </py:otherwise>
+        </py:choose>
+    </p>
+
+    <p py:choose="c.model_run.status.name">
+        <b>
+           <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">Public storage used (GB) - </py:when>
+           <py:otherwise>
+                Storage used (GB) -
+           </py:otherwise>
+        </b>
+        ${h.utils.convert_mb_to_gb_and_round(c.model_run.storage_in_mb)}
+    </p>
+
+</html>

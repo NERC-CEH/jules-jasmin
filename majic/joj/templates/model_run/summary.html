@@ -22,6 +22,25 @@
     {
 
     }
+    .status-banner-top {
+        margin-bottom: 0px
+    }
+    .status-banner-bottom {
+        margin-top: 10px
+    }
+    .divide {
+        margin:5px;
+    }
+    .status-color {
+        color:${c.model_run.status.get_display_color()}
+    }
+    .pad-for-missing-hover-text {
+        margin-bottom: 20px; !important
+    }
+    form {
+        margin:0;
+        padding:0;
+    }
 </style>
 </head>
 <body id="catalogue">
@@ -42,11 +61,11 @@
         <h5 class="description">Created by ${c.model_run.user.name} on ${h.display_date(c.model_run.date_created, "%d %b %Y at %X")}</h5>
     </div>
 </div>
-<hr/>
+<hr class="status-banner-top"/>
 <!--<div class="well">-->
 <div class="row">
     <div class="span3 status-span" style="text-align: left">
-        <h2 class="status" style="color:${c.model_run.status.get_display_color()};">${c.model_run.status.name}</h2>
+        <h2 class="status status-color">${c.model_run.status.name}</h2>
         <span class="date" py:if="not c.model_run.status.is_published()">
             ${h.display_date(c.model_run.last_status_change, "%d %b %Y at %X")}
         </span>
@@ -61,7 +80,7 @@
             <div class="span1">
                 <br/>
                 <!--If the run status does not allow publishing we just display an inert icon -->
-                <i py:if="not c.model_run.status.allow_publish() and not c.model_run.status.is_published()" class="fa fa-share-square-o fa-2x ico-disabled"></i>
+                <i py:if="not c.model_run.status.allow_publish() and not c.model_run.status.is_published()" class="fa fa-share-square-o fa-2x ico-disabled  pad-for-missing-hover-text"></i>
                 <!--If the run status is published we display an inert purple icon -->
                 <i py:if="c.model_run.status.is_published()" class="fa fa-share-square-o fa-2x purple"></i>
                 <!--If the run status allows us to publish the run on the map then we display the publish icon with color / hover-->
@@ -97,8 +116,7 @@
                 <form py:if="c.model_run.status.allow_delete(c.user.is_admin())"
                       action="${h.url(controller='model_run', action='delete', id=c.model_run.id)}"
                       method="post"
-                      data-confirm="You can not undo deleting a model run. Are you sure you want to delete it?"
-                      style="margin:0">
+                      data-confirm="You can not undo deleting a model run. Are you sure you want to delete it?">
 
                     <a onclick="$(this).parent().submit()"
                        onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('red')"
@@ -114,76 +132,22 @@
 <div py:if="c.model_run.error_message" class="alert alert-danger">
     ${c.model_run.error_message}
 </div>
-<!--</div>-->
-<hr/>
-<h5>Description</h5>
-<p class="description">${c.model_run.description}</p>
-<h5>Run Info</h5>
-<table class="description">
-    <!--Date created-->
-    <tr py:if="c.model_run.date_created is not None">
-        <td class="info-title">Date created:</td>
-        <td class="info-text"> ${h.display_date(c.model_run.date_created, "%d %b %Y at %X")}</td>
-    </tr>
-    <!--Date submitted-->
-    <tr py:if="c.model_run.date_submitted is not None">
-        <td class="info-title">Date submitted:</td>
-        <td class="info-text">${h.display_date(c.model_run.date_submitted, "%d %b %Y at %X")}</td>
-    </tr>
-    <tr py:if="c.model_run.date_submitted is None">
-        <td class="info-title">Date submitted:</td>
-        <td class="info-text">Not yet submitted</td>
-    </tr>
-    <!--Date started-->
-    <tr py:if="c.model_run.date_started is not None">
-        <td class="info-title">Date started:</td>
-        <td class="info-text">${h.display_date(c.model_run.date_started, "%d %b %Y at %X")}</td>
-    </tr>
-    <tr py:if="c.model_run.date_started is None">
-        <td class="info-title">Date started:</td>
-        <td class="info-text">Not yet started</td>
-    </tr>
-    <tr>
-        <td class="info-title" py:choose="c.model_run.status.name">
-            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">Public storage used (GB):</py:when>
-            <py:otherwise>Storage used (GB):</py:otherwise>
-        </td>
-        <td class="info-text">${h.utils.convert_mb_to_gb_and_round(c.model_run.storage_in_mb)}</td>
-    </tr>
-</table>
-<h5>Selected Parameters</h5>
-<table class="description">
-   <tr>
-       <td class="info-title">Parameter 1:</td>
-       <td class="info-text">1.1213 </td>
-   </tr>
-   <tr>
-       <td class="info-title">Parameter 2:</td>
-       <td class="info-text">Type A </td>
-   </tr>
-   <tr>
-       <td class="info-title">Parameter 3:</td>
-       <td class="info-text">Summer </td>
-   </tr>
-   <tr>
-       <td class="info-title">Parameter 4:</td>
-       <td class="info-text">450K </td>
-   </tr>
-</table>
-<h5>Selected Results</h5>
-<table class="description">
-    <tr>
-       <td class="info-title">Result 1:</td>
-       <td class="info-text">85% </td>
-   </tr>
-   <tr>
-       <td class="info-title">Result 2:</td>
-       <td class="info-text">12 mm / hr </td>
-   </tr>
-   <tr>
-       <td class="info-title">Result 3:</td>
-       <td class="info-text">4.5 K </td>
-   </tr>
-</table>
+<hr class="status-banner-bottom"/>
+
+
+<h3><i class="fa fa-book status-color">&nbsp;</i>General Information</h3>
+<div>
+    <p><b>Description - </b>${c.model_run.description}</p>
+    <xi:include href="../model_run/summary_fragments/run_info.html" />
+</div>
+<hr class="divide"/>
+
+<h3><i class="fa fa-gears status-color">&nbsp;</i>Run Parameters</h3>
+<div>
+    <xi:include href="../model_run/summary_fragments/driving_data.html" />
+    <xi:include href="../model_run/summary_fragments/extents.html" />
+    <xi:include href="../model_run/summary_fragments/land_cover.html" />
+    <xi:include href="../model_run/summary_fragments/outputs.html" />
+</div>
 </body>
 </html>

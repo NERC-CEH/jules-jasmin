@@ -148,7 +148,8 @@ body#explore a#nav-explore,
 body#create a#nav-create,
 body#catalogue a#nav-catalogue,
 body#about a#nav-about,
-body#admin a#nav-admin
+body#admin a#nav-admin,
+body#help a#nav-help
 {
     color: #ffffff;
     background-color: rgb(100, 180, 220);

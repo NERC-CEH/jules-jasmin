@@ -23,7 +23,7 @@ from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
 from joj.utils.general_controller_helper import show_error_if_thredds_down
-from joj.services.land_cover_service import LandCoverService
+from joj.utils.summary_controller_helper import SummaryControllerHelper
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
 from joj.services.general import ServiceException
@@ -140,7 +140,10 @@ class ModelRunController(BaseController):
         :return: Rendered summary page of requested model run
         """
         c.user = self.current_user
-        c.model_run = self._model_run_service.get_model_by_id(self.current_user, id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, id)
+        summary_helper = SummaryControllerHelper(model_run_service=self._model_run_service)
+        summary_helper.add_summary_fields_to_context(model_run, c)
+
         return render("model_run/summary.html")
 
     def pre_create(self):
@@ -577,53 +580,8 @@ class ModelRunController(BaseController):
 
         if not request.POST:
             self._user_service.set_current_model_run_creation_action(self.current_user, "submit")
-            c.model_run = model_run
-            driving_data = model_run.driving_dataset
-            c.science_config = self._model_run_service.get_science_configuration_by_id(
-                model_run.science_configuration_id)
-
-            extents_controller_helper = ExtentsControllerHelper()
-            c.extents_values = extents_controller_helper.create_values_dict_from_database(model_run, driving_data)
-
-            c.driving_data_name = model_run.driving_dataset.name
-
-            land_cover_service = LandCoverService()
-            c.land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model_run)
-
-            land_cover_helper = LandCoverControllerHelper()
-            try:
-                land_cover_helper.add_fractional_land_cover_to_context(c, {}, model_run)
-            except ServiceException:
-                pass
-
-            output_variables = self._model_run_service.get_output_variables()
-            output_variable_dict = dict((x.name, x.description) for x in output_variables)
-            selected_vars = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
-            selected_output_periods = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
-
-            outputs = {}
-
-            # Each group contains one output variable and one output period
-            for selected_var in selected_vars:
-                var_name = output_variable_dict[selected_var.get_value_as_python()]
-                if var_name not in outputs:
-                    outputs[var_name] = []
-                for output_period in selected_output_periods:
-                    if output_period.group_id == selected_var.group_id:
-                        period = output_period.get_value_as_python()
-                        if period == constants.JULES_YEARLY_PERIOD:
-                            outputs[var_name].append('Yearly')
-                        elif period == constants.JULES_MONTHLY_PERIOD:
-                            outputs[var_name].append('Monthly')
-                        elif period == constants.JULES_DAILY_PERIOD:
-                            outputs[var_name].append('Daily')
-                        else:
-                            outputs[var_name].append('Hourly')
-            c.outputs = []
-            for output in outputs:
-                c.outputs.append(output + ' - ' + ', '.join(map(str, outputs[output])) + '')
-            c.outputs.sort()
-
+            summmary_helper = SummaryControllerHelper(model_run_service=self._model_run_service)
+            summmary_helper.add_summary_fields_to_context(model_run, c)
         else:
             self._model_run_controller_helper.check_user_quota(self.current_user)
             if request.params.getone('submit') == u'Submit':

@@ -202,6 +202,36 @@ class ModelRunServiceTest(TestWithFullModelRun):
         model_run_returned = self.model_run_service.get_model_by_id(user, model_run.id)
         assert_that(model_run_returned.name, is_("MR1"))
 
+    def test_GIVEN_model_run_has_parametersWHEN_get_model_run_by_id_THEN_model_run_has_parameter_values_loaded(self):
+        # Add a user and give them a model
+        with session_scope(Session) as session:
+            # First add user
+            user = User()
+            user.name = 'user1'
+
+            # Add parameter value
+            parameter_value = ParameterValue()
+            parameter_value.parameter_id = 1
+            parameter_value.set_value_from_python(123)
+
+            parameter = Parameter()
+            parameter.name = "Param"
+            parameter.parameter_values = [parameter_value]
+
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user = user
+            model_run.parameter_values = [parameter_value]
+            session.add(model_run)
+
+        # Get the users model runs
+        model_run_returned = self.model_run_service.get_model_by_id(user, model_run.id)
+        pv = model_run_returned.parameter_values[0]
+        assert_that(pv.value, is_('123'))
+        assert_that(pv.parameter.name, is_("Param"))
+        assert pv.parameter.namelist
+
     def test_GIVEN_model_run_id_belongs_to_another_user_WHEN_get_model_run_by_id_THEN_NoResultFound_exception(self):
         # Add two users and give one a model
         with session_scope(Session) as session:

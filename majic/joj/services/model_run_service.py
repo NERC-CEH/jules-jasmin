@@ -90,8 +90,18 @@ class ModelRunService(DatabaseService):
         :return: The matching ModelRun.
         """
         with self.readonly_scope() as session:
-            model_run = session.query(ModelRun).filter(ModelRun.id == id).options(joinedload('user')).one()
-            # Is user allowed to acces this ID?
+            model_run = session.query(ModelRun) \
+                .join(User) \
+                .join(ModelRun.status) \
+                .outerjoin(ModelRun.parameter_values, "parameter", "namelist") \
+                .filter(ModelRun.id == id) \
+                .options(subqueryload(ModelRun.code_version)) \
+                .options(contains_eager(ModelRun.user))\
+                .options(contains_eager(ModelRun.parameter_values)
+                         .contains_eager(ParameterValue.parameter)
+                         .contains_eager(Parameter.namelist))\
+                .one()
+            # Is user allowed to access this run?
             if model_run.user_id == user.id or model_run.status.is_published():
                 return model_run
             raise NoResultFound
