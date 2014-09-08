@@ -13,11 +13,12 @@ class DapClientFactory(object):
     Factory for creating dap clients
     """
 
-    def get_full_url_for_file(self, filepath, service="dodsC"):
+    def get_full_url_for_file(self, filepath, service="dodsC", config=config):
         """
         Get the full THREDDS URL for a file on the THREDDS server
         :param filepath: Path of file relative to the model run directory.
         :param service: Service name to use (e.g. 'wms', 'dodsC').
+        :param config: Configuration file to use
         :return:
         """
         url_template = "{thredds_server_base}/{service}/{run_dir}/{filepath}"

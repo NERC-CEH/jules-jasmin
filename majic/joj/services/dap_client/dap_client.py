@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 class DapClient(BaseDapClient):
     """
-    Client for communicating with the OpenDAP server to extract time series data for a particular latitude / longitude
+    Client for communicating with the OpenDAP server to extract map data for a particular latitude / longitude
     """
 
     def __init__(self, url):
@@ -183,3 +183,12 @@ class DapClient(BaseDapClient):
         """
         time_secs_elapsed = (datetime - self._start_date).total_seconds()
         return time_secs_elapsed
+
+    def is_transect(self):
+        """
+        Determines if a given file is a transect (i.e. is only one cell wide or tall)
+        :return: True if transect, False otherwise
+        """
+        height = len(self._lat)
+        width = len(self._lon)
+        return height == 1 or width == 1
