@@ -164,6 +164,7 @@ function resetGraph()
  */
 function getData(datasets, position)
 {
+
     data = [];
     for (var i = 0; i < datasets.length; i++ ) {
         var dsid = datasets[i];
