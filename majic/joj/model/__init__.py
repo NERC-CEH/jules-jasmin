@@ -1,9 +1,11 @@
 """
 # header
 """
-from sqlalchemy import engine_from_config, create_engine
+from sqlalchemy import engine_from_config, create_engine, exc, event
+from sqlalchemy.pool import Pool
 from joj.model.meta import Session, Base
 from contextlib import contextmanager
+import logging
 
 #import all the database models in so they can be built
 from joj.model.account_request import AccountRequest
@@ -27,6 +29,8 @@ from joj.model.land_cover_region import LandCoverRegion
 from joj.model.land_cover_region_category import LandCoverRegionCategory
 from joj.model.land_cover_action import LandCoverAction
 from joj.model.land_cover_value import LandCoverValue
+
+log = logging.getLogger(__name__)
 
 
 def initialise_session(config, manual_connection_string=None):
@@ -68,3 +72,28 @@ def session_scope(session_class=Session):
         raise
     finally:
         session.close()
+
+@event.listens_for(Pool, "checkout")
+def ping_connection(dbapi_connection, connection_record, connection_proxy):
+    """
+    Test the sql connection before using it to avoid  "MySQL Connection not available" see JOJ101
+    see http://stackoverflow.com/questions/7912731/mysql-server-has-gone-away-disconnect-handling-via-checkout-event-handler-does
+    :param dbapi_connection: sql connection
+    :param connection_record: record
+    :param connection_proxy: proxy
+    :return: nothing
+    """
+    logging.debug("***********ping_connection**************")
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("SELECT 1")
+    except:
+        logging.debug("######## DISCONNECTION ERROR #########")
+        # optional - dispose the whole pool
+        # instead of invalidating one at a time
+        # connection_proxy._pool.dispose()
+
+        # raise DisconnectionError - pool will try
+        # connecting again up to three times before raising.
+        raise exc.DisconnectionError()
+    cursor.close()
