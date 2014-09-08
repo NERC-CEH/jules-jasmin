@@ -118,8 +118,12 @@ var EcomapsMap = (function() {
 
         layerContainer.on("click", "button.scale-update", function() {
 
-            var minValue = $(this).siblings("input.scale-min")[0].value;
-            var maxValue = $(this).siblings("input.scale-max")[0].value;
+            var value1 = $(this).siblings("input.scale-min")[0].value;
+            var value2 = $(this).siblings("input.scale-max")[0].value;
+
+            // Swap them over if they are the wrong way round
+            var minValue = Math.min(value1, value2);
+            var maxValue = Math.max(value1, value2);
 
             var layerId = $(this).data("layerid");
             var layerObj = layerDict[layerId];
@@ -362,9 +366,12 @@ var EcomapsMap = (function() {
             createGraph(position);
         });
 
-        // Stretch the map down the page
+        // Stretch the map down the page.
+        // Hide the panel div first because otherwise it overflows if there are lots of datasets
+        $("#panel-div").hide();
         $("#map").height($("#wrap").height() - 42);
         $("#panel-div").height($("#wrap").height() - 42);
+        $("#panel-div").show();
     };
 
     /*

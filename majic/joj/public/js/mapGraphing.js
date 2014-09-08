@@ -35,7 +35,9 @@ function createGraph(position)
 
     return true;
 }
-
+/**
+ * Update the graph
+ */
 var updateGraph = function() {
     var graphDiv = $("#graph");
     //if (graphDiv.is(':visible')) {
@@ -164,7 +166,6 @@ function resetGraph()
  */
 function getData(datasets, position)
 {
-
     data = [];
     for (var i = 0; i < datasets.length; i++ ) {
         var dsid = datasets[i];
@@ -200,16 +201,18 @@ function plotGraph(data)
             yaxis : i+1
         };
         // Set the range a little bit taller than the graph
-        ymax = data[i].ymax - (data[i].ymin - data[i].ymax) * 0.25;
-        if (data.ymin < 0) {
-            ymin = data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25;
+        var ymax = data[i].ymax - (data[i].ymin - data[i].ymax) * 0.25;
+        if (data[i].ymin < 0) {
+            var ymin = data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25;
         } else {
-            ymin = Math.max(data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25, 0);
+            var ymin = Math.max(data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25, 0);
         }
 
         yaxesList[yaxesList.length] = {
             max: ymax,
-            min: ymin
+            min: ymin,
+            zoomRange: false,
+            panRange: false
         };
     }
 
@@ -217,7 +220,8 @@ function plotGraph(data)
         xaxis: {
             mode: "time",
             max: data.xmax,
-            min: data.xmin
+            min: data.xmin,
+            panRange: [data.xmin, data.xmax]
         },
         yaxes: yaxesList,
         zoom: {

@@ -48,7 +48,8 @@
         }
         td#cell-map {
             width:99%;
-            padding:0px
+            padding:0px;
+            vertical-align:top;
         }
         div#panel-div {
             overflow-y:auto;
