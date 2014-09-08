@@ -72,6 +72,8 @@ function setMarker(position)
     var icon = new OpenLayers.Icon('/js/img/marker-gold.png', size, offset);
     marker = new OpenLayers.Marker(position, icon);
     markers.addMarker(marker);
+    // Center on the new position since we have moved the screen
+    map.setCenter(position);
 }
 
 /**

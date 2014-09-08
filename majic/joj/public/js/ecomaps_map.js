@@ -203,25 +203,28 @@ var EcomapsMap = (function() {
      *
      */
     var loadDataset = function() {
+        var datasetId = $(this).data("dsid");
+        var dataset_type = $(this).attr("dataset-type")
+        var layerId = $(this).attr("layer-id");
 
         // Highlight the selected dataset
         if ($(this).closest("li").hasClass("active")) {
-            var datasetId = $(this).data("dsid");
-            var layerId = $(this).attr("layer-id")
-            removeDataset(layerId);
             $(this).closest("li").removeClass("active");
+            if (dataset_type == DATASET_TYPE_COVERAGE) {
+                removeDataset(layerId);
+            }
             updateGraph();
         }
         else {
-            var isSingleCell = $(this).attr("single-cell") == "True";
-            var datasetId = $(this).data("dsid");
-            var layerId = $(this).attr("layer-id");
             $(this).closest("li").addClass("active");
             // Plop the loading panel over the map
             setLoadingState(true);
 
-            if (isSingleCell) {
-                loadSingleCellDataset();
+            if (dataset_type == DATASET_TYPE_SINGLE_CELL) {
+                loadSingleCellDataset(datasetId);
+            } else if (dataset_type == DATASET_TYPE_TRANSECT){
+                alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
+                $(this).closest("li").removeClass("active");
             } else {
                 loadMultiCellDataset(datasetId, layerId);
             }
@@ -230,15 +233,11 @@ var EcomapsMap = (function() {
         }
     };
 
-    var loadSingleCellDataset = function() {
-        alert("Loading single cell DS");
-
-
-        // THINGS TO DO:
-        // Move map marker (& position var) to desired location
-        // Add my layer to the graph
-        // (Remove any previous single site data from graph - AND deselect? - But only if lat and lon are different? or from different model run)?
-        // Show the graph if not visible
+    var loadSingleCellDataset = function(datasetId) {
+        $.get("/dataset/single_cell_location/" + datasetId, function(result) {
+            var position = new OpenLayers.LonLat(result.lon, result.lat);
+            createGraph(position);
+        });
 
     }
 
