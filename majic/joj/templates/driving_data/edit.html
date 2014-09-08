@@ -24,8 +24,17 @@
         Edit
         </py:if> Driving Data</h1>
 
+    Use this page to define all the parameters for a driving data set. It is recommended that you test your driving
+    data before making it available to normal users. To restrict the data to admins only make sure the
+    <a href="#is_restricted_to_admins">Restricted to Admins</a> checkbox is ticked.
+    Perform a successful run then edit this set again and untick the button to make
+    it available to everyone.
+
     <form class="form-horizontal" method="POST">
         <h2>General</h2>
+
+        Setup general information for the driving data.
+
         <div class="control-group">
             <label for="name" class="control-label">Name</label>
             <div class="controls">
@@ -183,6 +192,7 @@
             </div>
         </div>
 
+        <a id="is_restricted_to_admins"/>
         <div class="control-group">
             <label for="view" class="control-label">
                 Restricted to Admins
@@ -195,12 +205,22 @@
             </div>
         </div>
 
+        <h2>Regions</h2>
 
-
-
-        <h2>Masks</h2>
-
-
+        <p>This is the list of regions that can be applied to the land cover map by the user.</p>
+        <p>Region files should be uploaded using the <i>Transferring data to the Jasmin Cluster</i> section in the System Maintenance Guide.
+        This guide can be found in the project's documentation folder on the project drive.</p>
+        <p>It is suggested that the regions should be uploaded to
+        <code>&lt;data&gt;/&lt;driving data set name&gt;/masks/&lt;filename.nc&gt; </code> where data is the data directory of the
+        jules-bd group space; the path for this can be found in the <i>Deployment View: Managed Cloud</i> subsection of the Architectural Description Document.
+        The file can be in a sub directory of masks if desired.
+        </p>
+        <p>
+        The file should be netcdf containing a single variable with the same name as the fractional cover
+        variable. The variable should have the same dimensions as the fractional cover variable.
+        The values of the variable are 0 where the landcover type should be set and 1 everywhere else
+        – e.g. for a UK region all points on the grid for UK should be 0.
+        </p>
 
         <div class="control-group">
             <label class="control-label">
@@ -245,6 +265,28 @@
 
 
         <h2>Driving Data Files</h2>
+
+        <p>
+            The location of the driving data files are set using the usual Jules filename template.
+        </p>
+        <p>
+            Driving data files should be uploaded using the <i>Transferring data to the Jasmin Cluster</i> section in the System Maintenance Guide.
+            This guide can be found in the project's documentation folder on the project drive.</p>
+        <p>
+            It is suggested that the driving data files should be uploaded to the directory
+            <code>&lt;data&gt;/&lt;driving data set name&gt;/driving</code> where data is the data directory of the
+            jules-bd group space; the path for this can be found in the <i>Deployment View: Managed Cloud</i> subsection of the Architectural Description Document.
+        </p>
+        <p>
+            In additional to the normal netcdf files needed by Jules you need to have a THREDDS ncml file.
+            This should have the same name as one the of driving datafiles but without any date templating. This should probably be a softlink to the
+            standard ncml file in the data root directory.
+            E.g. if a driving data files are of the form data/WATCH_2D/driving/LWdown_WFD/LWdown_WFD_200012.nc then use the command:
+            <code> ln -s data/ncml_file.ncml_template data/WATCH_2D/driving/LWdown_WFD/LWdown_WFD.ncml </code>
+        </p>
+        <p>
+            All files are validated on submit; this means there should be a file for each variable, year, month combination and an ncml file per variable.
+        </p>
 
         <div class="control-group">
             <label for="driving_data_period" class="control-label">Period of a Timestep (s)</label>
@@ -324,7 +366,17 @@
         </div>
 
         <h2>Ancillary Files</h2>
-
+        <p>
+            Setup the ancillary files and most common options in this section.
+        </p>
+        <p>
+            Ancillary files should be uploaded using the <i>Transferring data to the Jasmin Cluster</i> section in the System Maintenance Guide.
+            This guide can be found in the project's documentation folder on the project drive.</p>
+        <p>
+            It is suggested that the ancillary files should be uploaded to the directory
+            <code>&lt;data&gt;/&lt;driving data set name&gt;/ancils</code> where data is the data directory of the
+            jules-bd group space; the path for this can be found in the <i>Deployment View: Managed Cloud</i> subsection of the Architectural Description Document.
+        </p>
 
         <div class="control-group">
             <label for="latlon_file" class="control-label">Lat-Lon Filename</label>
@@ -387,7 +439,11 @@
         </div>
 
         <h2>Other values</h2>
-
+        <p>
+            Specify in this section any other Jules parameters that are needed for this dataset. This might include for instance
+            JULES_SOIL_PROPS::var. These will override any scientific configuration parameters when creating a model run. The values
+            should be as they would appear in the namelist file, e.g. JULES_SOIL_PROPS::var might be <code>'b'  'sathh'</code>.
+        </p>
         <div class="control-group">
             <label class="control-label">
                 Jules Parameters
@@ -436,7 +492,15 @@
         </div>
 
         <div class="controls">
-            <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
+
+            <input
+                    type="submit"
+                    class="btn btn-primary btn-large pull-right control-group"
+                    value="${'Create' if c.driving_dataset_id is None else 'Update'}"/>
+            <a href="${url(controller='driving_data', action='index')}"
+                    class="btn btn-large pull-right control-group"
+                    data-confirm="This will undo any changes you have made to the data. Do you want to continue?">
+                Cancel</a>
         </div>
     </form>
 </body>

@@ -19,7 +19,7 @@ var EcomapsGeneral = (function() {
                     event.preventDefault();
                 }
             });
-        $("button[data-confirm]").click(
+        $("button[data-confirm], a[data-confirm]").click(
             function(event) {
                 message = $(this).attr('data-confirm')
                 answer = confirm(message);

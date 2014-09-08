@@ -28,9 +28,11 @@
             <py:for each="driving_dataset in c.driving_datasets">
                 <tr class="driving-data" dsid="${driving_dataset.id}">
                     <td class="select">
+                        <span py:if="driving_dataset.is_restricted_to_admins" class="label label-info">Admins Only</span>
                         <input id="driving_dataset_${driving_dataset.id}" name="driving_dataset" type="radio"
                                value="${driving_dataset.id}" style="display:none" py:attrs="{'user_upload' : 'true'} if driving_dataset.id == c.user_upload_ds_id else {}"/>
                         <i dsid="${driving_dataset.id}" class="fa fa-check-circle-o fa-2x select-icon"></i>
+
                     </td>
                     <td class="name"><h4>${driving_dataset.name}</h4><p class="description">${driving_dataset.description}</p>
                             <div py:if="driving_dataset.id == c.user_upload_ds_id"><py:choose>
