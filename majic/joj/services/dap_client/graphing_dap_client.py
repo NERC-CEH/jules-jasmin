@@ -16,6 +16,10 @@ class GraphingDapClient(DapClient):
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
             return
         super(GraphingDapClient, self).__init__(url)
+        self.gse_lat_n = self._dataset.attributes['NC_GLOBAL']['geospatial_lat_max']
+        self.gse_lat_s = self._dataset.attributes['NC_GLOBAL']['geospatial_lat_min']
+        self.gse_lon_w = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_min']
+        self.gse_lon_e = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_max']
 
     def get_graph_data(self, lat, lon):
         """
@@ -25,6 +29,8 @@ class GraphingDapClient(DapClient):
         :return: JSON-like dictionary of data and metadata
         """
         # First we identify the closest positions we can use (by index):
+        is_inside_grid = (self.gse_lat_s <= lat <= self.gse_lat_n) and (self.gse_lon_w <= lon <= self.gse_lon_e)
+
         lat_index = self._get_closest_value_index(self._lat, lat)
         lon_index = self._get_closest_value_index(self._lon, lon)
 
@@ -32,10 +38,17 @@ class GraphingDapClient(DapClient):
         variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]
         timestamps = self._time.tolist()
         data = []
+        missing_value = self._variable.missing_value
         for i in range(len(variable_data)):
             # Time should be in millis after 1970 epoch for FLOT
             t = self._get_millis_since_epoch(timestamps[i])
-            data.append([t, variable_data[i]])
+            if is_inside_grid:
+                data_value = variable_data[i]
+                if data_value == missing_value:
+                    data_value = None
+            else:
+                data_value = None
+            data.append([t, data_value])
         return {'data': data,
                 'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
                 'lat': lat,

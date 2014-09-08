@@ -25,6 +25,11 @@
     <script type="text/javascript" src="/js/flot/jquery.flot.navigate.js"></script>
     <script type="text/javascript" src="/js/flot/jquery.flot.time.js"></script>
     <script type="text/javascript" src="/js/flot/jquery.flot.axislabels.js"></script>
+    <script type="text/javascript">
+        var DATASET_TYPE_SINGLE_CELL = '${c.DATASET_TYPE_SINGLE_CELL}';
+        var DATASET_TYPE_COVERAGE = '${c.DATASET_TYPE_COVERAGE}';
+        var DATASET_TYPE_TRANSECT = '${c.DATASET_TYPE_TRANSECT}';
+    </script>
 </head>
 <body id="explore">
 <div id="selected_id" style="display: none">${c.id}</div>
@@ -81,10 +86,16 @@
                                                 <div id="mod_ds_out_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
                                                         <a py:if="ds.is_input == 0" class="dataset" href="#" layer-id="${ds.layer_id}"
-                                                           data-dsid="${ds.id}" single-cell="${ds.is_single_cell}">
-                                                        <py:choose >
-                                                            <py:when test="ds.is_single_cell == 1">
+                                                           data-dsid="${ds.id}" dataset-type="${ds.dataset_type.type}">
+                                                        <py:choose>
+                                                            <py:when test="ds.dataset_type.type == c.DATASET_TYPE_SINGLE_CELL">
                                                                 <i class="fa fa-map-marker"></i>
+                                                            </py:when>
+                                                            <py:when test="ds.dataset_type.type == c.DATASET_TYPE_COVERAGE">
+                                                                <i class="fa fa-globe"></i>
+                                                            </py:when>
+                                                            <py:when test="ds.dataset_type.type == c.DATASET_TYPE_TRANSECT">
+                                                                <i class="fa fa-eye-slash"></i>
                                                             </py:when>
                                                             <py:otherwise>
                                                                 <i class="fa fa-globe"></i>

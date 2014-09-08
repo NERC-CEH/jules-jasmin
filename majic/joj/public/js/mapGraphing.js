@@ -87,7 +87,8 @@ function getSelectedLayers()
             // Check that the graph layer is visible:
             var layerId = $(this).attr("layer-id");
             var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
-            if (layerCheckBox.is(':checked')) {
+            // Add the layer IF: we didn't find a layer control (e.g. it's single cell) or the layer control is checked
+            if (layerCheckBox.length ==0 || layerCheckBox.is(':checked')) {
                 dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
             }
         }

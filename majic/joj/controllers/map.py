@@ -76,6 +76,12 @@ class MapController(BaseController):
                 }
             ]
         c.id = id
+        c.DATASET_TYPE_COVERAGE = 'Coverage'
+        c.DATASET_TYPE_SINGLE_CELL = 'Single Cell'
+        c.DATASET_TYPE_TRANSECT = 'Transect'
+        c.DATASET_TYPE_LAND_COVER_FRAC = 'Land Cover Fraction'
+        c.DATASET_TYPE_SOIL_PROP = 'Soil Properties File'
+
         return render('map.html')
 
     @jsonify
