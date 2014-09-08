@@ -44,6 +44,8 @@ def setup_app(command, conf, vars):
     Base.metadata.drop_all(bind=Session.bind)
     Base.metadata.create_all(bind=Session.bind)
 
+    jules_config_parser = JulesNamelistParser()
+
     with session_scope(Session) as session:
         user = User()
         user.name = 'John Holt'
@@ -160,16 +162,19 @@ def setup_app(command, conf, vars):
         session.add_all(output_variables)
 
         ## Add WATCH 100 Years run
-        mr1 = ModelRun()
-        mr1.name = "Watch 100 Years Data"
-        mr1.description = "Watch data run over the length of the data"
-        mr1.user = core_user
-        mr1.date_created = datetime.datetime(2014, 8, 26, 16, 00, 00)
-        mr1.date_submitted = datetime.datetime(2014, 8, 26, 16, 00, 00)
-        mr1.date_started = datetime.datetime(2014, 8, 26, 16, 00, 00)
-        mr1.last_status_change = datetime.datetime(2014, 8, 26, 16, 00, 00)
-        mr1.status = stat_published
-        mr1.storage_in_mb = 1000
+        watch_model_run = jules_config_parser.parse_namelist_files_to_create_a_model_run(
+                default_code_version,
+                "Watch data run over the length of the data",
+                "configuration/Jules/watch",
+                "Watch 100 Years Data",
+                namelist_files,
+                stat_published,
+                core_user)
+        watch_model_run.date_created = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        watch_model_run.date_submitted = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        watch_model_run.date_started = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        watch_model_run.last_status_change = datetime.datetime(2014, 8, 26, 16, 00, 00)
+        watch_model_run.storage_in_mb = 1000
 
         watch_driving_data = [
             ['PSurf_WFD/PSurf_WFD', 'pstar', 'Surface pressure', 30000, 120000],
@@ -204,7 +209,7 @@ def setup_app(command, conf, vars):
             ds.deleted = 0
             ds.dataset_type = cover_dst
             ds.is_input = True
-            ds.model_run = mr1
+            ds.model_run = watch_model_run
 
         for path, name, min, max, dataset_type in ancils:
             ds = Dataset()
@@ -219,7 +224,7 @@ def setup_app(command, conf, vars):
             ds.deleted = 0
             ds.dataset_type = dataset_type
             ds.is_input = True
-            ds.model_run = mr1
+            ds.model_run = watch_model_run
 
         outputs = [
             ['gpp_gb_monthly', 'Gridbox gross primary productivity (Monthly)', 0, 100],
@@ -243,11 +248,10 @@ def setup_app(command, conf, vars):
             ds.deleted = 0
             ds.dataset_type = cover_dst
             ds.is_input = False
-            ds.model_run = mr1
+            ds.model_run = watch_model_run
 
-        session.add(mr1)
+        session.add(watch_model_run)
 
-        jules_config_parser = JulesNamelistParser()
         jules_config_parser.parse_all(
             "configuration/Jules/scientific_configurations/",
             namelist_files,
@@ -409,30 +413,30 @@ def setup_app(command, conf, vars):
         session.add(mr5)
 
     with session_scope(Session) as session:
-        driving_ds_1 = DrivingDataset()
-        driving_ds_1.name = "WATCH Forcing Data 20th Century"
-        driving_ds_1.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
+        watch_driving_dataset = DrivingDataset()
+        watch_driving_dataset.name = "WATCH Forcing Data 20th Century"
+        watch_driving_dataset.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
                                    "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
                                    "five variables are at 3 hourly resolution."
-        driving_ds_1.geographic_region = 'Global'
-        driving_ds_1.temporal_resolution = '3 Hours'
-        driving_ds_1.spatial_resolution = '1 km'
-        driving_ds_1.boundary_lat_north = 90
-        driving_ds_1.boundary_lat_south = -90
-        driving_ds_1.boundary_lon_west = -180
-        driving_ds_1.boundary_lon_east = 180
-        driving_ds_1.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
+        watch_driving_dataset.geographic_region = 'Global'
+        watch_driving_dataset.temporal_resolution = '3 Hours'
+        watch_driving_dataset.spatial_resolution = '1 km'
+        watch_driving_dataset.boundary_lat_north = 90
+        watch_driving_dataset.boundary_lat_south = -90
+        watch_driving_dataset.boundary_lon_west = -180
+        watch_driving_dataset.boundary_lon_east = 180
+        watch_driving_dataset.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
         if conf['full_data_range'].lower() == "true":
-            driving_ds_1.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
+            watch_driving_dataset.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
         else:
-            driving_ds_1.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
-        driving_ds_1.view_order_index = 100
-        driving_ds_1.usage_order_index = 2
-        driving_ds_1.is_restricted_to_admins = False
+            watch_driving_dataset.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
+        watch_driving_dataset.view_order_index = 100
+        watch_driving_dataset.usage_order_index = 2
+        watch_driving_dataset.is_restricted_to_admins = False
 
         cat1 = LandCoverRegionCategory()
         cat1.name = "Test Regions"
-        cat1.driving_dataset = driving_ds_1
+        cat1.driving_dataset = watch_driving_dataset
 
         region1 = LandCoverRegion()
         region1.name = "Equator Horizontal Strip (20 deg)"
@@ -499,17 +503,17 @@ def setup_app(command, conf, vars):
             location = DrivingDatasetLocation()
             location.base_url = file_template.format(path)
             location.dataset_type = cover_dst
-            location.driving_dataset = driving_ds_1
+            location.driving_dataset = watch_driving_dataset
 
         DrivingDatasetLocation(
             dataset_type=soild_prop_dst,
             base_url=watch_soil_props_file,
-            driving_dataset=driving_ds_1)
+            driving_dataset=watch_driving_dataset)
 
         DrivingDatasetLocation(
             dataset_type=land_cover_frac_dst,
             base_url=watch_land_frac_file,
-            driving_dataset=driving_ds_1)
+            driving_dataset=watch_driving_dataset)
 
         parameters1 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
@@ -569,7 +573,7 @@ def setup_app(command, conf, vars):
 
         for constant, value in parameters1:
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
-            driving_ds_1.parameter_values.append(ddpv)
+            watch_driving_dataset.parameter_values.append(ddpv)
 
         parameters3 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
@@ -673,7 +677,7 @@ def setup_app(command, conf, vars):
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_upload, constant, value)
             driving_ds_upload.parameter_values.append(ddpv)
 
-        session.add_all([driving_ds_1, driving_ds_2, driving_ds_3, driving_ds_upload])
+        session.add_all([watch_driving_dataset, driving_ds_2, driving_ds_3, driving_ds_upload])
 
         land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
                             6: 'Urban', 7: 'Lake', 8: 'Soil', 9: constants.FRACTIONAL_ICE_NAME}
@@ -682,3 +686,11 @@ def setup_app(command, conf, vars):
             land_cover_type.index = index
             land_cover_type.name = land_cover_types[index]
             session.add(land_cover_type)
+
+    with session_scope() as session:
+        watch_model = session.query(ModelRun).filter(ModelRun.name == watch_model_run.name).one()
+        science_config = session.query(ModelRun).filter(ModelRun.name == "EURO4").one()
+        driving_dataset = session.query(DrivingDataset).filter(DrivingDataset.name == watch_driving_dataset.name).one()
+
+        watch_model.science_configuration_id = science_config.id
+        watch_model.driving_dataset_id = driving_dataset.id

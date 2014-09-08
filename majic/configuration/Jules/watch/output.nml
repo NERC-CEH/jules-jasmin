@@ -1,0 +1,80 @@
+&JULES_OUTPUT
+  run_id = 'majic',
+  nprofiles = 7,
+  output_dir = './output'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'gpp_gb',
+  nvars = 1,
+  profile_name = 'gpp_gb_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'gpp_gb',
+  nvars = 1,
+  profile_name = 'gpp_gb_daily',
+  output_period = 86400,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'gpp_gb',
+  nvars = 1,
+  profile_name = 'gpp_gb_hourly',
+  output_period = 3600,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'smc_tot',
+  nvars = 1,
+  profile_name = 'smc_tot_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'surf_roff',
+  nvars = 1,
+  profile_name = 'surf_roff_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'sub_surf_roff',
+  nvars = 1,
+  profile_name = 'sub_surf_roff_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'swet_liq_tot',
+  nvars = 1,
+  profile_name = 'swet_liq_tot_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'resp_p_gb',
+  nvars = 1,
+  profile_name = 'resp_p_gb_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  var = 'rad_net',
+  nvars = 1,
+  profile_name = 'rad_net_monthly',
+  output_period = -1,
+  output_type = 'M'
+/
+&JULES_OUTPUT_PROFILE
+
+/

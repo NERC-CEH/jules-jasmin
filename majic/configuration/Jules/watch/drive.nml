@@ -1,0 +1,13 @@
+&JULES_DRIVE
+  z1_tq_in = 2.0,
+  data_end = '2001-12-31 21:00:00',
+  data_period = 10800,
+  interp = 'i'          'i'         'i'         'i'         'nf'          'nf'          'nf'              'nf',
+  data_start = '1901-01-01 00:00:00',
+  nvars = 8,
+  var_name = 'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      'SWdown'      'Rainf'           'Snowf',
+  file = 'data/WATCH_2D/driving/%vv/%vv_%y4%m2.nc',
+  var = 'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     'tot_rain'        'tot_snow',
+  tpl_name = 'PSurf_WFD'      'Tair_WFD'      'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'     'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC',
+  z1_uv_in = 10.0
+/

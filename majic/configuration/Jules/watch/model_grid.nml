@@ -1,0 +1,27 @@
+&JULES_INPUT_GRID
+  time_dim_name = 'Time',
+  grid_is_1d = .false.,
+  nx = 720,
+  ny = 280,
+  y_dim_name = 'Latitude',
+  x_dim_name = 'Longitude',
+  type_dim_name = 'pseudo'
+/
+&JULES_LATLON
+  lat_name = 'Grid_lat',
+  file = 'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc',
+  lon_name = 'Grid_lon'
+/
+&JULES_LAND_FRAC
+  land_frac_name = 'land',
+  file = 'data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc'
+/
+&JULES_MODEL_GRID
+  latlon_region = .true.,
+  use_subgrid = .true.,
+  lat_bounds = -90    90,
+  lon_bounds = -180    180
+/
+&JULES_SURF_HGT
+  zero_height = .true.
+/
