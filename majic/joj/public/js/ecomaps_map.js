@@ -682,6 +682,15 @@ var EcomapsMap = (function() {
         hideGraph();
     };
 
+    var checkMapServer = function() {
+        $.getJSON('/map/is_thredds_up', function(data) {
+            var thredds_up = data['thredds_up'];
+            if (!thredds_up) {
+                $("div#server-offline").show();
+            }
+        });
+    };
+
     return {
 
         init: function() {
@@ -690,6 +699,7 @@ var EcomapsMap = (function() {
             // Open currently selected modelrun (if there is one)
             openSelectedRun();
             initMap();
+            checkMapServer();
         }
     }
 })();

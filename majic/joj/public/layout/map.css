@@ -36,6 +36,7 @@
             left: 50px;
             z-index: 1000;
             margin: 0px 0px -59px 0px;
+            display:none;
         }
         table.map-table {
             height:100%;

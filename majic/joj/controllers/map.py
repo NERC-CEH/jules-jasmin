@@ -4,7 +4,7 @@
 
 import logging
 
-from pylons import request
+from pylons import request, config
 from pylons.decorators import jsonify
 
 from joj.lib.base import BaseController, render, c
@@ -12,6 +12,7 @@ from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
 from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.utils.general_controller_helper import is_thredds_up
 
 
 log = logging.getLogger(__name__)
@@ -83,6 +84,15 @@ class MapController(BaseController):
         c.DATASET_TYPE_SOIL_PROP = 'Soil Properties File'
 
         return render('map.html')
+
+    @jsonify
+    def is_thredds_up(self):
+        """
+        See if the THREDDS server is up
+        :return:
+        """
+        thredds_up = is_thredds_up(config)
+        return {'thredds_up': thredds_up}
 
     @jsonify
     def graph(self, id):
