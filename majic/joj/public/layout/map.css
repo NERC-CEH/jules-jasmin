@@ -139,8 +139,7 @@
         }
         .graph {
             display: none;
-            margin-left : 1.5%;
-            /*margin-left: 2.12766%;*/
+            margin-left : 0.75%;
         }
         .graph-loading {
             position: absolute;

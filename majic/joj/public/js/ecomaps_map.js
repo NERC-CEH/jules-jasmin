@@ -138,6 +138,7 @@ var EcomapsMap = (function() {
               $(this).data("dimension"),
               $(this).val()
             );
+            updateGraph();
         });
 
         // Reset button

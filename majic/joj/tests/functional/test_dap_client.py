@@ -171,7 +171,8 @@ class TestGraphingDapClient(BaseDapClientTest):
 
     def test_GIVEN_data_at_latlon_WHEN_get_graph_data_THEN_correct_data_dictionary_returned(self):
         lat, lon = 51.75, -0.25  # 215, 359
-        data = self.dap_client.get_graph_data(lat, lon)
+        time = datetime.datetime(1901, 1, 1)
+        data = self.dap_client.get_graph_data(lat, lon, time)
         assert_that(data['lat'], is_(lat))
         assert_that(data['lon'], is_(lon))
         assert_that(data['label'], is_("Surface pressure (Pa) @ 51.75, -0.25"))
@@ -186,7 +187,8 @@ class TestGraphingDapClient(BaseDapClientTest):
 
     def test_GIVEN_missing_values_at_latlon_WHEN_get_graph_data_THEN_nones_returned(self):
         lat, lon = 50, -30  # Sea
-        data = self.dap_client.get_graph_data(lat, lon)
+        time = datetime.datetime(1901, 1, 1)
+        data = self.dap_client.get_graph_data(lat, lon, time)
         assert_that(data['lat'], is_(lat))
         assert_that(data['lon'], is_(lon))
         assert_that(len(data['data']), is_(248))
@@ -195,12 +197,45 @@ class TestGraphingDapClient(BaseDapClientTest):
 
     def test_GIVEN_latlon_outside_grid_WHEN_get_graph_data_THEN_nones_returned(self):
         lat, lon = 90, -32.25  # Out of grid (North of greenland)
-        data = self.dap_client.get_graph_data(lat, lon)
+        time = datetime.datetime(1901, 1, 1)
+        data = self.dap_client.get_graph_data(lat, lon, time)
         assert_that(data['lat'], is_(lat))
         assert_that(data['lon'], is_(lon))
         assert_that(len(data['data']), is_(248))
         for datum in data['data']:
             assert_that(datum[1], is_(None))
+
+    def test_GIVEN_npoints_and_time_WHEN_get_graph_data_THEN_subset_of_points_returned(self):
+        lat, lon = 51.75, -0.25  # 215, 359
+        time = datetime.datetime(1901, 01, 15)
+        data = self.dap_client.get_graph_data(lat, lon, time, npoints=10)
+        assert_that(len(data['data']), is_(10))
+        data_at_time = [self.dap_client._get_millis_since_epoch(3888000.0), 99770.203125]
+        assert_that(data['data'][4], is_(data_at_time))
+        data_at_start = [self.dap_client._get_millis_since_epoch(3844800.0), 99984.34375]
+        assert_that(data['data'][0], is_(data_at_start))
+        data_at_end = [self.dap_client._get_millis_since_epoch(3942000.0), 100408.203125]
+        assert_that(data['data'][9], is_(data_at_end))
+
+    def test_GIVEN_npoints_and_time_at_start_of_data_WHEN_get_graph_data_THEN_subset_of_points_returned(self):
+        lat, lon = 51.75, -0.25  # 215, 359
+        time = datetime.datetime(1901, 01, 01)
+        data = self.dap_client.get_graph_data(lat, lon, time, npoints=10)
+        assert_that(len(data['data']), is_(6))
+        data_at_start = [self.dap_client._get_millis_since_epoch(2678400.0), 102080.1875]
+        assert_that(data['data'][0], is_(data_at_start))
+        data_at_end = [self.dap_client._get_millis_since_epoch(2732400.0), 101583.6875]
+        assert_that(data['data'][5], is_(data_at_end))
+
+    def test_GIVEN_npoints_and_time_at_end_of_data_WHEN_get_graph_data_THEN_subset_of_points_returned(self):
+        lat, lon = 51.75, -0.25  # 215, 359
+        time = datetime.datetime(1901, 01, 31, 21, 0)
+        data = self.dap_client.get_graph_data(lat, lon, time, npoints=10)
+        assert_that(len(data['data']), is_(5))
+        data_at_start = [self.dap_client._get_millis_since_epoch(5302800.0), 99889.390625]
+        assert_that(data['data'][0], is_(data_at_start))
+        data_at_end = [self.dap_client._get_millis_since_epoch(5346000.0), 99755.59375]
+        assert_that(data['data'][4], is_(data_at_end))
 
 
 # noinspection PyArgumentList

@@ -17,13 +17,13 @@ function createGraph(position)
 {
     stored_position = position;
     // Get all the datasets to show
-    var datasets = getSelectedLayers();
-    if (datasets.length == 0) {
+    var layers = getSelectedLayers();
+    if (layers.length == 0) {
         return false;
     }
     setMarker(position);
     createGraphSpace(position);
-    getData(datasets, position);
+    getData(layers, position);
 
     // Enable buttons
     closeBtn = $("button#close-graph");
@@ -80,7 +80,7 @@ function setMarker(position)
 
 /**
  * Get a list of all currently selected data layers
- * @returns {Array} List of dataset IDs
+ * @returns {Array} List of Layer IDs
  */
 function getSelectedLayers()
 {
@@ -93,7 +93,7 @@ function getSelectedLayers()
             var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
             // Add the layer IF: we didn't find a layer control (e.g. it's single cell) or the layer control is checked
             if (layerCheckBox.length ==0 || layerCheckBox.is(':checked')) {
-                dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+                dataset_ids[dataset_ids.length] = layerId;
             }
         }
     });
@@ -164,16 +164,19 @@ function resetGraph()
  * @param datasets The list of dataset IDs to retrieve graphing data for
  * @param position OpenLayers LatLong object representing the position that was clicked
  */
-function getData(datasets, position)
+function getData(layerIds, position)
 {
     data = [];
-    for (var i = 0; i < datasets.length; i++ ) {
-        var dsid = datasets[i];
-        var url = "/map/graph/" + dsid + "?lat=" + position.lat + "&lon=" + position.lon;
+    for (var i = 0; i < layerIds.length; i++ ) {
+        var layerId = layerIds[i];
+        var dsid = $(".dataset[layer-id='" + layerId + "']").attr("data-dsid");
+        var layerControls = $(".layer-controls[data-layerid='" + layerId + "']")
+        var time = layerControls.find("select.dimension").val()
+        var url = "/map/graph/" + dsid + "?lat=" + position.lat + "&lon=" + position.lon + "&time=" + time;
         $.getJSON(url, function (_data) {
             data[data.length] = _data;
             // If this is the last one then we can go ahead and plot them all
-            if (data.length == datasets.length){
+            if (data.length == layerIds.length){
                 plotGraph(data);
             }
         }).fail(function() {

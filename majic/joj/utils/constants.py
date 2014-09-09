@@ -90,6 +90,11 @@ NETCDF_LONGITUDE = ['Longitude', 'lon']
 NETCDF_TIME = ['Time']
 NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
+# Max number of points to get for graph:
+GRAPH_NPOINTS = 1000
+# Date time string format used by the graph / visualisation.
+GRAPH_TIME_FORMAT = "%Y-%m-%dT%X.%fZ"
+
 #The name of the driving dataset which represents the 'upload your own driving dataset' option
 USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"
 USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in

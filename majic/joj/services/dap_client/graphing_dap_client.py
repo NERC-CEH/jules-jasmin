@@ -3,8 +3,10 @@ header
 """
 import datetime
 from coards import parse
+import math
 from pylons import config
 from joj.services.dap_client.dap_client import DapClient
+from joj.utils import constants
 
 
 class GraphingDapClient(DapClient):
@@ -21,11 +23,13 @@ class GraphingDapClient(DapClient):
         self.gse_lon_w = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_min']
         self.gse_lon_e = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_max']
 
-    def get_graph_data(self, lat, lon):
+    def get_graph_data(self, lat, lon, time, npoints=constants.GRAPH_NPOINTS):
         """
         Get the time series graphing data for a given point
         :param lat: Latitude of point to graph
         :param lon: Longitude of point to graph
+        :param time: Time to graph around
+        :param npoints: Max number of points to plot
         :return: JSON-like dictionary of data and metadata
         """
         # First we identify the closest positions we can use (by index):
@@ -33,6 +37,10 @@ class GraphingDapClient(DapClient):
 
         lat_index = self._get_closest_value_index(self._lat, lat)
         lon_index = self._get_closest_value_index(self._lon, lon)
+        time_elapsed = self._get_seconds_elapsed(time)
+        time_index = self._get_closest_value_index(self._time, time_elapsed)
+        time_index_start = int(max(time_index - math.floor((npoints - 1) / 2.0), 0))
+        time_index_end = int(min(time_index + math.ceil((npoints - 1) / 2.0), len(self._time) - 1))
 
         # Assumes that dimensions are time, lat, long.
         variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]
@@ -40,7 +48,7 @@ class GraphingDapClient(DapClient):
         data = []
         missing_value = self._variable.missing_value
         fill_value = self._variable._FillValue
-        for i in range(len(variable_data)):
+        for i in range(time_index_start, time_index_end + 1):
             # Time should be in millis after 1970 epoch for FLOT
             t = self._get_millis_since_epoch(timestamps[i])
             if is_inside_grid:
