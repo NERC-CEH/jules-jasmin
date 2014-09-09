@@ -72,7 +72,22 @@
                                                 <div id="mod_ds_in_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
                                                         <py:if test="ds.is_input == 1">
-                                                        <a  class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}">${ds.name}</a>
+                                                        <a class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}" dataset-type="${ds.dataset_type.type}">
+                                                            <py:choose>
+                                                                <py:when test="ds.dataset_type.type == c.DATASET_TYPE_SINGLE_CELL">
+                                                                    <i class="fa fa-map-marker"></i>
+                                                                </py:when>
+                                                                <py:when test="ds.dataset_type.type == c.DATASET_TYPE_COVERAGE">
+                                                                    <i class="fa fa-globe"></i>
+                                                                </py:when>
+                                                                <py:when test="ds.dataset_type.type == c.DATASET_TYPE_TRANSECT">
+                                                                    <i class="fa fa-eye-slash"></i>
+                                                                </py:when>
+                                                                <py:otherwise>
+                                                                    <i class="fa fa-globe"></i>
+                                                                </py:otherwise>
+                                                            </py:choose>
+                                                            &nbsp;${ds.name}</a>
                                                         </py:if>
                                                     </li>
                                                 </div>
@@ -101,7 +116,7 @@
                                                                 <i class="fa fa-globe"></i>
                                                             </py:otherwise>
                                                         </py:choose>
-                                                        &nbsp;&nbsp;${ds.name}</a>
+                                                        &nbsp;${ds.name}</a>
                                                     </li>
                                                 </div>
                                             </ul>
@@ -122,13 +137,15 @@
 
                                 <div id="dimension-panel" class="hidden">
                                     <h5>Time controls</h5>
+                                    <div class="alert alert-info">Graphing is limited to the ${c.GRAPH_NPOINTS} closest points to the times chosen below:</div>
                                     <ol class="sidebar-nav nopoints" id="dimension-list">
 
                                     </ol>
                                 </div>
-                                <h5 id="map-title">Layers</h5>
-                                <div id="layer-container" style="display:inline-block;">
-
+                                <div id="layer-panel">
+                                    <h5 id="map-title">Layers</h5>
+                                    <div id="layer-container" style="display:inline-block;">
+                                </div>
                                 </div>
                             </div>
                         </div>

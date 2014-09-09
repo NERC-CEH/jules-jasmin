@@ -159,6 +159,14 @@ class TestBaseDapClient(BaseDapClientTest):
         data = self.dap_client.get_data_at(lat, lon, time)
         assert_that(data, is_(97743.3984375))
 
+    def test_GIVEN_nothing_WHEN_get_timestamps_THEN_timestamps_returned(self):
+        timestamps = self.dap_client.get_timestamps()
+        assert_that(len(timestamps), is_(248))
+        start_time = datetime.datetime(1901, 1, 1)
+        end_time = datetime.datetime(1901, 1, 31, 21, 0)
+        assert_that(timestamps[0], is_(start_time))
+        assert_that(timestamps[-1], is_(end_time))
+
 
 # noinspection PyArgumentList
 class TestGraphingDapClient(BaseDapClientTest):

@@ -199,3 +199,11 @@ class DapClient(BaseDapClient):
         height = len(self._lat)
         width = len(self._lon)
         return height == 1 or width == 1
+
+    def get_timestamps(self):
+        """
+        Returns a list of all available timestamps for the dataset
+        :return:
+        """
+        timevalues = self._time.tolist()
+        return [self._start_date + datetime.timedelta(seconds=timeval) for timeval in timevalues]

@@ -81,7 +81,7 @@ var EcomapsMap = (function() {
      */
     var initHandlers = function(){
         // Each dataset link in the menu...
-        $("a.dataset").click(loadDataset);
+        $("a.dataset").click(loadUnloadDataset);
 
         // Image export
         $("a#image-export").click(exportMapImage);
@@ -188,66 +188,66 @@ var EcomapsMap = (function() {
     };
 
     var removeDataset = function(key) {
-        removeLayerFromMap(key);
 
-        var panel = $('li.layer[data-layerid="' + key + '"]');
-        panel.remove();
-
-        var time_controls = $('div.layer-controls[data-layerid="' + key + '"]');
-        time_controls.remove();
-
-        if ($('li.layer').length == 0) {
-            $('#options-panel').hide();
-        }
     }
 
     /*
-     * loadDataset
+     * loadUnloadDataset
      *
-     * Loads a EcoMaps dataset into the map control
+     * Loads or unloads an EcoMaps dataset into the map control
      *
      */
-    var loadDataset = function() {
+    var loadUnloadDataset = function() {
         var datasetId = $(this).data("dsid");
         var dataset_type = $(this).attr("dataset-type")
         var layerId = $(this).attr("layer-id");
+        var datasetLink = $(this).closest("li");
 
-        // Highlight the selected dataset
-        if ($(this).closest("li").hasClass("active")) {
-            $(this).closest("li").removeClass("active");
-            if (dataset_type == DATASET_TYPE_COVERAGE) {
-                removeDataset(layerId);
-            }
-            updateGraph();
+        // Is this already selected?
+        if (datasetLink.hasClass("active")) {
+            unloadDataset(dataset_type, layerId, datasetLink);
         }
         else {
-            $(this).closest("li").addClass("active");
-            // Plop the loading panel over the map
-            setLoadingState(true);
-
-            if (dataset_type == DATASET_TYPE_SINGLE_CELL) {
-                loadSingleCellDataset(datasetId);
-            } else if (dataset_type == DATASET_TYPE_TRANSECT){
-                alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
-                $(this).closest("li").removeClass("active");
-            } else {
-                loadMultiCellDataset(datasetId, layerId);
-            }
-            // All done
-            setLoadingState(false);
+            loadDataset(dataset_type, layerId, datasetId, datasetLink);
         }
     };
 
-    var loadSingleCellDataset = function(datasetId) {
-        $.get("/dataset/single_cell_location/" + datasetId, function(result) {
-            var position = new OpenLayers.LonLat(result.lon, result.lat);
-            createGraph(position);
-        });
 
+    var unloadDataset = function(dataset_type, layerId, datasetLink) {
+        datasetLink.removeClass("active");
+
+        if (dataset_type == DATASET_TYPE_COVERAGE) {
+            removeLayerFromMap(layerId);
+        }
+
+        var panel = $('li.layer[data-layerid="' + layerId + '"]');
+        panel.remove();
+        var time_controls = $('div.layer-controls[data-layerid="' + layerId + '"]');
+        time_controls.remove();
+
+        // Dimensions
+        if ($('div.layer-controls').length == 0) {
+            $('#options-panel').hide();
+        }
+        // Layers
+        if ($("ul.layer-controls").length == 0) {
+            $("div#layer-panel").hide();
+        }
+
+        updateGraph();
     }
 
-    var loadMultiCellDataset = function(datasetId, layerId) {
 
+    var loadDataset = function(dataset_type, layerId, datasetId, datasetLink) {
+
+        if (dataset_type == DATASET_TYPE_TRANSECT) {
+            alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
+            return false;
+        }
+
+        // Plop the loading panel over the map
+        datasetLink.addClass("active");
+        setLoadingState(true);
         // Load the layers UI straight from the response
         $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
 
@@ -258,44 +258,59 @@ var EcomapsMap = (function() {
                 dimensionItems.detach().appendTo("ol#dimension-list");
                 $("div#dimension-panel").show();
             }
+            if($("li.layer").length == 0) {
+                $("div#layer-panel").hide();
+            } else {
+                $("div#layer-panel").show();
+            }
             $("div#options-panel").show();
             createSortableList();
-            updateGraph();
-        });
-
-        // Make the request for the WMS layer data
-        $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
-            function(data){
-
-                for(var i=0; i< data.length; i++){
-
-                    // Give it a unique ID for our layer bag
-                    var id = "" + layerId;
-
-                    // We'll refer back to this when changing styles or visibility
-                    layerDict[id] = {
-                        index: currentLayerIndex,
-                        data: data[i],
-                        visible: true,
-                        wmsObject: null,
-                        legendURL: null,
-                        scaleMin: data[i].data_range_from,
-                        scaleMax: data[i].data_range_to,
-                        styleName: data[i].styles[0].name,
-                        isCategorical: data[i].is_categorical
-                    };
-
-                    // Now to add to the map, and set a default style
-                    addLayerToMap(layerId);
-                    setLayerStyle(layerId);
-                }
-
+            if (dataset_type == DATASET_TYPE_COVERAGE) {
+                updateGraph();
+            } else {
+                $.get("/dataset/single_cell_location/" + datasetId, function(result) {
+                    var position = new OpenLayers.LonLat(result.lon, result.lat);
+                    createGraph(position);
+                });
             }
-        ).fail(function() {
+        });
+        if (dataset_type == DATASET_TYPE_COVERAGE) {
+            // Make the request for the WMS layer data
+            $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
+                function(data){
+
+                    for(var i=0; i< data.length; i++){
+
+                        // Give it a unique ID for our layer bag
+                        var id = "" + layerId;
+
+                        // We'll refer back to this when changing styles or visibility
+                        layerDict[id] = {
+                            index: currentLayerIndex,
+                            data: data[i],
+                            visible: true,
+                            wmsObject: null,
+                            legendURL: null,
+                            scaleMin: data[i].data_range_from,
+                            scaleMax: data[i].data_range_to,
+                            styleName: data[i].styles[0].name,
+                            isCategorical: data[i].is_categorical
+                        };
+
+                        // Now to add to the map, and set a default style
+                        addLayerToMap(layerId);
+                        setLayerStyle(layerId);
+                    }
+                }
+            ).fail(function() {
                 alert("An error occurred loading the dataset, please try again.");
                 setLoadingState(false);
             });
+        }
+        // All done
+        setLoadingState(false);
     }
+
 
     /*
      * initMap
