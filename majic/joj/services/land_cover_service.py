@@ -179,12 +179,12 @@ class LandCoverService(DatabaseService):
                     soil_prop_vals = [soil_props[netcdf_keys[key]] for key in vars]  # Use the netCDF key
                     params_vals = [[constants.JULES_PARAM_SOIL_PROPS_NVARS, nvars],
                                    [constants.JULES_PARAM_SOIL_PROPS_VAR, vars],
-                                   [constants.JULES_PARAM_SOIL_USE_FILE, use_file],
-                                   [constants.JULES_PARAM_SOIL_CONST_VALS, soil_prop_vals]]
+                                   [constants.JULES_PARAM_SOIL_PROPS_USE_FILE, use_file],
+                                   [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, soil_prop_vals]]
                     old_param_vals = [constants.JULES_PARAM_SOIL_PROPS_NVARS,
                                       constants.JULES_PARAM_SOIL_PROPS_VAR,
-                                      constants.JULES_PARAM_SOIL_USE_FILE,
-                                      constants.JULES_PARAM_SOIL_CONST_VALS]
+                                      constants.JULES_PARAM_SOIL_PROPS_USE_FILE,
+                                      constants.JULES_PARAM_SOIL_PROPS_CONST_VAL]
                     self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run.user_id)
             except DapClientException:
                 # We don't want to do anything because we'll just leave whatever defaults are already present.

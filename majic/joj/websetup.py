@@ -15,10 +15,14 @@ from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, Mode
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from joj.model.system_alert_email import SystemAlertEmail
+from websetup_chess_driving_dataset import create_chess_driving_data
+from websetup_watch_driving_dataset import create_watch_driving_data, WATCH_DRIVING_DATA, WATCH_SOIL_PROPS_FILE, \
+    WATCH_FRAC_FILE
 from websetup_jules_output_variables import JulesOutputVariableParser
 from websetup_jules_parameters import JulesParameterParser
 from websetup_science_configurations import JulesNamelistParser
 from joj.services.model_run_service import ModelRunService
+
 
 def _get_result_image():
     example_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'example_image.txt')
@@ -116,8 +120,8 @@ def setup_app(command, conf, vars):
         session.add(cover_dst)
         land_cover_frac_dst = DatasetType(type=constants.DATASET_TYPE_LAND_COVER_FRAC)
         session.add(land_cover_frac_dst)
-        soild_prop_dst = DatasetType(type=constants.DATASET_TYPE_SOIL_PROP)
-        session.add(soild_prop_dst)
+        soil_prop_dst = DatasetType(type=constants.DATASET_TYPE_SOIL_PROP)
+        session.add(soil_prop_dst)
         single_cell_dst = DatasetType(type=constants.DATASET_TYPE_SINGLE_CELL)
         session.add(single_cell_dst)
         transects_dst = DatasetType(type=constants.DATASET_TYPE_TRANSECTS)
@@ -163,40 +167,25 @@ def setup_app(command, conf, vars):
 
         ## Add WATCH 100 Years run
         watch_model_run = jules_config_parser.parse_namelist_files_to_create_a_model_run(
-                default_code_version,
-                "Watch data run over the length of the data",
-                "configuration/Jules/watch",
-                "Watch 100 Years Data",
-                namelist_files,
-                stat_published,
-                core_user)
+            default_code_version,
+            "Watch data run over the length of the data",
+            "configuration/Jules/watch",
+            "Watch 100 Years Data",
+            namelist_files,
+            stat_published,
+            core_user)
         watch_model_run.date_created = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.date_submitted = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.date_started = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.last_status_change = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.storage_in_mb = 1000
 
-        watch_driving_data = [
-            ['PSurf_WFD/PSurf_WFD', 'pstar', 'Surface pressure', 30000, 120000],
-            ['Tair_WFD/Tair_WFD', 't', 'Near surface air temperature at 2m', 150, 400],
-            ['Qair_WFD/Qair_WFD', 'q', 'Near surface specific humidity at 2m', 0, 0.1],
-            ['Wind_WFD/Wind_WFD', 'wind', 'Near surface wind speed at 10m', 0, 30],
-            ["LWdown_WFD/LWdown_WFD", 'lw_down', "Surface incident longwave radiation", 0, 2000],
-            ['SWdown_WFD/SWdown_WFD', 'sw_down', 'Surface incident shortwave radiation', 0, 2000],
-            ['Rainf_WFD_GPCC/Rainf_WFD_GPCC', 'tot_rain', 'Rainfall rate', 0, 0.02],
-            ['Snowf_WFD_GPCC/Snowf_WFD_GPCC', 'tot_snow', 'Snowfall rate', 0, 0.004]
-            ]
-
-        watch_soil_props_file = "data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc"
-        watch_frac_file = "data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc"
-        watch_land_frac_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
-        watch_latlon_file = "data/WATCH_2D/ancils/WFD-land-lat-long-z_2D.nc"
         ancils = [
-            [watch_soil_props_file, 'Soil Properties (ancil)', 0, 10, soild_prop_dst],
-            [watch_frac_file, 'Land cover map  (ancil)', 0, 10, land_cover_frac_dst]
+            [WATCH_SOIL_PROPS_FILE, 'Soil Properties (ancil)', 0, 10, soil_prop_dst],
+            [WATCH_FRAC_FILE, 'Land cover map  (ancil)', 0, 10, land_cover_frac_dst]
         ]
 
-        for path, var, name, min, max in watch_driving_data:
+        for path, var, name, min, max in WATCH_DRIVING_DATA:
             ds = Dataset()
             ds.name = name
             ds.wms_url = conf.local_conf['thredds.server_url'] \
@@ -413,73 +402,11 @@ def setup_app(command, conf, vars):
         session.add(mr5)
 
     with session_scope(Session) as session:
-        watch_driving_dataset = DrivingDataset()
-        watch_driving_dataset.name = "WATCH Forcing Data 20th Century"
-        watch_driving_dataset.description = "A meteorological forcing dataset (based on ERA-40) for land surface and " \
-                                   "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
-                                   "five variables are at 3 hourly resolution."
-        watch_driving_dataset.geographic_region = 'Global'
-        watch_driving_dataset.temporal_resolution = '3 Hours'
-        watch_driving_dataset.spatial_resolution = '1 km'
-        watch_driving_dataset.boundary_lat_north = 90
-        watch_driving_dataset.boundary_lat_south = -90
-        watch_driving_dataset.boundary_lon_west = -180
-        watch_driving_dataset.boundary_lon_east = 180
-        watch_driving_dataset.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)
-        if conf['full_data_range'].lower() == "true":
-            watch_driving_dataset.time_end = datetime.datetime(2001, 12, 31, 21, 0, 0)
-        else:
-            watch_driving_dataset.time_end = datetime.datetime(1901, 1, 31, 21, 0, 0)
-        watch_driving_dataset.view_order_index = 100
-        watch_driving_dataset.usage_order_index = 2
-        watch_driving_dataset.is_restricted_to_admins = False
+        watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
+        chess_driving_data_name = create_chess_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
 
-        cat1 = LandCoverRegionCategory()
-        cat1.name = "Test Regions"
-        cat1.driving_dataset = watch_driving_dataset
 
-        region1 = LandCoverRegion()
-        region1.name = "Equator Horizontal Strip (20 deg)"
-        region1.category = cat1
-        region1.mask_file = "data/WATCH_2D/masks/equator-20-degree-horizontal-strip.nc"
-
-        region2 = LandCoverRegion()
-        region2.name = "Prime Meridian Vertical Strip (30 deg)"
-        region2.category = cat1
-        region2.mask_file = "data/WATCH_2D/masks/meridian-30-degree-vertical-strip.nc"
-
-        region3 = LandCoverRegion()
-        region3.name = "Russia Square (big)"
-        region3.category = cat1
-        region3.mask_file = "data/WATCH_2D/masks/russia-square-big.nc"
-
-        region4 = LandCoverRegion()
-        region4.name = "Russia Square (small)"
-        region4.category = cat1
-        region4.mask_file = "data/WATCH_2D/masks/russia-square-small.nc"
-
-        region5 = LandCoverRegion()
-        region5.name = "Wrong Shape Mask"
-        region5.category = cat1
-        region5.mask_file = "data/WATCH_2D/masks/wrong-shape.nc"
-
-        driving_ds_2 = DrivingDataset()
-        driving_ds_2.name = "UK CHESS Forcing Data"
-        driving_ds_2.description = "The Climate, Hydrochemistry and Economics of Surface-water Systems (CHESS)" \
-                                   " project has explored effects of climate change on the water quality of European" \
-                                   " rivers, with the purpose of informing future catchment management."
-        driving_ds_2.geographic_region = 'Equator'
-        driving_ds_2.temporal_resolution = '24 Hours'
-        driving_ds_2.spatial_resolution = '1 km'
-        driving_ds_2.boundary_lat_north = 10
-        driving_ds_2.boundary_lat_south = -10
-        driving_ds_2.boundary_lon_west = -170
-        driving_ds_2.boundary_lon_east = 170
-        driving_ds_2.time_start = datetime.datetime(1951, 1, 1, 12, 0, 0)
-        driving_ds_2.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
-        driving_ds_2.view_order_index = 200
-        driving_ds_2.usage_order_index = 1
-        driving_ds_2.is_restricted_to_admins = True
+    with session_scope(Session) as session:
 
         driving_ds_3 = DrivingDataset()
         driving_ds_3.name = "QA Driving Data set"
@@ -497,83 +424,6 @@ def setup_app(command, conf, vars):
         driving_ds_3.usage_order_index = 100
         driving_ds_3.is_restricted_to_admins = True
 
-        file_template = 'data/WATCH_2D/driving/{}.ncml'
-
-        for path, var, name, min, max in watch_driving_data:
-            location = DrivingDatasetLocation()
-            location.base_url = file_template.format(path)
-            location.dataset_type = cover_dst
-            location.driving_dataset = watch_driving_dataset
-
-        DrivingDatasetLocation(
-            dataset_type=soild_prop_dst,
-            base_url=watch_soil_props_file,
-            driving_dataset=watch_driving_dataset)
-
-        DrivingDatasetLocation(
-            dataset_type=land_cover_frac_dst,
-            base_url=watch_land_frac_file,
-            driving_dataset=watch_driving_dataset)
-
-        parameters1 = [
-            [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
-            [constants.JULES_PARAM_DRIVE_DATA_END, "'2001-12-31 21:00:00'"],
-            [constants.JULES_PARAM_DRIVE_DATA_PERIOD, "10800"],
-            [constants.JULES_PARAM_DRIVE_FILE, "'data/WATCH_2D/driving/%vv/%vv_%y4%m2.nc'"],
-            [constants.JULES_PARAM_DRIVE_NVARS, "8"],
-            [constants.JULES_PARAM_DRIVE_VAR,
-             "'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     "
-             "'tot_rain'        'tot_snow'"],
-            [constants.JULES_PARAM_DRIVE_VAR_NAME, "'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      "
-                                                   "'SWdown'      'Rainf'           'Snowf'"],
-            [constants.JULES_PARAM_DRIVE_TPL_NAME, "'PSurf_WFD'      'Tair_WFD'      "
-                                                   "'Qair_WFD'      'Wind_WFD'      'LWdown_WFD'      'SWdown_WFD'     "
-                                                   "'Rainf_WFD_GPCC'           'Snowf_WFD_GPCC'"],
-            [constants.JULES_PARAM_DRIVE_INTERP,
-             "'i'          'i'         'i'         'i'         'nf'          'nf'          'nf'              'nf'"],
-            [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
-            [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
-
-            [constants.JULES_PARAM_INPUT_GRID_IS_1D, ".false."],
-            [constants.JULES_PARAM_INPUT_GRID_NX, "720"],
-            [constants.JULES_PARAM_INPUT_GRID_NY, "280"],
-            [constants.JULES_PARAM_INPUT_GRID_X_DIM_NAME, "'Longitude'"],
-            [constants.JULES_PARAM_INPUT_GRID_Y_DIM_NAME, "'Latitude'"],
-            [constants.JULES_PARAM_INPUT_TIME_DIM_NAME, "'Time'"],
-            [constants.JULES_PARAM_INPUT_TYPE_DIM_NAME, "'pseudo'"],
-
-            [constants.JULES_PARAM_LATLON_FILE, ("'%s'" % watch_latlon_file)],
-            [constants.JULES_PARAM_LATLON_LAT_NAME, "'Grid_lat'"],
-            [constants.JULES_PARAM_LATLON_LON_NAME, "'Grid_lon'"],
-            [constants.JULES_PARAM_LAND_FRAC_FILE, ("'%s'" % watch_land_frac_file)],
-            [constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME, "'land'"],
-            [constants.JULES_PARAM_SURF_HGT_ZERO_HEIGHT, ".true."],
-
-            [constants.JULES_PARAM_FRAC_FILE, ("'%s'" % watch_frac_file)],
-            [constants.JULES_PARAM_FRAC_NAME, "'frac'"],
-
-            [constants.JULES_PARAM_SOIL_PROPS_CONST_Z, ".true."],
-            [constants.JULES_PARAM_SOIL_PROPS_FILE, ("'%s'" % watch_soil_props_file)],
-            [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
-            [constants.JULES_PARAM_SOIL_PROPS_VAR,
-             "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
-            [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
-             "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
-
-            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
-            [constants.JULES_PARAM_INITIAL_VAR,
-             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
-            [constants.JULES_PARAM_INITIAL_USE_FILE,
-             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
-            [constants.JULES_PARAM_INITIAL_CONST_VAL,
-             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
-        ]
-
-        model_run_service = ModelRunService()
-
-        for constant, value in parameters1:
-            ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
-            watch_driving_dataset.parameter_values.append(ddpv)
 
         parameters3 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
@@ -659,9 +509,9 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
              "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
-            [constants.JULES_PARAM_SOIL_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
+            [constants.JULES_PARAM_SOIL_PROPS_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
                                                   ".false. .false."],
-            [constants.JULES_PARAM_SOIL_CONST_VALS,
+            [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL,
              "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
 
             [constants.JULES_PARAM_INITIAL_NVARS, "8"],
@@ -677,7 +527,7 @@ def setup_app(command, conf, vars):
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_upload, constant, value)
             driving_ds_upload.parameter_values.append(ddpv)
 
-        session.add_all([watch_driving_dataset, driving_ds_2, driving_ds_3, driving_ds_upload])
+        session.add_all([driving_ds_3, driving_ds_upload])
 
         land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
                             6: 'Urban', 7: 'Lake', 8: 'Soil', 9: constants.FRACTIONAL_ICE_NAME}
@@ -690,7 +540,7 @@ def setup_app(command, conf, vars):
     with session_scope() as session:
         watch_model = session.query(ModelRun).filter(ModelRun.name == watch_model_run.name).one()
         science_config = session.query(ModelRun).filter(ModelRun.name == "EURO4").one()
-        driving_dataset = session.query(DrivingDataset).filter(DrivingDataset.name == watch_driving_dataset.name).one()
+        driving_dataset = session.query(DrivingDataset).filter(DrivingDataset.name == watch_driving_data_name).one()
 
         watch_model.science_configuration_id = science_config.id
         watch_model.driving_dataset_id = driving_dataset.id
