@@ -26,9 +26,9 @@ CHESS_DRIVING_DATA = \
     ]
 
 CHESS_SOIL_PROPS_FILE = "data/CHESS/ancils/chess_soilparams_hwsd_vg_copy.nc"
-CHESS_LAND_FRAC_FILE = "data/CHESS/ancils/chess_landcover_2000_copy.nc"
+CHESS_LAND_FRAC_FILE = "data/CHESS/ancils/chess_landfrac_copy.nc"
 CHESS_LATLON_FILE = "data/CHESS/ancils/chess_lat_lon.nc"
-CHESS_FRAC_FILE = "data/CHESS/ancils/chess_landfrac_copy.nc"
+CHESS_FRAC_FILE = "data/CHESS/ancils/chess_landcover_2000_copy.nc"
 
 
 def _create_chess_data_basic(conf):
@@ -41,15 +41,15 @@ def _create_chess_data_basic(conf):
     chess_driving_dataset.geographic_region = 'UK'
     chess_driving_dataset.temporal_resolution = '24 Hours'
     chess_driving_dataset.spatial_resolution = '1 km'
-    chess_driving_dataset.boundary_lat_north = 10
-    chess_driving_dataset.boundary_lat_south = -10
-    chess_driving_dataset.boundary_lon_west = -170
-    chess_driving_dataset.boundary_lon_east = 170
-    chess_driving_dataset.time_start = datetime.datetime(1961, 1, 1, 12, 0, 0)
+    chess_driving_dataset.boundary_lat_north = 59
+    chess_driving_dataset.boundary_lat_south = 50
+    chess_driving_dataset.boundary_lon_west = -7.5
+    chess_driving_dataset.boundary_lon_east = 1.5
+    chess_driving_dataset.time_start = datetime.datetime(1961, 1, 1, 0, 0, 0)
     if conf['full_data_range'].lower() == "true":
-        chess_driving_dataset.time_end = datetime.datetime(1999, 1, 1, 17, 0, 0)
+        chess_driving_dataset.time_end = datetime.datetime(1999, 1, 1, 0, 0, 0)
     else:
-        chess_driving_dataset.time_end = datetime.datetime(1961, 1, 31, 17, 0, 0)
+        chess_driving_dataset.time_end = datetime.datetime(1961, 1, 31, 0, 0, 0)
     chess_driving_dataset.view_order_index = 200
     chess_driving_dataset.usage_order_index = 1
     chess_driving_dataset.is_restricted_to_admins = True
@@ -97,6 +97,9 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         driving_dataset=driving_dataset)
 
     jules_parameters = [
+        [constants.JULES_PARAM_MODEL_LEVELS_ICE_INDEX, "-1"],
+        [constants.JULES_PARAM_MODEL_LEVELS_NNVG, "3"],
+
         [constants.JULES_PARAM_FRAC_FILE, ("'%s'" % CHESS_FRAC_FILE)],
         [constants.JULES_PARAM_FRAC_NAME, "'frac'"],
 
@@ -108,7 +111,7 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
          "'oneovernminusone' 'oneoveralpha' 'satcon'  'vsat'  'vcrit'  'vwilt'     'hcap'    'hcon'  'albsoil'"],
 
-        [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, ".true."],
+        [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, "0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.15"],
 
         [constants.JULES_PARAM_INITIAL_NVARS, "8"],
         [constants.JULES_PARAM_INITIAL_VAR,
@@ -128,6 +131,16 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         [constants.JULES_PARAM_DRIVE_INTERP, interps],
         [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "1.2"],
         [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
+
+        [constants.JULES_PARAM_DRIVE_L_DAILY_DISAGG, ".true."],
+        [constants.JULES_PARAM_DRIVE_L_DISAGG_RH, ".true."],
+        [constants.JULES_PARAM_DRIVE_PRECIP_DISAGG_METHOD, "3"],
+        [constants.JULES_PARAM_DRIVE_DIFF_FRAC_CONST, "0.4"],
+        [constants.JULES_PARAM_DRIVE_T_FOR_SNOW, "275.15"],
+        [constants.JULES_PARAM_DRIVE_T_FOR_CON_RAIN, "288.15"],
+        [constants.JULES_PARAM_DRIVE_DUR_CONV_RAIN, "7200.0"],
+        [constants.JULES_PARAM_DRIVE_DUR_LS_RAIN, "18000.0"],
+        [constants.JULES_PARAM_DRIVE_DUR_LS_SNOW, "18000.0"],
 
         [constants.JULES_PARAM_INPUT_GRID_IS_1D, ".false."],
         [constants.JULES_PARAM_INPUT_GRID_NX, "656"],
@@ -152,9 +165,9 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
     ]
 
     if conf['full_data_range'].lower() == "true":
-        jules_parameters.append([constants.JULES_PARAM_DRIVE_DATA_END, "'2001-12-31 21:00:00'"])
+        jules_parameters.append([constants.JULES_PARAM_DRIVE_DATA_END, "'2013-01-01 00:00:00'"])
     else:
-        jules_parameters.append([constants.JULES_PARAM_DRIVE_DATA_END, "'1901-01-31 21:00:00'"])
+        jules_parameters.append([constants.JULES_PARAM_DRIVE_DATA_END, "'1961-01-31 00:00:00'"])
 
     model_run_service = ModelRunService()
     for constant, value in jules_parameters:

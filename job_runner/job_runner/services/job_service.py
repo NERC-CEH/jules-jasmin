@@ -141,7 +141,10 @@ class JobService(object):
             os.mkdir(run_directory)
 
         #create output dir
-        os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
+        try:
+            os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
+        except OSError:
+            raise ServiceException("Output directory already exists for model run")
 
         #create softlinks to data
         src = os.path.join(config['jules_run_data_dir'])
