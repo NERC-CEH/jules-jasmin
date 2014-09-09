@@ -4,6 +4,8 @@
 import logging
 import datetime
 from coards import parse
+from numpy import amin, amax
+from numpy.ma import masked_equal
 from pylons import config
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
 from joj.utils import constants
@@ -50,12 +52,17 @@ class DapClient(BaseDapClient):
     def get_data_range(self):
         """
         Gets the datarange of the variable in this dataset
+        NOTE: This method might be time-consuming if called on a large dataset
+        as it may have to iterate over every single data point.
         :return: min and max tuple for the range
         """
         try:
             return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
         except (KeyError, ValueError):
-            return [0, 100]
+            fill_value = self._variable._FillValue
+            missing_value = self._variable.missing_value
+            valid_array = masked_equal(masked_equal(self._variable.array, missing_value), fill_value)
+            return [float(amin(valid_array)), float(amax(valid_array))]
 
     def get_variable_units(self):
         """

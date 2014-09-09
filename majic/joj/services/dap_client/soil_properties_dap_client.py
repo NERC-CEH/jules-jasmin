@@ -33,9 +33,10 @@ class SoilPropertiesDapClient(BaseDapClient):
             if key not in (self._get_key(constants.NETCDF_LATITUDE), self._get_key(constants.NETCDF_LONGITUDE)):
                 variable = self._dataset[key]
                 missing_value = variable.missing_value
+                fill_value = variable._FillValue
                 value_as_grid = variable[lat_index, lon_index]
                 value = value_as_grid[key][0][0]
-                if value == missing_value:
+                if value == missing_value or value == fill_value:
                     return None
                 soil_props[key] = value
         return soil_props

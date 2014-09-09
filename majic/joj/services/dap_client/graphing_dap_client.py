@@ -39,12 +39,13 @@ class GraphingDapClient(DapClient):
         timestamps = self._time.tolist()
         data = []
         missing_value = self._variable.missing_value
+        fill_value = self._variable._FillValue
         for i in range(len(variable_data)):
             # Time should be in millis after 1970 epoch for FLOT
             t = self._get_millis_since_epoch(timestamps[i])
             if is_inside_grid:
                 data_value = variable_data[i]
-                if data_value == missing_value:
+                if data_value == missing_value or data_value == fill_value:
                     data_value = None
             else:
                 data_value = None

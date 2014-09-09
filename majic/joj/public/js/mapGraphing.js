@@ -212,7 +212,10 @@ function plotGraph(data)
             max: ymax,
             min: ymin,
             zoomRange: false,
-            panRange: false
+            panRange: false,
+            tickFormatter: function (v, axis) {
+                return v.toPrecision(3);
+            }
         };
     }
 
