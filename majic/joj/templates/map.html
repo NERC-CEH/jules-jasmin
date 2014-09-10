@@ -29,6 +29,7 @@
         var DATASET_TYPE_SINGLE_CELL = '${c.DATASET_TYPE_SINGLE_CELL}';
         var DATASET_TYPE_COVERAGE = '${c.DATASET_TYPE_COVERAGE}';
         var DATASET_TYPE_TRANSECT = '${c.DATASET_TYPE_TRANSECT}';
+        var DATASET_TYPE_LAND_COVER_FRAC = '${c.DATASET_TYPE_LAND_COVER_FRAC}'
     </script>
 </head>
 <body id="explore">
@@ -136,8 +137,8 @@
                                 <button class="btn btn-mini disabled" disabled="disabled" id="close-graph"><i class="icon-remove"></i> Close Graph</button>
 
                                 <div id="dimension-panel" class="hidden">
-                                    <h5>Time controls</h5>
-                                    <div class="alert alert-info">Graphing is limited to the ${c.GRAPH_NPOINTS} closest points to the times chosen below:</div>
+                                    <h5>Dimension controls</h5>
+                                    <div class="alert alert-info">Graphing is limited to the ${c.GRAPH_NPOINTS} closest points to times chosen below:</div>
                                     <ol class="sidebar-nav nopoints" id="dimension-list">
 
                                     </ol>

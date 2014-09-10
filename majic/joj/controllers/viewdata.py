@@ -157,7 +157,13 @@ class ViewdataController(WmsvizController):
 
             dataset = self._dataset_service.get_dataset_by_id(ds_id,
                                                               user_id=self.current_user.id)
-            return self.get_layers_for_dataset(dataset)
+
+            # If a 'variable' has been passed it means we should only get layers that match that variable name
+            # Note that variables are matched by full name
+            variable = request.params.get('variable')
+            if len(variable) == 0:
+                variable = None
+            return self.get_layers_for_dataset(dataset, variable=variable)
 
         else:
             # Use the old-style approach
@@ -167,14 +173,26 @@ class ViewdataController(WmsvizController):
                                                           (wmsCapabilities['getMapUrl'], wmsCapabilities['name']))
             return wmsCapabilities
 
-    def get_layers_for_dataset(self, dataset):
-        """ Gets a list of layer information for the given dataset
-            @param: dataset- The ecomaps model dataset to get WMS layers for
-
+    def get_layers_for_dataset(self, dataset, variable
+    =None):
+        """
+        Gets a list of layer information for the given dataset
+        :param dataset- The ecomaps model dataset to get WMS layers for
+        :param variable: Variable name to match against (return only this variable layer)
         """
         layer_list = self.datasetManager.get_ecomaps_layer_data(dataset)
 
         layer_collection = []
+
+        # If we've been asked for a variable, find it, otherwise show the first.
+        if variable is not None:
+            layer_sublist = []
+            for layer in layer_list[0]:
+                if layer.entity.title == variable:
+                    layer_sublist.append(layer)
+            layer_list[0] = layer_sublist
+        else:
+            layer_list[0] = layer_list[0][0:1]
 
         for layer in layer_list[0]:
             layer_obj = layer.entity.getAsDict()
@@ -192,29 +210,36 @@ class ViewdataController(WmsvizController):
         :param id: The ID of the dataset to get the layer data for, and the ID
         :return: rendered layer
         """
-        dataset_id = request.params['dsid']
-        c.layer_id = request.params['layerid']
+        dataset_id = request.params.get('dsid')
+        c.layer_id = request.params.get('layerid')
 
         dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
 
         c.dataset = dataset
         c.dimensions = []
 
-        if dataset.dataset_type.type == constants.DATASET_TYPE_COVERAGE:
+        dataset_type = dataset.dataset_type.type
+        if dataset_type == constants.DATASET_TYPE_COVERAGE:
             c.layers = self.get_layers_for_dataset(dataset)
 
             # Check for dimensionality
             if c.layers and c.layers[0]['dimensions']:
                 c.dimensions = c.layers[0]['dimensions']
-        elif dataset.dataset_type.type == constants.DATASET_TYPE_SINGLE_CELL:
+        elif dataset_type == constants.DATASET_TYPE_SINGLE_CELL:
             c.dimensions = self.get_time_dimensions_for_single_cell(dataset)
+        elif dataset_type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+            layer = self.get_layers_for_dataset(dataset)[0]
+            layer['title'] = dataset.name
+            c.layers = [layer]
+
+            c.dimensions = self.get_variable_dimensions_for_land_cover(dataset)
 
         return render('layers.html')
 
     def get_time_dimensions_for_single_cell(self, dataset):
         """
         Get a dimensions object as needed for the map page - for a single cell dataset as these don't work with WMS
-        :param dataset:
+        :param dataset: Dataset
         """
         dap_client = self.dap_client_factory.get_dap_client(dataset.netcdf_url)
         timestamps = dap_client.get_timestamps()
@@ -226,6 +251,22 @@ class ViewdataController(WmsvizController):
                        'unitSymbol': u'',
                        'units': u'ISO8601'}]
         return dimensions
+
+    def get_variable_dimensions_for_land_cover(self, dataset):
+        """
+        Get variable dimensions object as needed for the map page - for land cover file
+        :param dataset: Dataset
+        :return: Dimensions object
+        """
+        dap_client = self.dap_client_factory.get_ancils_dap_client(dataset.netcdf_url)
+        variables = dap_client.get_variable_names()
+        dimensions = [{'name': u'frac',
+                       'dimensionValues': variables,
+                       'default': variables[0],
+                       'unitSymbol': u'',
+                       'units': u'ISO8601'}]
+        return dimensions
+
 
     @jsonify
     def add_session_endpoint(self):

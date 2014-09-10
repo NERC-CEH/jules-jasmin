@@ -6,6 +6,7 @@ from joj.services.dap_client.dap_client import DapClient
 from joj.services.dap_client.graphing_dap_client import GraphingDapClient
 from joj.services.dap_client.land_cover_dap_client import LandCoverDapClient
 from joj.services.dap_client.soil_properties_dap_client import SoilPropertiesDapClient
+from joj.services.dap_client.ancils_dap_client import AncilsDapClient
 
 
 class DapClientFactory(object):
@@ -59,3 +60,11 @@ class DapClientFactory(object):
         :return:
         """
         return SoilPropertiesDapClient(url)
+
+    def get_ancils_dap_client(self, url):
+        """
+        Create and return an Ancillary files DAP Client
+        :param url: URL for the DAP Client to use
+        :return: AncilsDapClient
+        """
+        return AncilsDapClient(url)

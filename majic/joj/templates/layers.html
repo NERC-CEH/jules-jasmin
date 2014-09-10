@@ -12,7 +12,7 @@
             <span class="control-label">${c.dataset.name}: </span>
             <br/>
             <span style="margin-top:-10px">
-                <select data-dimension="${dimension['name']}" class="dimension">
+                <select data-dimension="${dimension['name']}" class="dimension" dataset_type="${c.dataset.dataset_type.type}">
                     <option py:for="value in dimension['dimensionValues']" value="${value}">${value}</option>
                 </select>
             </span>
