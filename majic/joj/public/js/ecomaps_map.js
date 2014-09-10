@@ -222,7 +222,7 @@ var EcomapsMap = (function() {
     var unloadDataset = function(dataset_type, layerId, datasetLink) {
         datasetLink.removeClass("active");
 
-        if (dataset_type == DATASET_TYPE_COVERAGE) {
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC) {
             removeLayerFromMap(layerId);
         }
 

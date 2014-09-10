@@ -90,11 +90,15 @@ function getSelectedLayers()
         if ($(this).parent().hasClass("active")){
             // Check that the graph layer is visible:
             var layerId = $(this).attr("layer-id");
-            var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
-            // Add the layer IF: we didn't find a layer control (e.g. it's single cell) or the layer control is checked
-            if (layerCheckBox.length ==0 || layerCheckBox.is(':checked')) {
-                dataset_ids[dataset_ids.length] = layerId;
+            var dataset_type = $(this).attr("dataset-type");
+            if (dataset_type != DATASET_TYPE_LAND_COVER_FRAC) {
+                var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
+                // Add the layer IF: we didn't find a layer control (e.g. it's single cell) or the layer control is checked
+                if (layerCheckBox.length ==0 || layerCheckBox.is(':checked')) {
+                    dataset_ids[dataset_ids.length] = layerId;
+                }
             }
+
         }
     });
     return dataset_ids;
