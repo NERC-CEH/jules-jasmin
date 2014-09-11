@@ -174,6 +174,52 @@ class JobStatusUpdaterService(DatabaseService):
             subject,
             msg)
 
+    def _dataset_is_transect(self, filepath):
+        """
+        Is the dataset a transect (i.e. 1 cell wide or tall)
+        :param filepath: Path of dataset on THREDDS server
+        :return: True if a transect, False otherwise
+        """
+        url = self._dap_client_factory.get_full_url_for_file(filepath, config=self._config)
+        dap_client = self._dap_client_factory.get_dap_client(url)
+        return dap_client.is_transect()
+
+    def _get_output_dataset_type(self, model_run, run_id, selected_output_profile_names, session):
+        """
+        Get the dataset type of the model run output
+        :param model_run: Model run being used
+        :param run_id: JULES Output Run ID
+        :param selected_output_profile_names: List of Parameter Values for JULES Output Profile Names
+        :param session: Database session to use
+        :return: Dataset Type
+        """
+        # Output dataset types will always be the same for all output in a model run
+        # So pick a representative output to test
+        single_cell = not model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
+        dataset_type_value = constants.DATASET_TYPE_COVERAGE
+        if single_cell:
+            dataset_type_value = constants.DATASET_TYPE_SINGLE_CELL
+        else:
+            filepath = self._create_file_path(model_run, run_id, selected_output_profile_names[0].get_value_as_python())
+            if self._dataset_is_transect(filepath):
+                dataset_type_value = constants.DATASET_TYPE_TRANSECT
+        dataset_type = session.query(DatasetType).filter(DatasetType.type == dataset_type_value).one()
+        return dataset_type
+
+    def _create_file_path(self, model_run, run_id, profile_name):
+        """
+        Create a filepath relative to the run directory
+        :param model_run: Model run
+        :param run_id: JULES Output Run ID
+        :param profile_name: Output profile name
+        :return: Filepath relative to run directory
+        """
+        return "run{model_id}/{output_dir}/{run_id}.{profile_name}.ncml".format(
+            model_id=model_run.id,
+            run_id=run_id,
+            profile_name=profile_name,
+            output_dir=constants.OUTPUT_DIR)
+
     def _update_datasets(self, model_run, session):
         """
         Update all data sets for this model
@@ -184,23 +230,20 @@ class JobStatusUpdaterService(DatabaseService):
 
         run_id = model_run.get_python_parameter_value(constants.JULES_PARAM_OUTPUT_RUN_ID)
         selected_output_profile_names = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
+
         selected_output_periods = {}
         for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD):
             selected_output_periods[var.group_id] = var.get_value_as_python()
 
-        dataset_type = session.query(DatasetType).filter(DatasetType.type == constants.DATASET_TYPE_COVERAGE).one()
-        thredds_server = self._config['thredds.server_url'].rstrip("/")
+        dataset_type = self._get_output_dataset_type(model_run, run_id, selected_output_profile_names, session)
 
         for selected_output_profile_name in selected_output_profile_names:
-            filename = "{output_dir}/{run_id}.{profile_name}.ncml".format(
-                run_id=run_id,
-                profile_name=selected_output_profile_name.get_value_as_python(),
-                output_dir=constants.OUTPUT_DIR)
+            file_path = self._create_file_path(model_run, run_id, selected_output_profile_name.get_value_as_python())
             is_input = False
 
             profile_name = utils.convert_time_period_to_name(
                 selected_output_periods[selected_output_profile_name.group_id])
-            self._create_dataset(dataset_type, filename, is_input, model_run, session, thredds_server, profile_name)
+            self._create_dataset(dataset_type, file_path, is_input, model_run, session, profile_name)
 
         input_locations = session \
             .query(DrivingDatasetLocation) \
@@ -208,11 +251,11 @@ class JobStatusUpdaterService(DatabaseService):
             .all()
 
         for input_location in input_locations:
-            filename = input_location.base_url
+            file_path = input_location.base_url
             is_input = True
-            self._create_dataset(input_location.dataset_type, filename, is_input, model_run, session, thredds_server)
+            self._create_dataset(input_location.dataset_type, file_path, is_input, model_run, session)
 
-    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, thredds_server, frequency=None):
+    def _create_dataset(self, dataset_type, filename, is_input, model_run, session, frequency=None):
         """
         Create a single dataset
         :param dataset_type: the dataset type
@@ -220,7 +263,6 @@ class JobStatusUpdaterService(DatabaseService):
         :param is_input: true if this is an input dataset
         :param model_run: the model run
         :param session: the session
-        :param thredds_server: url of the thredds server
         :param frequency: extra label to append to the name to indicate frequency
         :return:
         """
@@ -230,20 +272,10 @@ class JobStatusUpdaterService(DatabaseService):
         dataset.is_categorical = False
         dataset.is_input = is_input
         dataset.viewable_by_user_id = model_run.user.id
-        dataset.wms_url = \
-            "{thredds_server_url}/wms/model_runs/run{model_run_id}/" \
-            "{filename}?service=WMS&version=1.3.0&request=GetCapabilities" \
-            .format(
-                thredds_server_url=thredds_server,
-                model_run_id=model_run.id,
-                filename=filename)
-        dataset.netcdf_url = \
-            "{thredds_server_url}/dodsC/model_runs/run{model_run_id}/{filename}" \
-            .format(
-                thredds_server_url=thredds_server,
-                model_run_id=model_run.id,
-                filename=filename)
-
+        dataset.wms_url = "{url}?{query}".format(
+            url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
+            query="?service=WMS&version=1.3.0&request=GetCapabilities")
+        dataset.netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
         dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
         if frequency:
             dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)

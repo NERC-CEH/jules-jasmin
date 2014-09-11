@@ -89,16 +89,24 @@ def show_error_if_thredds_down(func, self, *args, **kwargs):
     :param kwargs: Named key word arguments
     :return: Rendered HTML
     """
-    try:
-        create_request_and_open_url(
-            config['thredds.server_url'],
-            timeout=int(config['thredds.server_timeout'])).read()
-        thredds_up = True
-    except:
-        thredds_up = False
-    if thredds_up:
+    if is_thredds_up(config):
         return func(self, *args, **kwargs)
     else:
         c.admin_email = config["email.admin_address"]
         page = render("map_down.html")
         return page
+
+
+def is_thredds_up(config):
+    """
+    Is the THREDDS Server running?
+    :param config: Pylons configuration
+    :return:
+    """
+    try:
+        create_request_and_open_url(
+            config['thredds.server_url'],
+            timeout=int(config['thredds.server_timeout'])).read()
+        return True
+    except:
+        return False

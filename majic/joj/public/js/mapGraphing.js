@@ -17,13 +17,13 @@ function createGraph(position)
 {
     stored_position = position;
     // Get all the datasets to show
-    var datasets = getSelectedLayers();
-    if (datasets.length == 0) {
+    var layers = getSelectedLayers();
+    if (layers.length == 0) {
         return false;
     }
     setMarker(position);
     createGraphSpace(position);
-    getData(datasets, position);
+    getData(layers, position);
 
     // Enable buttons
     closeBtn = $("button#close-graph");
@@ -35,7 +35,9 @@ function createGraph(position)
 
     return true;
 }
-
+/**
+ * Update the graph
+ */
 var updateGraph = function() {
     var graphDiv = $("#graph");
     //if (graphDiv.is(':visible')) {
@@ -60,23 +62,25 @@ function setMarker(position)
         // Add a new layer if we need to
         markers = new OpenLayers.Layer.Markers( "Markers" );
         map.addLayer(markers);
-        markers.setZIndex(100000);
         currentLayerIndex++;
     }
     if (marker) {
         // Clear the marker before adding a new one
         markers.removeMarker(marker);
     }
+    markers.setZIndex(100000);
     var size = new OpenLayers.Size(21,25);
     var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    var icon = new OpenLayers.Icon('/layout/images/marker.png', size, offset);
+    var icon = new OpenLayers.Icon('/js/img/marker-gold.png', size, offset);
     marker = new OpenLayers.Marker(position, icon);
     markers.addMarker(marker);
+    // Center on the new position since we have moved the screen
+    map.setCenter(position);
 }
 
 /**
  * Get a list of all currently selected data layers
- * @returns {Array} List of dataset IDs
+ * @returns {Array} List of Layer IDs
  */
 function getSelectedLayers()
 {
@@ -87,8 +91,9 @@ function getSelectedLayers()
             // Check that the graph layer is visible:
             var layerId = $(this).attr("layer-id");
             var layerCheckBox = $('input.layer-toggle[data-layerid="' + layerId + '"]')
-            if (layerCheckBox.is(':checked')) {
-                dataset_ids[dataset_ids.length] = ($(this).attr("data-dsid"));
+            // Add the layer IF: we didn't find a layer control (e.g. it's single cell) or the layer control is checked
+            if (layerCheckBox.length ==0 || layerCheckBox.is(':checked')) {
+                dataset_ids[dataset_ids.length] = layerId;
             }
         }
     });
@@ -159,16 +164,19 @@ function resetGraph()
  * @param datasets The list of dataset IDs to retrieve graphing data for
  * @param position OpenLayers LatLong object representing the position that was clicked
  */
-function getData(datasets, position)
+function getData(layerIds, position)
 {
     data = [];
-    for (var i = 0; i < datasets.length; i++ ) {
-        var dsid = datasets[i];
-        var url = "/map/graph/" + dsid + "?lat=" + position.lat + "&lon=" + position.lon;
+    for (var i = 0; i < layerIds.length; i++ ) {
+        var layerId = layerIds[i];
+        var dsid = $(".dataset[layer-id='" + layerId + "']").attr("data-dsid");
+        var layerControls = $(".layer-controls[data-layerid='" + layerId + "']")
+        var time = layerControls.find("select.dimension").val()
+        var url = "/map/graph/" + dsid + "?lat=" + position.lat + "&lon=" + position.lon + "&time=" + time;
         $.getJSON(url, function (_data) {
             data[data.length] = _data;
             // If this is the last one then we can go ahead and plot them all
-            if (data.length == datasets.length){
+            if (data.length == layerIds.length){
                 plotGraph(data);
             }
         }).fail(function() {
@@ -196,16 +204,21 @@ function plotGraph(data)
             yaxis : i+1
         };
         // Set the range a little bit taller than the graph
-        ymax = data[i].ymax - (data[i].ymin - data[i].ymax) * 0.25;
-        if (data.ymin < 0) {
-            ymin = data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25;
+        var ymax = data[i].ymax - (data[i].ymin - data[i].ymax) * 0.25;
+        if (data[i].ymin < 0) {
+            var ymin = data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25;
         } else {
-            ymin = Math.max(data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25, 0);
+            var ymin = Math.max(data[i].ymin - (data[i].ymax - data[i].ymin) * 0.25, 0);
         }
 
         yaxesList[yaxesList.length] = {
             max: ymax,
-            min: ymin
+            min: ymin,
+            zoomRange: false,
+            panRange: false,
+            tickFormatter: function (v, axis) {
+                return v.toPrecision(3);
+            }
         };
     }
 
@@ -213,7 +226,8 @@ function plotGraph(data)
         xaxis: {
             mode: "time",
             max: data.xmax,
-            min: data.xmin
+            min: data.xmin,
+            panRange: [data.xmin, data.xmax]
         },
         yaxes: yaxesList,
         zoom: {

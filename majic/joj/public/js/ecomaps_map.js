@@ -81,7 +81,7 @@ var EcomapsMap = (function() {
      */
     var initHandlers = function(){
         // Each dataset link in the menu...
-        $("a.dataset").click(loadDataset);
+        $("a.dataset").click(loadUnloadDataset);
 
         // Image export
         $("a#image-export").click(exportMapImage);
@@ -118,8 +118,12 @@ var EcomapsMap = (function() {
 
         layerContainer.on("click", "button.scale-update", function() {
 
-            var minValue = $(this).siblings("input.scale-min")[0].value;
-            var maxValue = $(this).siblings("input.scale-max")[0].value;
+            var value1 = $(this).siblings("input.scale-min")[0].value;
+            var value2 = $(this).siblings("input.scale-max")[0].value;
+
+            // Swap them over if they are the wrong way round
+            var minValue = Math.min(value1, value2);
+            var maxValue = Math.max(value1, value2);
 
             var layerId = $(this).data("layerid");
             var layerObj = layerDict[layerId];
@@ -134,6 +138,7 @@ var EcomapsMap = (function() {
               $(this).data("dimension"),
               $(this).val()
             );
+            updateGraph();
         });
 
         // Reset button
@@ -175,66 +180,101 @@ var EcomapsMap = (function() {
 
                     index--;
                 });
+                var mapLayer = map.getLayersByName("Markers")[0];
+                map.setLayerIndex(mapLayer, 100000);
                 _super($item, container);
             }
         });
     };
 
     var removeDataset = function(key) {
-        removeLayerFromMap(key);
 
-        var panel = $('li.layer[data-layerid="' + key + '"]');
-        panel.remove();
-
-        var time_controls = $('div.layer-controls[data-layerid="' + key + '"]');
-        time_controls.remove();
-
-        if ($('li.layer').length == 0) {
-            $('#options-panel').hide();
-        }
     }
 
     /*
-     * loadDataset
+     * loadUnloadDataset
      *
-     * Loads a EcoMaps dataset into the map control
+     * Loads or unloads an EcoMaps dataset into the map control
      *
      */
-    var loadDataset = function() {
+    var loadUnloadDataset = function() {
+        var datasetId = $(this).data("dsid");
+        var dataset_type = $(this).attr("dataset-type")
+        var layerId = $(this).attr("layer-id");
+        var datasetLink = $(this).closest("li");
 
-        // Highlight the selected dataset
-        if ($(this).closest("li").hasClass("active")) {
-            var datasetId = $(this).data("dsid");
-            var layerId = $(this).attr("layer-id")
-            removeDataset(layerId);
-            $(this).closest("li").removeClass("active");
-            updateGraph();
+        // Is this already selected?
+        if (datasetLink.hasClass("active")) {
+            unloadDataset(dataset_type, layerId, datasetLink);
         }
         else {
+            loadDataset(dataset_type, layerId, datasetId, datasetLink);
+        }
+    };
 
-            $(this).closest("li").addClass("active");
-            // Plop the loading panel over the map
-            setLoadingState(true);
 
-            // Let's get some layers!
-            var datasetId = $(this).data("dsid");
-            var layerId = $(this).attr("layer-id");
+    var unloadDataset = function(dataset_type, layerId, datasetLink) {
+        datasetLink.removeClass("active");
 
-            // Load the layers UI straight from the response
-            $.get('/viewdata/layers/' + datasetId + "_" + layerId, function(result) {
+        if (dataset_type == DATASET_TYPE_COVERAGE) {
+            removeLayerFromMap(layerId);
+        }
 
-                $("div#layer-container").prepend(result);
-                var dimensionItems = $("div#layer-list").find("li.dimension");
+        var panel = $('li.layer[data-layerid="' + layerId + '"]');
+        panel.remove();
+        var time_controls = $('div.layer-controls[data-layerid="' + layerId + '"]');
+        time_controls.remove();
 
-                if(dimensionItems.length > 0){
-                    dimensionItems.detach().appendTo("ol#dimension-list");
-                    $("div#dimension-panel").show();
-                }
-                $("div#options-panel").show();
-                createSortableList();
+        // Dimensions
+        if ($('div.layer-controls').length == 0) {
+            $('#options-panel').hide();
+        }
+        // Layers
+        if ($("ul.layer-controls").length == 0) {
+            $("div#layer-panel").hide();
+        }
+
+        updateGraph();
+    }
+
+
+    var loadDataset = function(dataset_type, layerId, datasetId, datasetLink) {
+
+        if (dataset_type == DATASET_TYPE_TRANSECT) {
+            alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
+            return false;
+        }
+
+        // Plop the loading panel over the map
+        datasetLink.addClass("active");
+        setLoadingState(true);
+        // Load the layers UI straight from the response
+        $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
+
+            $("div#layer-container").prepend(result);
+            var dimensionItems = $("div#layer-list").find("li.dimension");
+
+            if(dimensionItems.length > 0){
+                dimensionItems.detach().appendTo("ol#dimension-list");
+                $("div#dimension-panel").show();
+            }
+            if($("li.layer").length == 0) {
+                $("div#layer-panel").hide();
+            } else {
+                $("div#layer-panel").show();
+            }
+            $("div#options-panel").show();
+            createSortableList();
+            if (dataset_type == DATASET_TYPE_COVERAGE) {
                 updateGraph();
-            });
-
+            } else {
+                $.get("/dataset/single_cell_location/" + datasetId, function(result) {
+                    var position = new OpenLayers.LonLat(result.lon, result.lat);
+                    createGraph(position);
+                });
+            }
+        });
+        if (dataset_type == DATASET_TYPE_COVERAGE) {
             // Make the request for the WMS layer data
             $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
                 function(data){
@@ -261,16 +301,16 @@ var EcomapsMap = (function() {
                         addLayerToMap(layerId);
                         setLayerStyle(layerId);
                     }
-
-                    // All done
-                    setLoadingState(false);
                 }
-            ) .fail(function() {
-                    alert("An error occurred loading the dataset, please try again.");
-                    setLoadingState(false);
-                });
+            ).fail(function() {
+                alert("An error occurred loading the dataset, please try again.");
+                setLoadingState(false);
+            });
         }
-    };
+        // All done
+        setLoadingState(false);
+    }
+
 
     /*
      * initMap
@@ -342,9 +382,12 @@ var EcomapsMap = (function() {
             createGraph(position);
         });
 
-        // Stretch the map down the page
+        // Stretch the map down the page.
+        // Hide the panel div first because otherwise it overflows if there are lots of datasets
+        $("#panel-div").hide();
         $("#map").height($("#wrap").height() - 42);
         $("#panel-div").height($("#wrap").height() - 42);
+        $("#panel-div").show();
     };
 
     /*
@@ -655,6 +698,15 @@ var EcomapsMap = (function() {
         hideGraph();
     };
 
+    var checkMapServer = function() {
+        $.getJSON('/map/is_thredds_up', function(data) {
+            var thredds_up = data['thredds_up'];
+            if (!thredds_up) {
+                $("div#server-offline").show();
+            }
+        });
+    };
+
     return {
 
         init: function() {
@@ -663,6 +715,7 @@ var EcomapsMap = (function() {
             // Open currently selected modelrun (if there is one)
             openSelectedRun();
             initMap();
+            checkMapServer();
         }
     }
 })();

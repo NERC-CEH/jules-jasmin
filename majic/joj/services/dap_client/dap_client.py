@@ -4,6 +4,8 @@
 import logging
 import datetime
 from coards import parse
+from numpy import amin, amax
+from numpy.ma import masked_equal
 from pylons import config
 from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
 from joj.utils import constants
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 
 class DapClient(BaseDapClient):
     """
-    Client for communicating with the OpenDAP server to extract time series data for a particular latitude / longitude
+    Client for communicating with the OpenDAP server to extract map data for a particular latitude / longitude
     """
 
     def __init__(self, url):
@@ -50,12 +52,17 @@ class DapClient(BaseDapClient):
     def get_data_range(self):
         """
         Gets the datarange of the variable in this dataset
+        NOTE: This method might be time-consuming if called on a large dataset
+        as it may have to iterate over every single data point.
         :return: min and max tuple for the range
         """
         try:
             return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
         except (KeyError, ValueError):
-            return [0, 100]
+            fill_value = self._variable._FillValue
+            missing_value = self._variable.missing_value
+            valid_array = masked_equal(masked_equal(self._variable.array, missing_value), fill_value)
+            return [float(amin(valid_array)), float(amax(valid_array))]
 
     def get_variable_units(self):
         """
@@ -183,3 +190,20 @@ class DapClient(BaseDapClient):
         """
         time_secs_elapsed = (datetime - self._start_date).total_seconds()
         return time_secs_elapsed
+
+    def is_transect(self):
+        """
+        Determines if a given file is a transect (i.e. is only one cell wide or tall)
+        :return: True if transect, False otherwise
+        """
+        height = len(self._lat)
+        width = len(self._lon)
+        return height == 1 or width == 1
+
+    def get_timestamps(self):
+        """
+        Returns a list of all available timestamps for the dataset
+        :return:
+        """
+        timevalues = self._time.tolist()
+        return [self._start_date + datetime.timedelta(seconds=timeval) for timeval in timevalues]

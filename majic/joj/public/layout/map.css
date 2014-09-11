@@ -36,6 +36,7 @@
             left: 50px;
             z-index: 1000;
             margin: 0px 0px -59px 0px;
+            display:none;
         }
         table.map-table {
             height:100%;
@@ -48,7 +49,8 @@
         }
         td#cell-map {
             width:99%;
-            padding:0px
+            padding:0px;
+            vertical-align:top;
         }
         div#panel-div {
             overflow-y:auto;
@@ -137,8 +139,7 @@
         }
         .graph {
             display: none;
-            margin-left : 1.5%;
-            /*margin-left: 2.12766%;*/
+            margin-left : 0.75%;
         }
         .graph-loading {
             position: absolute;

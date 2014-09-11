@@ -1,30 +1,29 @@
+"""
+header
+"""
 import logging
-import urllib2
-from pylons import url
-from pylons.controllers.util import redirect, Response
-import formencode
+from pylons.controllers.util import Response
 from pylons.decorators import jsonify
 from joj.lib.base import BaseController, request, render, c
 from joj.services.dataset import DatasetService
 from joj.services.netcdf import NetCdfService
 from joj.services.user import UserService
-from joj.model.add_dataset_form import AddDatasetForm, UpdateDatasetForm
 from formencode import htmlfill
 from joj.lib import wmc_util
+from joj.services.model_run_service import ModelRunService
+from joj.utils import constants
 
-
-__author__ = 'Phil Jenkins (Tessella)'
 
 log = logging.getLogger(__name__)
+
 
 class DatasetController(BaseController):
 
     _dataset_service = None
     _netcdf_service = None
 
-
     def __init__(self, dataset_service=DatasetService(), netcdf_service=NetCdfService(),
-                 user_service=UserService()):
+                 user_service=UserService(), model_run_service=ModelRunService()):
         """ Constructs a new dataset controller
         @param dataset_service: The dataset service to use with this controller
         @param netcdf_service: The NetCDF service to use with this controller
@@ -36,6 +35,7 @@ class DatasetController(BaseController):
         self._user_service = user_service
         self._dataset_service = dataset_service
         self._netcdf_service = netcdf_service
+        self._model_run_service = model_run_service
 
     @jsonify
     def columns(self, id):
@@ -55,7 +55,6 @@ class DatasetController(BaseController):
         user = self._user_service.get_user_by_username(request.environ['REMOTE_USER'])
 
         return self._dataset_service.get_datasets_for_user(user.id)
-
 
     def wms(self, id):
         """ Indirection layer between ecomaps and the underlying dataset mapping
@@ -116,6 +115,22 @@ class DatasetController(BaseController):
         if c.time_points:
             # Render the points back
             return render("dataset_time_values.html")
+
+    @jsonify
+    def single_cell_location(self, id):
+        """
+        Gets the location of a single cell dataset
+        :param id:
+        :return: ID of the dataset to get single cell location for
+        """
+        dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
+        latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
+        if latlon is not None:
+            lat, lon = latlon
+            return {'lat': lat, 'lon': lon}
+        else:
+            return {'error': 'No single cell lat lon information found for this dataset'}
 
 
 def custom_formatter(error):

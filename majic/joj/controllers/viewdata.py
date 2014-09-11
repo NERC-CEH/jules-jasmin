@@ -22,8 +22,11 @@ import joj.lib.viewdataExport as viewdataExport
 from joj.controllers.wmsviz import WmsvizController
 from joj.services.dataset import DatasetService
 from joj.services.user import UserService
+from joj.utils import constants
+from joj.services.dap_client.dap_client_factory import DapClientFactory
 
 log = logging.getLogger(__name__)
+
 
 class ViewdataController(WmsvizController):
     """
@@ -37,9 +40,11 @@ class ViewdataController(WmsvizController):
 
     def __init__(self,
                  user_service=UserService(),
-                 dataset_service=DatasetService()):
+                 dataset_service=DatasetService(),
+                 dap_client_factory=DapClientFactory()):
 
         super(WmsvizController, self).__init__()
+        self.dap_client_factory = dap_client_factory
         self._user_service = user_service
         self._dataset_service = dataset_service
 
@@ -187,22 +192,40 @@ class ViewdataController(WmsvizController):
         :param id: The ID of the dataset to get the layer data for, and the ID
         :return: rendered layer
         """
-        dsid, layer_id = id.split("_")
-        dsid = int(dsid)
-        c.layer_id = layer_id
+        dataset_id = request.params['dsid']
+        c.layer_id = request.params['layerid']
 
-        dataset = self._dataset_service.get_dataset_by_id(dsid, user_id=self.current_user.id)
+        dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
 
         c.dataset = dataset
-        c.layers = self.get_layers_for_dataset(dataset)
-
         c.dimensions = []
 
-        # Check for dimensionality
-        if c.layers and c.layers[0]['dimensions']:
-            c.dimensions = c.layers[0]['dimensions']
+        if dataset.dataset_type.type == constants.DATASET_TYPE_COVERAGE:
+            c.layers = self.get_layers_for_dataset(dataset)
+
+            # Check for dimensionality
+            if c.layers and c.layers[0]['dimensions']:
+                c.dimensions = c.layers[0]['dimensions']
+        elif dataset.dataset_type.type == constants.DATASET_TYPE_SINGLE_CELL:
+            c.dimensions = self.get_time_dimensions_for_single_cell(dataset)
 
         return render('layers.html')
+
+    def get_time_dimensions_for_single_cell(self, dataset):
+        """
+        Get a dimensions object as needed for the map page - for a single cell dataset as these don't work with WMS
+        :param dataset:
+        """
+        dap_client = self.dap_client_factory.get_dap_client(dataset.netcdf_url)
+        timestamps = dap_client.get_timestamps()
+        # Convert to strings
+        timestamp_strings = [time.strftime(constants.GRAPH_TIME_FORMAT) for time in timestamps]
+        dimensions = [{'name': u'time',
+                       'dimensionValues': timestamp_strings,
+                       'default': timestamp_strings[0],
+                       'unitSymbol': u'',
+                       'units': u'ISO8601'}]
+        return dimensions
 
     @jsonify
     def add_session_endpoint(self):

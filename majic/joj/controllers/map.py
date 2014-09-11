@@ -3,8 +3,9 @@
 """
 
 import logging
+import datetime
 
-from pylons import request
+from pylons import request, config
 from pylons.decorators import jsonify
 
 from joj.lib.base import BaseController, render, c
@@ -12,6 +13,8 @@ from joj.services.user import UserService
 from joj.services.model_run_service import ModelRunService
 from joj.services.dataset import DatasetService
 from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.utils.general_controller_helper import is_thredds_up
+from joj.utils import constants
 
 
 log = logging.getLogger(__name__)
@@ -76,7 +79,23 @@ class MapController(BaseController):
                 }
             ]
         c.id = id
+        c.DATASET_TYPE_COVERAGE = constants.DATASET_TYPE_COVERAGE
+        c.DATASET_TYPE_SINGLE_CELL = constants.DATASET_TYPE_SINGLE_CELL
+        c.DATASET_TYPE_TRANSECT = constants.DATASET_TYPE_TRANSECT
+        c.DATASET_TYPE_LAND_COVER_FRAC = constants.DATASET_TYPE_LAND_COVER_FRAC
+        c.DATASET_TYPE_SOIL_PROP = constants.DATASET_TYPE_SOIL_PROP
+        c.GRAPH_NPOINTS = constants.GRAPH_NPOINTS
+
         return render('map.html')
+
+    @jsonify
+    def is_thredds_up(self):
+        """
+        See if the THREDDS server is up
+        :return:
+        """
+        thredds_up = is_thredds_up(config)
+        return {'thredds_up': thredds_up}
 
     @jsonify
     def graph(self, id):
@@ -87,7 +106,9 @@ class MapController(BaseController):
         """
         lat = float(request.params['lat'])
         lon = float(request.params['lon'])
+        str_time = request.params['time']
+        time = datetime.datetime.strptime(str_time, constants.GRAPH_TIME_FORMAT)
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
         url = dataset.netcdf_url
         dap_client = self._dap_factory.get_graphing_dap_client(url)
-        return dap_client.get_graph_data(lat, lon)
+        return dap_client.get_graph_data(lat, lon, time)

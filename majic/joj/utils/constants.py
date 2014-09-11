@@ -90,6 +90,11 @@ NETCDF_LONGITUDE = ['Longitude', 'lon']
 NETCDF_TIME = ['Time']
 NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
 
+# Max number of points to get for graph:
+GRAPH_NPOINTS = 1000
+# Date time string format used by the graph / visualisation.
+GRAPH_TIME_FORMAT = "%Y-%m-%dT%X.%fZ"
+
 #The name of the driving dataset which represents the 'upload your own driving dataset' option
 USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"
 USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in
@@ -229,6 +234,6 @@ JULES_PARAM_SWITCHES_L_POINT_DATA = [JULES_NML_SWITCHES, "l_point_data"]
 
 DATASET_TYPE_COVERAGE = 'Coverage'
 DATASET_TYPE_SINGLE_CELL = 'Single Cell'
-DATASET_TYPE_TRANSECTS = 'Transects'
+DATASET_TYPE_TRANSECT = 'Transect'
 DATASET_TYPE_LAND_COVER_FRAC = 'Land Cover Fraction'
 DATASET_TYPE_SOIL_PROP = 'Soil Properties File'
