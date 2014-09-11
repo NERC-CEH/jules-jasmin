@@ -227,7 +227,7 @@ class ViewdataController(WmsvizController):
                 c.dimensions = c.layers[0]['dimensions']
         elif dataset_type == constants.DATASET_TYPE_SINGLE_CELL:
             c.dimensions = self.get_time_dimensions_for_single_cell(dataset)
-        elif dataset_type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+        elif dataset_type == constants.DATASET_TYPE_LAND_COVER_FRAC or dataset_type == constants.DATASET_TYPE_SOIL_PROP:
             layer = self.get_layers_for_dataset(dataset)[0]
             layer['title'] = dataset.name
             c.layers = [layer]

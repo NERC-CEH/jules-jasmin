@@ -4,6 +4,7 @@
 import logging
 import datetime
 from coards import parse
+import math
 from numpy import amin, amax
 from numpy.ma import masked_equal
 from pylons import config
@@ -62,7 +63,13 @@ class DapClient(BaseDapClient):
             fill_value = self._variable._FillValue
             missing_value = self._variable.missing_value
             valid_array = masked_equal(masked_equal(self._variable.array, missing_value), fill_value)
-            return [float(amin(valid_array)), float(amax(valid_array))]
+            min = float(amin(valid_array))
+            max = float(amax(valid_array))
+            if math.isnan(min):
+                min = 0
+            if math.isnan(max):
+                max = 100
+            return [min, max]
 
     def get_variable_units(self):
         """

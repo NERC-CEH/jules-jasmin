@@ -118,7 +118,7 @@ def setup_app(command, conf, vars):
         session.add(soild_prop_dst)
         single_cell_dst = DatasetType(type=constants.DATASET_TYPE_SINGLE_CELL)
         session.add(single_cell_dst)
-        transects_dst = DatasetType(type=constants.DATASET_TYPE_TRANSECTS)
+        transects_dst = DatasetType(type=constants.DATASET_TYPE_TRANSECT)
         session.add(transects_dst)
 
         level = UserLevel()

@@ -135,7 +135,8 @@ var EcomapsMap = (function() {
         layerContainer.on("change keyup", "select.dimension", function(){
             // If the layer whose dimenson we're changing is am ancillary file (land cover, soil props etc)
             // we must call the changeAncilsLayer() method rather than changeDimension()
-            if ($(this).attr("dataset_type") == DATASET_TYPE_LAND_COVER_FRAC) {
+            var ds_type = $(this).attr("dataset_type")
+            if (ds_type == DATASET_TYPE_LAND_COVER_FRAC || ds_type == DATASET_TYPE_SOIL_PROP) {
                 var value = $(this).val();
                 var layerId = $(this).closest("div.layer-controls").attr("data-layerid");
                 var datasetId = $(".dataset[layer-id='" + layerId +  "']").attr("data-dsid");
@@ -222,7 +223,7 @@ var EcomapsMap = (function() {
     var unloadDataset = function(dataset_type, layerId, datasetLink) {
         datasetLink.removeClass("active");
 
-        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC) {
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
             removeLayerFromMap(layerId);
         }
 
@@ -249,7 +250,7 @@ var EcomapsMap = (function() {
         if (dataset_type == DATASET_TYPE_TRANSECT) {
             alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
             return false;
-        } else if (dataset_type == DATASET_TYPE_LAND_COVER_FRAC) {
+        } else if (dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
             datasetLink.addClass("active");
             setLoadingState(true);
             // Load the layers UI straight from the response
@@ -301,7 +302,7 @@ var EcomapsMap = (function() {
                 }
             });
         }
-        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC) {
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
             getMapDataAndShow(layerId, datasetId, '');
         }
         // All done

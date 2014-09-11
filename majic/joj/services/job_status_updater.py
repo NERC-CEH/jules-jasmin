@@ -255,6 +255,11 @@ class JobStatusUpdaterService(DatabaseService):
             is_input = True
             self._create_dataset(input_location.dataset_type, file_path, is_input, model_run, session)
 
+        soil_props_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_FILE)
+        if soil_props_file is not None:
+            dataset_type = session.query(DatasetType).filter(DatasetType.type == constants.DATASET_TYPE_SOIL_PROP).one()
+            self._create_dataset(dataset_type, soil_props_file, True, model_run, session)
+
     def _create_dataset(self, dataset_type, filename, is_input, model_run, session, frequency=None):
         """
         Create a single dataset
@@ -276,12 +281,19 @@ class JobStatusUpdaterService(DatabaseService):
             url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
             query="?service=WMS&version=1.3.0&request=GetCapabilities")
         dataset.netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
-        dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
-        if frequency:
-            dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+        if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+            dataset.data_range_from, dataset.data_range_to = [0, 1]
+            dataset.name = "Land Cover Fractions"
+        elif dataset_type.type == constants.DATASET_TYPE_SOIL_PROP:
+            dataset.data_range_from, dataset.data_range_to = [0, 1]
+            dataset.name = "Soil Properties"
         else:
-            dataset.name = dap_client.get_longname()
-        dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
+            dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
+            if frequency:
+                dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+            else:
+                dataset.name = dap_client.get_longname()
+            dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
         session.add(dataset)
 
     def _check_total_allocation_and_alert(self):
