@@ -53,19 +53,20 @@ class GraphingDapClient(DapClient):
             t = self._get_millis_since_epoch(timestamps[i])
             if is_inside_grid:
                 data_value = variable_data[i]
-                if data_value == missing_value or data_value == fill_value:
+                if data_value == missing_value or data_value == fill_value or math.isnan(data_value):
                     data_value = None
             else:
                 data_value = None
             data.append([t, data_value])
+        _min, _max = self.get_data_range()
         return {'data': data,
                 'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
                 'lat': lat,
                 'lon': lon,
                 'xmin': self._get_millis_since_epoch(min(timestamps)),
                 'xmax': self._get_millis_since_epoch(max(timestamps)),
-                'ymin': min(variable_data),
-                'ymax': max(variable_data)
+                'ymin': _min,
+                'ymax': _max
                 }
 
     def _get_millis_since_epoch(self, intervals):
