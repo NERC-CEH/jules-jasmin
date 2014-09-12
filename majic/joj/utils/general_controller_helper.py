@@ -1,7 +1,6 @@
 """
 # header
 """
-import urllib
 import logging
 from decorator import decorator
 from pylons import config
@@ -42,10 +41,10 @@ def put_errors_in_table_on_line(errors, error_key, field_name):
     :param field_name: name of the field to add the errors too
     """
 
-    region_errors = errors.get(error_key)
-    if region_errors is not None:
-        for region_error, index in zip(region_errors, range(len(region_errors))):
-            if len(region_error) is not 0:
+    error_list = errors.get(error_key)
+    if error_list is not None:
+        for error, index in zip(error_list, range(len(error_list))):
+            if error is not None and len(error) is not 0:
                 errors["{}-{}.{}".format(error_key, index, field_name)] = "Please correct"
         del errors[error_key]
 

@@ -293,7 +293,7 @@ class TestModelRunLandCoverSingleCell(TestController):
         response = self.app.get(url(controller='model_run', action='land_cover'))
         lc_vals = self.land_cover_service.get_land_cover_values()
         del lc_vals[-1]  # Remove the ice
-        names = [val.name for val in lc_vals]
+        names = [str(val.name) for val in lc_vals]
         assert_that(response.normal_body, string_contains_in_order(*names))
 
     def test_GIVEN_available_driving_datasets_WHEN_page_get_THEN_default_fractional_cover_rendered(self):
@@ -303,7 +303,7 @@ class TestModelRunLandCoverSingleCell(TestController):
         del lc_vals[-1]  # Remove the ice
         string_names_values = []
         for val in lc_vals:
-            string_names_values.append(val.name)
+            string_names_values.append(str(val.name))
             string_names_values.append('12.5')
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
 
@@ -320,7 +320,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         string_names_values = []
         for i in range(len(lc_vals)):
-            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(lc_vals[i].name))
             string_names_values.append(str(100 * float(frac_string.split()[i])))
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
 
@@ -337,7 +337,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         string_names_values = []
         for i in range(len(lc_vals)):
-            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(lc_vals[i].name))
             string_names_values.append(str(100 * float(frac_string.split()[i])))
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
 
@@ -354,7 +354,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         string_names_values = []
         for i in range(len(lc_vals)):
-            string_names_values.append(lc_vals[i].name)
+            string_names_values.append(str(lc_vals[i].name))
             string_names_values.append(str(100 * float(frac_string.split()[i])))
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
 
@@ -487,8 +487,8 @@ class TestModelRunLandCoverSingleCell(TestController):
         frac_vals = ['40', '25', '5', '10', '10', '5', '10', '15']
         string_names_values = []
         for i in range(len(lc_vals)):
-            string_names_values.append(lc_vals[i].name)
-            string_names_values.append(frac_vals[i])
+            string_names_values.append(str(lc_vals[i].name))
+            string_names_values.append(str(frac_vals[i]))
         assert_that(response.normal_body, string_contains_in_order(*string_names_values))
 
     def test_GIVEN_no_extents_selected_WHEN_page_get_THEN_redirect(self):

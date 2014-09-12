@@ -18,11 +18,10 @@ class TestDrivingDataFileLocationChecker(TestController):
         self.errors = {}
         self.dataset_types = {
             constants.DATASET_TYPE_COVERAGE: 1,
-            constants.DATASET_TYPE_COVERAGE: 2,
-            constants.DATASET_TYPE_SINGLE_CELL: 3,
-            constants.DATASET_TYPE_TRANSECTS: 4,
-            constants.DATASET_TYPE_LAND_COVER_FRAC: 5,
-            constants.DATASET_TYPE_SOIL_PROP: 6
+            constants.DATASET_TYPE_SINGLE_CELL: 2,
+            constants.DATASET_TYPE_TRANSECT: 3,
+            constants.DATASET_TYPE_LAND_COVER_FRAC: 4,
+            constants.DATASET_TYPE_SOIL_PROP: 5
         }
         self.driving_data_file_location_validator = \
             DrivingDataFileLocationValidator(self.errors, self.dataset_types, self.file_server_client)

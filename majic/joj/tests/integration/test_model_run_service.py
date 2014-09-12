@@ -186,6 +186,7 @@ class ModelRunServiceTest(TestWithFullModelRun):
             model = self.model_run_service.get_code_version_by_id(-100)
 
     def test_GIVEN_user_has_model_run_WHEN_get_model_run_by_id_THEN_model_run_returned(self):
+
         # Add a user and give them a model
         with session_scope(Session) as session:
             # First add user
