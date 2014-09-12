@@ -5,7 +5,7 @@ import urllib
 import datetime
 
 from decorator import decorator
-from hamcrest import assert_that, is_, has_entries
+from hamcrest import *
 from pylons import config
 
 from joj.services.dap_client.dap_client_factory import DapClientFactory
@@ -44,7 +44,7 @@ class BaseDapClientTest(TestController):
 
 
 # noinspection PyArgumentList
-class TestBaseDapClient(BaseDapClientTest):
+class TestBaseDapClientOnWatchData(BaseDapClientTest):
     @skip_if_thredds_down
     def setUp(self):
         test_dataset = "/dodsC/model_runs/data/WATCH_2D/driving/PSurf_WFD/PSurf_WFD_190101.nc"
@@ -167,6 +167,88 @@ class TestBaseDapClient(BaseDapClientTest):
         assert_that(timestamps[0], is_(start_time))
         assert_that(timestamps[-1], is_(end_time))
 
+
+# noinspection PyArgumentList
+class TestBaseDapClientOnCHESSData(BaseDapClientTest):
+    @skip_if_thredds_down
+    def setUp(self):
+        test_dataset = "/dodsC/model_runs/data/CHESS/driving/chess_dtr_copy.ncml"
+        url = config['thredds.server_url'] + test_dataset
+        self.dap_client = self.dap_client_factory.get_dap_client(url)
+
+    def test_GIVEN_dataset_WHEN_get_longname_THEN_longname_returned(self):
+        longname = self.dap_client.get_longname()
+        assert_that(longname, is_("Daily temperature range"))
+
+    def test_GIVEN_dataset_WHEN_get_variable_units_THEN_units_correctly_returned(self):
+        units = self.dap_client.get_variable_units()
+        assert_that(units, is_("K"))
+
+    def test_GIVEN_datetime_exactly_matches_a_datapoint_WHEN_get_time_immediately_after_THEN_that_time_returned(self):
+        time = datetime.datetime(1961, 1, 1)
+        closest_time = self.dap_client.get_time_immediately_after(time)
+        assert_that(closest_time, is_(time))
+
+    def test_GIVEN_datetime_not_a_datapoint_WHEN_get_time_immediately_after_THEN_next_time_returned(self):
+        time = datetime.datetime(1961, 1, 1, 13, 14, 15)
+        expected_time = datetime.datetime(1961, 1, 2, 0, 0, 0)
+        closest_time = self.dap_client.get_time_immediately_after(time)
+        assert_that(closest_time, is_(expected_time))
+
+    def test_GIVEN_datetime_before_first_datapoint_WHEN_get_time_immediately_after_THEN_first_time_returned(self):
+        #The first data point in this set is at 1901-01-01 00:00
+        time = datetime.datetime(1800, 1, 1)
+        expected_time = datetime.datetime(1961, 1, 1)
+        closest_time = self.dap_client.get_time_immediately_after(time)
+        assert_that(closest_time, is_(expected_time))
+
+    def test_GIVEN_datetime_after_last_datapoint_WHEN_get_time_immediately_after_THEN_None_returned(self):
+        #The last data point in this set is at 1901-01-31 12:00
+        time = datetime.datetime(2000, 1, 1)
+        closest_time = self.dap_client.get_time_immediately_after(time)
+        assert_that(closest_time, is_(None))
+
+    def test_GIVEN_datetime_exactly_matches_a_datapoint_WHEN_get_time_immediately_before_THEN_that_time_returned(self):
+        time = datetime.datetime(1961, 1, 5)
+        closest_time = self.dap_client.get_time_immediately_before(time)
+        assert_that(closest_time, is_(time))
+
+    def test_GIVEN_lat_lon_match_datapoint_exactly_WHEN_get_closest_lat_lon_THEN_that_datapoint_returned(self):
+        lat, lon = 50.273550469933824, -6.211878376550269
+        returned_lat, returned_lon = self.dap_client.get_closest_lat_lon(lat, lon)
+        assert_that(returned_lat, is_(50.273550469933824))
+        assert_that(returned_lon, is_(-6.211878376550269))
+
+    def test_GIVEN_lat_lon_not_a_datapoint_WHEN_get_closest_lat_lon_THEN_closest_datapoint_returned(self):
+        lat, lon = 50.2738, -6.2117
+        returned_lat, returned_lon = self.dap_client.get_closest_lat_lon(lat, lon)
+        assert_that(returned_lat, is_(50.273550469933824))
+        assert_that(returned_lon, is_(-6.211878376550269))
+
+    def test_GIVEN_lat_lon_outside_of_grid_WHEN_get_closest_lat_lon_THEN_closest_datapoint_in_grid_returned(self):
+        lat, lon = 0, -40
+        returned_lat, returned_lon = self.dap_client.get_closest_lat_lon(lat, lon)
+        assert_that(returned_lat, is_(49.76680723189604))
+        assert_that(returned_lon, is_(-7.557159842082696))
+
+    def test_GIVEN_location_and_time_in_grid_WHEN_get_data_at_THEN_correct_data_returned(self):
+        # point at (60, 200)
+        lat, lon = 50.405754059495266, -4.815923234749663
+        time = datetime.datetime(1961, 1, 1)
+        data = self.dap_client.get_data_at(lat, lon, time)
+        assert_that(data, close_to(5.2, 0.001))
+
+    def test_GIVEN_location_outside_grid_WHEN_get_data_at_THEN_missing_value_returned(self):
+        lat, lon = 90, 360
+        time = datetime.datetime(1961, 1, 1)
+        data = self.dap_client.get_data_at(lat, lon, time)
+        assert_that(data, close_to(-99999.0, 0.001))
+
+    def test_GIVEN_time_outside_range_WHEN_get_data_at_THEN_closest_value_returned(self):
+        lat, lon = 50.405754059495266, -4.815923234749663
+        time = datetime.datetime(1066, 1, 1)
+        data = self.dap_client.get_data_at(lat, lon, time)
+        assert_that(data, close_to(5.2, 0.001))
 
 # noinspection PyArgumentList
 class TestGraphingDapClient(BaseDapClientTest):

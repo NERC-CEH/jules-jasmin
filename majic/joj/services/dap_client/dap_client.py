@@ -8,7 +8,8 @@ import math
 from numpy import amin, amax
 from numpy.ma import masked_equal
 from pylons import config
-from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS
+from joj.utils.constants import NETCDF_LATITUDE, NETCDF_LONGITUDE, NETCDF_TIME, NETCDF_TIME_BOUNDS, NETCDF_CRS, \
+    NETCDF_CRS_X, NETCDF_CRS_Y
 from joj.utils import constants
 from joj.services.dap_client.base_dap_client import BaseDapClient, DapClientException
 
@@ -125,16 +126,15 @@ class DapClient(BaseDapClient):
         :return: The data value at that time/space
         """
         # First we identify the closest positions we can use (by index):
-        lat_index = self._get_closest_value_index(self._lat, lat)
-        lon_index = self._get_closest_value_index(self._lon, lon)
+        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
         time_secs_elapsed = self._get_seconds_elapsed(date)
         time_index = self._get_closest_value_index(self._time, time_secs_elapsed)
 
         # try and use cache:
-        if time_index in self._cache_dict and self._cache_lat_lon == (lat, lon):
+        if time_index in self._cache_dict and self._cache_lat_lon == (lat_index, lon_index):
             return self._cache_dict[time_index]
 
-        ## Save cache
+        # Save cache
         if time_index + constants.USER_DOWNLOAD_CACHE_SIZE < len(self._time):
             vals_array = self._variable.array[time_index: time_index + constants.USER_DOWNLOAD_CACHE_SIZE,
                                               lat_index, lon_index].tolist()
@@ -144,26 +144,9 @@ class DapClient(BaseDapClient):
         time_indices = [time_index + i for i in range(0, constants.USER_DOWNLOAD_CACHE_SIZE)]
 
         self._cache_dict = {time: val for time, val in zip(time_indices, vals)}
-        self._cache_lat_lon = lat, lon
+        self._cache_lat_lon = lat_index, lon_index
 
         return self._cache_dict[time_index]
-
-    def get_closest_lat_lon(self, lat, lon):
-        """
-        Get the closest latitude / longitude coordinates in the driving data grid
-        :param lat: Latitude
-        :param lon: Longitude
-        :return: Lat, lon
-        """
-        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
-            return lat, lon
-        lat_index = self._get_closest_value_index(self._lat, lat)
-        lon_index = self._get_closest_value_index(self._lon, lon)
-
-        lat = float(self._lat[lat_index])
-        lon = float(self._lon[lon_index])
-
-        return lat, lon
 
     def _get_variable_to_plot(self):
         """
@@ -177,7 +160,10 @@ class DapClient(BaseDapClient):
                     self._get_key(NETCDF_LATITUDE),
                     self._get_key(NETCDF_LONGITUDE),
                     self._get_key(NETCDF_TIME),
-                    self._get_key(NETCDF_TIME_BOUNDS)]:
+                    self._get_key(NETCDF_TIME_BOUNDS),
+                    self._get_key(NETCDF_CRS),
+                    self._get_key(NETCDF_CRS_X),
+                    self._get_key(NETCDF_CRS_Y)]:
                 variables.append(self._dataset[key])
                 self._variable_names.append(key)
         return variables[0]  # Do we want to only return the first variable?

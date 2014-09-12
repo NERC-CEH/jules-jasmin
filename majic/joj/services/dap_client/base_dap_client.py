@@ -1,6 +1,7 @@
 """
 header
 """
+import numpy as np
 import logging
 from pydap.client import open_url
 from pylons import config
@@ -54,8 +55,8 @@ class BaseDapClient(object):
             raise DapClientException("Can not open the dataset URL.")
 
         try:
-            self._lat = self._dataset[self._get_key(constants.NETCDF_LATITUDE)][:]
-            self._lon = self._dataset[self._get_key(constants.NETCDF_LONGITUDE)][:]
+            self._lat = np.array(self._dataset[self._get_key(constants.NETCDF_LATITUDE)][:])
+            self._lon = np.array(self._dataset[self._get_key(constants.NETCDF_LONGITUDE)][:])
         except Exception:
             log.exception("Can not read dataset '%s'." % url)
             raise DapClientException("Problems reading the dataset.")
@@ -81,3 +82,55 @@ class BaseDapClient(object):
         """
         # Won't always get the one we expect but will always be equally close (e.g. 6.5 might go to 6 not 7)
         return min(range(len(data)), key=lambda i: abs(data[i] - value))
+
+    def _get_lat_lon_index(self, lat_to_find, lon_to_find):
+        """
+        Get the lat and lon indexes for the poin closest to the given values
+        :param lat_to_find: latitude to find
+        :param lon_to_find: longitude to find
+        :return: tuple of lat and lon indexes
+        """
+
+        lat_index, lon_index = self._get_lat_lon_flattened_index(lat_to_find, lon_to_find)
+
+        if self._lat.ndim > 1:
+            lat_index = np.unravel_index(lat_index, self._lat.shape)[0]
+            lon_index = np.unravel_index(lon_index, self._lon.shape)[1]
+
+        return lat_index, lon_index
+
+    def get_closest_lat_lon(self, lat_to_find, lon_to_find):
+        """
+        Get the closest latitude / longitude coordinates in the driving data grid
+        :param lat_to_find: Latitude
+        :param lon_to_find: Longitude
+        :return: Lat, lon
+        """
+        if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
+            return lat_to_find, lon_to_find
+
+        lat_ind, lon_ind = self._get_lat_lon_flattened_index(lat_to_find, lon_to_find)
+        lat = self._lat.flat[lat_ind]
+        lon = self._lon.flat[lon_ind]
+
+        return lat, lon
+
+    def _get_lat_lon_flattened_index(self, lat_to_find, lon_to_find):
+        """
+        Get the lat and lon indexes for the point closest to the given values
+        :param lat_to_find: latitude to find
+        :param lon_to_find: longitude to find
+        :return: tuple of lat and lon indexes (if arrays are 2D this is the flatterned index)
+        """
+
+        if self._lat.ndim == 1:
+            lat_index = self._get_closest_value_index(self._lat, lat_to_find)
+            lon_index = self._get_closest_value_index(self._lon, lon_to_find)
+
+        else:
+            lat_diff = self._lat - lat_to_find
+            lon_diff = self._lon - lon_to_find
+
+            lat_index = lon_index = np.argmin(lon_diff * lon_diff + lat_diff * lat_diff)
+
+        return lat_index, lon_index

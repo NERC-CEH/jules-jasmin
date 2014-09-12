@@ -35,12 +35,12 @@ class GraphingDapClient(DapClient):
         # First we identify the closest positions we can use (by index):
         is_inside_grid = (self.gse_lat_s <= lat <= self.gse_lat_n) and (self.gse_lon_w <= lon <= self.gse_lon_e)
 
-        lat_index = self._get_closest_value_index(self._lat, lat)
-        lon_index = self._get_closest_value_index(self._lon, lon)
+        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
         time_elapsed = self._get_seconds_elapsed(time)
         time_index = self._get_closest_value_index(self._time, time_elapsed)
         time_index_start = int(max(time_index - math.floor((npoints - 1) / 2.0), 0))
         time_index_end = int(min(time_index + math.ceil((npoints - 1) / 2.0), len(self._time) - 1))
+        
 
         # Assumes that dimensions are time, lat, long.
         variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]
