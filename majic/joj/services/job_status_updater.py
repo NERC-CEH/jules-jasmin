@@ -14,7 +14,7 @@ from joj.services.email_service import EmailService
 from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, DrivingDatasetLocation, \
     SystemAlertEmail, User
 from joj.utils import constants
-from joj.utils.utils import KeyNotFound, find_by_id_in_dict
+from joj.utils.utils import KeyNotFound, find_by_id_in_dict, insert_before_file_extension
 from joj.utils import email_messages, utils
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.dap_client.dap_client import DapClientException
@@ -203,7 +203,8 @@ class JobStatusUpdaterService(DatabaseService):
             filepath = self._create_file_path(model_run, run_id, selected_output_profile_names[0].get_value_as_python())
             if self._dataset_is_transect(filepath):
                 dataset_type_value = constants.DATASET_TYPE_TRANSECT
-        dataset_type = session.query(DatasetType).filter(DatasetType.type == dataset_type_value).one()
+        dataset_type = self.get_dataset_type(dataset_type_value, session)
+
         return dataset_type
 
     def _create_file_path(self, model_run, run_id, profile_name):
@@ -255,10 +256,38 @@ class JobStatusUpdaterService(DatabaseService):
             is_input = True
             self._create_dataset(input_location.dataset_type, file_path, is_input, model_run, session)
 
+        self._create_ancil_datasets(model_run, session)
+
+    def get_dataset_type(self, dataset_type_name, session):
+        """
+        Get the dataset type for a given name
+        :param dataset_type_name: DatasetType name
+        :param session: Session
+        :return: Matching DatasetType
+        """
+        dataset_type = session \
+            .query(DatasetType) \
+            .filter(DatasetType.type == dataset_type_name) \
+            .one()
+        return dataset_type
+
+    def _create_ancil_datasets(self, model_run, session):
+        """
+        Create ancillary datasets if available and add them to the model run datasets
+        :param model_run: Model run to update
+        :param session: DB Session
+        :return:
+        """
         soil_props_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_FILE)
         if soil_props_file is not None:
-            dataset_type = session.query(DatasetType).filter(DatasetType.type == constants.DATASET_TYPE_SOIL_PROP).one()
+            dataset_type = self.get_dataset_type(constants.DATASET_TYPE_SOIL_PROP, session)
             self._create_dataset(dataset_type, soil_props_file, True, model_run, session)
+
+        frac_file = model_run.get_python_parameter_value(constants.JULES_PARAM_FRAC_FILE)
+        if frac_file is not None:
+            dataset_type = self.get_dataset_type(constants.DATASET_TYPE_LAND_COVER_FRAC, session)
+            frac_file_vis = insert_before_file_extension(frac_file, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
+            self._create_dataset(dataset_type, frac_file_vis, True, model_run, session)
 
     def _create_dataset(self, dataset_type, filename, is_input, model_run, session, frequency=None):
         """
