@@ -40,7 +40,16 @@ class JulesParameterParser(object):
 
     _EXTRA_PARAMETERS = \
         {
-            'JULES_PFTPARM': [Parameter(name="dust_veg_scj_io", type="real(npft)")]
+            # missing in docs
+            'JULES_PFTPARM': [Parameter(name="dust_veg_scj_io", type="real(npft)")],
+            # for diag version of JULES
+            'JULES_DRIVE': [
+                Parameter(name="l_daily_disagg", type="logical"),
+                Parameter(name="l_disagg_rh", type="integer"),
+                Parameter(name="precip_disagg_method", type="real"),
+                Parameter(name="dur_conv_rain", type="real"),
+                Parameter(name="dur_ls_rain", type="real"),
+                Parameter(name="dur_ls_snow", type="real")]
         }
 
     def _get_parameter_limits(self, parameter, value):
@@ -146,11 +155,12 @@ class JulesParameterParser(object):
             namelist.index_in_file = namelist_index
             namelist_index += 1
 
-            if namelist.name.upper() in self._EXTRA_PARAMETERS:
-                namelist.parameters.extend(self._EXTRA_PARAMETERS[namelist.name])
-
             #parameters at the bottom level
             parameters = tree.xpath('//div[@id="namelist-{namelist_name}"]/dl'.format(namelist_name=namelist_name))
+
+            if namelist.name.upper() in self._EXTRA_PARAMETERS:
+                log.info("Adding extra parameters for %s" % namelist.name)
+                namelist.parameters.extend(self._EXTRA_PARAMETERS[namelist.name])
 
             #parameters in optional sections
             parameters.extend(

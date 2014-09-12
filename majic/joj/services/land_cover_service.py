@@ -165,26 +165,32 @@ class LandCoverService(DatabaseService):
         driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user)
         if driving_dataset is not None:
             nvars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
-            vars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)
-            var_names = driving_dataset.get_python_parameter_value(
-                constants.JULES_PARAM_SOIL_PROPS_VAR_NAME, is_list=True)
-            netcdf_keys = dict(zip(vars, var_names))
+            vars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR)
+            use_file_original = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_USE_FILE)
+            const_val_original = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_CONST_VAL)
+            var_names_in_file = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR_NAME)
+            netcdf_keys = dict(zip(vars, var_names_in_file))
             use_file = nvars * [False]
             soil_file = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_FILE)
             try:
                 url = self.dap_client_factory.get_full_url_for_file(soil_file)
                 soil_props_client = self.dap_client_factory.get_soil_properties_dap_client(url)
-                soil_props = soil_props_client.get_soil_properties(lat, lon)
+                soil_props = soil_props_client.get_soil_properties(
+                    lat,
+                    lon,
+                    var_names_in_file,
+                    use_file_original,
+                    const_val_original)
                 if soil_props is not None:
                     soil_prop_vals = [soil_props[netcdf_keys[key]] for key in vars]  # Use the netCDF key
                     params_vals = [[constants.JULES_PARAM_SOIL_PROPS_NVARS, nvars],
                                    [constants.JULES_PARAM_SOIL_PROPS_VAR, vars],
-                                   [constants.JULES_PARAM_SOIL_USE_FILE, use_file],
-                                   [constants.JULES_PARAM_SOIL_CONST_VALS, soil_prop_vals]]
+                                   [constants.JULES_PARAM_SOIL_PROPS_USE_FILE, use_file],
+                                   [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, soil_prop_vals]]
                     old_param_vals = [constants.JULES_PARAM_SOIL_PROPS_NVARS,
                                       constants.JULES_PARAM_SOIL_PROPS_VAR,
-                                      constants.JULES_PARAM_SOIL_USE_FILE,
-                                      constants.JULES_PARAM_SOIL_CONST_VALS]
+                                      constants.JULES_PARAM_SOIL_PROPS_USE_FILE,
+                                      constants.JULES_PARAM_SOIL_PROPS_CONST_VAL]
                     self.parameter_service.save_new_parameters(params_vals, old_param_vals, model_run.user_id)
             except DapClientException:
                 # We don't want to do anything because we'll just leave whatever defaults are already present.

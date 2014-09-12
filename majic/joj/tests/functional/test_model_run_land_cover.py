@@ -390,7 +390,7 @@ class TestModelRunLandCoverSingleCell(TestController):
                     'land_cover_value_7': u'10',
                     'land_cover_value_8': u'15'})
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
-        soil_props = model_run.get_python_parameter_value(JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+        soil_props = model_run.get_python_parameter_value(JULES_PARAM_SOIL_PROPS_CONST_VAL, is_list=True)
         assert_that(soil_props, is_([0.9, 0.0, 0.0, 50.0, 275.0, 300.0, 10.0, 0.0, 0.5]))
 
     def test_GIVEN_ice_fractional_cover_WHEN_post_THEN_values_saved(self):

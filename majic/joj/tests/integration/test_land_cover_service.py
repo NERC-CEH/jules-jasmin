@@ -58,11 +58,12 @@ class MockSoilPropertiesDapClient(object):
         if not url == self.expected_url:
             raise DapClientException("URL not found")
 
-    def get_soil_properties(self, lat, lon):
+    def get_soil_properties(self, lat, lon, var_names_in_file, use_file, const_val_original):
         """
         Mock get soil properties method
         :param lat:
         :param lon:
+        :param var_names_in_file:
         :return:
         """
         if lat == self.expected_lat and lon == self.expected_lon:
@@ -345,8 +346,8 @@ class TestLandCoverService(TestWithFullModelRun):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
         var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR, is_list=True)
-        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_USE_FILE, is_list=True)
-        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_USE_FILE, is_list=True)
+        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, is_list=True)
 
         assert_that(nvars, is_(9))
         assert_that(var, is_(['b', 'sathh', 'satcon', 'sm_sat', 'sm_crit', 'sm_wilt', 'hcap', 'hcon', 'albsoil']))
@@ -365,8 +366,8 @@ class TestLandCoverService(TestWithFullModelRun):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(self.user)
         nvars = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
         var = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR)
-        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_USE_FILE, is_list=True)
-        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_CONST_VALS, is_list=True)
+        use_file = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_USE_FILE, is_list=True)
+        const_val = model_run.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_CONST_VAL, is_list=True)
 
         assert_that(nvars, is_(None))
         assert_that(var, is_(None))
