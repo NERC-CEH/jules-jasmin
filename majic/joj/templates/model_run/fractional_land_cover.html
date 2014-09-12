@@ -10,11 +10,12 @@
 </head>
 <body id="land_cover">
 <h1>Fractional Land Cover</h1>
-<p>Set the fractional land cover of your single cell calculation. The separate fractions must add up to 100%</p>
+<p>Set the fractional land cover of your single cell calculation. The separate fractions must add up to 100%.
+    The default values on this page are calculated for your chosen location (if available).</p>
 <form id="reset-form" method="POST" action="${url(controller='model_run', action='land_cover')}">
     <input type="hidden" id="reset_fractional_cover" name="reset_fractional_cover" value="1"/>
     <button id="uploadBtn" type="submit" class="btn btn-info" name="submit" value="Upload" form="reset-form">
-        <i class="fa fa-undo"></i>&nbsp;&nbsp;Reset fractional cover to default for chosen location
+        <i class="fa fa-undo"></i>&nbsp;&nbsp;Reset to defaults for your chosen location
     </button>
 </form>
 

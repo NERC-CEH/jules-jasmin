@@ -133,12 +133,21 @@ var EcomapsMap = (function() {
         });
 
         layerContainer.on("change keyup", "select.dimension", function(){
-
-            changeDimension(
-              $(this).data("dimension"),
-              $(this).val()
-            );
-            updateGraph();
+            // If the layer whose dimenson we're changing is am ancillary file (land cover, soil props etc)
+            // we must call the changeAncilsLayer() method rather than changeDimension()
+            var ds_type = $(this).attr("dataset_type")
+            if (ds_type == DATASET_TYPE_LAND_COVER_FRAC || ds_type == DATASET_TYPE_SOIL_PROP) {
+                var value = $(this).val();
+                var layerId = $(this).closest("div.layer-controls").attr("data-layerid");
+                var datasetId = $(".dataset[layer-id='" + layerId +  "']").attr("data-dsid");
+                changeAncilsLayer(value, layerId, datasetId);
+            } else {
+                changeDimension(
+                  $(this).data("dimension"),
+                  $(this).val()
+                );
+                updateGraph();
+            }
         });
 
         // Reset button
@@ -180,16 +189,14 @@ var EcomapsMap = (function() {
 
                     index--;
                 });
-                var mapLayer = map.getLayersByName("Markers")[0];
-                map.setLayerIndex(mapLayer, 100000);
+                var markerLayers = map.getLayersByName("Markers");
+                if (markerLayers.length > 0) {
+                    map.setLayerIndex(markerLayers[0], 100000);
+                }
                 _super($item, container);
             }
         });
     };
-
-    var removeDataset = function(key) {
-
-    }
 
     /*
      * loadUnloadDataset
@@ -216,7 +223,7 @@ var EcomapsMap = (function() {
     var unloadDataset = function(dataset_type, layerId, datasetLink) {
         datasetLink.removeClass("active");
 
-        if (dataset_type == DATASET_TYPE_COVERAGE) {
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
             removeLayerFromMap(layerId);
         }
 
@@ -243,72 +250,98 @@ var EcomapsMap = (function() {
         if (dataset_type == DATASET_TYPE_TRANSECT) {
             alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
             return false;
-        }
+        } else if (dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
+            datasetLink.addClass("active");
+            setLoadingState(true);
+            // Load the layers UI straight from the response
+            $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
 
-        // Plop the loading panel over the map
-        datasetLink.addClass("active");
-        setLoadingState(true);
-        // Load the layers UI straight from the response
-        $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
+                $("div#layer-container").prepend(result);
+                var dimensionItems = $("div#layer-list").find("li.dimension");
 
-            $("div#layer-container").prepend(result);
-            var dimensionItems = $("div#layer-list").find("li.dimension");
-
-            if(dimensionItems.length > 0){
-                dimensionItems.detach().appendTo("ol#dimension-list");
-                $("div#dimension-panel").show();
-            }
-            if($("li.layer").length == 0) {
-                $("div#layer-panel").hide();
-            } else {
-                $("div#layer-panel").show();
-            }
-            $("div#options-panel").show();
-            createSortableList();
-            if (dataset_type == DATASET_TYPE_COVERAGE) {
-                updateGraph();
-            } else {
-                $.get("/dataset/single_cell_location/" + datasetId, function(result) {
-                    var position = new OpenLayers.LonLat(result.lon, result.lat);
-                    createGraph(position);
-                });
-            }
-        });
-        if (dataset_type == DATASET_TYPE_COVERAGE) {
-            // Make the request for the WMS layer data
-            $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId,
-                function(data){
-
-                    for(var i=0; i< data.length; i++){
-
-                        // Give it a unique ID for our layer bag
-                        var id = "" + layerId;
-
-                        // We'll refer back to this when changing styles or visibility
-                        layerDict[id] = {
-                            index: currentLayerIndex,
-                            data: data[i],
-                            visible: true,
-                            wmsObject: null,
-                            legendURL: null,
-                            scaleMin: data[i].data_range_from,
-                            scaleMax: data[i].data_range_to,
-                            styleName: data[i].styles[0].name,
-                            isCategorical: data[i].is_categorical
-                        };
-
-                        // Now to add to the map, and set a default style
-                        addLayerToMap(layerId);
-                        setLayerStyle(layerId);
-                    }
+                if(dimensionItems.length > 0){
+                    dimensionItems.detach().appendTo("ol#dimension-list");
+                    $("div#dimension-panel").show();
                 }
-            ).fail(function() {
-                alert("An error occurred loading the dataset, please try again.");
-                setLoadingState(false);
+                if($("li.layer").length == 0) {
+                    $("div#layer-panel").hide();
+                } else {
+                    $("div#layer-panel").show();
+                }
+                $("div#options-panel").show();
+                createSortableList();
             });
+        } else {
+            // Plop the loading panel over the map
+            datasetLink.addClass("active");
+            setLoadingState(true);
+            // Load the layers UI straight from the response
+            $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
+
+                $("div#layer-container").prepend(result);
+                var dimensionItems = $("div#layer-list").find("li.dimension");
+
+                if(dimensionItems.length > 0){
+                    dimensionItems.detach().appendTo("ol#dimension-list");
+                    $("div#dimension-panel").show();
+                }
+                if($("li.layer").length == 0) {
+                    $("div#layer-panel").hide();
+                } else {
+                    $("div#layer-panel").show();
+                }
+                $("div#options-panel").show();
+                createSortableList();
+                if (dataset_type == DATASET_TYPE_COVERAGE) {
+                    updateGraph();
+                } else {
+                    $.get("/dataset/single_cell_location/" + datasetId, function(result) {
+                        var position = new OpenLayers.LonLat(result.lon, result.lat);
+                        createGraph(position);
+                    });
+                }
+            });
+        }
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
+            getMapDataAndShow(layerId, datasetId, '');
         }
         // All done
         setLoadingState(false);
+    }
+
+
+    var getMapDataAndShow = function(layerId, datasetId, variable) {
+        // Make the request for the WMS layer data
+        $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId + "&variable=" + variable,
+            function(data){
+
+                for(var i=0; i< data.length; i++){
+
+                    // Give it a unique ID for our layer bag
+                    var id = "" + layerId;
+
+                    // We'll refer back to this when changing styles or visibility
+                    layerDict[id] = {
+                        index: currentLayerIndex,
+                        data: data[i],
+                        visible: true,
+                        wmsObject: null,
+                        legendURL: null,
+                        scaleMin: data[i].data_range_from,
+                        scaleMax: data[i].data_range_to,
+                        styleName: data[i].styles[0].name,
+                        isCategorical: data[i].is_categorical
+                    };
+
+                    // Now to add to the map, and set a default style
+                    addLayerToMap(layerId);
+                    setLayerStyle(layerId);
+                }
+            }
+        ).fail(function() {
+            alert("An error occurred loading the dataset, please try again.");
+            setLoadingState(false);
+        });
     }
 
 
@@ -615,6 +648,13 @@ var EcomapsMap = (function() {
             }
         }
     };
+
+    var changeAncilsLayer = function(value, layerId, datasetId) {
+        // Remove existing layer from map
+        removeLayerFromMap(layerId);
+        // Load new layer to map
+        getMapDataAndShow(layerId, datasetId, value);
+    }
 
     /*
      * exportMapImage

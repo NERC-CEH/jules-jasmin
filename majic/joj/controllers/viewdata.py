@@ -24,6 +24,7 @@ from joj.services.dataset import DatasetService
 from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.services.land_cover_service import LandCoverService
 
 log = logging.getLogger(__name__)
 
@@ -41,9 +42,11 @@ class ViewdataController(WmsvizController):
     def __init__(self,
                  user_service=UserService(),
                  dataset_service=DatasetService(),
+                 land_cover_service=LandCoverService(),
                  dap_client_factory=DapClientFactory()):
 
         super(WmsvizController, self).__init__()
+        self.land_cover_service = land_cover_service
         self.dap_client_factory = dap_client_factory
         self._user_service = user_service
         self._dataset_service = dataset_service
@@ -157,7 +160,13 @@ class ViewdataController(WmsvizController):
 
             dataset = self._dataset_service.get_dataset_by_id(ds_id,
                                                               user_id=self.current_user.id)
-            return self.get_layers_for_dataset(dataset)
+
+            # If a 'variable' has been passed it means we should only get layers that match that variable name
+            # Note that variables are matched by full name
+            variable = request.params.get('variable')
+            if len(variable) == 0:
+                variable = None
+            return self.get_layers_for_dataset(dataset, variable=variable)
 
         else:
             # Use the old-style approach
@@ -167,14 +176,25 @@ class ViewdataController(WmsvizController):
                                                           (wmsCapabilities['getMapUrl'], wmsCapabilities['name']))
             return wmsCapabilities
 
-    def get_layers_for_dataset(self, dataset):
-        """ Gets a list of layer information for the given dataset
-            @param: dataset- The ecomaps model dataset to get WMS layers for
-
+    def get_layers_for_dataset(self, dataset, variable=None):
+        """
+        Gets a list of layer information for the given dataset
+        :param dataset- The ecomaps model dataset to get WMS layers for
+        :param variable: Variable name to match against (return only this variable layer)
         """
         layer_list = self.datasetManager.get_ecomaps_layer_data(dataset)
 
         layer_collection = []
+
+        # If we've been asked for a variable, find it, otherwise show the first.
+        if variable is not None:
+            layer_sublist = []
+            for layer in layer_list[0]:
+                if layer.entity.title == variable:
+                    layer_sublist.append(layer)
+            layer_list[0] = layer_sublist
+        else:
+            layer_list[0] = layer_list[0][0:1]
 
         for layer in layer_list[0]:
             layer_obj = layer.entity.getAsDict()
@@ -192,29 +212,36 @@ class ViewdataController(WmsvizController):
         :param id: The ID of the dataset to get the layer data for, and the ID
         :return: rendered layer
         """
-        dataset_id = request.params['dsid']
-        c.layer_id = request.params['layerid']
+        dataset_id = request.params.get('dsid')
+        c.layer_id = request.params.get('layerid')
 
         dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
 
         c.dataset = dataset
         c.dimensions = []
 
-        if dataset.dataset_type.type == constants.DATASET_TYPE_COVERAGE:
+        dataset_type = dataset.dataset_type.type
+        if dataset_type == constants.DATASET_TYPE_COVERAGE:
             c.layers = self.get_layers_for_dataset(dataset)
 
             # Check for dimensionality
             if c.layers and c.layers[0]['dimensions']:
                 c.dimensions = c.layers[0]['dimensions']
-        elif dataset.dataset_type.type == constants.DATASET_TYPE_SINGLE_CELL:
+                c.dimensions[0]['dimensionNames'] = c.dimensions[0]['dimensionValues']
+        elif dataset_type == constants.DATASET_TYPE_SINGLE_CELL:
             c.dimensions = self.get_time_dimensions_for_single_cell(dataset)
+        elif dataset_type == constants.DATASET_TYPE_LAND_COVER_FRAC or dataset_type == constants.DATASET_TYPE_SOIL_PROP:
+            layer = self.get_layers_for_dataset(dataset)[0]
+            layer['title'] = dataset.name
+            c.layers = [layer]
+            c.dimensions = self.get_variable_dimensions_for_ancils(dataset)
 
         return render('layers.html')
 
     def get_time_dimensions_for_single_cell(self, dataset):
         """
         Get a dimensions object as needed for the map page - for a single cell dataset as these don't work with WMS
-        :param dataset:
+        :param dataset: Dataset
         """
         dap_client = self.dap_client_factory.get_dap_client(dataset.netcdf_url)
         timestamps = dap_client.get_timestamps()
@@ -222,7 +249,33 @@ class ViewdataController(WmsvizController):
         timestamp_strings = [time.strftime(constants.GRAPH_TIME_FORMAT) for time in timestamps]
         dimensions = [{'name': u'time',
                        'dimensionValues': timestamp_strings,
+                       'dimensionNames': timestamp_strings,
                        'default': timestamp_strings[0],
+                       'unitSymbol': u'',
+                       'units': u'ISO8601'}]
+        return dimensions
+
+    def get_variable_dimensions_for_ancils(self, dataset):
+        """
+        Get variable dimensions object as needed for the map page - for ancils file
+        :param dataset: Dataset
+        :return: Dimensions object
+        """
+        dap_client = self.dap_client_factory.get_ancils_dap_client(dataset.netcdf_url)
+        variables = dap_client.get_variable_names()
+        # If this is a modified
+        if dataset.dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+            land_cover_values = self.land_cover_service.get_land_cover_values(return_ice=True)
+            names = []
+            for variable in variables:
+                idx = int(variable.split()[-1])
+                names.append([lc_val.name for lc_val in land_cover_values if lc_val.index == idx][0])
+        else:
+            names = variables
+        dimensions = [{'name': u'frac',
+                       'dimensionValues': variables,
+                       'dimensionNames': names,
+                       'default': variables[0],
                        'unitSymbol': u'',
                        'units': u'ISO8601'}]
         return dimensions
@@ -313,71 +366,8 @@ class ViewdataController(WmsvizController):
             return {'success': True, 'url': request.application_url + '/viewdata/download?file=' + result.fileName}
         else:
             return  {'success': False, 'errorMessage': result.errorMessage}
-    
-    def get_export(self):
-        """Generates and returns an export file.
-        """
-        log.debug("running viewdata.get_export")
 
-        params = request.params.copy()
-        if not 'figure-style' in params:
-            params['figure-style'] = 'viewdata'
-
-        result = viewdataExport.make_export(params, request.application_url, status['AnimationOptions'],
-                                            self._get_session_endpoint_data())
-        if result.success:
-            redirect(url(controller='viewdata', action='download', file = result.fileName))
-        else:
-            response.content_type = 'text/plain'
             return result.errorMessage + '\n'
-
-    def download(self):
-        """Downloads a previously generated file.
-        """
-        log.debug("running viewdata.download")
-        if 'file' in request.params:
-            return self._send_file_response(request.params['file'])
-        else:
-            response.content_type = 'text/plain'
-            return 'No file to download has been specified.\n'
-
-    def _send_file_response(self, filename):
-        """Returns a file's contents as a response.
-        Sets a MIME type according to the file extension.
-        """
-        filepath = os.path.join(viewdataExport.getExportDir(), filename)
-        if not os.path.exists(filepath):
-            redirect(url(controller='viewdata', action='error_window',
-                         message='The file you tried to download is no longer available.'))
-        (base, sep, fileExtension) = filename.rpartition('.')
-        fileSize = os.path.getsize(filepath)
-
-        mimeTypeMap = {
-            'avi': 'video/x-msvideo',
-            'flv': 'video/x-flv',
-            'mp4': 'video/mp4',
-            'mpeg': 'video/mpeg',
-            'nc': 'application/cf-netcdf',
-            'ogg': 'application/ogg',
-            'mov': 'video/quicktime',
-            'swf': 'application/x-shockwave-flash',
-            'kml': 'application/vnd.google-earth.kml+xml',
-            'xml': 'text/xml'}
-        mimeType = mimeTypeMap.get(fileExtension, 'application/octet-stream')
-
-        # The response headers must be strings, not unicode, for modwsgi -
-        # ensure that the filename is a string, omitting any non-ASCII
-        # characters. The name of the file to be downloaded should already
-        # conform to this restriction, so this should have no effect other than
-        # changing the variable type to str.
-        filenameStr = filename.encode('ascii', 'ignore')
-        headers = [('Content-Disposition', 'attachment; filename=\"' + filenameStr + '\"'),
-                   ('Content-Type', mimeType),
-                   ('Content-Length', str(fileSize))]
-
-        fapp = FileApp(filepath, headers=headers)
-
-        return fapp(request.environ, self.start_response)
 
     def error_window(self):
         """Renders a page containing an error window with a specified message.
