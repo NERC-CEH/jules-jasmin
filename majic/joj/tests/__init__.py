@@ -81,11 +81,18 @@ class TestController(TestCase):
         Cleans the User, ModelRun, Dataset, DrivingDataset and ParameterValue tables in the database
         """
         with session_scope(Session) as session:
+
+            published_status = session \
+                .query(ModelRunStatus) \
+                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
+                .one()
+
             parameter_to_keep = session \
                 .query(ParameterValue.id) \
                 .join(ModelRun) \
                 .join(User) \
                 .filter(User.username == constants.CORE_USERNAME) \
+                .filter(ModelRun.status_id != published_status.id)\
                 .all()
 
             session.query(LandCoverAction).delete()
@@ -100,11 +107,6 @@ class TestController(TestCase):
             core_user_id = session.query(User.id).filter(User.username == constants.CORE_USERNAME).one()[0]
 
             session.query(Dataset).delete()
-
-            published_status = session \
-                .query(ModelRunStatus) \
-                .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
-                .one()
 
             # delete all runs except the scientific configurations
             session \

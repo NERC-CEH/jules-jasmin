@@ -103,10 +103,13 @@ def is_thredds_up(config):
     :param config: Pylons configuration
     :return:
     """
-    try:
-        create_request_and_open_url(
-            config['thredds.server_url'],
-            timeout=int(config['thredds.server_timeout'])).read()
+    if config.get('run_in_test_mode') == 'true':
         return True
-    except:
-        return False
+    else:
+        try:
+            create_request_and_open_url(
+                config['thredds.server_url'],
+                timeout=int(config['thredds.server_timeout'])).read()
+            return True
+        except:
+            return False

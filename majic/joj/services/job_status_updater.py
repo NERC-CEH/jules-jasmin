@@ -284,6 +284,10 @@ class JobStatusUpdaterService(DatabaseService):
             self._create_dataset(dataset_type, soil_props_file, True, model_run, session)
 
         frac_file = model_run.get_python_parameter_value(constants.JULES_PARAM_FRAC_FILE)
+        if len(model_run.land_cover_actions) > 0:
+            frac_file = 'run{model_id}/{user_edited_file}'.format(
+                model_id=model_run.id,
+                user_edited_file=constants.USER_EDITED_FRACTIONAL_FILENAME)
         if frac_file is not None:
             dataset_type = self.get_dataset_type(constants.DATASET_TYPE_LAND_COVER_FRAC, session)
             frac_file_vis = insert_before_file_extension(frac_file, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)

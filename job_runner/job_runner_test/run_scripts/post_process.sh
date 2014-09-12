@@ -24,3 +24,11 @@ do
    i=`expr $i + 1`
 done
 
+if [ "$LSF_PM_TASKID" == 1 ]
+then
+    python ../../../../job_runner/job_runner/post_processing_scripts/convert_fractional_file_for_visualisation.py >> out_$LSF_PM_TASKID.log
+    if [ ! $? = 0 ]
+    then
+       echo "[POST PROCESS ERROR] Post processing of land cover file failed"
+    fi
+fi

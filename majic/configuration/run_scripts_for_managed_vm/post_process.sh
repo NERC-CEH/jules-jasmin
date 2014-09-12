@@ -2,6 +2,7 @@
 
 JOB_RUNNER_DIR=/group_workspaces/jasmin2/jules_bd/job_runner/post_processing
 CONVERT_SCRIPT=$JOB_RUNNER_DIR/Convert1Dto2D.py
+LAND_COVER_CONVERT_SCRIPT=$JOB_RUNNER_DIR/convert_fractional_file_for_visualisation.py
 
 files=`ls -S output/*.nc | grep -v dump`
 i=0
@@ -32,3 +33,11 @@ do
    i=`expr $i + 1`
 done
 
+if [ "$LSF_PM_TASKID" == 1 ]
+then
+    python $LAND_COVER_CONVERT_SCRIPT 2>> err_$LSF_PM_TASKID.log >> out_$LSF_PM_TASKID.log
+    if [ ! $? = 0 ]
+    then
+       echo "[POST PROCESS ERROR] Post processing of land cover file failed"
+    fi
+fi

@@ -4,10 +4,9 @@ header
 from netCDF4 import Dataset
 import os
 from sys import argv
-import re
 
-from joj.utils import constants
-from joj.utils.utils import insert_before_file_extension
+from job_runner.utils import constants
+from job_runner.utils.utils import insert_before_file_extension
 
 
 class VariableSplitter(object):
@@ -75,11 +74,18 @@ class VariableSplitter(object):
     def _get_datatype_string(self, variable):
         return "".join((variable.datatype.kind, str(variable.datatype.itemsize)))
 
+if __name__ == '__main__':
+    try:
+        file_path = constants.USER_EDITED_FRACTIONAL_FILENAME  # Default is to try to find a user edited file
+        if len(argv) > 1:
+            file_path = str(argv[1])
 
-file_path = str(argv[0]) or constants.USER_EDITED_FRACTIONAL_FILENAME  # Try find a user edited file
-
-if os.path.exists(file_path):
-    vis_path = insert_before_file_extension(file_path, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
-    if not os.path.exists(vis_path):
-        frac_converter = VariableSplitter()
-        frac_converter.convert(file_path, vis_path)
+        if os.path.exists(file_path):
+            vis_path = insert_before_file_extension(file_path, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
+            if not os.path.exists(vis_path):
+                frac_converter = VariableSplitter()
+                frac_converter.convert(file_path, vis_path)
+        exit(0)
+    except Exception as e:
+        pass
+    exit(-1)
