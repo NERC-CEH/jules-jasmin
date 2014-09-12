@@ -15,13 +15,13 @@ log = logging.getLogger(__name__)
 CHESS_DRIVING_DATA = \
     [
         #Jules var,  var netcdf, template,  interp, title,                                           min, max
+        ['dt_range', 'dtr',      'dtr',     'nf',   'Daily temperature range',                       150, 400],
         ['sw_down',  'rsds',     'rsds',    'nf',   'Surface Downwelling Shortwave Radiation',       0, 2000],
         ['lw_down',  'rlds',     'rlds',    'nf',   'Surface Downwelling Longwave Radiation',        0, 2000],
         ['precip',   'precip',   'precip_scaled', 'nf', 'CEH Gridded Estimates of Areal Rainfall',   0, 0.02],
         ['t',        'tas',      'tas',     'nf',   'Near-Surface Air Temperature',                  150, 400],
         ['wind',     'sfcWind',  'sfcWind', 'nf',   'Near-Surface Wind Speed',                       0, 30],
         ['q',        'huss',     'huss',    'nf',   'Near surface specific humidity',                0, 0.1],
-        ['dt_range', 'dtr',      'dtr',     'nf',   'Daily temperature range',                       150, 400],
         ['pstar',    'psurf',    'psurf',   'nf',   'Surface air pressure',                          30000, 120000]
     ]
 

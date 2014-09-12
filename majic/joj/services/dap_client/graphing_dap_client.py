@@ -25,8 +25,7 @@ class GraphingDapClient(DapClient):
         :return: JSON-like dictionary of data and metadata
         """
         # First we identify the closest positions we can use (by index):
-        lat_index = self._get_closest_value_index(self._lat, lat)
-        lon_index = self._get_closest_value_index(self._lon, lon)
+        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
 
         # Assumes that dimensions are time, lat, long.
         variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]

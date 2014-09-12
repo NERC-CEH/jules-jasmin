@@ -58,11 +58,12 @@ class MockSoilPropertiesDapClient(object):
         if not url == self.expected_url:
             raise DapClientException("URL not found")
 
-    def get_soil_properties(self, lat, lon):
+    def get_soil_properties(self, lat, lon, var_names_in_file, use_file, const_val_original):
         """
         Mock get soil properties method
         :param lat:
         :param lon:
+        :param var_names_in_file:
         :return:
         """
         if lat == self.expected_lat and lon == self.expected_lon:

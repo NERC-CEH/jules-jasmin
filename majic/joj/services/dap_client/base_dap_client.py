@@ -91,7 +91,7 @@ class BaseDapClient(object):
         :return: tuple of lat and lon indexes
         """
 
-        lat_index, lon_index = self._get_lat_lon_flatterned_index(lat_to_find, lon_to_find)
+        lat_index, lon_index = self._get_lat_lon_flattened_index(lat_to_find, lon_to_find)
 
         if self._lat.ndim > 1:
             lat_index = np.unravel_index(lat_index, self._lat.shape)[0]
@@ -109,13 +109,13 @@ class BaseDapClient(object):
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
             return lat_to_find, lon_to_find
 
-        lat_ind, lon_ind = self._get_lat_lon_flatterned_index(lat_to_find, lon_to_find)
+        lat_ind, lon_ind = self._get_lat_lon_flattened_index(lat_to_find, lon_to_find)
         lat = self._lat.flat[lat_ind]
         lon = self._lon.flat[lon_ind]
 
         return lat, lon
 
-    def _get_lat_lon_flatterned_index(self, lat_to_find, lon_to_find):
+    def _get_lat_lon_flattened_index(self, lat_to_find, lon_to_find):
         """
         Get the lat and lon indexes for the point closest to the given values
         :param lat_to_find: latitude to find
