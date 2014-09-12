@@ -88,7 +88,10 @@ JSON_LAND_COVER_ICE_INDEX = "land_cover_ice_index"
 NETCDF_LATITUDE = ['Latitude', 'lat']
 NETCDF_LONGITUDE = ['Longitude', 'lon']
 NETCDF_TIME = ['Time']
-NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp']
+NETCDF_TIME_BOUNDS = ['time_bounds', 'timestp', 'timestep']
+NETCDF_CRS = ['crs']
+NETCDF_CRS_X = ['x']
+NETCDF_CRS_Y = ['y']
 
 #The name of the driving dataset which represents the 'upload your own driving dataset' option
 USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"

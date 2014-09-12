@@ -80,21 +80,12 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         location.base_url = file_template.format(template)
         location.dataset_type = cover_dst
         location.driving_dataset = driving_dataset
+        location.var_name = jules_var
         vars += "'{}' ".format(jules_var)
         templates += "'{}' ".format(template)
         interps += "'{}' ".format(interp)
         var_names += "'{}' ".format(var)
     nvars = len(CHESS_DRIVING_DATA)
-
-    DrivingDatasetLocation(
-        dataset_type=soild_prop_dst,
-        base_url=CHESS_SOIL_PROPS_FILE,
-        driving_dataset=driving_dataset)
-
-    DrivingDatasetLocation(
-        dataset_type=land_cover_frac_dst,
-        base_url=CHESS_LAND_FRAC_FILE,
-        driving_dataset=driving_dataset)
 
     jules_parameters = [
         [constants.JULES_PARAM_MODEL_LEVELS_ICE_INDEX, "-1"],

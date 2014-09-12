@@ -10,8 +10,7 @@ import pylons.test
 from joj.model.model_run import ModelRun
 from joj.config.environment import load_environment
 from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, ModelRunStatus, CodeVersion, \
-    DrivingDataset, DrivingDatasetParameterValue, DrivingDatasetLocation, LandCoverValue, LandCoverRegionCategory, \
-    LandCoverRegion
+    DrivingDataset, DrivingDatasetParameterValue, LandCoverValue
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from joj.model.system_alert_email import SystemAlertEmail
@@ -408,91 +407,6 @@ def setup_app(command, conf, vars):
 
     with session_scope(Session) as session:
 
-        driving_ds_3 = DrivingDataset()
-        driving_ds_3.name = "QA Driving Data set"
-        driving_ds_3.description = "Driving data set used for QA"
-        driving_ds_3.geographic_region = 'Global'
-        driving_ds_3.temporal_resolution = '3 Hours'
-        driving_ds_3.spatial_resolution = 'Half degree'
-        driving_ds_3.boundary_lat_north = 90
-        driving_ds_3.boundary_lat_south = -90
-        driving_ds_3.boundary_lon_west = -180
-        driving_ds_3.boundary_lon_east = 180
-        driving_ds_3.time_start = datetime.datetime(1979, 1, 1, 0, 0, 0)
-        driving_ds_3.time_end = datetime.datetime(1979, 3, 1, 0, 0, 0)
-        driving_ds_3.view_order_index = 300
-        driving_ds_3.usage_order_index = 100
-        driving_ds_3.is_restricted_to_admins = True
-
-
-        parameters3 = [
-            [constants.JULES_PARAM_DRIVE_DATA_START, "'1979-01-01 00:00:00'"],
-            [constants.JULES_PARAM_DRIVE_DATA_END, "'2009-12-31 21:00:00'"],
-            [constants.JULES_PARAM_DRIVE_DATA_PERIOD, "10800"],
-            [constants.JULES_PARAM_DRIVE_FILE, "'data/met_data/driving/%vv_%y4%m2.nc'"],
-            [constants.JULES_PARAM_DRIVE_NVARS, "8"],
-            [constants.JULES_PARAM_DRIVE_VAR,
-             "'pstar'      't'         'q'         'wind'      'lw_down'     'sw_down'     "
-             "'tot_rain'        'tot_snow'"],
-            [constants.JULES_PARAM_DRIVE_VAR_NAME, "'PSurf'      'Tair'      'Qair'      'Wind'      'LWdown'      "
-                                                   "'SWdown'      'Rainf'           'Snowf'"],
-            [constants.JULES_PARAM_DRIVE_TPL_NAME, "'PSurf_WFDEI_land'      'Tair_WFDEI_land'      "
-                                                   "'Qair_WFDEI_land'      'Wind_WFDEI_land'      'LWdown_WFDEI_land'      'SWdown_WFDEI_land'      "
-                                                   "'Rainf_WFDEI_GPCC_land'           'Snowf_WFDEI_land'"],
-            [constants.JULES_PARAM_DRIVE_INTERP,
-             "'i'          'i'         'i'         'i'         'nb'          'nb'          'nb'              'nb'"],
-            [constants.JULES_PARAM_DRIVE_Z1_TQ_IN, "2.0"],
-            [constants.JULES_PARAM_DRIVE_Z1_UV_IN, "10.0"],
-
-            [constants.JULES_PARAM_INPUT_GRID_IS_1D, ".true."],
-            [constants.JULES_PARAM_INPUT_GRID_DIM_NAME, "'land'"],
-            [constants.JULES_PARAM_INPUT_NPOINTS, "67209"],
-            [constants.JULES_PARAM_INPUT_TIME_DIM_NAME, "'tstep'"],
-            [constants.JULES_PARAM_INPUT_TYPE_DIM_NAME, "'pseudo'"],
-
-            [constants.JULES_PARAM_LATLON_FILE, "'data/met_data/ancils/EI-Halfdeg-land-elevation.nc'"],
-            [constants.JULES_PARAM_LATLON_LAT_NAME, "'latitude'"],
-            [constants.JULES_PARAM_LATLON_LON_NAME, "'longitude'"],
-            [constants.JULES_PARAM_LAND_FRAC_FILE, "'data/met_data/ancils/land_frac.nc'"],
-            [constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME, "'land_frac'"],
-            [constants.JULES_PARAM_SURF_HGT_ZERO_HEIGHT, ".true."],
-
-            [constants.JULES_PARAM_FRAC_FILE, "'data/met_data/ancils/frac_igbp_watch_0p5deg_capUM6.6_WFDEI.nc'"],
-            [constants.JULES_PARAM_FRAC_NAME, "'frac'"],
-
-            [constants.JULES_PARAM_SOIL_PROPS_CONST_Z, ".true."],
-            [constants.JULES_PARAM_SOIL_PROPS_FILE,
-             "'data/met_data/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_WFDEI.nc'"],
-            [constants.JULES_PARAM_SOIL_PROPS_NVARS, "9"],
-            [constants.JULES_PARAM_SOIL_PROPS_VAR,
-             "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
-            [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
-             "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
-
-            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
-            [constants.JULES_PARAM_INITIAL_VAR,
-             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
-            [constants.JULES_PARAM_INITIAL_USE_FILE,
-             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
-            [constants.JULES_PARAM_INITIAL_CONST_VAL,
-             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
-        ]
-
-        model_run_service = ModelRunService()
-
-        for constant, value in parameters3:
-            ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_3, constant, value)
-            driving_ds_3.parameter_values.append(ddpv)
-
-        file_template = 'data/met_data/driving/{}.ncml'
-
-        for name in ['PSurf_WFDEI_land', 'Tair_WFDEI_land', 'Qair_WFDEI_land', 'Wind_WFDEI_land', 'LWdown_WFDEI_land',
-                     'SWdown_WFDEI_land', 'Rainf_WFDEI_GPCC_land', 'Snowf_WFDEI_land']:
-            location = DrivingDatasetLocation()
-            location.base_url = file_template.format(name)
-            location.dataset_type = cover_dst
-            location.driving_dataset = driving_ds_3
-
         driving_ds_upload = DrivingDataset()
         driving_ds_upload.name = constants.USER_UPLOAD_DRIVING_DATASET_NAME
         driving_ds_upload.description = "Choose this option if you wish to use your own uploaded driving data for a " \
@@ -523,11 +437,12 @@ def setup_app(command, conf, vars):
              "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
         ]
 
+        model_run_service = ModelRunService()
         for constant, value in parameters_upload:
             ddpv = DrivingDatasetParameterValue(model_run_service, driving_ds_upload, constant, value)
             driving_ds_upload.parameter_values.append(ddpv)
 
-        session.add_all([driving_ds_3, driving_ds_upload])
+        session.add(driving_ds_upload)
 
         land_cover_types = {1: 'Broad-leaved Tree', 2: 'Needle-leaved Tree', 3: 'C3 Grass', 4: 'C4 Grass', 5: 'Shrub',
                             6: 'Urban', 7: 'Lake', 8: 'Soil', 9: constants.FRACTIONAL_ICE_NAME}

@@ -24,7 +24,7 @@ class DrivingDataFileLocationValidator(object):
         self._file_server_client = file_server_client
         self._dataset_types = dataset_types
 
-    def _check_location(self, key, locations, filename, errors, dataset_type_id):
+    def _check_location(self, key, locations, filename, errors, dataset_type_id, jules_varname):
         """
         Check the location and add a key error if not found or add to location is found
         :param key: key
@@ -32,6 +32,7 @@ class DrivingDataFileLocationValidator(object):
         :param filename: filename to check
         :param errors: error list to add error to
         :param dataset_type_id: datasets type
+        :param jules_varname: the variable name for the location
         :return: true if valid, false otherwise
         """
         if filename is None:
@@ -42,7 +43,8 @@ class DrivingDataFileLocationValidator(object):
             return False
 
         if locations is not None:
-            locations.append(DrivingDatasetLocation(base_url=filename, dataset_type_id=dataset_type_id))
+            locations.append(
+                DrivingDatasetLocation(base_url=filename, dataset_type_id=dataset_type_id, var_name=jules_varname))
         return True
 
     def get_file_locations(self, results):
@@ -54,20 +56,15 @@ class DrivingDataFileLocationValidator(object):
         """
         locations = []
 
-        self._check_location('frac_file', locations, results.get('frac_file'),
-                             self._errors, self._dataset_types[constants.DATASET_TYPE_LAND_COVER_FRAC])
-        self._check_location('soil_props_file', locations, results.get('soil_props_file'), self._errors,
-                             self._dataset_types[constants.DATASET_TYPE_SOIL_PROP])
-
-        for key in ['land_frac_file', 'latlon_file']:
-            self._check_location(key, None, results.get(key), self._errors, None)
+        for key in ['land_frac_file', 'latlon_file', 'frac_file', 'soil_props_file']:
+            self._check_location(key, None, results.get(key), self._errors, None, None)
 
         regions = results.get('region', [])
         region_errors = []
         region_error = False
         for region, index in zip(regions, range(len(regions))):
             region_errors.append({})
-            local_error = not self._check_location('path', None, region['path'], region_errors[index], None)
+            local_error = not self._check_location('path', None, region['path'], region_errors[index], None, None)
             region_error = region_error or local_error
         if region_error:
             self._errors['region'] = region_errors
@@ -88,7 +85,8 @@ class DrivingDataFileLocationValidator(object):
                 locations,
                 ncml_filename,
                 driving_data_errors[index],
-                self._dataset_types[constants.DATASET_TYPE_COVERAGE])
+                self._dataset_types[constants.DATASET_TYPE_COVERAGE],
+                driving_data['vars'])
             driving_data_error = driving_data_error or local_error
 
             for filename in self._get_drive_filenames(driving_data['templates'], drive_file, start_date, end_date):
@@ -97,6 +95,7 @@ class DrivingDataFileLocationValidator(object):
                     None,
                     filename,
                     driving_data_errors[index],
+                    None,
                     None)
                 if local_error:
                     driving_data_error = True
