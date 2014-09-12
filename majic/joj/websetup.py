@@ -505,16 +505,6 @@ def setup_app(command, conf, vars):
             location.dataset_type = cover_dst
             location.driving_dataset = watch_driving_dataset
 
-        DrivingDatasetLocation(
-            dataset_type=soild_prop_dst,
-            base_url=watch_soil_props_file,
-            driving_dataset=watch_driving_dataset)
-
-        DrivingDatasetLocation(
-            dataset_type=land_cover_frac_dst,
-            base_url=watch_land_frac_file,
-            driving_dataset=watch_driving_dataset)
-
         parameters1 = [
             [constants.JULES_PARAM_DRIVE_DATA_START, "'1901-01-01 00:00:00'"],
             [constants.JULES_PARAM_DRIVE_DATA_END, "'2001-12-31 21:00:00'"],
