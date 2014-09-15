@@ -250,6 +250,8 @@ class TestDrivingDataEditOrAdd(TestController):
                 ["boundary_lat_south", "1000", "enter a number that is 90 or smaller"],
                 ["boundary_lon_east", "-800", "enter a number that is -180 or greater"],
                 ["boundary_lon_west", "", "enter a value"],
+                ["boundary_lon_west", self.driving_dataset.boundary_lon_east + 10, "must be east of western"],
+                ["boundary_lat_south", self.driving_dataset.boundary_lat_north + 10, "must be north of southern"],
                 ["driving_data_start", "", "Please enter a date"],
                 ["driving_data_end", "n.a.t.", "Enter date as YYYY-MM-DD HH:MM"],
                 ["view_order_index", "", "enter a value"],

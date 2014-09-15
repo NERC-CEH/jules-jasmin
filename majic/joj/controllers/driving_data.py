@@ -22,6 +22,7 @@ from joj.model.non_database.datetime_period_validator import DatetimePeriodValid
 from joj.utils import constants
 from joj.model.non_database.driving_data_file_location_validator import DrivingDataFileLocationValidator
 from joj.services.general import ServiceException
+from joj.model.non_database.spatial_extent import SpatialExtent, InvalidSpatialExtent
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +72,7 @@ class DrivingDataController(BaseController):
         c.region_error = []
         c.driving_var_errors = []
         c.param_errors = []
+        c.lat_lon_error = None
 
         all_parameters = self._model_run_service.get_parameters_for_default_code_version()
         for parameter in all_parameters:
@@ -103,6 +105,20 @@ class DrivingDataController(BaseController):
             date_period_validator = DatetimePeriodValidator(errors)
             results["driving_data_start"], results["driving_data_end"] = \
                 date_period_validator.get_valid_start_end_datetimes("driving_data_start", "driving_data_end", values)
+
+            try:
+                lat_north = float(values['boundary_lat_north'])
+                lat_south = float(values['boundary_lat_south'])
+                lon_east = float(values['boundary_lon_east'])
+                lon_west = float(values['boundary_lon_west'])
+                SpatialExtent(lat_north, lat_south, lon_west, lon_east)
+            except InvalidSpatialExtent as ex:
+                c.lat_lon_error = ex.message
+                service_exception = True
+            except (ValueError, KeyError):
+                # Not float value Handled in schema validation
+                pass
+
             validator = DrivingDataFileLocationValidator(errors, self._dataset_service.get_dataset_types_dictionary())
             locations = validator.get_file_locations(results)
 

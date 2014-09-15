@@ -127,6 +127,9 @@
                             ${h.html_tags.text('boundary_lon_east', placeholder="Eastern longitude")}
                         </div>
                     </div>
+                    <div class="error_block" py:if="c.lat_lon_error is not None" style="margin-left:20px; padding-left:0">
+                        ${c.lat_lon_error}
+                    </div>
                 </fieldset>
             </div>
         </div>
