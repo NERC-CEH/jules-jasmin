@@ -6,6 +6,18 @@ from joj.utils import constants
 from formencode import Schema, validators, NestedVariables, ForEach
 
 
+def create_string_error_dictionary(field_name):
+    """
+    Create a string error dictionary specific to a field name
+    :param field_name: the field name
+    :return: the dictionary
+    """
+    return {
+        'empty': 'Please enter a {}'.format(field_name),
+        'tooLong': 'Enter a {} not more than %(max)i characters long'.format(field_name),
+        'tooShort': 'Enter a {} %(min)i characters long or more'.format(field_name)}
+
+
 class Region(Schema):
     """
     Region mask schema for validation (line in masks table)
@@ -14,9 +26,18 @@ class Region(Schema):
     allow_extra_fields = False
     filter_extra_fields = True
     id = validators.Int()
-    name = validators.String(not_empty=True, max=constants.DB_LONG_STRING_SIZE, strip=True)
-    category = validators.String(not_empty=True, max=constants.DB_LONG_STRING_SIZE, strip=True)
-    path = validators.String(not_empty=True, max=constants.DB_PATH_SIZE, strip=True)
+    name = validators.String(not_empty=True,
+                             max=constants.DB_LONG_STRING_SIZE,
+                             strip=True,
+                             messages=create_string_error_dictionary('name'))
+    category = validators.String(not_empty=True,
+                                 max=constants.DB_LONG_STRING_SIZE,
+                                 strip=True,
+                                 messages=create_string_error_dictionary('category'))
+    path = validators.String(not_empty=True,
+                             max=constants.DB_PATH_SIZE,
+                             strip=True,
+                             messages=create_string_error_dictionary('path'))
 
 
 class DriveVar(Schema):
@@ -25,10 +46,22 @@ class DriveVar(Schema):
     """
     allow_extra_fields = False
     filter_extra_fields = True
-    vars = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
-    names = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
-    templates = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
-    interps = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    vars = validators.String(not_empty=True,
+                             max=constants.DB_STRING_SIZE,
+                             strip=True,
+                             messages=create_string_error_dictionary('variable'))
+    names = validators.String(not_empty=True,
+                              max=constants.DB_STRING_SIZE,
+                              strip=True,
+                              messages=create_string_error_dictionary('name'))
+    templates = validators.String(not_empty=True,
+                                  max=constants.DB_STRING_SIZE,
+                                  strip=True,
+                                  messages=create_string_error_dictionary('template'))
+    interps = validators.String(not_empty=True,
+                                max=constants.DB_STRING_SIZE,
+                                strip=True,
+                                messages=create_string_error_dictionary('interpolation'))
 
 
 class ExtraParameter(Schema):
@@ -38,7 +71,10 @@ class ExtraParameter(Schema):
     allow_extra_fields = False
     filter_extra_fields = True
     id = validators.Int()
-    value = validators.String(not_empty=True, max=constants.DB_PARAMETER_VALUE_STRING_SIZE, strip=True)
+    value = validators.String(not_empty=True,
+                              max=constants.DB_PARAMETER_VALUE_STRING_SIZE,
+                              strip=True,
+                              messages=create_string_error_dictionary('value'))
 
 
 class DrivingDatasetEdit(Schema):

@@ -298,7 +298,8 @@ class TestDrivingDataEditOrAdd(TestController):
             )
 
             assert_that(response.status_code, is_(200), "status code for page '%s'" % invalid_key)
-            assert_that(response.normal_body, contains_string("Please correct"), "error message for '%s'" % invalid_key)
+            assert_that(response.normal_body, contains_string("Please correct"), "'Please correct' label for '%s'" % invalid_key)
+            assert_that(response.normal_body, contains_string("Please enter a value for"), "error message for '%s'" % invalid_key)
 
     def test_GIVEN_valid_data_with_masks_WHEN_create_new_THEN_masks_are_created(self):
 

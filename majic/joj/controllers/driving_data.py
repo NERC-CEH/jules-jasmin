@@ -68,6 +68,10 @@ class DrivingDataController(BaseController):
         errors = {}
 
         c.namelist = {}
+        c.region_error = []
+        c.driving_var_errors = []
+        c.param_errors = []
+
         all_parameters = self._model_run_service.get_parameters_for_default_code_version()
         for parameter in all_parameters:
             if parameter.namelist.name not in c.namelist:
@@ -110,9 +114,9 @@ class DrivingDataController(BaseController):
                     self._landcover_service)
                 redirect(url(controller="driving_data", acion="index"))
 
-            put_errors_in_table_on_line(errors, "region", "path")
-            put_errors_in_table_on_line(errors, constants.PREFIX_FOR_DRIVING_VARS, "interps")
-            put_errors_in_table_on_line(errors, "param", "value")
+            c.region_error = put_errors_in_table_on_line(errors, "region", "path")
+            c.driving_var_errors = put_errors_in_table_on_line(errors, constants.PREFIX_FOR_DRIVING_VARS, "interps")
+            c.param_errors = put_errors_in_table_on_line(errors, "param", "value")
 
             values["param_names"] = []
             for parameter in all_parameters:
@@ -120,7 +124,7 @@ class DrivingDataController(BaseController):
                     parameter_id = values.get("param-{}.id".format(str(parameter_index)))
                     if str(parameter.id) == parameter_id:
                         values["param_names"].append("{}::{}".format(parameter.namelist.name, parameter.name))
-
+            helpers.error_flash("Some of the values entered below are incorrect, please correct them")
         else:
             if id is None:
                 driving_dataset = DrivingDataset()

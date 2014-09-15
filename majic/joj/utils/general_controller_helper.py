@@ -39,14 +39,24 @@ def put_errors_in_table_on_line(errors, error_key, field_name):
     :param errors: the errors list
     :param error_key: main key for the error, e.g. region which would be a list of region error dictionaries
     :param field_name: name of the field to add the errors too
+    :return: for each line a list of errors on that line (returns a list of lists)
     """
-
+    extra_errors = []
     error_list = errors.get(error_key)
     if error_list is not None:
         for error, index in zip(error_list, range(len(error_list))):
+            extra_errors.append([])
             if error is not None and len(error) is not 0:
                 errors["{}-{}.{}".format(error_key, index, field_name)] = "Please correct"
+                for key, error_messages in error.iteritems():
+                    if type(error_messages) is list:
+                        for error_message in error_messages:
+                            extra_errors[index].append(error_message)
+                    else:
+                        extra_errors[index].append(error_messages)
+
         del errors[error_key]
+    return extra_errors
 
 
 def remove_deleted_keys(values, count_key, var_prefix, fieldnames):

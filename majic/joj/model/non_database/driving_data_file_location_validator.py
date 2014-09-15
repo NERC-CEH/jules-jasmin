@@ -39,7 +39,9 @@ class DrivingDataFileLocationValidator(object):
             return True
 
         if not self._file_server_client.file_exists("model_runs/" + filename):
-            errors[key] = "Please check, file does not exist"
+            if key not in errors:
+                errors[key] = []
+            errors[key].append("File does not exist: {}".format(filename))
             return False
 
         if locations is not None:

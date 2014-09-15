@@ -247,18 +247,27 @@
                         </div>
                     </div>
                     ${h.html_tags.hidden('mask_count')}
-                    <div py:for="masknum in reversed(range(c.masks))" class="controls-row">
-                        <div class="span3">
-                            ${h.html_tags.hidden('region-{}.id'.format(masknum))}
-                            ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category")}
+                    <py:for each="masknum in reversed(range(c.masks))" >
+                        <div class="controls-row">
+                            <div class="span3">
+                                ${h.html_tags.hidden('region-{}.id'.format(masknum))}
+                                ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category")}
+                            </div>
+                            <div class="span3">
+                                ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name")}
+                            </div>
+                            <div class="span5">
+                                ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc")}
+                            </div>
                         </div>
-                        <div class="span3">
-                            ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name")}
+                        <div class="error_block" py:if="len(c.region_error) is not 0">
+                            <ul>
+                                <li py:for="message in c.region_error[masknum]">
+                                    ${message}
+                                </li>
+                            </ul>
                         </div>
-                        <div class="span5">
-                            ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc")}
-                        </div>
-                    </div>
+                    </py:for>
                 </fieldset>
             </div>
         </div>
@@ -354,13 +363,22 @@
                         <h5 class="span2">Template</h5>
                         <h5 class="span2">Interpolation</h5>
                     </div>
-                    <div py:for="varnum in reversed(range(c.nvar))" class="controls-row">
-                            ${h.html_tags.text('drive_var_-{}.vars'.format(varnum), placeholder="Variable", class_="span2")}
-                            ${h.html_tags.text('drive_var_-{}.names'.format(varnum), placeholder="Variable name", class_="span2")}
-                            ${h.html_tags.text('drive_var_-{}.templates'.format(varnum), placeholder="Template name", class_="span2")}
-                            ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
-                            <i class="fa fa-times-circle fa-2x ico red span1"></i>
-                    </div>
+                    <py:for each="varnum in reversed(range(c.nvar))">
+                        <div class="controls-row">
+                                ${h.html_tags.text('drive_var_-{}.vars'.format(varnum), placeholder="Variable", class_="span2")}
+                                ${h.html_tags.text('drive_var_-{}.names'.format(varnum), placeholder="Variable name", class_="span2")}
+                                ${h.html_tags.text('drive_var_-{}.templates'.format(varnum), placeholder="Template name", class_="span2")}
+                                ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
+                                <i class="fa fa-times-circle fa-2x ico red span1"></i>
+                        </div>
+                        <div class="error_block" py:if="len(c.driving_var_errors) is not 0">
+                            <ul>
+                                <li py:for="message in c.driving_var_errors[varnum]">
+                                    ${message}
+                                </li>
+                            </ul>
+                        </div>
+                    </py:for>
                 </fieldset>
             </div>
         </div>
@@ -479,28 +497,39 @@
                         <h5 class="span5">Value</h5>
                     </div>
                     ${h.html_tags.hidden('params_count')}
-                    <div py:for="varnum in reversed(range(len(c.param_names)))" class="controls-row">
-                        <span class="span4">
-                            ${c.param_names[varnum]}
-                            ${h.html_tags.hidden('param-{}.id'.format(varnum))}
-                        </span>
-                        ${h.html_tags.text('param-{}.value'.format(varnum), placeholder='Fortran namelist value', class_='span4')}
-                        <i class="fa fa-times-circle fa-2x ico red span1"></i>
-                    </div>
+                    <py:for each="varnum in reversed(range(len(c.param_names)))">
+                        <div class="controls-row">
+                            <span class="span4">
+                                ${c.param_names[varnum]}
+                                ${h.html_tags.hidden('param-{}.id'.format(varnum))}
+                            </span>
+                            ${h.html_tags.text('param-{}.value'.format(varnum), placeholder='Fortran namelist value', class_='span4')}
+                            <i class="fa fa-times-circle fa-2x ico red span1"></i>
+                        </div>
+                        <div class="error_block" py:if="len(c.param_errors) is not 0">
+                            <ul>
+                                <li py:for="message in c.param_errors[varnum]">
+                                    ${message}
+                                </li>
+                            </ul>
+                        </div>
+                    </py:for>
                 </fieldset>
             </div>
         </div>
 
-        <div class="controls">
+        <div class="controls pull-right">
+
+            <a href="${url(controller='driving_data', action='index')}"
+                    class="btn btn-large control-group"
+                    data-confirm="This will undo any changes you have made to the data. Do you want to continue?">
+                Cancel</a>
 
             <input
                     type="submit"
-                    class="btn btn-primary btn-large pull-right control-group"
+                    class="btn btn-primary btn-large control-group"
                     value="${'Create' if c.driving_dataset_id is None else 'Update'}"/>
-            <a href="${url(controller='driving_data', action='index')}"
-                    class="btn btn-large pull-right control-group"
-                    data-confirm="This will undo any changes you have made to the data. Do you want to continue?">
-                Cancel</a>
+
         </div>
     </form>
 </body>
