@@ -105,7 +105,7 @@ class DatasetController(BaseController):
             @param id: ID of the dataset to get time points for
         """
 
-        ds = self._dataset_service.get_dataset_by_id(id, user_id = self.current_user.id)
+        ds = self._dataset_service.get_dataset_by_id(id, user_id=self.current_user.id)
         c.time_points = self._netcdf_service.get_time_points(ds.netcdf_url)
 
         c.dataset_name = ds.name

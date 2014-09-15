@@ -224,14 +224,14 @@
 
         <div class="control-group">
             <label class="control-label">
-                Masks
-                <p class="label-explain">Categories, locations and names of masks</p>
+                Regions
+                <p class="label-explain">Categories, locations and names of regions</p>
             </label>
 
             <div class="controls">
                 <button type="button" class="btn control-group" value="masks" id="add_mask">
                     <i class="icon-plus"></i>
-                    Add Mask
+                    Add Region
                 </button>
 
                 <fieldset class="fieldset">
@@ -249,18 +249,17 @@
                     ${h.html_tags.hidden('mask_count')}
                     <py:for each="masknum in reversed(range(c.masks))" >
                         <div class="controls-row">
-                            <div class="span3">
-                                ${h.html_tags.hidden('region-{}.id'.format(masknum))}
-                                ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category")}
-                            </div>
-                            <div class="span3">
-                                ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name")}
-                            </div>
-                            <div class="span5">
-                                ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc")}
-                            </div>
+                            ${h.html_tags.hidden('region-{}.id'.format(masknum))}
+                            ${h.html_tags.text('region-{}.category'.format(masknum), placeholder="Category", class_="span3")}
+                            ${h.html_tags.text('region-{}.name'.format(masknum), placeholder="Name", class_="span3")}
+                            ${h.html_tags.text('region-{}.path'.format(masknum), placeholder="data/filepath/filename.nc", class_="span3")}
+                            <i py:if="c.mask_can_be_deleted[masknum]" class="fa fa-times-circle fa-2x ico red span1"></i>
+                            <i py:if="not c.mask_can_be_deleted[masknum]"
+                               class="fa fa-info-circle fa-2x span1"
+                               data-toggle="tooltip" title="Why can I not delete this region?" data-trigger="click | hover"
+                                data-content="Regions which have previously been saved can not be deleted because they may be part of a model run"></i>
                         </div>
-                        <div class="error_block" py:if="len(c.region_error) is not 0">
+                        <div class="error_block" py:if="len(c.region_error) is not 0 and len(c.region_error[masknum]) is not 0">
                             <ul>
                                 <li py:for="message in c.region_error[masknum]">
                                     ${message}
@@ -371,7 +370,7 @@
                                 ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
                                 <i class="fa fa-times-circle fa-2x ico red span1"></i>
                         </div>
-                        <div class="error_block" py:if="len(c.driving_var_errors) is not 0">
+                        <div class="error_block" py:if="len(c.driving_var_errors) is not 0 and len(driving_var_errors[varnum]) is not 0">
                             <ul>
                                 <li py:for="message in c.driving_var_errors[varnum]">
                                     ${message}
@@ -506,7 +505,7 @@
                             ${h.html_tags.text('param-{}.value'.format(varnum), placeholder='Fortran namelist value', class_='span4')}
                             <i class="fa fa-times-circle fa-2x ico red span1"></i>
                         </div>
-                        <div class="error_block" py:if="len(c.param_errors) is not 0">
+                        <div class="error_block" py:if="len(c.param_errors) is not 0 and len(c.param_errors[varnum]) is not 0">
                             <ul>
                                 <li py:for="message in c.param_errors[varnum]">
                                     ${message}

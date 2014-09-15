@@ -19,24 +19,22 @@ function add_list_item(mask_template, count_input_id, controls_id) {
 /* Add a mask line*/
 function add_mask()
 {
-    mask_template = '<div class="controls-row"> \
-            <div class="span3"> \
-                <input id="region-%template%.id" name="region-%template%.id" placeholder="Category" type="hidden" value="" /> \
-                <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" /> \
-            </div> \
-            <div class="span3"> \
-                <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" /> \
-            </div> \
-            <div class="span5"> \
-                <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" /> \
-            </div> \
+    mask_template = ' \
+        <div class="controls-row"> \
+            <input id="region-%template%.id" name="region-%template%.id" placeholder="Category" type="hidden" value="" /> \
+            <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" class="span3"/> \
+            <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" class="span3"/> \
+            <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" class="span3"/> \
+            <i class="fa fa-times-circle fa-2x ico red span1"></i> \
         </div>';
+
     add_list_item(mask_template, "mask_count", "mask_header");
 }
 
 /* function to delete a line from a list*/
 function delete_line(event)
 {
+    $(event.currentTarget).parent().next('.error_block').remove();
     $(event.currentTarget).parent().remove();
 }
 
@@ -49,7 +47,7 @@ function add_variable()
             <input class="span2" id="drive_var_-%template%.names" name="drive_var_-%template%.names" placeholder="Variable name" type="text" value="" /> \
             <input class="span2" id="drive_var_-%template%.templates" name="drive_var_-%template%.templates" placeholder="Template name" type="text" value="" /> \
             <input class="span2" id="drive_var_-%template%.interps" name="drive_var_-%template%.interps" placeholder="Interpolation" type="text" value="" /> \
-            <i class="fa fa-times-circle fa-2x ico red span1" onclick="delete_line(this)"></i> \
+            <i class="fa fa-times-circle fa-2x ico red span1"></i> \
     </div>';
     add_list_item(var_template, "drive_nvars", "drive_vars_header");
 }

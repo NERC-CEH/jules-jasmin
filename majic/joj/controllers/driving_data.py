@@ -87,6 +87,7 @@ class DrivingDataController(BaseController):
                 constants.PREFIX_FOR_DRIVING_VARS,
                 ['vars', 'names', 'templates', 'interps'])
             remove_deleted_keys(values, 'params_count', 'param', ['id', 'value'])
+            remove_deleted_keys(values, 'mask_count', 'region', ['id', 'category', 'name', 'path'])
 
             schema = DrivingDatasetEdit()
             results = {}
@@ -140,6 +141,11 @@ class DrivingDataController(BaseController):
             values = jules_params.create_values_dict(c.namelist)
 
         c.masks = int(values['mask_count'])
+        c.mask_can_be_deleted = []
+        for mask_index in range(c.masks):
+            mask_id = values['region-{}.id'.format(mask_index)]
+            c.mask_can_be_deleted.append(mask_id is None or mask_id == "")
+
         try:
             c.nvar = int(values['drive_nvars'])
         except (ValueError, KeyError):
