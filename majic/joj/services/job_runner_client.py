@@ -36,14 +36,18 @@ class JobRunnerClient(object):
             url = self._config['job_runner_url'] + 'jobs/new'
             response = self._post_securely(url, data)
         except Exception, ex:
-            log.error("Failed to submit job: %s" % ex.message)
+            log.exception("Failed to submit job: %s" % ex.message)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not contact job submission server."
 
-        if response.status_code == 200:
+        if response.status_code == requests.codes.ok:
             return constants.MODEL_RUN_STATUS_SUBMITTED, "Model run submitted."
-        else:
-            log.error("Failed to submit job %s" % response.text)
+        elif response.status_code == requests.codes.bad_request:
+            log.exception("Failed to submit job %s" % response.text)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % response.text
+        else:
+            log.exception("Failed to submit job %s" % response.text)
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED,\
+                "Could not submit model because there is an error in the job runner."
 
     def get_run_model_statuses(self, model_ids):
         """
