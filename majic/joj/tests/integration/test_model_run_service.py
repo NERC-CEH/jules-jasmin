@@ -225,9 +225,11 @@ class ModelRunServiceTest(TestWithFullModelRun):
             model_run.user = user
             model_run.parameter_values = [parameter_value]
             session.add(model_run)
+        with session_scope(Session) as session:
+            model_run_id = session.query(ModelRun).filter(ModelRun.name == model_run.name).one().id
 
         # Get the users model runs
-        model_run_returned = self.model_run_service.get_model_by_id(user, model_run.id)
+        model_run_returned = self.model_run_service.get_model_by_id(user, model_run_id)
         pv = model_run_returned.parameter_values[0]
         assert_that(pv.value, is_('123'))
         assert_that(pv.parameter.name, is_("Param"))

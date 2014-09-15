@@ -14,6 +14,7 @@ from joj.model import session_scope, DatasetType, Dataset, User, UserLevel, Mode
 from joj.model.meta import Base, Session
 from joj.utils import constants
 from joj.model.system_alert_email import SystemAlertEmail
+from utils.utils import insert_before_file_extension
 from websetup_chess_driving_dataset import create_chess_driving_data
 from websetup_watch_driving_dataset import create_watch_driving_data, WATCH_DRIVING_DATA, WATCH_SOIL_PROPS_FILE, \
     WATCH_FRAC_FILE
@@ -179,9 +180,10 @@ def setup_app(command, conf, vars):
         watch_model_run.last_status_change = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.storage_in_mb = 1000
 
+        land_cover_file = insert_before_file_extension(WATCH_FRAC_FILE, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
         ancils = [
-            [WATCH_SOIL_PROPS_FILE, 'Soil Properties (ancil)', 0, 10, soil_prop_dst],
-            [WATCH_FRAC_FILE, 'Land cover map  (ancil)', 0, 10, land_cover_frac_dst]
+            [WATCH_SOIL_PROPS_FILE, 'Soil Properties', 0, 10, soil_prop_dst],
+            [land_cover_file, 'Land Cover Fractions', 0, 10, land_cover_frac_dst]
         ]
 
         for path, var, name, min, max in WATCH_DRIVING_DATA:

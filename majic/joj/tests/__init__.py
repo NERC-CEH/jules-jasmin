@@ -220,10 +220,12 @@ class TestController(TestCase):
         driving1.is_restricted_to_admins = is_restricted_to_admins
         location1 = DrivingDatasetLocation()
         location1.base_url = "base_url"
+        location1.dataset_type_id = 1
         location1.driving_dataset = driving1
         location2 = DrivingDatasetLocation()
         location2.base_url = "base_url2"
         location2.driving_dataset = driving1
+        location2.dataset_type_id = 1
         jules_params.add_to_driving_dataset(model_run_service, driving1, session)
 
         val = f90_helper.python_to_f90_str(8 * ["i"])

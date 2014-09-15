@@ -5,6 +5,7 @@ import re
 from joj.services.file_server_client import FileServerClient
 from joj.model import DrivingDatasetLocation
 from joj.utils import constants
+from joj.utils.utils import insert_before_file_extension
 
 
 class DrivingDataFileLocationValidator(object):
@@ -24,7 +25,34 @@ class DrivingDataFileLocationValidator(object):
         self._file_server_client = file_server_client
         self._dataset_types = dataset_types
 
-    def _check_location(self, key, locations, filename, errors, dataset_type_id, jules_varname):
+    def _check_location(self, key, filename, errors, is_in_list):
+        """
+        Check the location and add a key error if not found
+        :param key: key
+        :param filename: filename to check
+        :param errors: error list to add error to
+        :return: true if valid, false otherwise
+        """
+        if filename is None:
+            return True
+
+        if self._file_server_client.file_exists("model_runs/" + filename):
+            return True
+        else:
+            if is_in_list:
+                if key not in errors:
+                    errors[key] = []
+                errors[key].append("File does not exist: {}".format(filename))
+            else:
+                if key not in errors:
+                    errors[key] = "File does not exist: {}".format(filename)
+                else:
+                    errors[key] = "{}, nor does {}".format(errors[key], filename)
+            return False
+
+
+
+    def _check_location_and_add_to(self, key, locations, filename, errors, dataset_type_id, jules_varname):
         """
         Check the location and add a key error if not found or add to location is found
         :param key: key
@@ -38,10 +66,7 @@ class DrivingDataFileLocationValidator(object):
         if filename is None:
             return True
 
-        if not self._file_server_client.file_exists("model_runs/" + filename):
-            if key not in errors:
-                errors[key] = []
-            errors[key].append("File does not exist: {}".format(filename))
+        if not self._check_location(key, filename, errors, True):
             return False
 
         if locations is not None:
@@ -58,15 +83,21 @@ class DrivingDataFileLocationValidator(object):
         """
         locations = []
 
-        for key in ['land_frac_file', 'latlon_file', 'frac_file', 'soil_props_file']:
-            self._check_location(key, None, results.get(key), self._errors, None, None)
+        for key in ['land_frac_file', 'latlon_file', constants.LAND_COVER_FRAC_FILE_INPUT_NAME, 'soil_props_file']:
+            self._check_location(key, results.get(key), self._errors, False)
+
+        if constants.LAND_COVER_FRAC_FILE_INPUT_NAME in results:
+            converted_filename = insert_before_file_extension(
+                results.get(constants.LAND_COVER_FRAC_FILE_INPUT_NAME),
+                constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
+            self._check_location(constants.LAND_COVER_FRAC_FILE_INPUT_NAME, converted_filename, self._errors, False)
 
         regions = results.get('region', [])
         region_errors = []
         region_error = False
         for region, index in zip(regions, range(len(regions))):
             region_errors.append({})
-            local_error = not self._check_location('path', None, region['path'], region_errors[index], None, None)
+            local_error = not self._check_location('path', region['path'], region_errors[index], True)
             region_error = region_error or local_error
         if region_error:
             self._errors['region'] = region_errors
@@ -82,7 +113,7 @@ class DrivingDataFileLocationValidator(object):
 
             ncml_filename = self._get_ncml_filename(driving_data['templates'], drive_file)
 
-            local_error = not self._check_location(
+            local_error = not self._check_location_and_add_to(
                 'templates',
                 locations,
                 ncml_filename,
@@ -94,11 +125,9 @@ class DrivingDataFileLocationValidator(object):
             for filename in self._get_drive_filenames(driving_data['templates'], drive_file, start_date, end_date):
                 local_error = not self._check_location(
                     'templates',
-                    None,
                     filename,
                     driving_data_errors[index],
-                    None,
-                    None)
+                    True)
                 if local_error:
                     driving_data_error = True
                     break

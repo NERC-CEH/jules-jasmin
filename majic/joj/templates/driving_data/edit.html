@@ -373,7 +373,7 @@
                                 ${h.html_tags.text('drive_var_-{}.interps'.format(varnum), placeholder="Interpolation", class_="span2")}
                                 <i class="fa fa-times-circle fa-2x ico red span1"></i>
                         </div>
-                        <div class="error_block" py:if="len(c.driving_var_errors) is not 0 and len(driving_var_errors[varnum]) is not 0">
+                        <div class="error_block" py:if="len(c.driving_var_errors) is not 0 and len(c.driving_var_errors[varnum]) is not 0">
                             <ul>
                                 <li py:for="message in c.driving_var_errors[varnum]">
                                     ${message}

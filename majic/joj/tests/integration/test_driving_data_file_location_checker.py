@@ -71,7 +71,7 @@ class TestDrivingDataFileLocationChecker(TestController):
         result = self.driving_data_file_location_validator.get_file_locations(params)
 
         assert_that(len(self.errors), is_(1), "Errors count")
-        assert_that(self.errors['land_frac_file'], is_("Please check, file does not exist"), "Error")
+        assert_that(self.errors['land_frac_file'], is_("File does not exist"), "Error")
         assert_that(len(result), is_(0), "results count")
 
     def test_GIVEN_invalid_anc_and_mask_files_WHEN_check_THEN_errors_and_locations_file_returned(self):
@@ -230,7 +230,7 @@ class TestDrivingDataFileLocationChecker(TestController):
         result = self.driving_data_file_location_validator.get_file_locations(params)
 
         assert_that(len(self.errors), is_(1), "Errors count")
-        assert_that(self.errors['drive_var_'][0]['templates'], is_("Please check, file does not exist"), "Error")
+        assert_that(self.errors['drive_var_'][0]['templates'], is_("File does not exist"), "Error")
         assert_that(len(result), is_(0), "results count")
 
     def test_GIVEN_valid_driving_data_file_time_with_year_and_month1_and_variable_templating_WHEN_check_THEN_no_errors_and_locations_returned(self):

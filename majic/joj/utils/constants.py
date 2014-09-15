@@ -134,6 +134,9 @@ OUTPUT_DIR = 'output'
 # prefix of driving var variables
 PREFIX_FOR_DRIVING_VARS = 'drive_var_'
 
+# input name of land cover fraction file name parameter
+LAND_COVER_FRAC_FILE_INPUT_NAME = 'frac_file'
+
 # Periods for jules output
 JULES_YEARLY_PERIOD = -2
 JULES_MONTHLY_PERIOD = -1
