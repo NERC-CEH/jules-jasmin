@@ -1,0 +1,39 @@
+    .action-text {
+        color: #808080;
+        text-shadow: 0 0;
+        margin-bottom: 5px;
+    }
+    .info-title
+    {
+        padding-right: 10px;
+        font-weight: bold;
+    }
+    .status-banner-top {
+        margin-bottom: 0px
+    }
+    .status-banner-bottom {
+        margin-top: 10px
+    }
+    .divide {
+        margin:5px;
+    }
+    .pad-for-missing-hover-text {
+        margin-bottom: 20px !important;
+    }
+    form {
+        margin:0;
+        padding:0;
+    }
+    input.year {
+        padding-top: 1px;
+        padding-bottom: 0px;
+        margin:0px;
+        width:40px;
+    }
+    span.year {
+        padding-top: 1px !important;
+        padding-bottom: 0px !important;
+    }
+    .alert {
+        display:inline-block;
+    }
