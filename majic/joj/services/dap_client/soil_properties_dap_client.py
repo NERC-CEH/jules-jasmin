@@ -20,13 +20,13 @@ class SoilPropertiesDapClient(BaseDapClient):
             return
         super(SoilPropertiesDapClient, self).__init__(url)
 
-    def get_soil_properties(self, lat, lon, var_names_in_file, use_file, const_vals):
+    def get_soil_properties(self, lat, lon, var_names_in_file, use_file_list, const_vals):
         """
         Get the soil properties at a point
         :param lat: Latitude
         :param lon: Longitude
         :param var_names_in_file: variable names in the soil properties file
-        :param use_file: whether a file is used for the variable
+        :param use_file_list: whether a file is used for the variable
         :param const_vals: the contant values if used
         :return: Dictionary of soil property values for each of the soil property variables
         """
@@ -36,16 +36,23 @@ class SoilPropertiesDapClient(BaseDapClient):
         try:
             lat_index, lon_index = self._get_lat_lon_index(lat, lon)
             soil_props = {}
-            for var_name, use_file, const_value in zip(var_names_in_file, use_file, const_vals):
+            use_files_or_default = use_file_list
+            if use_file_list is None:
+                use_files_or_default = [True] * len(var_names_in_file)
+            const_vals_or_default = const_vals
+            if const_vals is None:
+                const_vals_or_default = [None] * len(var_names_in_file)
+            for var_name, use_file, const_value in zip(var_names_in_file, use_files_or_default, const_vals_or_default):
                 if use_file:
                     variable = self._dataset[var_name]
                     missing_value = variable.missing_value
                     fill_value = variable._FillValue
                     if len(variable.shape) == 3:
                         value_as_grid = variable[0, lat_index, lon_index]
+                        value = value_as_grid.flat[0]
                     else:
                         value_as_grid = variable[lat_index, lon_index]
-                    value = value_as_grid.flat[0]
+                        value = value_as_grid[var_name][0][0]
                     if value == missing_value or value == fill_value:
                         return None
                     soil_props[var_name] = value

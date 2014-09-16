@@ -80,28 +80,32 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_YEARLY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, 0]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_monthly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_MONTHLY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, 0]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_daily_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_DAILY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, -2]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_timestep_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, timestep],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, -2]
                 ]
                 output_variable_groups.append(output_variable_group)
     return output_variable_groups

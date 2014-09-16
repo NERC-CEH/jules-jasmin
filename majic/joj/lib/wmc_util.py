@@ -214,16 +214,18 @@ def set_http_openers(local_config=config):
 set_http_openers(config)
 
 
-def create_request_and_open_url(url_string, external=False, timeout=None):
+def create_request_and_open_url(url_string, external=False, timeout=None, method='GET'):
     """
     Create a request object and open a url, if it is external use the external setting including an external proxy
     If it is internal work out whether it needs a proxy (always use client certificate authentication)
     :param url_string: the url string
     :param external: True if it is external, false for internal (default)
     :param timeout: timeout
+    :param method: Method to use
     :return: the open request
     """
     req = urllib2.Request(url_string)
+    req.get_method = lambda: method
     return openURL(req, external, timeout)
 
 

@@ -520,6 +520,7 @@ class ModelRunService(DatabaseService):
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PROFILE_NAME)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_NPROFILES)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD)
+            param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_FILE_PERIOD)
             param_values_to_delete += model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_TYPE)
 
             # Now delete

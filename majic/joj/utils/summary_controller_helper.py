@@ -56,7 +56,7 @@ class SummaryControllerHelper(object):
         outputs = {}
         # Each group contains one output variable and one output period
         for selected_var in selected_vars:
-            var_name = output_variable_dict[selected_var.get_value_as_python()]
+            var_name = selected_var.get_value_as_python()
             if var_name not in outputs:
                 outputs[var_name] = []
             for output_period in selected_output_periods:
@@ -72,5 +72,11 @@ class SummaryControllerHelper(object):
                         outputs[var_name].append('Hourly')
         context.outputs = []
         for output in outputs:
-            context.outputs.append(output + ' - ' + ', '.join(map(str, outputs[output])) + '')
+            context.outputs.append(output_variable_dict[output] + ' - ' + ', '.join(map(str, outputs[output])) + '')
         context.outputs.sort()
+
+        # Downloads
+        context.output_variable_dict = output_variable_dict
+        context.output_variable_id_dict = dict((x.name, x.id) for x in output_variables)
+        context.downloads = outputs
+

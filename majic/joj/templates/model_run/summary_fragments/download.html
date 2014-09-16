@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/">
+    <script src="../../js/summary_download.js"></script>
+
+<div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.</div>
+    <br/>
+<div class="input-prepend">
+    <span class="add-on">Year</span>
+    <input id="year" type="text" placeholder="YYYY"/>
+</div>
+
+<div py:for="download in c.downloads">
+    ${c.output_variable_dict[download]}
+    <ul class="fa-ul"><li py:for="period in c.downloads[download]">
+            <a class="dl-link" data-output="${c.output_variable_id_dict[download]}"
+               data-period="${period}"  data-model_run_id="${c.model_run.id}">
+                <i class="fa-li fa fa-download"></i>${period}<div class="years"></div>
+            </a>
+       </li>
+    </ul>
+</div>
+
+</html>

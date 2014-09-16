@@ -2,6 +2,7 @@
 header
 """
 import logging
+from pylons import response
 from pylons.controllers.util import Response
 from pylons.decorators import jsonify
 from joj.lib.base import BaseController, request, render, c
@@ -12,6 +13,7 @@ from formencode import htmlfill
 from joj.lib import wmc_util
 from joj.services.model_run_service import ModelRunService
 from joj.utils import constants
+from joj.utils.dataset_download_helper import DatasetDownloadHelper
 
 
 log = logging.getLogger(__name__)
@@ -22,8 +24,11 @@ class DatasetController(BaseController):
     _dataset_service = None
     _netcdf_service = None
 
-    def __init__(self, dataset_service=DatasetService(), netcdf_service=NetCdfService(),
-                 user_service=UserService(), model_run_service=ModelRunService()):
+    def __init__(self,
+                 dataset_service=DatasetService(),
+                 netcdf_service=NetCdfService(),
+                 user_service=UserService(),
+                 model_run_service=ModelRunService()):
         """ Constructs a new dataset controller
         @param dataset_service: The dataset service to use with this controller
         @param netcdf_service: The NetCDF service to use with this controller
@@ -132,6 +137,23 @@ class DatasetController(BaseController):
         else:
             return {'error': 'No single cell lat lon information found for this dataset'}
 
+    def download(self):
+        """
+        Download an output dataset specified by model run ID (model_run_id),
+        output variable ID (output), period string (period) and year (year)
+        :return: NetCDF File download
+        """
+        download_helper = DatasetDownloadHelper()
+        try:
+            model_run_id, output_var_id, period, year = download_helper.validate_parameters(request.params,
+                                                                                            self.current_user)
+            file_path = download_helper.generate_output_file_path(model_run_id, output_var_id, period, year)
+            download_helper.set_header(response.headers, file_path)
+            # This will stream the file to the browser without loading it all in memory
+            # BUT only if the .ini file does not have 'debug=true' enabled
+            return download_helper.download_file_generator(file_path)
+        except (ValueError, TypeError):
+            pass
 
 def custom_formatter(error):
     """Custom error formatter"""
