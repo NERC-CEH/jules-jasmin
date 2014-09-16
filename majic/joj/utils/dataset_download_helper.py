@@ -67,7 +67,7 @@ class DatasetDownloadHelper(object):
             var_name=output_var_name,
             period=period.lower()
         )
-        if year is not None:
+        if year is not None and period.lower() not in ['monthly', 'yearly']:
             year_suffix = ".%s" % year
             file_name = insert_before_file_extension(file_name, year_suffix)
         return file_name

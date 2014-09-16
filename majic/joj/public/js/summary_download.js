@@ -24,15 +24,11 @@ var download = function(model_run_id, output, period, year) {
 }
 
 $(document).ready(function() {
-    $(".btn-download").click(function() {
+    $("a.dl-link").click(function() {
         var model_run_id = $(this).data("model_run_id");
         var output = $(this).data("output");
         var period = $(this).data("period");
-        var year_box = $(this).siblings("input.year");
-        var year = '';
-        if (year_box.length > 0) {
-            var year = year_box.val();
-        }
+        var year = $('#year').val();
         download(model_run_id, output, period, year);
     });
 });
