@@ -2,18 +2,21 @@
 header
 """
 import logging
+
 from pylons import response
 from pylons.controllers.util import Response
 from pylons.decorators import jsonify
+from formencode import htmlfill
+
 from joj.lib.base import BaseController, request, render, c
 from joj.services.dataset import DatasetService
 from joj.services.netcdf import NetCdfService
 from joj.services.user import UserService
-from formencode import htmlfill
 from joj.lib import wmc_util
 from joj.services.model_run_service import ModelRunService
 from joj.utils import constants
-from joj.utils.dataset_download_helper import DatasetDownloadHelper
+from joj.utils.ascii_dataset_download_helper import AsciiDatasetDownloadHelper
+from joj.utils.download.netcdf_dataset_download_helper import NetcdfDatasetDownloadHelper
 
 
 log = logging.getLogger(__name__)
@@ -143,15 +146,20 @@ class DatasetController(BaseController):
         output variable ID (output), period string (period) and year (year)
         :return: NetCDF File download
         """
-        download_helper = DatasetDownloadHelper()
+        dl_format = request.params.get('format')
+        if dl_format.lower() == 'ascii':
+            download_helper = AsciiDatasetDownloadHelper()
+        else:
+            download_helper = NetcdfDatasetDownloadHelper()
         try:
             model_run_id, output_var_id, period, year = download_helper.validate_parameters(request.params,
                                                                                             self.current_user)
             file_path = download_helper.generate_output_file_path(model_run_id, output_var_id, period, year)
-            download_helper.set_header(response.headers, file_path)
+            model_run = self._model_run_service.get_model_by_id(self.current_user, model_run_id)
+            download_helper.set_response_header(response.headers, file_path)
             # This will stream the file to the browser without loading it all in memory
             # BUT only if the .ini file does not have 'debug=true' enabled
-            return download_helper.download_file_generator(file_path)
+            return download_helper.download_file_generator(file_path, model_run)
         except (ValueError, TypeError):
             pass
 

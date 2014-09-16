@@ -117,6 +117,23 @@ class DapClient(BaseDapClient):
         delta = datetime.timedelta(seconds=prev_time)
         return self._start_date + delta
 
+    def get_period(self):
+        """
+        Get the dataset period in seconds (assumes evenly spaced)
+        :return: Dataset period in seconds or None if not calculable
+        """
+        total_time = self._time[-1] - self._time[0]
+        npoints = self.get_number_of_times()
+        if npoints > 0:
+            return total_time / (npoints - 1)
+
+    def get_number_of_times(self):
+        """
+        Get the number of timestamps
+        :return: Number of timestamps
+        """
+        return len(self._time)
+
     def get_data_at(self, lat, lon, date):
         """
         Get the value of the independent variable at a specified location and datetime

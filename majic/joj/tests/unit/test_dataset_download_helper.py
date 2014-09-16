@@ -4,8 +4,9 @@ header
 from hamcrest import assert_that, is_
 from mock import MagicMock
 from sqlalchemy.orm.exc import NoResultFound
+
 from joj.services.tests.base import BaseTest
-from joj.utils.dataset_download_helper import DatasetDownloadHelper
+from joj.utils.download.netcdf_dataset_download_helper import NetcdfDatasetDownloadHelper
 from joj.model import User, ModelRun
 from joj.model.output_variable import OutputVariable
 
@@ -25,7 +26,7 @@ class TestDatasetDownloadHelper(BaseTest):
         model_run_service.get_model_by_id = MagicMock(return_value=model_run)
         model_run_service.get_output_variable_by_id = MagicMock(return_value=output_var)
 
-        self.download_helper = DatasetDownloadHelper(model_run_service)
+        self.download_helper = NetcdfDatasetDownloadHelper(model_run_service)
         self.user = User()
         self.user.name = 'User Name'
         self.user.id = 10
