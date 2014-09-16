@@ -8,19 +8,17 @@ var download = function(model_run_id, output, period, year) {
     var url = base_url + query_string;
     // First check to see if the file exists:
     $.ajax({
-    url:url,
-    type:'HEAD',
-    error: function()
-    {
-        alert("Error downloading file - is this a valid year?");
-    },
-    success: function()
-    {
-        window.open(url, '_self');
-    }
-});
-
-    //
+        url:url,
+        type:'HEAD',
+        error: function()
+        {
+            alert("Error downloading file - is this a valid year?");
+        },
+        success: function()
+        {
+            window.open(url, '_self');
+        }
+    });
 }
 
 $(document).ready(function() {
