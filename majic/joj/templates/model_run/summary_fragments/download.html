@@ -7,15 +7,36 @@
     <br/>
 <div class="input-prepend">
     <span class="add-on">Year</span>
-    <input id="year" type="text" placeholder="YYYY"/>
+    <input id="year" type="text" placeholder="YYYY" value="${c.extents_values['start_date'].year}"/>
 </div>
-
+<div style="display:inline-block; vertical-align:middle; margin-bottom:10px; margin-left:25px;">
+    <div class="btn-group">
+        <button class="btn disabled" style="border:1px solid #ccc; opacity:1.0; background-color:#eee">Format:</button>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <span id="dl-format">NetCDF</span>
+      <span class="caret"></span>
+  </button>
+        <ul class="dropdown-menu">
+            <li py:for="format in c.download_formats"><a class="dl-format">${format}</a></li>
+        </ul>
+    </div>
+</div>
 <div py:for="download in c.downloads">
     ${c.output_variable_dict[download]}
     <ul class="fa-ul"><li py:for="period in c.downloads[download]">
             <a class="dl-link" data-output="${c.output_variable_id_dict[download]}"
                data-period="${period}"  data-model_run_id="${c.model_run.id}">
-                <i class="fa-li fa fa-download"></i>${period}<div class="years"></div>
+                <i class="fa-li fa fa-download"></i>${period} (<span class="link-format">${c.download_formats[0]}</span>,
+                <py:choose>
+                    <py:when test="period == 'Daily' or period == 'Hourly'">
+                        <span class="link-single-year">${c.extents_values['start_date'].year})</span>
+                    </py:when>
+                    <py:otherwise>
+                        <span class="link-years">${c.extents_values['start_date'].year}
+                            to
+                            ${c.extents_values['end_date'].year})</span>
+                    </py:otherwise>
+                </py:choose>
             </a>
        </li>
     </ul>

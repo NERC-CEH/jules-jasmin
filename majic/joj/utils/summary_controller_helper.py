@@ -79,4 +79,6 @@ class SummaryControllerHelper(object):
         context.output_variable_dict = output_variable_dict
         context.output_variable_id_dict = dict((x.name, x.id) for x in output_variables)
         context.downloads = outputs
-
+        context.download_formats = ["NetCDF"]
+        if context.extents_values['site'] == 'single':
+            context.download_formats.append('ASCII')
