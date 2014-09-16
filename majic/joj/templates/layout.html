@@ -8,14 +8,13 @@
         <title py:with="title = list(select('title/text()'))">
             Majic<py:if test="title"> | ${title}</py:if>
         </title>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+        <link rel="stylesheet" href="/layout/font-awesome-4.2.0/css/font-awesome.min.css"/>
         <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
         <link href="/layout/joj.css" rel="stylesheet" media="screen" />
         <script src="/js/jquery.js"></script>
         <script src="/js/jquery.placeholder.js"></script>
         <script type="text/javascript" src="/layout/bootstrap/js/bootstrap.js"></script>
         <script type="text/javascript" src="/js/ecomaps_general.js"></script>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
         <!--Page-specific styles and script tags in here...-->
         ${select('style')}
         ${select('link')}
