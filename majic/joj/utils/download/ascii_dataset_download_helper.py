@@ -53,7 +53,7 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
                                   end=actual_end,
                                   period=period,
                                   longname=longname,
-                                  units=units)
+                                  units=units).replace('\n', '\r\n')
 
     def _estimate_filesize(self, dap_client):
         header_size = sys.getsizeof(self.header, None)
