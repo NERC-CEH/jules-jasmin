@@ -37,23 +37,24 @@ class GraphingDapClient(DapClient):
 
         lat_index, lon_index = self._get_lat_lon_index(lat, lon)
         if time is None:
-            time_index = 0
+            plot_point_time_index = 0
         else:
             time_elapsed = self._get_seconds_elapsed(time)
-            time_index = self._get_closest_value_index(self._time, time_elapsed)
-        time_index_start = int(max(time_index - math.floor((npoints - 1) / 2.0), 0))
-        time_index_end = int(min(time_index + math.ceil((npoints - 1) / 2.0), len(self._time) - 1))
-        
+            plot_point_time_index = self._get_closest_value_index(self._time, time_elapsed)
+        time_index_start = int(max(plot_point_time_index - math.floor((npoints - 1) / 2.0), 0))
+        time_index_end = int(min(plot_point_time_index + math.ceil((npoints - 1) / 2.0), len(self._time) - 1))
 
         # Assumes that dimensions are time, lat, long.
-        variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]
+        data_slice = self._variable.array[time_index_start:time_index_end + 1, lat_index, lon_index]
+        variable_data = [data[0][0] for data in data_slice.tolist()]
         timestamps = self._time.tolist()
         data = []
         missing_value = self._variable.missing_value
         fill_value = self._variable._FillValue
-        for i in range(time_index_start, time_index_end + 1):
+        for i in range(len(variable_data)):
+            time_index = time_index_start + i
             # Time should be in millis after 1970 epoch for FLOT
-            t = self._get_millis_since_epoch(timestamps[i])
+            t = self._get_millis_since_epoch(timestamps[time_index])
             if is_inside_grid:
                 data_value = variable_data[i]
                 if data_value == missing_value or data_value == fill_value or math.isnan(data_value):
@@ -61,15 +62,16 @@ class GraphingDapClient(DapClient):
             else:
                 data_value = None
             data.append([t, data_value])
-        _min, _max = self.get_data_range()
+        min_data_value = min(variable_data)
+        max_data_value = max(variable_data)
         return {'data': data,
                 'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
                 'lat': lat,
                 'lon': lon,
                 'xmin': self._get_millis_since_epoch(min(timestamps)),
                 'xmax': self._get_millis_since_epoch(max(timestamps)),
-                'ymin': _min,
-                'ymax': _max
+                'ymin': min_data_value,
+                'ymax': max_data_value
                 }
 
     def _get_millis_since_epoch(self, intervals):
