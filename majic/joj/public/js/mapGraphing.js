@@ -174,7 +174,11 @@ function getData(layerIds, position)
         var layerId = layerIds[i];
         var dsid = $(".dataset[layer-id='" + layerId + "']").attr("data-dsid");
         var layerControls = $(".layer-controls[data-layerid='" + layerId + "']")
-        var time = layerControls.find("select.dimension").val()
+        var time = ""
+        var time_control = layerControls.find("select.dimension")
+        if (time_control.length) {
+            time = time_control.val()
+        }
         var url = "/map/graph/" + dsid + "?lat=" + position.lat + "&lon=" + position.lon + "&time=" + time;
         $.getJSON(url, function (_data) {
             data[data.length] = _data;
