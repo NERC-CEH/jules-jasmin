@@ -14,7 +14,7 @@ from joj.services.user import UserService
 from joj.lib import wmc_util
 from joj.services.model_run_service import ModelRunService
 from joj.utils import constants
-from joj.utils.ascii_dataset_download_helper import AsciiDatasetDownloadHelper
+from joj.utils.download.ascii_dataset_download_helper import AsciiDatasetDownloadHelper
 from joj.utils.download.netcdf_dataset_download_helper import NetcdfDatasetDownloadHelper
 
 
