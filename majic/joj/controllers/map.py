@@ -107,7 +107,10 @@ class MapController(BaseController):
         lat = float(request.params['lat'])
         lon = float(request.params['lon'])
         str_time = request.params['time']
-        time = datetime.datetime.strptime(str_time, constants.GRAPH_TIME_FORMAT)
+        if len(str_time.strip()) > 0:
+            time = datetime.datetime.strptime(str_time, constants.GRAPH_TIME_FORMAT)
+        else:
+            time = None
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
         url = dataset.netcdf_url
         dap_client = self._dap_factory.get_graphing_dap_client(url)

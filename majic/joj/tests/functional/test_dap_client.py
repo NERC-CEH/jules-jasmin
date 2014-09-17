@@ -275,6 +275,22 @@ class TestGraphingDapClient(BaseDapClientTest):
         assert_that(data['data'][247], is_([-2174785200000, 99755.59375]))
         assert_that(data['data'][123], is_([-2176124400000, 99523.140625]))
 
+    def test_GIVEN_data_at_latlon_but_not_time_WHEN_get_graph_data_THEN_correct_data_dictionary_returned_as_if_time_is_at_origin(self):
+        lat, lon = 51.75, -0.25  # 215, 359
+        time = None
+        data = self.dap_client.get_graph_data(lat, lon, time)
+        assert_that(data['lat'], is_(lat))
+        assert_that(data['lon'], is_(lon))
+        assert_that(data['label'], is_("Surface pressure (Pa) @ 51.75, -0.25"))
+        assert_that(data['xmin'], is_(-2177452800000.0))  # Milliseconds since the UNIX epoch
+        assert_that(data['xmax'], is_(-2174785200000.0))  # Milliseconds since the UNIX epoch
+        assert_that(data['ymin'], is_(98193.515625))
+        assert_that(data['ymax'], is_(102379.203125))
+        assert_that(len(data['data']), is_(248))
+        assert_that(data['data'][0], is_([-2177452800000, 102080.1875]))
+        assert_that(data['data'][247], is_([-2174785200000, 99755.59375]))
+        assert_that(data['data'][123], is_([-2176124400000, 99523.140625]))
+
     def test_GIVEN_missing_values_at_latlon_WHEN_get_graph_data_THEN_nones_returned(self):
         lat, lon = 50, -30  # Sea
         time = datetime.datetime(1901, 1, 1)
