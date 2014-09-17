@@ -3,10 +3,9 @@ header
 """
 import logging
 
-from pylons import response
+from pylons import response, config
 from pylons.controllers.util import Response
 from pylons.decorators import jsonify
-from formencode import htmlfill
 
 from joj.lib.base import BaseController, request, render, c
 from joj.services.dataset import DatasetService
@@ -23,6 +22,9 @@ log = logging.getLogger(__name__)
 
 
 class DatasetController(BaseController):
+    """
+    Dataset Controller
+    """
 
     _dataset_service = None
     _netcdf_service = None
@@ -59,7 +61,10 @@ class DatasetController(BaseController):
 
     @jsonify
     def list(self):
-
+        """
+        Gets a list of datasets for the currently logged in user
+        :return: List of Datasets
+        """
         user = self._user_service.get_user_by_username(request.environ['REMOTE_USER'])
 
         return self._dataset_service.get_datasets_for_user(user.id)
@@ -87,26 +92,6 @@ class DatasetController(BaseController):
         redirect_url = "http://vmap0.tiles.osgeo.org/wms/vmap0?%s" % request.query_string
         map_request = wmc_util.create_request_and_open_url(redirect_url, external=True)
         return Response(body=map_request.read(), content_type='image/jpeg')
-
-    def preview(self, id):
-        """ Renders a preview view of the first 10 rows of a dataset (currently point data only!)
-        """
-
-        # Need to make sure the user has access to the dataset in question
-        user = self._user_service.get_user_by_username(request.environ['REMOTE_USER'])
-        ds = self._dataset_service.get_dataset_by_id(id, user_id = user.id)
-
-        c.dataset_name = ds.name
-
-        # This should contain the first 10 rows
-        preview_data = self._netcdf_service.get_point_data_preview(ds.netcdf_url, 10)
-
-        c.columns = preview_data.keys()
-
-        # Number of rows - 1 for the row range--------------------------------------v
-        c.row_set = [[preview_data[col][row] for col in c.columns] for row in range(9)]
-
-        return render('dataset_preview.html')
 
     def timeselection(self, id):
         """ Gets the possible time points for a temporal dataset
@@ -147,24 +132,21 @@ class DatasetController(BaseController):
         :return: NetCDF File download
         """
         dl_format = request.params.get('format')
+        _config = dict(config)
         if dl_format.lower() == 'ascii':
-            download_helper = AsciiDatasetDownloadHelper()
+            download_helper = AsciiDatasetDownloadHelper(config=_config)
         else:
-            download_helper = NetcdfDatasetDownloadHelper()
+            download_helper = NetcdfDatasetDownloadHelper(config=_config)
         try:
             model_run_id, output_var_id, period, year = download_helper.validate_parameters(request.params,
                                                                                             self.current_user)
-            file_path = download_helper.generate_output_file_path(model_run_id, output_var_id, period, year)
             model_run = self._model_run_service.get_model_by_id(self.current_user, model_run_id)
+            single_cell = not model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
+            file_path = download_helper.generate_output_file_path(
+                model_run_id, output_var_id, period, year, single_cell)
             download_helper.set_response_header(response.headers, file_path)
             # This will stream the file to the browser without loading it all in memory
             # BUT only if the .ini file does not have 'debug=true' enabled
             return download_helper.download_file_generator(file_path, model_run)
         except (ValueError, TypeError):
             pass
-
-def custom_formatter(error):
-    """Custom error formatter"""
-    return '<span class="help-inline">%s</span>' % (
-        htmlfill.html_quote(error)
-    )

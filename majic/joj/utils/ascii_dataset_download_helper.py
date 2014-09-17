@@ -3,6 +3,7 @@ header
 """
 import os
 import sys
+from pylons import config
 from joj.utils.download.dataset_download_helper import DatasetDownloadHelper
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.model_run_service import ModelRunService
@@ -30,8 +31,8 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
 # The data time period is: {period} seconds
 """
 
-    def __init__(self, model_run_service=ModelRunService(), dap_client_factory=DapClientFactory()):
-        super(AsciiDatasetDownloadHelper, self).__init__(model_run_service, dap_client_factory)
+    def __init__(self, model_run_service=ModelRunService(), dap_client_factory=DapClientFactory(), config=config):
+        super(AsciiDatasetDownloadHelper, self).__init__(model_run_service, dap_client_factory, config=config)
         self.dap_client = None
 
     def _make_file_header(self, model_run, dap_client):
@@ -58,10 +59,10 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
         header_size = sys.getsizeof(self.header, None)
         nlines = dap_client.get_number_of_times()
         data_size = 15.5 * nlines  # Estimate measured from sample files
-        return header_size + data_size
+        return int(header_size + data_size)
 
     def _get_dap_client(self, filepath):
-        url = self.dap_client_factory.get_full_url_for_file(filepath)
+        url = self.dap_client_factory.get_full_url_for_file(filepath, config=self.config)
         if self.dap_client is None or self.dap_client.url != url:
             self.dap_client = self.dap_client_factory.get_dap_client(url)
         return self.dap_client
@@ -91,7 +92,10 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
         dap_client = self._get_dap_client(file_path)
         header = self._make_file_header(model_run, dap_client)
         yield header
-        variable = dap_client._get_variable_to_plot()  # TODO
-        data = variable.array[:, 0, 0].tolist()
-        for datum in data:
-            yield str(datum[0][0]) + str("\r\n")
+        n_points = dap_client.get_number_of_times()
+        index = 0
+        while index <= n_points:
+            data = dap_client.get_data_by_chunk(index, chunk_size=constants.GRAPH_NPOINTS)
+            index += constants.GRAPH_NPOINTS
+            for datum in data:
+                yield str(datum) + str("\r\n")

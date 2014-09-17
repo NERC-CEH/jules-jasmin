@@ -1,6 +1,7 @@
 """
 header
 """
+from pylons import config
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.model_run_service import ModelRunService
 from joj.lib.wmc_util import create_request_and_open_url
@@ -12,19 +13,20 @@ class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
     Manages the download of whole datasets.
     """
 
-    def __init__(self, model_run_service=ModelRunService(), dap_client_factory=DapClientFactory()):
-        super(NetcdfDatasetDownloadHelper, self).__init__(model_run_service, dap_client_factory)
+    def __init__(self, model_run_service=ModelRunService(), dap_client_factory=DapClientFactory(), config=config):
+        super(NetcdfDatasetDownloadHelper, self).__init__(model_run_service, dap_client_factory, config=config)
 
     def download_file_generator(self, file_path, model_run):
         """
         Download an output file from the THREDDS file server and serve it to the user
         :param file_path: File path to download
+        :param model_run: Model run
         :return: Generator (for streamed download)
         """
-        url = self.dap_client_factory.get_full_url_for_file(file_path, service="fileServer")
+        url = self.dap_client_factory.get_full_url_for_file(file_path, service="fileServer", config=self.config)
         dataset = create_request_and_open_url(url)
         for line in dataset.read():
-            yield (line)
+            yield line
 
     def set_response_header(self, header_dict, filepath):
         """
@@ -35,7 +37,7 @@ class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
         """
 
         # Get the HTTP header from THREDDS to identify the file size
-        url = self.dap_client_factory.get_full_url_for_file(filepath, service="fileServer")
+        url = self.dap_client_factory.get_full_url_for_file(filepath, service="fileServer", config=self.config)
         head = create_request_and_open_url(url, method='HEAD').headers
 
         filename = filepath.split('/')[-1]

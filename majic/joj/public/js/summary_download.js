@@ -39,7 +39,11 @@ $(document).ready(function() {
         var model_run_id = $(this).data("model_run_id");
         var output = $(this).data("output");
         var period = $(this).data("period");
-        var year = $('#year').val();
+        var yearBox = $('#year');
+        var year = '';
+        if (yearBox.length) {
+            year = yearBox.val();
+        }
         var format = $('span#dl-format').text();
         download(model_run_id, output, period, year, format);
     });

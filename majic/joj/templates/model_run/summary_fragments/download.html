@@ -1,15 +1,15 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
+<div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/">
     <script src="../../js/summary_download.js"></script>
-
+<py:if test="c.extents_values['site'] == 'multi'">
 <div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.</div>
     <br/>
-<div class="input-prepend">
+<div class="input-prepend" style="margin-right:25px;">
     <span class="add-on">Year</span>
     <input id="year" type="text" placeholder="YYYY" value="${c.extents_values['start_date'].year}"/>
 </div>
-<div style="display:inline-block; vertical-align:middle; margin-bottom:10px; margin-left:25px;">
+</py:if>
+<div style="display:inline-block; vertical-align:middle; margin-bottom:10px;">
     <div class="btn-group">
         <button class="btn disabled" style="border:1px solid #ccc; opacity:1.0; background-color:#eee">Format:</button>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -28,7 +28,7 @@
                data-period="${period}"  data-model_run_id="${c.model_run.id}">
                 <i class="fa-li fa fa-download"></i>${period} (<span class="link-format">${c.download_formats[0]}</span>,
                 <py:choose>
-                    <py:when test="period == 'Daily' or period == 'Hourly'">
+                    <py:when test="(period == 'Daily' or period == 'Hourly') and c.extents_values['site'] == 'multi'">
                         <span class="link-single-year">${c.extents_values['start_date'].year})</span>
                     </py:when>
                     <py:otherwise>
@@ -42,4 +42,4 @@
     </ul>
 </div>
 
-</html>
+</div>

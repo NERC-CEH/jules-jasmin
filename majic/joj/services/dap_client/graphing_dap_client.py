@@ -40,7 +40,6 @@ class GraphingDapClient(DapClient):
         time_index = self._get_closest_value_index(self._time, time_elapsed)
         time_index_start = int(max(time_index - math.floor((npoints - 1) / 2.0), 0))
         time_index_end = int(min(time_index + math.ceil((npoints - 1) / 2.0), len(self._time) - 1))
-        
 
         # Assumes that dimensions are time, lat, long.
         variable_data = [data[0][0] for data in self._variable.array[:, lat_index, lon_index].tolist()]

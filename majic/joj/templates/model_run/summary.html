@@ -121,11 +121,12 @@
     <xi:include href="../model_run/summary_fragments/land_cover.html" />
     <xi:include href="../model_run/summary_fragments/outputs.html" />
 </div>
-<hr class="divide"/>
-
-<h3><i class="fa fa-download status-color">&nbsp;</i>Download Output</h3>
-<div>
-    <xi:include href="../model_run/summary_fragments/download.html" />
-</div>
+<py:if test="c.model_run.status.allow_visualise()">
+    <hr class="divide"/>
+    <h3><i class="fa fa-download status-color">&nbsp;</i>Download Output</h3>
+    <div>
+        <xi:include href="../model_run/summary_fragments/download.html" />
+    </div>
+</py:if>
 </body>
 </html>
