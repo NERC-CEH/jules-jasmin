@@ -6,10 +6,11 @@ import logging
 from sqlalchemy.orm import subqueryload, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, or_
 from sqlalchemy.sql.expression import false
 from pylons import config
-from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset
+from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset, \
+    LandCoverAction
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -193,6 +194,25 @@ class ModelRunService(DatabaseService):
 
         return model_run
 
+    def _is_duplicate_name(self, name, session, user):
+        """
+        Is the name a duplicate of another model
+        :param name: name
+        :param session: session
+        :param user: user
+        :return: true if it is a duplicate
+        """
+        duplicate_names = session \
+            .query(ModelRun) \
+            .join(User) \
+            .join(ModelRunStatus) \
+            .filter(ModelRun.user == user) \
+            .filter(ModelRun.name == name) \
+            .filter(ModelRunStatus.name != constants.MODEL_RUN_STATUS_CREATED) \
+            .count()
+
+        return duplicate_names != 0
+
     def update_model_run(self, user, name, science_configuration_id, description=""):
         """
         Update the creation model run definition
@@ -204,16 +224,7 @@ class ModelRunService(DatabaseService):
         """
         with self.transaction_scope() as session:
 
-            duplicate_names = session \
-                .query(ModelRun) \
-                .join(User) \
-                .join(ModelRunStatus) \
-                .filter(ModelRun.user == user) \
-                .filter(ModelRun.name == name) \
-                .filter(ModelRunStatus.name != constants.MODEL_RUN_STATUS_CREATED) \
-                .count()
-
-            if duplicate_names != 0:
+            if self._is_duplicate_name(name, session, user):
                 raise DuplicateName()
 
             try:
@@ -554,12 +565,95 @@ class ModelRunService(DatabaseService):
                 query = query.filter(ModelRun.user_id == user.id)
             return query.all()
 
+    def delete_model_run_being_created(self, user):
+        """
+        Delete the model run being created
+        :param user: user who run should be deleted
+        :return:nothing
+        """
+        with self.transaction_scope() as session:
+            try:
+                model_run_being_created = self._get_model_run_being_created(session, user)
+                self._job_runner_client.delete(model_run_being_created)
+                self._delete_model_run_in_session_no_checks(model_run_being_created.id, session)
+
+            except NoResultFound:
+                #no model being created do not have to delete it
+                pass
+
+    def duplicate_run_model(self, model_id, user):
+        """
+        Duplicate the run model and all its parameters to a new run model
+        :param model_id: model run id to duplicate
+        :param user: the user duplicating the model
+        :return: nothing
+        """
+        self.delete_model_run_being_created(user)
+
+        with self.transaction_scope() as session:
+            model_run_to_duplicate = session\
+                .query(ModelRun)\
+                .join(ModelRunStatus)\
+                .outerjoin(ParameterValue)\
+                .outerjoin(LandCoverAction) \
+                .filter(ModelRun.id == model_id) \
+                .filter(or_(ModelRun.user_id == user.id, ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED)) \
+                .options(contains_eager(ModelRun.parameter_values)) \
+                .options(contains_eager(ModelRun.land_cover_actions)) \
+                .one()
+
+            new_model_run_name = model_run_to_duplicate.name
+            if self._is_duplicate_name(model_run_to_duplicate.name, session, user):
+                new_model_run_name = "{} (Copy)".format(model_run_to_duplicate.name)
+                copy_id = 1
+                while self._is_duplicate_name(new_model_run_name , session, user):
+                    copy_id += 1
+                    new_model_run_name = "{} (Copy {})".format(model_run_to_duplicate.name, copy_id)
+
+            new_model_run = ModelRun()
+
+            new_model_run.duplicate_from(model_run_to_duplicate)
+            new_model_run.name = new_model_run_name
+            new_model_run.user = user
+            new_model_run.change_status(session, constants.MODEL_RUN_STATUS_CREATED)
+            for parameter_value in model_run_to_duplicate.parameter_values:
+                new_parameter = ParameterValue()
+                new_parameter.duplicate_from(parameter_value)
+                new_parameter.model_run = new_model_run
+
+            for land_cover_action in model_run_to_duplicate.land_cover_actions:
+                new_land_cover_action = LandCoverAction()
+                new_land_cover_action.duplicate_from(land_cover_action)
+                new_land_cover_action.model_run = new_model_run
+
+            session.add(new_model_run)
+
+    def _delete_model_run_in_session_no_checks(self, model_id, session):
+        model_run = session \
+            .query(ModelRun) \
+            .join(ModelRunStatus) \
+            .outerjoin(Dataset) \
+            .outerjoin(ParameterValue) \
+            .outerjoin(LandCoverAction) \
+            .filter(ModelRun.id == model_id) \
+            .options(contains_eager(ModelRun.datasets)) \
+            .options(contains_eager(ModelRun.parameter_values)) \
+            .options(contains_eager(ModelRun.land_cover_actions)) \
+            .one()
+        for dataset in model_run.datasets:
+            session.delete(dataset)
+        for parameter_value in model_run.parameter_values:
+            session.delete(parameter_value)
+        for land_cover_action in model_run.land_cover_actions:
+            session.delete(land_cover_action)
+        session.delete(model_run)
+
     def delete_run_model(self, model_id, user):
         """
         Delete a model run. If the model does not belong to the user and he is a non admin
         or model doesn't exist thrown exception
         :param model_id: model id to delete
-        :param user: the user deleteing the model
+        :param user: the user deleting the model
         :return: deleted model runs name throw exception if there is trouble
         """
         with self.readonly_scope() as session:
@@ -580,14 +674,7 @@ class ModelRunService(DatabaseService):
         self._job_runner_client.delete(model_run)
 
         with self.transaction_scope() as session:
-            model_run = session\
-                .query(ModelRun)\
-                .join(ModelRunStatus)\
-                .outerjoin(Dataset)\
-                .filter(ModelRun.id == model_id) \
-                .one()
-
-            session.delete(model_run)
+            self._delete_model_run_in_session_no_checks(model_id, session)
 
         return model_run_name
 
