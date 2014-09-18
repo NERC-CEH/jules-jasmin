@@ -9,6 +9,7 @@
     <li py:for="dimension in c.dimensions" class="dimension">
 
         <div class="layer-controls" data-layerid="${c.layer_id}">
+            <span><b>${c.model_run.name} - </b></span>
             <span class="control-label">${c.dataset.name}: </span>
             <br/>
             <span style="margin-top:-10px">
@@ -23,7 +24,8 @@
 
 
     <li py:for="layer in reversed(c.layers)" class="layer nav-header" data-layerid="${c.layer_id}"><i class="icon-resize-vertical"></i>
-        ${layer.title}
+        <span>${c.model_run.name} - </span>
+        <span style="font-weight:normal">${layer.title}</span>
 
 
         <ul class="layer-controls">
