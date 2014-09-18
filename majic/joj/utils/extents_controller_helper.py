@@ -10,6 +10,7 @@ from joj.model.non_database.temporal_extent import InvalidTemporalExtent, Tempor
 from joj.utils import constants
 from joj.services.dataset import DatasetService
 from joj.services.dap_client.dap_client_factory import DapClientFactory
+from joj.utils.spinup_helper import SpinupHelper
 
 
 class ExtentsControllerHelper(object):
@@ -17,9 +18,13 @@ class ExtentsControllerHelper(object):
     Helper class for the extents controller
     """
 
-    def __init__(self, dataset_service=DatasetService(), dap_client_factory=DapClientFactory()):
+    def __init__(self,
+                 dataset_service=DatasetService(),
+                 dap_client_factory=DapClientFactory(),
+                 spinup_helper=SpinupHelper()):
         self.dataset_service = dataset_service
         self.dap_client_factory = dap_client_factory
+        self.spinup_helper = spinup_helper
 
     def create_values_dict_from_database(self, model_run, driving_data):
         """
@@ -211,6 +216,10 @@ class ExtentsControllerHelper(object):
         params_to_save.append([constants.JULES_PARAM_RUN_END, run_end])
         parameter_service.save_new_parameters(params_to_save, params_to_delete, user.id)
 
+        self._save_spinup(self._get_acceptable_start_datetime(model_run, driving_data, is_user_data),
+                          self._get_acceptable_end_datetime(model_run, driving_data, is_user_data),
+                          run_start, parameter_service, user.id)
+
     def validate_extents_form_values(self, values, model_run, driving_data, errors):
         """
         Validate extents values dictionary and add errors to an errors object if needed
@@ -321,3 +330,26 @@ class ExtentsControllerHelper(object):
 
     def _is_user_driving_data(self, driving_data):
         return driving_data.id == self.dataset_service.get_id_for_user_upload_driving_dataset()
+
+    def _save_spinup(self, driving_start, driving_end, run_start, parameter_service, user_id):
+
+        spin_start = self.spinup_helper.calculate_spinup_start(driving_start, run_start)
+        spin_end = self.spinup_helper.calculate_spinup_end(spin_start, driving_end)
+        spin_cycles = self.spinup_helper.calculate_spinup_cycles(spin_start, spin_end)
+        spin_params = [[constants.JULES_PARAM_SPINUP_START, spin_start],
+                       [constants.JULES_PARAM_SPINUP_END, spin_end],
+                       [constants.JULES_PARAM_SPINUP_CYCLES, spin_cycles],
+                       [constants.JULES_PARAM_SPINUP_TERMINATE_ON_FAIL, False],
+                       [constants.JULES_PARAM_SPINUP_NVARS, 2],
+                       [constants.JULES_PARAM_SPINUP_VAR, ["smcl", "t_soil"]],
+                       [constants.JULES_PARAM_SPINUP_USE_PERCENT, [True, True]],
+                       [constants.JULES_PARAM_SPINUP_TOLERANCE, [0.1, 0.1]]]
+        old_spin_params = [constants.JULES_PARAM_SPINUP_START,
+                           constants.JULES_PARAM_SPINUP_END,
+                           constants.JULES_PARAM_SPINUP_CYCLES,
+                           constants.JULES_PARAM_SPINUP_TERMINATE_ON_FAIL,
+                           constants.JULES_PARAM_SPINUP_NVARS,
+                           constants.JULES_PARAM_SPINUP_VAR,
+                           constants.JULES_PARAM_SPINUP_USE_PERCENT,
+                           constants.JULES_PARAM_SPINUP_TOLERANCE]
+        parameter_service.save_new_parameters(spin_params, old_spin_params, user_id)
