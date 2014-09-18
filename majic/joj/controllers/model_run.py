@@ -417,8 +417,7 @@ class ModelRunController(BaseController):
         model_run = self.get_model_run_being_created_or_redirect(self._model_run_service)
         values = dict(request.params)
         errors = {}
-        multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION) \
-            and not 'fractional_cover' in values
+        multicell = not model_run.is_for_single_cell() and not 'fractional_cover' in values
 
         if 'reset_fractional_cover' in values:
             land_cover_controller_helper = LandCoverControllerHelper()

@@ -34,10 +34,10 @@ class ExtentsControllerHelper(object):
         is_user_data = self._is_user_driving_data(driving_data)
 
         # Defaults to true unless it's user uploaded single site data
-        multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
-        if multicell is None:
-            multicell = not is_user_data
-        values['site'] = 'multi' if multicell else 'single'
+        singlecell = model_run.is_for_single_cell()
+        if singlecell is None:
+            singlecell = is_user_data
+        values['site'] = 'single' if singlecell else 'multi'
 
         values['lat'], values['lon'] = self._get_lat_lon(model_run, is_user_data)
 

@@ -110,6 +110,19 @@ class ModelRun(Base):
         return utils.find_first_parameter_value_in_param_vals_list(
             self.parameter_values, parameter_namelist_name, is_list)
 
+    def is_for_single_cell(self):
+        """
+        If this model run is for a single cell return true, otherwise false.
+        :return:
+        """
+        if self.parameter_values is None or len(self.parameter_values) == 0:
+            return None
+
+        latlon_region = self.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
+        if latlon_region is None:
+            return None
+        return not latlon_region
+
     def __repr__(self):
         """ String representation of the model run """
 
