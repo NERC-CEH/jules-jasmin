@@ -124,6 +124,7 @@ DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_til
 
 # Set the timestep length in seconds
 TIMESTEP_LEN = 60 * 60  # One hour
+SPINUP_DURATION_YEARS = 5
 
 # Set the name of the run and consequently the name of the output files
 RUN_ID = "majic"
@@ -159,6 +160,16 @@ JULES_NML_TIME = "JULES_TIME"
 JULES_PARAM_TIMESTEP_LEN = [JULES_NML_TIME, "timestep_len"]
 JULES_PARAM_RUN_START = [JULES_NML_TIME, "main_run_start"]
 JULES_PARAM_RUN_END = [JULES_NML_TIME, "main_run_end"]
+
+JULES_NML_SPINUP = "JULES_SPINUP"
+JULES_PARAM_SPINUP_START = [JULES_NML_SPINUP, "spinup_start"]
+JULES_PARAM_SPINUP_END = [JULES_NML_SPINUP, "spinup_end"]
+JULES_PARAM_SPINUP_CYCLES = [JULES_NML_SPINUP, "max_spinup_cycles"]
+JULES_PARAM_SPINUP_TERMINATE_ON_FAIL = [JULES_NML_SPINUP, "terminate_on_spinup_fail"]
+JULES_PARAM_SPINUP_NVARS = [JULES_NML_SPINUP, "nvars"]
+JULES_PARAM_SPINUP_VAR = [JULES_NML_SPINUP, "var"]
+JULES_PARAM_SPINUP_USE_PERCENT = [JULES_NML_SPINUP, "use_percent"]
+JULES_PARAM_SPINUP_TOLERANCE = [JULES_NML_SPINUP, "tolerance"]
 
 JULES_NML_OUTPUT_PROFILE = "JULES_OUTPUT_PROFILE"
 JULES_PARAM_OUTPUT_PROFILE_NAME = [JULES_NML_OUTPUT_PROFILE, "profile_name"]
