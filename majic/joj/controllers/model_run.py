@@ -22,7 +22,7 @@ from joj.utils.model_run_controller_helper import ModelRunControllerHelper
 from joj.utils.bng_to_latlon_converter import OSGB36toWGS84
 from joj.utils.driving_data_controller_helper import DrivingDataControllerHelper
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
-from joj.utils.general_controller_helper import show_error_if_thredds_down
+from joj.utils.general_controller_helper import show_error_if_thredds_down, redirect_back_to_came_from_for_model_run
 from joj.utils.summary_controller_helper import SummaryControllerHelper
 from joj.services.user import UserService
 from joj.services.dataset import DatasetService
@@ -80,6 +80,9 @@ class ModelRunController(BaseController):
         c.bar_class = helpers.get_progress_bar_class_name(c.storage_percent_used)
         c.showing = "mine"
 
+        c.user_has_model_run_being_created = \
+            self._model_run_service.get_user_has_model_run_being_created(self.current_user)
+
         return render("model_run/catalogue.html")
 
     def published(self):
@@ -98,13 +101,12 @@ class ModelRunController(BaseController):
         :param id: ID of model run to publish
         :return: redirect to the page you came from
         """
-        if request.POST:
-            self._model_run_service.publish_model(self.current_user, id)
-            came_from = request.params['came_from']
-            if came_from == 'catalogue':
-                redirect(url(controller='model_run', action='index'))
-            elif came_from == 'summary':
-                redirect(url(controller='model_run', action='summary', id=id))
+        if not request.method == 'POST':
+            helpers.error_flash("Model run publishing must be a post")
+            redirect(url(controller='model_run', action='index'))
+
+        self._model_run_service.publish_model(self.current_user, id)
+        redirect_back_to_came_from_for_model_run(id, request.params)
 
     def delete(self, id):
         """
@@ -143,6 +145,9 @@ class ModelRunController(BaseController):
         model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         summary_helper = SummaryControllerHelper(model_run_service=self._model_run_service)
         summary_helper.add_summary_fields_to_context(model_run, c, self.current_user)
+
+        c.user_has_model_run_being_created = \
+            self._model_run_service.get_user_has_model_run_being_created(self.current_user)
 
         return render("model_run/summary.html")
 
@@ -616,3 +621,23 @@ class ModelRunController(BaseController):
         except Exception:
             json_response['is_error'] = True
         return json_response
+
+    def duplicate(self, id=None):
+        """
+        Duplicate a model run
+        :param id: model run to duplicate
+        :return: redirect
+        """
+
+        if not request.method == 'POST':
+            helpers.error_flash("Model run duplication must be a post")
+            redirect(url(controller='model_run', action='index'))
+
+        try:
+            self._model_run_service.duplicate_run_model(id, self.current_user)
+            redirect(url=url(controller='model_run', action='submit'))
+        except NoResultFound:
+            helpers.error_flash("The model run was not duplicated because it no longer exists.")
+        except ServiceException, ex:
+            helpers.error_flash("The model run was not duplicated: %s" % ex.message)
+        redirect_back_to_came_from_for_model_run(id, request.params)

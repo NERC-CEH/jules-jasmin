@@ -384,3 +384,12 @@ class JobRunnerClient(object):
         except Exception, ex:
             log.error("Job Runner client failed to close file: %s" % ex.message)
             raise ServiceException("Error storing file on job runner: %s" % ex.message)
+
+    def duplicate_uploaded_driving_data(self, model_run_to_duplicate_id, new_model_run_id):
+        """
+        Duplicate the uploaded driving data between model runs
+        :param model_run_to_duplicate_id: id of model run to duplicate
+        :param new_model_run_id: id of the model run to duplicate to
+        :return: nothing
+        """
+        raise ServiceException("Copy of single cell uploaded data is not implemented")

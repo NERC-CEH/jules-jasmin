@@ -19,6 +19,7 @@ from joj.model import Namelist
 from joj.model.output_variable import OutputVariable
 from joj.services.land_cover_service import LandCoverService
 from joj.services.parameter_service import ParameterService
+from joj.services.dataset import DatasetService
 
 log = logging.getLogger(__name__)
 
@@ -39,11 +40,14 @@ class ModelPublished(Exception):
 class ModelRunService(DatabaseService):
     """Encapsulates operations on the Run Models"""
 
-    def __init__(self, session=Session, job_runner_client=JobRunnerClient(config),
-                 parameter_service=ParameterService()):
+    def __init__(self, session=Session,
+                 job_runner_client=JobRunnerClient(config),
+                 parameter_service=ParameterService(),
+                 dataset_service=DatasetService()):
         super(ModelRunService, self).__init__(session)
         self.parameter_service = parameter_service
         self._job_runner_client = job_runner_client
+        self._dataset_service = dataset_service
 
     def get_models_for_user(self, user):
         """
@@ -258,6 +262,20 @@ class ModelRunService(DatabaseService):
                 return self._get_model_run_being_created(session, user)
         except NoResultFound:
             return ModelRun(science_configuration_id=constants.DEFAULT_SCIENCE_CONFIGURATION)
+
+    def get_user_has_model_run_being_created(self, user):
+        """
+        Returns True if the user has a model run being created
+
+        :param user: logged in user
+        :returns: True if model run is being created for the user
+        """
+        try:
+            with self.readonly_scope() as session:
+                self._get_model_run_being_created(session, user)
+                return True
+        except NoResultFound:
+            return False
 
     def get_parameters_for_model_being_created(self, user):
         """
@@ -588,6 +606,8 @@ class ModelRunService(DatabaseService):
         :param user: the user duplicating the model
         :return: nothing
         """
+
+        id_for_user_upload_driving_dataset = self._dataset_service.get_id_for_user_upload_driving_dataset()
         self.delete_model_run_being_created(user)
 
         with self.transaction_scope() as session:
@@ -606,7 +626,7 @@ class ModelRunService(DatabaseService):
             if self._is_duplicate_name(model_run_to_duplicate.name, session, user):
                 new_model_run_name = "{} (Copy)".format(model_run_to_duplicate.name)
                 copy_id = 1
-                while self._is_duplicate_name(new_model_run_name , session, user):
+                while self._is_duplicate_name(new_model_run_name, session, user):
                     copy_id += 1
                     new_model_run_name = "{} (Copy {})".format(model_run_to_duplicate.name, copy_id)
 
@@ -627,6 +647,14 @@ class ModelRunService(DatabaseService):
                 new_land_cover_action.model_run = new_model_run
 
             session.add(new_model_run)
+
+        if model_run_to_duplicate.driving_dataset_id == id_for_user_upload_driving_dataset:
+            try:
+                self._job_runner_client.duplicate_uploaded_driving_data(model_run_to_duplicate.id, new_model_run.id)
+            except ServiceException:
+                self.delete_model_run_being_created(user)
+                raise ServiceException("Could not duplicate the model run because "
+                                       "the user uploaded data can not be duplicated")
 
     def _delete_model_run_in_session_no_checks(self, model_id, session):
         model_run = session \
