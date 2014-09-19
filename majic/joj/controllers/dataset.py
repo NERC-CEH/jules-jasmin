@@ -138,15 +138,15 @@ class DatasetController(BaseController):
         else:
             download_helper = NetcdfDatasetDownloadHelper(config=_config)
         try:
-            model_run_id, output_var_id, period, year = download_helper.validate_parameters(request.params,
-                                                                                            self.current_user)
+            model_run_id, output_var_name, period, year = download_helper.validate_parameters(request.params,
+                                                                                              self.current_user)
             model_run = self._model_run_service.get_model_by_id(self.current_user, model_run_id)
             single_cell = not model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
             file_path = download_helper.generate_output_file_path(
-                model_run_id, output_var_id, period, year, single_cell)
-            download_helper.set_response_header(response.headers, file_path)
+                model_run_id, output_var_name, period, year, single_cell)
+            download_helper.set_response_header(response.headers, file_path, model_run, output_var_name, period, year)
             # This will stream the file to the browser without loading it all in memory
             # BUT only if the .ini file does not have 'debug=true' enabled
             return download_helper.download_file_generator(file_path, model_run)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
             pass

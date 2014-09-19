@@ -24,7 +24,7 @@
 <div py:for="download in c.downloads">
     ${c.output_variable_dict[download]}
     <ul class="fa-ul"><li py:for="period in c.downloads[download]">
-            <a class="dl-link" data-output="${c.output_variable_id_dict[download]}"
+            <a class="dl-link" href="" data-output="${c.output_variable_id_dict[download]}"
                data-period="${period}"  data-model_run_id="${c.model_run.id}">
                 <i class="fa-li fa fa-download"></i>${period} (<span class="link-format">${c.download_formats[0]}</span>,
                 <py:choose>

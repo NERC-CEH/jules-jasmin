@@ -84,11 +84,23 @@ class DatasetDownloadHelper(object):
         """
         pass
 
-    def set_response_header(self, header_dict, filepath):
+    def set_response_header(self, header_dict, filepath, model_run, var_name, period, year):
         """
         Set the download information on a Pylons header
         :param header_dict: Pylons Header (response.header)
         :param filepath: File path (relative to run dir)
+        :param var_name: Variable name being downloaded
+        :param period: Period of run
+        :param model_run: Model run
+        :param year: Year to download (or None)
         :return:
         """
         pass
+
+    def _get_filename_for_download(self, model_run, var_name, period, year, extension):
+        model_name = model_run.name.strip().replace(" ", "-")
+        filename_components = [model_name, var_name, period.lower()]
+        if year is not None:
+            filename_components.append(str(year))
+        filename_base = "_".join(filename_components)
+        return filename_base + extension

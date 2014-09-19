@@ -28,19 +28,22 @@ class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
         for line in dataset.read():
             yield line
 
-    def set_response_header(self, header_dict, filepath):
+    def set_response_header(self, header_dict, filepath, model_run, var_name, period, year):
         """
         Set the download information on a Pylons header
         :param header_dict: Pylons Header (response.header)
         :param filepath: File path (relative to run dir)
+        :param var_name: Variable name being downloaded
+        :param period: Period of run
+        :param model_run: Model run
+        :param year: Year to download (or None)
         :return:
         """
-
         # Get the HTTP header from THREDDS to identify the file size
         url = self.dap_client_factory.get_full_url_for_file(filepath, service="fileServer", config=self.config)
         head = create_request_and_open_url(url, method='HEAD').headers
 
-        filename = filepath.split('/')[-1]
+        filename = self._get_filename_for_download(model_run, var_name, period, year, ".nc")
         header_dict['Content-Type'] = str(head['Content-Type'])
         header_dict['Content-Disposition'] = str('attachment; filename="%s"' % filename)
         header_dict['Content-Length'] = str(head['Content-Length'])
