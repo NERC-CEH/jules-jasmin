@@ -4,8 +4,10 @@ header
 import logging
 
 from pylons import response, config
-from pylons.controllers.util import Response
+from pylons.controllers.util import Response, abort
 from pylons.decorators import jsonify
+from repoze.who.api import get_api
+from sqlalchemy.orm.exc import NoResultFound
 
 from joj.lib.base import BaseController, request, render, c
 from joj.services.dataset import DatasetService
@@ -131,6 +133,15 @@ class DatasetController(BaseController):
         output variable ID (output), period string (period) and year (year)
         :return: NetCDF File download
         """
+        # NOTE: This controller action can be accessed without being a logged in user.
+        if request.method == 'POST':
+            who_api = get_api(request.environ)
+            authenticated, headers = who_api.login(dict(request.params))
+            if authenticated:
+                self.current_user = self._user_service.get_user_by_username(request.environ['user.username'])
+        if self.current_user is None:
+            abort(status_code=400, detail="User not logged in - action aborted")
+
         dl_format = request.params.get('format')
         _config = dict(config)
         if dl_format.lower() == 'ascii':
@@ -148,5 +159,7 @@ class DatasetController(BaseController):
             # This will stream the file to the browser without loading it all in memory
             # BUT only if the .ini file does not have 'debug=true' enabled
             return download_helper.download_file_generator(file_path, model_run)
-        except (ValueError, TypeError) as e:
-            pass
+        except (ValueError, TypeError):
+            abort(status_code=400, detail="Invalid request parameters")
+        except NoResultFound:
+            abort(status_code=400, detail="Model run ID or Output variable ID could not be found.")

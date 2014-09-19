@@ -1,7 +1,6 @@
 """
 header
 """
-from sqlalchemy.orm.exc import NoResultFound
 from pylons import config
 from joj.utils import constants
 from joj.utils.utils import insert_before_file_extension
@@ -66,11 +65,8 @@ class DatasetDownloadHelper(object):
             if period.lower() not in ['yearly', 'daily', 'monthly', 'hourly']:
                 raise ValueError  # Only these four permitted
             # Check model run viewable by user
-            try:
-                self.model_run_service.get_model_by_id(user, model_run_id)
-                output_var_name = self.model_run_service.get_output_variable_by_id(output_var_id).name
-            except NoResultFound:
-                raise ValueError
+            self.model_run_service.get_model_by_id(user, model_run_id)
+            output_var_name = self.model_run_service.get_output_variable_by_id(output_var_id).name
         except TypeError:
             raise ValueError
         return model_run_id, output_var_name, period, year

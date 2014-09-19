@@ -1,4 +1,7 @@
-# header
+"""
+header
+"""
+
 from pylons.controllers.util import abort
 
 
