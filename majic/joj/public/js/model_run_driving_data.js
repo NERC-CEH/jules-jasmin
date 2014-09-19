@@ -3,20 +3,8 @@ var radio_button_id_prefix = '#driving_dataset_';
 var click_selectors = 'tr.driving-data';
 
 var openUploadPanel = function() {
-    var uploadInput = $('#downloadBtn');
     var userUploadRadio = $('input[user_upload="true"]');
     if (userUploadRadio.is(':checked')) {
-        if ($('#form-driving-data').find('p.alert-warning').length) {
-            $('#collapse1').collapse('show');
-        }
-    } else {
-        $('#collapse1').collapse('hide');
-    }
-}
-
-var openUploadPanel2 = function() {
-    var upload = $(this).find('input[user_upload="true"]');
-    if (upload.length) {
         if ($('#form-driving-data').find('p.alert-warning').length) {
             $('#collapse1').collapse('show');
         }
@@ -51,7 +39,7 @@ var setUploadPanelClicks = function() {
  */
 $(document).ready(function() {
     EcomapsGeneral.initialise_custom_checkboxes(id_attr, radio_button_id_prefix, click_selectors);
-    //$('.driving-data').click(openUploadPanel2);
-    openUploadPanel();
+    $('#collapse1').collapse({'toggle': false})
     setUploadPanelClicks();
+    openUploadPanel();
 });
