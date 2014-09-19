@@ -8,7 +8,7 @@
     <title>Welcome</title>
     <style type="text/css">
         div.hero-unit {
-            background: url('/layout/images/3750.jpg') 15% top;
+            background: url('/layout/images/globe_top_cropped.png') no-repeat right top #000;
             color: #FFF;
         }
     </style>
@@ -17,8 +17,8 @@
 
 <body>
     <div class="hero-unit">
-         <h1>Welcome, <span py:if="c.name">${c.name}</span></h1>
-        <p>
+         <h1>Welcome<span py:if="c.name">, ${c.name}</span></h1>
+         <p>
             Use the links below to get started
         </p>
     </div>

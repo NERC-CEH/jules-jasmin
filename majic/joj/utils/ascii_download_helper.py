@@ -21,7 +21,7 @@ class AsciiDownloadHelper(object):
 #
 # Driving data: {dd_name}
 # Latitude: {lat}
-# Lon: {lon}
+# Longitude: {lon}
 #
 # The first row of data is at: {start}
 # The last row of data is at: {end}

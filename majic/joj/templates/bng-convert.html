@@ -5,23 +5,23 @@
     <link rel="stylesheet" href="../layout/bng-convert.css"/>
 </head>
 <body>
-<div class="accordion bng-accordion" id="bng-accordion">
+<div class="accordion bng-accordion" id="bng-accordion$id">
     <div class="accordion-group bng-accordion-group">
         <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#bng-accordion"
-               href="#collapse-bng">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#bng-accordion$id"
+               href="#collapse-bng$id">
                 I want to enter this in British National Grid coordinates
             </a>
         </div>
-        <div id="collapse-bng" class="accordion-body collapse">
+        <div id="collapse-bng$id" class="accordion-body collapse">
             <div class="accordion-inner">
                 <p>Enter site location as all-numeric eastings / northings
                     <br/><small>e.g. 451246 / 206416 (Oxford)</small></p>
                 ${h.html_tags.text('bng_e', style='width:60px', placeholder='Eastings')}
                 &nbsp;/&nbsp;
                 ${h.html_tags.text('bng_n', style='width:60px', placeholder='Northings')}
-                <a class="btn btn-info pull-right" href="#!" id="convert-bng">Convert</a>
-                <div id="bng-error" class="alert alert-danger">
+                <a class="btn btn-info pull-right convert-bng" href="#!">Convert</a>
+                <div class="alert alert-danger bng-error">
                     Couldn't convert these coordinates
                 </div>
             </div>

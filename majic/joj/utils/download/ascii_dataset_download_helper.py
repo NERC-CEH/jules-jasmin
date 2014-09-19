@@ -21,7 +21,7 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
 # Model Run Name: {mr_name}
 # Date Completed: {mr_date}
 # Latitude: {lat}
-# Lon: {lon}
+# Longitude: {lon}
 
 # The output variable in this file is:
 # {longname} ({units})

@@ -201,6 +201,69 @@ class ModelRunController(BaseController):
             errors=errors,
             auto_error_formatter=BaseController.error_formatter)
 
+    def upload_driving_data(self):
+        # This is a request to to upload a driving data file
+        driving_data_controller_helper = DrivingDataControllerHelper()
+
+        driving_datasets = self._dataset_service.get_driving_datasets(self.current_user)
+        old_driving_dataset = None
+        values = dict(request.params)
+
+        model_run = None
+        try:
+            model_run = \
+                self._model_run_service.get_model_being_created_with_non_default_parameter_values(self.current_user)
+        except NoResultFound:
+            helpers.error_flash(u"You must create a model run before you can choose a driving data set")
+            redirect(url(controller='model_run', action='create'))
+        errors = {}
+        if model_run.driving_dataset_id is not None:
+            old_driving_dataset = find_by_id(driving_datasets, model_run.driving_dataset_id)
+        try:
+            driving_data_controller_helper.save_uploaded_driving_data(values, errors,
+                                                                      self._model_run_service,
+                                                                      old_driving_dataset,
+                                                                      self.current_user)
+            if len(errors) == 0:
+                # Reload the current page
+                helpers.success_flash("Your driving data file has been successfully uploaded.")
+                redirect(url(controller='model_run', action='driving_data'))
+                return
+            else:
+                c.errors = errors
+                html = render('model_run/driving_data.html')
+                return htmlfill.render(
+                    html,
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
+        except ServiceException as e:
+            helpers.error_flash(e.message)
+            redirect(url(controller='model_run', action='driving_data'))
+
+    def download_driving_data(self):
+        # This is a request to to download driving data
+        driving_data_controller_helper = DrivingDataControllerHelper()
+
+        values = dict(request.params)
+        errors = {}
+        try:
+            file_generator = driving_data_controller_helper.download_driving_data(values, errors, response)
+
+            if len(errors) > 0:
+                c.errors = errors
+                return htmlfill.render(
+                    render('model_run/driving_data.html'),
+                    defaults=values,
+                    errors=errors,
+                    auto_error_formatter=BaseController.error_formatter)
+            # This will stream the file to the browser without loading it all in memory
+            # BUT only if the .ini file does not have 'debug=true' enabled
+            return file_generator
+        except (DapClientException, ServiceException) as e:
+            helpers.error_flash("Couldn't download data: %s." % e.message)
+            redirect(url(controller='model_run', action='driving_data'))
+
     def driving_data(self):
         """
         Select a driving data set
@@ -253,49 +316,50 @@ class ModelRunController(BaseController):
             old_driving_dataset = None
             if model_run.driving_dataset_id is not None:
                 old_driving_dataset = find_by_id(driving_datasets, model_run.driving_dataset_id)
-
-            if action == u'Upload':
-                # This is a request to to upload a driving data file
-                try:
-                    driving_data_controller_helper.save_uploaded_driving_data(values, errors,
-                                                                              self._model_run_service,
-                                                                              old_driving_dataset,
-                                                                              self.current_user)
-                    if len(errors) == 0:
-                        # Reload the current page
-                        helpers.success_flash("Your driving data file has been successfully uploaded.")
-                        redirect(url(controller='model_run', action='driving_data'))
-                        return
-                    else:
-                        c.errors = errors
-                        html = render('model_run/driving_data.html')
-                        return htmlfill.render(
-                            html,
-                            defaults=values,
-                            errors=errors,
-                            auto_error_formatter=BaseController.error_formatter)
-                except ServiceException as e:
-                    helpers.error_flash(e.message)
-                    redirect(url(controller='model_run', action='driving_data'))
-            elif action == u'Download':
-                # This is a request to to download driving data
-                try:
-                    file_generator = driving_data_controller_helper.download_driving_data(values, errors, response)
-
-                    if len(errors) > 0:
-                        c.errors = errors
-                        return htmlfill.render(
-                            render('model_run/driving_data.html'),
-                            defaults=values,
-                            errors=errors,
-                            auto_error_formatter=BaseController.error_formatter)
-                    # This will stream the file to the browser without loading it all in memory
-                    # BUT only if the .ini file does not have 'debug=true' enabled
-                    return file_generator
-                except (DapClientException, ServiceException) as e:
-                    helpers.error_flash("Couldn't download data: %s." % e.message)
-                    redirect(url(controller='model_run', action='driving_data'))
-            else:
+            #
+            # if action == u'Upload':
+            #     # This is a request to to upload a driving data file
+            #     try:
+            #         driving_data_controller_helper.save_uploaded_driving_data(values, errors,
+            #                                                                   self._model_run_service,
+            #                                                                   old_driving_dataset,
+            #                                                                   self.current_user)
+            #         if len(errors) == 0:
+            #             # Reload the current page
+            #             helpers.success_flash("Your driving data file has been successfully uploaded.")
+            #             redirect(url(controller='model_run', action='driving_data'))
+            #             return
+            #         else:
+            #             c.errors = errors
+            #             html = render('model_run/driving_data.html')
+            #             return htmlfill.render(
+            #                 html,
+            #                 defaults=values,
+            #                 errors=errors,
+            #                 auto_error_formatter=BaseController.error_formatter)
+            #     except ServiceException as e:
+            #         helpers.error_flash(e.message)
+            #         redirect(url(controller='model_run', action='driving_data'))
+            # elif action == u'Download':
+            #     # This is a request to to download driving data
+            #     try:
+            #         file_generator = driving_data_controller_helper.download_driving_data(values, errors, response)
+            #
+            #         if len(errors) > 0:
+            #             c.errors = errors
+            #             return htmlfill.render(
+            #                 render('model_run/driving_data.html'),
+            #                 defaults=values,
+            #                 errors=errors,
+            #                 auto_error_formatter=BaseController.error_formatter)
+            #         # This will stream the file to the browser without loading it all in memory
+            #         # BUT only if the .ini file does not have 'debug=true' enabled
+            #         return file_generator
+            #     except (DapClientException, ServiceException) as e:
+            #         helpers.error_flash("Couldn't download data: %s." % e.message)
+            #         redirect(url(controller='model_run', action='driving_data'))
+            # else:
+            if True:
 
                 try:
                     driving_dataset = find_by_id(driving_datasets, int(values['driving_dataset']))
