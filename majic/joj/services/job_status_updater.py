@@ -195,9 +195,8 @@ class JobStatusUpdaterService(DatabaseService):
         """
         # Output dataset types will always be the same for all output in a model run
         # So pick a representative output to test
-        single_cell = not model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
         dataset_type_value = constants.DATASET_TYPE_COVERAGE
-        if single_cell:
+        if model_run.is_for_single_cell():
             dataset_type_value = constants.DATASET_TYPE_SINGLE_CELL
         else:
             filepath = self._create_file_path(model_run, run_id, selected_output_profile_names[0].get_value_as_python())

@@ -45,8 +45,8 @@
             by ${c.model_run.user.name}
         </span>
     </div>
-    <div class="span6"></div>
-    <div class="span2 ico-span">
+    <div class="span5"></div>
+    <div class="span3 ico-span">
         <div class="row">
             <!--The Publish Icon-->
             <div class="span1">
@@ -69,19 +69,24 @@
                     <div class="ico-text purple">Publish</div>
                 </form>
             </div>
-            <!--The Copy Icon
-
-            When reinstated: take 1 from the span for status and increase containing div span by 1
-
+            <!-- The Duplicate Icon -->
             <div class="span1">
                 <br/>
-                <a href="#" onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('yellow')"
-                            onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('yellow')">
-                    <i class="fa fa-copy fa-2x ico"></i>
-                </a>
-                <div class="ico-text yellow">Duplicate</div>
+                <form action="${h.url(controller='model_run', action='duplicate', id=c.model_run.id)}"
+                        method="post"
+                        py:attrs="{'data-confirm':'If you duplicate this run you will replace the new model run you are creating. Are you sure you want to duplicate this run?'}
+                                   if c.user_has_model_run_being_created else {}">
+                    <input type="hidden" name="came_from" id="came_from_duplicate" value="summary"/>
+                    <a href="#"
+                       onclick="$(this).parent().submit()"
+                       onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('yellow')"
+                       onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('yellow')">
+                        <i class="fa fa-copy fa-2x ico"></i>
+                    </a>
+                    <div class="ico-text yellow">Duplicate</div>
+                </form>
             </div>
-            The Delete Icon -->
+            <!-- The Delete Icon -->
             <div class="span1">
                 <br/>
                 <i py:if="not c.model_run.status.allow_delete(c.user.is_admin())" class="fa fa-times-circle fa-2x ico-disabled"></i>

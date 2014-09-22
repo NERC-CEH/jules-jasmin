@@ -308,11 +308,16 @@ class JobRunnerClient(object):
         try:
             url = self._config['job_runner_url'] + 'job_file/new'
             response = self._post_securely(url, data)
-            if not response.status_code == 200:
-                raise ServiceException(response.text)
-        except Exception, ex:
-            log.error("Job Runner client failed to open file: %s" % ex.message)
-            raise ServiceException("Error storing file on job runner: %s" % ex.message)
+
+        except Exception:
+            log.exception("Job Runner client failed to open file")
+            raise ServiceException("Error storing file on job runner.")
+
+        self._interpret_status_code(
+            response,
+            "Job Runner client failed to open file",
+            "Error storing file on job runner:",
+            "Error storing file on job runner.")
 
     def append_to_file(self, model_run_id, filename, line):
         """
@@ -336,11 +341,15 @@ class JobRunnerClient(object):
                 url = self._config['job_runner_url'] + 'job_file/append'
                 response = self._post_securely(url, data=data)
                 self._file_lines_store = ''
-                if not response.status_code == 200:
-                    raise ServiceException(response.text)
-            except Exception, ex:
-                log.error("Job Runner client failed to append to a file: %s" % ex.message)
-                raise ServiceException("Error storing file on job runner: %s" % ex.message)
+            except Exception:
+                log.exception("Job Runner client failed to append to a file")
+                raise ServiceException("Error storing file on job runner.")
+
+            self._interpret_status_code(
+                response,
+                "Job Runner client failed to append to a file",
+                "Error storing file on job runner:",
+                "Error storing file on job runner.")
 
     def delete_file(self, model_run_id, filename):
         """
@@ -356,11 +365,16 @@ class JobRunnerClient(object):
         try:
             url = self._config['job_runner_url'] + 'job_file/delete'
             response = self._post_securely(url, data=data)
-            if not response.status_code == 200:
-                raise ServiceException(response.text)
-        except Exception, ex:
-            log.error("Job Runner client failed to delete file: %s" % ex.message)
-            raise ServiceException("Error storing file on job runner: %s" % ex.message)
+
+        except Exception:
+            log.exception("Job Runner client failed to delete file")
+            raise ServiceException("Error storing file on job runner.")
+
+        self._interpret_status_code(
+            response,
+            "Job Runner client failed to delete file",
+            "Error storing file on job runner:",
+            "Error storing file on job runner.")
 
     def close_file(self, model_run_id, filename):
         """
@@ -379,8 +393,57 @@ class JobRunnerClient(object):
             url = self._config['job_runner_url'] + 'job_file/append'
             response = self._post_securely(url, data=data)
             self._file_lines_store = ''
-            if not response.status_code == 200:
-                raise ServiceException(response.text)
-        except Exception, ex:
-            log.error("Job Runner client failed to close file: %s" % ex.message)
-            raise ServiceException("Error storing file on job runner: %s" % ex.message)
+        except Exception:
+            log.exception("Job Runner client failed to close file")
+            raise ServiceException("Error storing file on job runner.")
+
+        self._interpret_status_code(
+            response,
+            "Job Runner client failed to close file",
+            "Error storing file on job runner:",
+            "Error storing file on job runner.")
+
+    def duplicate_uploaded_driving_data(self, model_run_to_duplicate_id, new_model_run_id):
+        """
+        Duplicate the uploaded driving data between model runs
+        :param model_run_to_duplicate_id: id of model run to duplicate
+        :param new_model_run_id: id of the model run to duplicate to
+        :return: nothing
+        """
+        data = {constants.JSON_MODEL_RUN_ID: new_model_run_id,
+                constants.JSON_MODEL_FILENAME: constants.USER_UPLOAD_FILE_NAME,
+                constants.JSON_MODEL_RUN_ID_TO_DUPLICATE_FROM: model_run_to_duplicate_id}
+        try:
+            url = self._config['job_runner_url'] + 'job_file/duplicate'
+            response = self._post_securely(url, data=data)
+        except Exception:
+            log.exception("Job runner client failed to duplicate a file")
+            raise ServiceException("Job runner client failed to duplicate a file")
+
+        self._interpret_status_code(
+            response,
+            "Failed to duplicate file",
+            "Job runner failed to duplicate the file. Error:",
+            "Job runner failed to duplicate the file.")
+
+    def _interpret_status_code(self,
+                               response,
+                               log_error_text,
+                               service_exception_with_text_prefix,
+                               service_exception_with_no_text):
+        """
+        Interpret the status code and if error raise a service exception
+        :param response: response
+        :param log_error_text: error text for log file
+        :param service_exception_with_text_prefix: exception to which the returned error is appended
+        :param service_exception_with_no_text: text for when there is no error
+        :return: nothing
+        """
+        if response.status_code == requests.codes.ok:
+            return
+
+        log.error("{}. Response text: {}".format(log_error_text, response.text))
+        if response.status_code == requests.codes.bad_request:
+            raise ServiceException("{} {}".format(service_exception_with_text_prefix, response.text))
+
+        raise ServiceException(service_exception_with_no_text)

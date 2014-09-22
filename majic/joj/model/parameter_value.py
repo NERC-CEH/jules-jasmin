@@ -1,5 +1,6 @@
+"""
 # Header
-
+"""
 
 from joj.model.meta import Base
 
@@ -21,6 +22,17 @@ class ParameterValue(Base):
     model_run_id = Column(Integer, ForeignKey('model_runs.id'))
     parameter_id = Column(Integer, ForeignKey('parameters.id'))
     group_id = Column(Integer)
+
+    def duplicate_from(self, other):
+        """
+        Duplicate parameter value values from another instance of a parameter value
+        :param other: the parameter value to copy
+        :return: self
+        """
+        self.parameter_id = other.parameter_id
+        self.value = other.value
+        self.group_id = other.group_id
+        return self
 
     def __repr__(self):
         """String representation"""
