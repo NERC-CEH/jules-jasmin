@@ -1,8 +1,12 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/">
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
     <script src="../../js/summary_download.js"></script>
 <py:if test="c.extents_values['site'] == 'multi'">
-<div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.</div>
+<div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.
+    <a href="/home/faq#q_download_multi_years">
+        <img src="/layout/icons/faq-icon.png"/>
+        </a></div>
     <br/>
 <div class="input-prepend" style="margin-right:25px;">
     <span class="add-on">Year</span>

@@ -3,11 +3,16 @@
 Provides the BaseController class for subclassing, and other objects
 utilized by Controllers.
 """
+# Some of these 'unused' imports are actually imported in other places in the code
+# from this file, so don't remove them without checking.
+from pylons import cache, config, request, response, session, url
+from pylons.controllers.util import abort, etag_cache, redirect
+from pylons.decorators import jsonify, validate
+from pylons.i18n import ungettext, N_
+from pylons.templating import render_genshi as render
 from formencode.rewritingparser import html_quote
-from pylons import config, url
 from pylons import tmpl_context as c
 from pylons.controllers import WSGIController
-from pylons.controllers.util import redirect
 from paste import httpexceptions
 import paste.request
 from sqlalchemy.orm.exc import NoResultFound
