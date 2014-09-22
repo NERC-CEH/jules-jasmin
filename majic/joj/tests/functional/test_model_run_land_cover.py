@@ -112,7 +112,7 @@ class TestModelRunLandCover(TestController):
     def test_GIVEN_nothing_WHEN_get_THEN_values_rendered(self):
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        values = LandCoverService().get_land_cover_values(return_ice=False)
+        values = LandCoverService().get_land_cover_values(None, return_ice=False)
         for value in values:
             assert_that(response.normal_body, contains_string(str(value.name)))
 
@@ -291,7 +291,7 @@ class TestModelRunLandCoverSingleCell(TestController):
     def test_GIVEN_land_cover_values_WHEN_page_get_THEN_land_cover_type_names_rendered(self):
         self.set_up_single_cell_model_run()
         response = self.app.get(url(controller='model_run', action='land_cover'))
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
         names = [str(val.name) for val in lc_vals]
         assert_that(response.normal_body, string_contains_in_order(*names))
@@ -299,7 +299,7 @@ class TestModelRunLandCoverSingleCell(TestController):
     def test_GIVEN_available_driving_datasets_WHEN_page_get_THEN_default_fractional_cover_rendered(self):
         self.set_up_single_cell_model_run()
         response = self.app.get(url(controller='model_run', action='land_cover'))
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
         string_names_values = []
         for val in lc_vals:
@@ -315,7 +315,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
 
         string_names_values = []
@@ -332,7 +332,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
 
         string_names_values = []
@@ -349,7 +349,7 @@ class TestModelRunLandCoverSingleCell(TestController):
 
         response = self.app.get(url(controller='model_run', action='land_cover'))
 
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
 
         string_names_values = []
@@ -482,7 +482,7 @@ class TestModelRunLandCoverSingleCell(TestController):
                     'land_cover_value_7': u'10',
                     'land_cover_value_8': u'15'})
 
-        lc_vals = self.land_cover_service.get_land_cover_values()
+        lc_vals = self.land_cover_service.get_land_cover_values(None)
         del lc_vals[-1]  # Remove the ice
         frac_vals = ['40', '25', '5', '10', '10', '5', '10', '15']
         string_names_values = []

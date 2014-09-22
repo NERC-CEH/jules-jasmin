@@ -217,7 +217,7 @@ class ViewdataController(WmsvizController):
         c.layer_id = request.params.get('layerid')
 
         dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
-        c.model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
+        c.model_run = model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
 
         c.dataset = dataset
         c.dimensions = []
@@ -236,7 +236,7 @@ class ViewdataController(WmsvizController):
             layer = self.get_layers_for_dataset(dataset)[0]
             layer['title'] = dataset.name
             c.layers = [layer]
-            c.dimensions = self.get_variable_dimensions_for_ancils(dataset)
+            c.dimensions = self.get_variable_dimensions_for_ancils(dataset, model_run)
 
         for period in ['Daily', 'Monthly', 'Hourly', 'Yearly']:
             if period in dataset.name:
@@ -262,17 +262,18 @@ class ViewdataController(WmsvizController):
                        'units': u'ISO8601'}]
         return dimensions
 
-    def get_variable_dimensions_for_ancils(self, dataset):
+    def get_variable_dimensions_for_ancils(self, dataset, model_run):
         """
         Get variable dimensions object as needed for the map page - for ancils file
         :param dataset: Dataset
+        :param model_run: model run
         :return: Dimensions object
         """
         dap_client = self.dap_client_factory.get_ancils_dap_client(dataset.netcdf_url)
         variables = dap_client.get_variable_names()
         # If this is a modified
         if dataset.dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
-            land_cover_values = self.land_cover_service.get_land_cover_values(return_ice=True)
+            land_cover_values = self.land_cover_service.get_land_cover_values(model_run, return_ice=True)
             names = []
             for variable in variables:
                 idx = int(variable.split()[-1])

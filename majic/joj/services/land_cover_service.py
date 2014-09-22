@@ -34,19 +34,28 @@ class LandCoverService(DatabaseService):
         with self.readonly_scope() as session:
             return self._get_land_cover_region_by_id_in_session(id, session)
 
-    def get_land_cover_values(self, return_ice=True):
+    def get_land_cover_values(self, python_parameter_values, return_ice=True):
         """
         Return all available land cover values
+        :param python_parameter_values: an object on which get_python_parameter_value can be called to get a value
         :return: List of Land Cover Values
         :param return_ice: Whether to return the ice value
         """
         with self.readonly_scope() as session:
             land_cover_values = session.query(LandCoverValue).all()
-        if return_ice:
+        ice_index_from_parameters = None
+        if python_parameter_values is not None:
+            ice_index_from_parameters = python_parameter_values.get_python_parameter_value(
+                constants.JULES_PARAM_MODEL_LEVELS_ICE_INDEX)
+        has_ice = ice_index_from_parameters is None and ice_index_from_parameters != -1
+        if return_ice and has_ice:
             return land_cover_values
-        else:
-            ice_index = self.find_ice_index(land_cover_values)
-            non_ice_values = []
+
+        ice_index = self.find_ice_index(land_cover_values)
+        if ice_index is None:
+            return  ice_index
+
+        non_ice_values = []
         for land_cover_value in land_cover_values:
             if land_cover_value.index != ice_index:
                 non_ice_values.append(land_cover_value)
@@ -147,7 +156,7 @@ class LandCoverService(DatabaseService):
             except DapClientException:
                 # if we get a dap exception just use the defaults
                 pass
-        ntypes = len(self.get_land_cover_values(return_ice=True))
+        ntypes = len(self.get_land_cover_values(model_run, return_ice=True))
         return ntypes * [0.0]
 
     def save_default_soil_properties(self, model_run, user):
@@ -200,9 +209,12 @@ class LandCoverService(DatabaseService):
         """
         Search through a list of land cover types to find the index of the ice type
         :param land_cover_types: List of land cover types
-        :return: The 1-based index of the ice type
+        :return: The 1-based index of the ice type; or None if not found
         """
-        return [type.index for type in land_cover_types if type.name == constants.FRACTIONAL_ICE_NAME][0]
+        for type in land_cover_types:
+            if type.name == constants.FRACTIONAL_ICE_NAME:
+                return type.index
+        return None
 
     def update_regions_and_categories_in_session(self, session, driving_dataset, regions):
         """

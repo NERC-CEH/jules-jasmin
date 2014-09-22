@@ -72,6 +72,8 @@ class JobStatusUpdaterService(DatabaseService):
                 self._send_email(run_model)
             except DapClientException, ex:
                 log.exception("DAP client threw an exception: %s", ex.message)
+            except Exception, ex:
+                log.exception("General exception was thrown: %s", ex.message)
 
         self._check_total_allocation_and_alert()
 
@@ -235,15 +237,19 @@ class JobStatusUpdaterService(DatabaseService):
         for var in model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_PERIOD):
             selected_output_periods[var.group_id] = var.get_value_as_python()
 
-        dataset_type = self._get_output_dataset_type(model_run, run_id, selected_output_profile_names, session)
+        if len(selected_output_profile_names) > 0:
+            dataset_type = self._get_output_dataset_type(model_run, run_id, selected_output_profile_names, session)
 
-        for selected_output_profile_name in selected_output_profile_names:
-            file_path = self._create_file_path(model_run, run_id, selected_output_profile_name.get_value_as_python())
-            is_input = False
+            for selected_output_profile_name in selected_output_profile_names:
+                file_path = self._create_file_path(
+                    model_run,
+                    run_id,
+                    selected_output_profile_name.get_value_as_python())
+                is_input = False
 
-            profile_name = utils.convert_time_period_to_name(
-                selected_output_periods[selected_output_profile_name.group_id])
-            self._create_dataset(dataset_type, file_path, is_input, model_run, session, profile_name)
+                profile_name = utils.convert_time_period_to_name(
+                    selected_output_periods[selected_output_profile_name.group_id])
+                self._create_dataset(dataset_type, file_path, is_input, model_run, session, profile_name)
 
         input_locations = session \
             .query(DrivingDatasetLocation) \

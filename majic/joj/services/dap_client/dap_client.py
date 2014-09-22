@@ -61,9 +61,17 @@ class DapClient(BaseDapClient):
         try:
             return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
         except (KeyError, ValueError):
-            fill_value = self._variable._FillValue
-            missing_value = self._variable.missing_value
-            valid_array = masked_equal(masked_equal(self._variable.array, missing_value), fill_value)
+            fill_value = self._variable.attributes.get('_FillValue', None)
+            missing_value = self._variable.attributes.get('missing_value', None)
+            if fill_value is not None and missing_value is not None:
+                valid_array = masked_equal(masked_equal(self._variable.array, missing_value), fill_value)
+            elif fill_value is None and missing_value is None:
+                valid_array = self._variable.array
+            elif fill_value is not None:
+                valid_array = masked_equal(self._variable.array, fill_value)
+            else:
+                valid_array = masked_equal(self._variable.array, missing_value)
+
             min = float(amin(valid_array))
             max = float(amax(valid_array))
             if math.isnan(min):

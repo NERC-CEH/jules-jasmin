@@ -12,12 +12,11 @@ class VariableSplitter(object):
     and splits that variable into an equivalent number of single layer variables.
     """
 
-    def convert(self, in_path, out_path, variable_to_split='frac', variable_prefix='Land Cover Fraction'):
+    def convert(self, in_path, out_path, variable_prefix='Land Cover Fraction'):
         """
         Convert a netCDF file to have multiple variables (rather than a pseudo dimension)
         :param in_path: File to convert
         :param out_path: Path to output to
-        :param variable_to_split: Name of variable to split
         :param variable_prefix: Prefix for created variables
         :return:
         """
@@ -28,36 +27,29 @@ class VariableSplitter(object):
         ds_out = Dataset(out_path, 'w')
 
         # Copy across the latitude, longitude dimensions
-        len_lat = len(ds_in.dimensions['Latitude'])
-        len_lon = len(ds_in.dimensions['Longitude'])
-        ds_out.createDimension('Latitude', len_lat)
-        ds_out.createDimension('Longitude', len_lon)
+        for key, dim in ds_in.dimensions.iteritems():
+            dim_len = len(dim)
+            ds_out.createDimension(key, dim_len)
 
-        # Now copy the latitude, longitude variables
-        lat_in = ds_in.variables['Latitude']
-        datatype = self._get_datatype_string(lat_in)
-        latitude = ds_out.createVariable('Latitude', datatype, ('Latitude',))
-        latitude[:] = lat_in[:]
-        self._copy_attrs(lat_in, latitude)
+        for var_name, variable in ds_in.variables.iteritems():
+            if variable.ndim == 3:
+                # Now split the layer we need and copy it over
+                long_name = '%s - Index %s'
+                var_to_split = ds_in.variables[var_name]
+                dims_to_keep = var_to_split.dimensions[1:]
+                datatype = self._get_datatype_string(var_to_split)
+                for layer_index in range(len(var_to_split)):
+                    layer_name = long_name % (variable_prefix, str(layer_index + 1))
+                    layer = ds_out.createVariable(layer_name, datatype, dims_to_keep)
+                    layer.long_name = layer_name
+                    self._copy_attrs(variable, layer)
+                    layer[:] = var_to_split[layer_index]
 
-        lon_in = ds_in.variables['Longitude']
-        datatype = self._get_datatype_string(lat_in)
-        longitude = ds_out.createVariable('Longitude', datatype, ('Longitude',))
-        longitude[:] = lon_in[:]
-        self._copy_attrs(lon_in, longitude)
-
-        # Now split the layer we need and copy it over
-        long_name = '%s - Index %s'
-        var_to_split = ds_in.variables[variable_to_split]
-        dims_to_keep = var_to_split.dimensions[1:]
-        datatype = self._get_datatype_string(var_to_split)
-        for layer_index in range(len(var_to_split)):
-            layer_name = long_name % (variable_prefix, str(layer_index + 1))
-            layer = ds_out.createVariable(layer_name, datatype, dims_to_keep)
-            layer.long_name = layer_name
-            layer.missing_value = var_to_split.missing_value
-            values = var_to_split[layer_index]
-            layer[:] = values
+            else:
+                datatype = self._get_datatype_string(variable)
+                copied_variable = ds_out.createVariable(var_name, datatype, variable.dimensions)
+                copied_variable[:] = variable[:]
+                self._copy_attrs(variable, copied_variable)
 
         # Copy across the attributes
         self._copy_attrs(ds_in, ds_out)
@@ -96,7 +88,10 @@ if __name__ == '__main__':
             if not os.path.exists(vis_path):
                 frac_converter = VariableSplitter()
                 frac_converter.convert(file_path, vis_path)
+            else:
+                print "File already exists and has been converted"
         exit(0)
     except Exception as e:
+        print e.message
         pass
     exit(-1)

@@ -160,9 +160,12 @@ class JobRunnerClient(object):
         json_land_cover = self._create_json_land_cover(parameters)
 
         # Add the ice index
-        lc_types = self._land_cover_service.get_land_cover_values(return_ice=True)
-        ice_index = self._land_cover_service.find_ice_index(lc_types)
-        json_land_cover[constants.JSON_LAND_COVER_ICE_INDEX] = ice_index
+        ice_index_from_parameters = utils.get_first_parameter_value_from_parameter_list(
+            parameters,
+            constants.JULES_PARAM_MODEL_LEVELS_ICE_INDEX)
+        if ice_index_from_parameters is None:
+            ice_index_from_parameters = constants.JULES_PARAM_MODEL_LEVELS_ICE_INDEX_DEFAULT_VALUE
+        json_land_cover[constants.JSON_LAND_COVER_ICE_INDEX] = ice_index_from_parameters
 
         # Add the land cover actions
         json_actions = []

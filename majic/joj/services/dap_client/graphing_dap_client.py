@@ -49,8 +49,8 @@ class GraphingDapClient(DapClient):
         variable_data = [data[0][0] for data in data_slice.tolist()]
         timestamps = self._time.tolist()
         data = []
-        missing_value = self._variable.missing_value
-        fill_value = self._variable._FillValue
+        missing_value = self._variable.attributes.get('missing_value', None)
+        fill_value = self._variable.attributes.get('_FillValue', None)
         for i in range(len(variable_data)):
             time_index = time_index_start + i
             # Time should be in millis after 1970 epoch for FLOT

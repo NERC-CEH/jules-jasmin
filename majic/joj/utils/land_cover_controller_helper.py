@@ -32,7 +32,7 @@ class LandCoverControllerHelper(object):
             tmpl_context.land_cover_actions = []
         else:
             tmpl_context.land_cover_actions = land_cover_actions
-        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values(return_ice=False)
+        tmpl_context.land_cover_values = self.land_cover_service.get_land_cover_values(model_run, return_ice=False)
         tmpl_context.land_cover_categories = self.land_cover_service.get_land_cover_categories(
             model_run.driving_dataset_id)
 
@@ -52,7 +52,7 @@ class LandCoverControllerHelper(object):
         else:
             fractional_values = [float(v) for v in fractional_string.split()]
 
-        tmpl_context.land_cover_types = self.land_cover_service.get_land_cover_values()
+        tmpl_context.land_cover_types = self.land_cover_service.get_land_cover_values(model_run)
         ice_index = self.land_cover_service.find_ice_index(tmpl_context.land_cover_types)
         tmpl_context.ice_index = ice_index
 
@@ -78,7 +78,7 @@ class LandCoverControllerHelper(object):
         :param model_run: The model run being created
         :return:
         """
-        self._validate_values(values, errors, model_run.driving_dataset)
+        self._validate_values(values, errors, model_run.driving_dataset, model_run)
         if len(errors) == 0:
             land_cover_actions = []
             actions = []
@@ -104,13 +104,14 @@ class LandCoverControllerHelper(object):
         land_cover_val_prefix = "land_cover_value_"
         land_cover_ice_key = "land_cover_ice"
 
-        types = self.land_cover_service.get_land_cover_values()
+        types = self.land_cover_service.get_land_cover_values(model_run)
         ntypes = len(types)
         ice_index = self.land_cover_service.find_ice_index(types)
 
         sorted_fractional_values = ntypes * [Decimal(0.0)]
         if land_cover_ice_key in values:
-            sorted_fractional_values[ice_index - 1] = Decimal(1.0)
+            if ice_index is not None:
+                sorted_fractional_values[ice_index - 1] = Decimal(1.0)
         else:
             for key in values:
                 if land_cover_val_prefix in key:
@@ -122,7 +123,8 @@ class LandCoverControllerHelper(object):
                             errors[key] = "Please enter a positive number"
                     except InvalidOperation:
                         errors[key] = "Please enter a number"
-            sorted_fractional_values[ice_index - 1] = Decimal(0.0)
+            if ice_index is not None:
+                sorted_fractional_values[ice_index - 1] = Decimal(0.0)
 
         if not sum(sorted_fractional_values) == 1.0:
             errors['land_cover_frac'] = 'The sum of all the land cover fractions must be 100%'
@@ -131,11 +133,11 @@ class LandCoverControllerHelper(object):
             self.land_cover_service.save_fractional_land_cover_for_model(model_run, fractional_string)
             self.land_cover_service.save_default_soil_properties(model_run, user)
 
-    def _validate_values(self, values, errors, driving_data):
+    def _validate_values(self, values, errors, driving_data, model_run):
         # Check that:
         # - Values correspond to known land cover types
         # - Region IDs correspond to recognised regions for the current driving_data
-        land_cover_values = self.land_cover_service.get_land_cover_values()
+        land_cover_values = self.land_cover_service.get_land_cover_values(model_run)
         land_cover_value_ids = [lc_type.id for lc_type in land_cover_values]
         try:
             for key in values:
@@ -149,7 +151,7 @@ class LandCoverControllerHelper(object):
             errors['land_cover_actions'] = "Value is not an integer"
 
     def _validate_land_cover_actions(self, errors, land_cover_actions, model_run):
-        land_cover_values = self.land_cover_service.get_land_cover_values()
+        land_cover_values = self.land_cover_service.get_land_cover_values(model_run)
         land_cover_value_ids = [lc_type.id for lc_type in land_cover_values]
 
         for action in land_cover_actions:

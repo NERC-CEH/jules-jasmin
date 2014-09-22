@@ -120,14 +120,14 @@ class TestLandCoverService(TestWithFullModelRun):
         assert_that(returned_region.category.name, is_("Countries"))
 
     def test_GIVEN_land_cover_values_WHEN_get_land_cover_values_THEN_land_cover_values_returned(self):
-        lc_values = self.land_cover_service.get_land_cover_values()
+        lc_values = self.land_cover_service.get_land_cover_values(None)
         assert_that(len(lc_values), is_(9))
         names = [lc_value.name for lc_value in lc_values]
         assert 'Urban' in names
         assert constants.FRACTIONAL_ICE_NAME in names
 
     def test_GIVEN_return_no_ice_WHEN_get_land_cover_values_THEN_land_cover_values_returned(self):
-        lc_values = self.land_cover_service.get_land_cover_values(return_ice=False)
+        lc_values = self.land_cover_service.get_land_cover_values(None, return_ice=False)
         assert_that(len(lc_values), is_(8))
         names = [lc_value.name for lc_value in lc_values]
         assert 'Urban' in names

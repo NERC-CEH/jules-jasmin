@@ -128,6 +128,7 @@ def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist
             if parameter.name == parameter_namelist_name[1]:
                 if len(parameter.parameter_values) > 0:
                     return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+    return None
 
 
 def set_parameter_value_in_parameter_list(parameters, parameter_namelist_name, python_value):

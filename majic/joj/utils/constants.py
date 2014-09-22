@@ -124,7 +124,9 @@ DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_til
                     'rgrainl', 'snow_ds', 'snow_ice', 'snow_liq', 'tsnow']
 
 # Set the timestep length in seconds
-TIMESTEP_LEN = 60 * 60  # One hour
+TIMESTEP_LEN = 30 * 60  # half an hour
+
+# Sets the spin up duration in ywears (can not be 0)
 SPINUP_DURATION_YEARS = 5
 
 # Set the name of the run and consequently the name of the output files
@@ -216,6 +218,7 @@ JULES_PARAM_SURF_HGT_ZERO_HEIGHT = [JULES_NML_SURF_HGT, "zero_height"]
 JULES_NML_MODEL_LEVELS = "JULES_MODEL_LEVELS"
 JULES_PARAM_NSMAX = [JULES_NML_MODEL_LEVELS, "nsmax"]
 JULES_PARAM_MODEL_LEVELS_ICE_INDEX = [JULES_NML_MODEL_LEVELS, "ice"]
+JULES_PARAM_MODEL_LEVELS_ICE_INDEX_DEFAULT_VALUE = 9
 JULES_PARAM_MODEL_LEVELS_NNVG = [JULES_NML_MODEL_LEVELS, "nnvg"]
 
 JULES_NML_DRIVE = "JULES_DRIVE"

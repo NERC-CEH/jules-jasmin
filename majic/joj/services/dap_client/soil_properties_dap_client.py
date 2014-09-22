@@ -45,8 +45,8 @@ class SoilPropertiesDapClient(BaseDapClient):
             for var_name, use_file, const_value in zip(var_names_in_file, use_files_or_default, const_vals_or_default):
                 if use_file:
                     variable = self._dataset[var_name]
-                    missing_value = variable.missing_value
-                    fill_value = variable._FillValue
+                    missing_value = variable.attributes.get('missing_value', None)
+                    fill_value = variable.attributes.get('_FillValue', None)
                     if len(variable.shape) == 3:
                         value_as_grid = variable[0, lat_index, lon_index]
                         value = value_as_grid.flat[0]

@@ -2,6 +2,8 @@
 header
 """
 
+import numpy as np
+
 
 class NetCdfHelper(object):
     """
@@ -29,3 +31,28 @@ class NetCdfHelper(object):
         :return: Index of closest value
         """
         return min(range(len(list)), key=lambda i: abs(list[i] - value))
+
+    def get_lat_lon_index(self, variables, lat_key, lon_key, lat_to_find, lon_to_find):
+        """
+        Get the lat and lon indexes for the poin closest to the given values
+        :param variables: variables in the file
+        :param lat_key: name of latitude in the dataset
+        :param lon_key: name of longitude in the dataset
+        :param lat_to_find: latitude to find
+        :param lon_to_find: longitude to find
+        :return: tuple of lat and lon indexes
+        """
+
+        if variables[lat_key].ndim == 1:
+            lat_index = self.get_closest_value_index(variables[lat_key][:], lat_to_find)
+            lon_index = self.get_closest_value_index(variables[lon_key][:], lon_to_find)
+
+        else:
+            lat_diff = np.array(variables[lat_key]) - lat_to_find
+            lon_diff = np.array(variables[lon_key]) - lon_to_find
+
+            indexes = np.argmin(lon_diff * lon_diff + lat_diff * lat_diff)
+            lat_index = np.unravel_index(indexes, variables[lat_key].shape)[0]
+            lon_index = np.unravel_index(indexes, variables[lat_key].shape)[1]
+
+        return lat_index, lon_index

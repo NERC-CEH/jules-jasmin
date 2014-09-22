@@ -86,8 +86,7 @@ class LandCoverEditor(object):
             log.exception("Could not apply land cover edit: could not identify latitude and longitude variables")
             raise ServiceException("Could not apply land cover edit: could not identify "
                                    "latitude and longitude variables")
-        lat_index = self._nc_helper.get_closest_value_index(base.variables[lat_key][:], lat)
-        lon_index = self._nc_helper.get_closest_value_index(base.variables[lon_key][:], lon)
+        lat_index, lon_index = self._nc_helper.get_lat_lon_index(base.variables, lat_key, lon_key, lat, lon)
 
         n_pseudo = base_frac.shape[0]
         if n_pseudo != len(fractional_cover):
