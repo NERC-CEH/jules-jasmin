@@ -408,6 +408,11 @@ var EcomapsMap = (function() {
         // Perform the zoom to the UK
         map.setCenter(position, 6);
 
+        var loadingPanel = $('div.olControlLoadingPanel');
+        var zoom = $('div.olControlZoom');
+        var lp_z = parseInt(loadingPanel.css('z-index'));
+        zoom.css('z-index', lp_z + 100);
+
         // Add a click event handler in the graphing JS
         map.events.register("click", map, function(e) {
             var position = map.getLonLatFromPixel(e.xy);
