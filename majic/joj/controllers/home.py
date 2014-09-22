@@ -1,7 +1,7 @@
 """
 #header
 """
-from pylons import url
+from pylons import url, config
 from joj.lib import helpers
 from datetime import datetime
 import logging
@@ -52,6 +52,7 @@ class HomeController(BaseController):
         Frequently asked questions page
         :return:
         """
+        c.admin_email = config["email.admin_address"]
         return render("about/faq.html")
 
     def password(self, id=None):
