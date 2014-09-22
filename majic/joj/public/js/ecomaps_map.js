@@ -245,7 +245,10 @@ var EcomapsMap = (function() {
 
 
     var loadDataset = function(dataset_type, layerId, datasetId, datasetLink) {
-
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
+            centerOnMap(datasetId);
+            getMapDataAndShow(layerId, datasetId, '');
+        }
         if (dataset_type == DATASET_TYPE_TRANSECT) {
             alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
             return false;
@@ -301,9 +304,6 @@ var EcomapsMap = (function() {
                 }
             });
         }
-        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
-            getMapDataAndShow(layerId, datasetId, '');
-        }
         // All done
         setLoadingState(false);
     }
@@ -341,6 +341,24 @@ var EcomapsMap = (function() {
             alert("An error occurred loading the dataset, please try again.");
             setLoadingState(false);
         });
+    }
+
+    /*
+     * centerOnMap
+     *
+     * If the loaded dataset is the only dataset on the map, center the map viewer
+     * on the geographical extent of the dataset.
+     */
+    var centerOnMap = function (dsid) {
+        if (Object.keys(layerDict).length == 0) {
+                $.getJSON('/dataset/multi_cell_location/' + dsid,
+            function(data){
+                var projection = new OpenLayers.Projection("EPSG:4326");
+                var bounds = new OpenLayers.Bounds(data.lon_w, data.lat_s, data.lon_e, data.lat_n);
+                bounds.transform(projection, map.getProjectionObject());
+                map.zoomToExtent(bounds);
+            });
+        }
     }
 
 
@@ -395,7 +413,7 @@ var EcomapsMap = (function() {
             OpenLayers.IMAGE_RELOAD_ATTEMPTS = 10;
             map = new OpenLayers.Map('map');
             wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-                "/dataset/base", {layers: 'basic'});
+                "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'});
         }
 
         // Add the custom loading panel here...
