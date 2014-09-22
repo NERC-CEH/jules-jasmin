@@ -1,11 +1,16 @@
 """
 header
 """
+
+import logging
 from pylons.controllers.util import abort
 from job_runner.lib.base import BaseController
 from job_runner.utils import constants
 from job_runner.services.job_service import JobService
 from pylons.decorators import jsonify
+from job_runner.services.service_exception import ServiceException
+
+log = logging.getLogger(__name__)
 
 
 class JobFileController(BaseController):
@@ -75,3 +80,32 @@ class JobFileController(BaseController):
         except KeyError:
             abort(400, "Missing key: required '%s' and '%s'" % (constants.JSON_MODEL_FILENAME,
                                                                 constants.JSON_MODEL_RUN_ID))
+
+    @jsonify
+    def duplicate(self):
+        """
+        Duplicate a file with specified file name and model run ID to a model run id folder
+        :return:
+        """
+        json = self._get_json_abort_on_error()
+
+        self._check_field_exists_in_json('model run id', json, constants.JSON_MODEL_RUN_ID, is_int=True)
+        self._check_field_exists_in_json(
+            'model run id to duplicate from',
+            json,
+            constants.JSON_MODEL_RUN_ID_TO_DUPLICATE_FROM,
+            is_int=True)
+        self._check_field_exists_in_json('filename', json, constants.JSON_MODEL_FILENAME)
+        filename = json[constants.JSON_MODEL_FILENAME]
+        self._check_whitelist_filename(filename)
+
+        model_run_id = json[constants.JSON_MODEL_RUN_ID]
+        model_run_id_to_duplicate = json[constants.JSON_MODEL_RUN_ID_TO_DUPLICATE_FROM]
+
+        try:
+            self._job_service.duplicate_file(model_run_id_to_duplicate, filename, model_run_id)
+        except ServiceException, ex:
+            abort(400, "Can not duplicate file %s" % ex.message)
+        except Exception:
+            log.exception("Problem while duplicating file")
+            abort(400, "Can not duplicate file, unknown error")

@@ -126,6 +126,16 @@ class JobService(object):
         log_file_parser.parse()
         return log_file_parser
 
+    def _create_run_dir(self, run_directory):
+        """
+        Create model run directory
+        :param run_directory: run directory to create
+        :return: nothing
+        """
+        #create run directory
+        if not os.path.exists(run_directory):
+            os.mkdir(run_directory)
+
     def submit(self, model_run_json):
         """
         submit a job to the lsf framework
@@ -136,11 +146,8 @@ class JobService(object):
 
         run_directory = self.get_run_dir(model_run_json[JSON_MODEL_RUN_ID])
 
-        #create run directory
-        if not os.path.exists(run_directory):
-            os.mkdir(run_directory)
-
         #create output dir
+        self._create_run_dir(run_directory)
         try:
             os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
         except OSError:
@@ -383,3 +390,26 @@ class JobService(object):
             # We just set a single value
             self.land_cover_editor.apply_single_point_fractional_cover(base_file_path, values,
                                                                        lat, lon, base_file_frac_key)
+
+    def duplicate_file(self, model_run_id_to_duplicate, filename, model_run_id):
+        """
+        Duplicate a file between model run directories
+        :param model_run_id_to_duplicate: id of model run to duplicate from
+        :param filename: filename to duplicate
+        :param model_run_id: model run directory to duplicate to
+        :return: nothing
+        """
+        if not self.exists_run_dir(model_run_id_to_duplicate):
+            raise ServiceException("Model run directory to duplicate from does not exist")
+
+        run_dir_to_duplicate = self.get_run_dir(model_run_id_to_duplicate)
+        filepath = os.path.join(run_dir_to_duplicate, filename)
+
+        if not os.path.exists(filepath):
+            raise ServiceException("Can not duplicate file, it does not exist")
+
+        run_dir = self.get_run_dir(model_run_id)
+        self._create_run_dir(run_dir)
+        destination_filepath = os.path.join(run_dir, filename)
+
+        shutil.copyfile(filepath, destination_filepath)
