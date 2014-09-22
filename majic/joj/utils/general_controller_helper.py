@@ -3,8 +3,8 @@
 """
 import logging
 from decorator import decorator
-from pylons import config
-from joj.lib.base import render, c
+from pylons import config, url
+from joj.lib.base import render, c, redirect
 from joj.lib.wmc_util import create_request_and_open_url
 
 log = logging.getLogger(__name__)
@@ -122,3 +122,19 @@ def is_thredds_up(config):
             return True
         except:
             return False
+
+
+def redirect_back_to_came_from_for_model_run(id, request_params):
+    """
+    Throw redirect back to page that user cam from
+    :param id: id of model run
+    :param request_params: the request parameters
+    :return: nothing
+    """
+    came_from = request_params.get('came_from', "")
+    if came_from == 'summary':
+        redirect(url(controller='model_run', action='summary', id=id))
+    elif came_from == 'index':
+        redirect(url(controller='model_run', action='index'))
+    else:
+        redirect(url(controller='model_run', action='index'))

@@ -34,6 +34,7 @@ class ModelRun(Base):
     driving_data_lon = Column(Float)
     driving_data_rows = Column(Integer)
     land_cover_frac = Column(String(constants.DB_STRING_SIZE))
+    # If Adding to this list don't forget to add to the duplicate from method below
 
     # amount of storage the run takes up excluding the common driving data sets,
     # only set when a run is failed or complete
@@ -44,6 +45,22 @@ class ModelRun(Base):
     parameter_values = relationship("ParameterValue", backref=backref('model_run', order_by=id))
     status = relationship("ModelRunStatus", backref=backref('model_runs', order_by=id), lazy="joined")
     driving_dataset = relationship("DrivingDataset", backref=backref('model_runs', order_by=id), lazy="joined")
+
+    def duplicate_from(self, other):
+        """
+        Shallow copy
+        :param other: model run to copy
+        :return: nothing
+        """
+        self.name = other.name
+        self.description = other.description
+        self.code_version_id = other.code_version_id
+        self.science_configuration_id = other.science_configuration_id
+        self.driving_dataset_id = other.driving_dataset_id
+        self.driving_data_lat = other.driving_data_lat
+        self.driving_data_lon = other.driving_data_lon
+        self.driving_data_rows = other.driving_data_rows
+        self.land_cover_frac = other.land_cover_frac
 
     def change_status(self, session, new_status, error_message=""):
         """
@@ -61,9 +78,11 @@ class ModelRun(Base):
             self.status = status
         self.error_message = error_message[:constants.DB_LONG_STRING_SIZE]
         if new_status == constants.MODEL_RUN_STATUS_SUBMITTED:
-            self.date_submitted = datetime.datetime.now()
+            self.date_submitted = self.last_status_change
         elif new_status == constants.MODEL_RUN_STATUS_CREATED:
-            self.date_created = datetime.datetime.now()
+            self.date_created = self.last_status_change
+        elif new_status == constants.MODEL_RUN_STATUS_RUNNING:
+            self.date_started = self.last_status_change
         return status
 
     def get_parameter_values(self, parameter_namelist_name):
@@ -90,6 +109,19 @@ class ModelRun(Base):
         """
         return utils.find_first_parameter_value_in_param_vals_list(
             self.parameter_values, parameter_namelist_name, is_list)
+
+    def is_for_single_cell(self):
+        """
+        If this model run is for a single cell return true, otherwise false.
+        :return:
+        """
+        if self.parameter_values is None or len(self.parameter_values) == 0:
+            return None
+
+        latlon_region = self.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
+        if latlon_region is None:
+            return None
+        return not latlon_region
 
     def __repr__(self):
         """ String representation of the model run """

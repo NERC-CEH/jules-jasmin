@@ -50,6 +50,7 @@ PARAMETER_TYPE_INTEGER = 'integer'  # parameter is an integer (case is from docu
 
 # Constants for the names of the dictionary values in the json submitted
 JSON_MODEL_RUN_ID = 'model_run_id'
+JSON_MODEL_RUN_ID_TO_DUPLICATE_FROM = 'model_run_to_duplicate_from'
 JSON_MODEL_CODE_VERSION = 'code_version'
 JSON_MODEL_NAMELISTS = 'namelists'
 JSON_MODEL_NAMELIST_FILES = 'namelist_files'
