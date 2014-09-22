@@ -64,13 +64,18 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
     """
     # If the timestep is not set we expect an error thrown here:
     timestep = model_run.get_python_parameter_value(constants.JULES_PARAM_TIMESTEP_LEN)
+    multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
+    if multicell:
+        collate_period = -2
+    else:
+        collate_period = 0
     # The daily time period needs to be a multiple of the timestep so check this here to raise errors
     # before they are sent to JULES
     assert_that(constants.JULES_DAILY_PERIOD % timestep, is_(0),
-                    "The duration of a day (24 * 60 * 60 seconds) as used for the "
-                    "output variables is not divisible by the timestep length. "
-                    "You should set JULES_TIME::timestep_len to be a factor of "
-                    "86400 or JULES won't run correctly.")
+                "The duration of a day (24 * 60 * 60 seconds) as used for the "
+                "output variables is not divisible by the timestep length. "
+                "You should set JULES_TIME::timestep_len to be a factor of "
+                "86400 or JULES won't run correctly.")
     output_variable_groups = []
     for value in post_values:
         if "ov_select_" in value:
@@ -80,28 +85,32 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_YEARLY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_yearly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, 0]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_monthly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_MONTHLY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_monthly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, 0]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_daily_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_DAILY_PERIOD],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_daily"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, collate_period]
                 ]
                 output_variable_groups.append(output_variable_group)
             if "ov_timestep_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
                     [constants.JULES_PARAM_OUTPUT_PERIOD, timestep],
-                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"]
+                    [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"],
+                    [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, collate_period]
                 ]
                 output_variable_groups.append(output_variable_group)
     return output_variable_groups

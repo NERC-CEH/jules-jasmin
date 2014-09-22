@@ -87,7 +87,7 @@ class TestAsciiDownloadHelper(TestController):
         end = datetime.datetime(2000, 1, 1, 0, 0, 0)
         filename = self.download_helper.get_driving_data_filename(self.driving_data, lat, lon, start, end)
         expected_filename = "Test_Driving_Dataset_55_1.5_1900-01-01_2000-01-01"\
-                            + constants.USER_DOWNLOAD_DRIVING_DATA_FILE_EXTENSION
+                            + constants.USER_DOWNLOAD_DATA_FILE_EXTENSION
         assert_that(filename, is_(expected_filename))
 
     def test_GIVEN_many_lines_WHEN_get_filesize_THEN_filesize_approximately_correct(self):

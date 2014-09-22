@@ -4,13 +4,11 @@ Main controller for the Viewdata application.
 @author: rwilkinson
 """
 import logging
-import os
 from cStringIO import StringIO
 import urllib2
 from pylons import url
 from pylons.decorators import jsonify
 from pylons.controllers.util import redirect
-from paste.fileapp import FileApp
 from joj.lib.base import config, c, request, response, render, session, abort
 from joj.lib.build_figure import build_figure
 import joj.lib.config_file_parser as config_file_parser
@@ -25,6 +23,7 @@ from joj.services.user import UserService
 from joj.utils import constants
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.land_cover_service import LandCoverService
+from joj.services.model_run_service import ModelRunService
 
 log = logging.getLogger(__name__)
 
@@ -41,11 +40,13 @@ class ViewdataController(WmsvizController):
 
     def __init__(self,
                  user_service=UserService(),
+                 model_run_service=ModelRunService(),
                  dataset_service=DatasetService(),
                  land_cover_service=LandCoverService(),
                  dap_client_factory=DapClientFactory()):
 
         super(WmsvizController, self).__init__()
+        self._model_run_service = model_run_service
         self.land_cover_service = land_cover_service
         self.dap_client_factory = dap_client_factory
         self._user_service = user_service
@@ -216,6 +217,7 @@ class ViewdataController(WmsvizController):
         c.layer_id = request.params.get('layerid')
 
         dataset = self._dataset_service.get_dataset_by_id(dataset_id, user_id=self.current_user.id)
+        c.model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
 
         c.dataset = dataset
         c.dimensions = []
@@ -235,6 +237,11 @@ class ViewdataController(WmsvizController):
             layer['title'] = dataset.name
             c.layers = [layer]
             c.dimensions = self.get_variable_dimensions_for_ancils(dataset)
+
+        for period in ['Daily', 'Monthly', 'Hourly', 'Yearly']:
+            if period in dataset.name:
+                for layer in c.layers:
+                    layer['title'] += ' (%s)' % period
 
         return render('layers.html')
 

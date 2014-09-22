@@ -117,6 +117,23 @@ class DapClient(BaseDapClient):
         delta = datetime.timedelta(seconds=prev_time)
         return self._start_date + delta
 
+    def get_period(self):
+        """
+        Get the dataset period in seconds (assumes evenly spaced)
+        :return: Dataset period in seconds or None if not calculable
+        """
+        total_time = self._time[-1] - self._time[0]
+        npoints = self.get_number_of_times()
+        if npoints > 0:
+            return total_time / (npoints - 1)
+
+    def get_number_of_times(self):
+        """
+        Get the number of timestamps
+        :return: Number of timestamps
+        """
+        return len(self._time)
+
     def get_data_at(self, lat, lon, date):
         """
         Get the value of the independent variable at a specified location and datetime
@@ -200,3 +217,24 @@ class DapClient(BaseDapClient):
         """
         timevalues = self._time.tolist()
         return [self._start_date + datetime.timedelta(seconds=timeval) for timeval in timevalues]
+
+    def get_data_by_chunk(self, chunk_index, chunk_size=constants.GRAPH_NPOINTS):
+        """
+        Returns a chunk of data
+        :param chunk_index: Index to start from
+        :param chunk_size: Number of points to return
+        :return:
+        """
+        def _confine(x):
+            if x > n_points:
+                return n_points
+            if x < 0:
+                return 0
+            return x
+
+        n_points = self.get_number_of_times()
+        start_index = _confine(chunk_index)
+        end_index = _confine(chunk_index + chunk_size)
+
+        data = self._variable[start_index:end_index, 0, 0].array[:, 0, 0]
+        return data.tolist()

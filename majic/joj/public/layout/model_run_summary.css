@@ -1,0 +1,32 @@
+    .action-text {
+        color: #808080;
+        text-shadow: 0 0;
+        margin-bottom: 5px;
+    }
+    .info-title
+    {
+        padding-right: 10px;
+        font-weight: bold;
+    }
+    .status-banner-top {
+        margin-bottom: 0px
+    }
+    .status-banner-bottom {
+        margin-top: 10px
+    }
+    .divide {
+        margin:5px;
+    }
+    .pad-for-missing-hover-text {
+        margin-bottom: 20px !important;
+    }
+    form {
+        margin:0;
+        padding:0;
+    }
+    .alert {
+        display:inline-block;
+    }
+    input#year {
+        width:50px;
+    }

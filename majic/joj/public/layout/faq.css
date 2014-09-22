@@ -1,3 +1,7 @@
 div.qa {
     margin-top:25px;
 }
+
+code.block {
+    display:block;
+}

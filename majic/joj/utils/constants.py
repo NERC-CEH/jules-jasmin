@@ -106,7 +106,7 @@ USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 
                             'precip', 'tot_rain', 'tot_snow', 'ls_rain', 'con_rain', 'ls_snow', 'con_snow',
                             'wind', 'u', 'v']
 USER_UPLOAD_ALLOWED_INTERPS = ['b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
-USER_DOWNLOAD_DRIVING_DATA_FILE_EXTENSION = ".dat"
+USER_DOWNLOAD_DATA_FILE_EXTENSION = ".dat"
 USER_DOWNLOAD_CACHE_SIZE = 100  # Number of timesteps to cache when downloading driving data
 
 # These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
@@ -124,6 +124,7 @@ DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_til
 
 # Set the timestep length in seconds
 TIMESTEP_LEN = 60 * 60  # One hour
+SPINUP_DURATION_YEARS = 5
 
 # Set the name of the run and consequently the name of the output files
 RUN_ID = "majic"
@@ -160,10 +161,21 @@ JULES_PARAM_TIMESTEP_LEN = [JULES_NML_TIME, "timestep_len"]
 JULES_PARAM_RUN_START = [JULES_NML_TIME, "main_run_start"]
 JULES_PARAM_RUN_END = [JULES_NML_TIME, "main_run_end"]
 
+JULES_NML_SPINUP = "JULES_SPINUP"
+JULES_PARAM_SPINUP_START = [JULES_NML_SPINUP, "spinup_start"]
+JULES_PARAM_SPINUP_END = [JULES_NML_SPINUP, "spinup_end"]
+JULES_PARAM_SPINUP_CYCLES = [JULES_NML_SPINUP, "max_spinup_cycles"]
+JULES_PARAM_SPINUP_TERMINATE_ON_FAIL = [JULES_NML_SPINUP, "terminate_on_spinup_fail"]
+JULES_PARAM_SPINUP_NVARS = [JULES_NML_SPINUP, "nvars"]
+JULES_PARAM_SPINUP_VAR = [JULES_NML_SPINUP, "var"]
+JULES_PARAM_SPINUP_USE_PERCENT = [JULES_NML_SPINUP, "use_percent"]
+JULES_PARAM_SPINUP_TOLERANCE = [JULES_NML_SPINUP, "tolerance"]
+
 JULES_NML_OUTPUT_PROFILE = "JULES_OUTPUT_PROFILE"
 JULES_PARAM_OUTPUT_PROFILE_NAME = [JULES_NML_OUTPUT_PROFILE, "profile_name"]
 JULES_PARAM_OUTPUT_MAIN_RUN = [JULES_NML_OUTPUT_PROFILE, "output_main_run"]
 JULES_PARAM_OUTPUT_PERIOD = [JULES_NML_OUTPUT_PROFILE, "output_period"]
+JULES_PARAM_OUTPUT_FILE_PERIOD = [JULES_NML_OUTPUT_PROFILE, "file_period"]
 JULES_PARAM_OUTPUT_NVARS = [JULES_NML_OUTPUT_PROFILE, "nvars"]
 JULES_PARAM_OUTPUT_VAR = [JULES_NML_OUTPUT_PROFILE, "var"]
 JULES_PARAM_OUTPUT_TYPE = [JULES_NML_OUTPUT_PROFILE, "output_type"]
@@ -234,10 +246,10 @@ JULES_PARAM_FRAC_FILE = [JULES_NML_FRAC, "file"]
 JULES_PARAM_FRAC_NAME = [JULES_NML_FRAC, "frac_name"]
 
 JULES_NML_SOIL_PRARAM = "JULES_SOIL_PARAM"
-JULES_PARAM_SOIL_PARAM_ZSMC =[JULES_NML_SOIL_PRARAM, "zsmc"]
-JULES_PARAM_SOIL_PARAM_ZST =[JULES_NML_SOIL_PRARAM, "zst"]
-JULES_PARAM_SOIL_PARAM_CONFRAC =[JULES_NML_SOIL_PRARAM, "confrac"]
-JULES_PARAM_SOIL_PARAM_DZSOIL_IO =[JULES_NML_SOIL_PRARAM, "dzsoil_io"]
+JULES_PARAM_SOIL_PARAM_ZSMC = [JULES_NML_SOIL_PRARAM, "zsmc"]
+JULES_PARAM_SOIL_PARAM_ZST = [JULES_NML_SOIL_PRARAM, "zst"]
+JULES_PARAM_SOIL_PARAM_CONFRAC = [JULES_NML_SOIL_PRARAM, "confrac"]
+JULES_PARAM_SOIL_PARAM_DZSOIL_IO = [JULES_NML_SOIL_PRARAM, "dzsoil_io"]
 
 JULES_NML_SOIL_PROPS = "JULES_SOIL_PROPS"
 JULES_PARAM_SOIL_PROPS_CONST_Z = [JULES_NML_SOIL_PROPS, "const_z"]

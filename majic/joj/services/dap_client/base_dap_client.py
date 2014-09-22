@@ -50,6 +50,7 @@ class BaseDapClient(object):
         try:
             # this is a modified open url. See pydap factory
             self._dataset = open_url(url)
+            self.url = url
         except Exception:
             log.exception("Can not open the dataset URL '%s'." % url)
             raise DapClientException("Can not open the dataset URL.")

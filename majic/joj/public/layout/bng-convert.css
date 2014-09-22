@@ -7,7 +7,7 @@
     background-color: #F7F7F7
 }
 
-#bng-error {
+.bng-error {
     margin-top:10px;
     margin-bottom:0px;
     display:none;

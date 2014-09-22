@@ -21,7 +21,7 @@ class AsciiDownloadHelper(object):
 #
 # Driving data: {dd_name}
 # Latitude: {lat}
-# Lon: {lon}
+# Longitude: {lon}
 #
 # The first row of data is at: {start}
 # The last row of data is at: {end}
@@ -103,7 +103,7 @@ class AsciiDownloadHelper(object):
         """
         dd_name = driving_data.name.strip().replace(" ", "_")
         filename = "_".join([dd_name, str(lat), str(lon), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")])
-        return filename + constants.USER_DOWNLOAD_DRIVING_DATA_FILE_EXTENSION
+        return filename + constants.USER_DOWNLOAD_DATA_FILE_EXTENSION
 
     def get_driving_data_filesize(self, driving_data, start, end):
         """

@@ -7,39 +7,11 @@
     <meta charset="UTF-8"/>
     <title>Model Runs</title>
     <link rel="stylesheet" type="text/css" href="${h.url('/layout/joj_catalogue.css')}"/>
-<style>
-    .action-text {
-        color: #808080;
-        text-shadow: 0 0;
-        margin-bottom: 5px;
-    }
-    .info-title
-    {
-        padding-right: 10px;
-        font-weight: bold;
-    }
-    .info-text
-    {
+    <link rel="stylesheet" type="text/css" href="${h.url('/layout/model_run_summary.css')}"/>
 
-    }
-    .status-banner-top {
-        margin-bottom: 0px
-    }
-    .status-banner-bottom {
-        margin-top: 10px
-    }
-    .divide {
-        margin:5px;
-    }
+<style>
     .status-color {
         color:${c.model_run.status.get_display_color()}
-    }
-    .pad-for-missing-hover-text {
-        margin-bottom: 20px; !important
-    }
-    form {
-        margin:0;
-        padding:0;
     }
 </style>
 </head>
@@ -149,5 +121,12 @@
     <xi:include href="../model_run/summary_fragments/land_cover.html" />
     <xi:include href="../model_run/summary_fragments/outputs.html" />
 </div>
+<py:if test="c.model_run.status.allow_visualise()">
+    <hr class="divide"/>
+    <h3><i class="fa fa-download status-color">&nbsp;</i>Download Output</h3>
+    <div>
+        <xi:include href="../model_run/summary_fragments/download.html" />
+    </div>
+</py:if>
 </body>
 </html>

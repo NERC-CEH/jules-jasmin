@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
+<div xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/" py:strip=""
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
@@ -8,7 +7,7 @@
         <title py:with="title = list(select('title/text()'))">
             Majic<py:if test="title"> | ${title}</py:if>
         </title>
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+        <link rel="stylesheet" href="/layout/font-awesome-4.2.0/css/font-awesome.min.css"/>
         <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
         <link href="/layout/joj.css" rel="stylesheet" media="screen" />
         <script src="/js/jquery.js"></script>
@@ -55,4 +54,4 @@
         </div>
     </body>
 </py:match>
-</html>
+</div>

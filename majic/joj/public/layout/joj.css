@@ -197,3 +197,5 @@ body#help a#nav-help
 a {
     cursor:pointer;
 }
+
+a.anchor{display: block; position: relative; top: -50px; visibility: hidden;}

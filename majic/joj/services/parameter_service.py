@@ -109,3 +109,18 @@ class ParameterService(DatabaseService):
                      .contains_eager(ParameterValue.parameter)
                      .contains_eager(Parameter.namelist))\
             .one()
+
+    def get_output_variable_name(self, model_run_id, output_id):
+        """
+        Return the name of an output variable, specified by
+        :param model_run_id:
+        :param output_id: Database ID of the parameter value
+        :return:
+        """
+        with self.transaction_scope() as session:
+            param_id = self.get_parameter_by_constant(constants.JULES_PARAM_OUTPUT_VAR, session).id
+            val = session.query(ParameterValue) \
+                .filter(ParameterValue.id == output_id) \
+                .filter(ParameterValue.model_run_id == model_run_id) \
+                .filter(ParameterValue.parameter_id == param_id).one()
+        return val.get_value_as_python()
