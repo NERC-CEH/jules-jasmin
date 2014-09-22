@@ -13,10 +13,43 @@
     <h1>Frequently Asked Questions</h1>
     <p>Here are some of the most commonly asked questions about Majic:</p>
     <div id="links"></div>
+    <p>Got a question that isn't answered here? Email <a href="mailto:${c.admin_email}">${c.admin_email}</a> for help.</p>
 
-    <div id="q1" class="qa">
-        <p class="q"><b>Frequently asked Question 1?</b></p>
-        <p class="a">Answer to that question goes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much text</p>
+    <div class="qa">
+        <a id="q_download_multi_years" class="anchor"></a>
+        <p class="q"><b>Is there an easy way to download daily and hourly output datasets for all years?</b></p>
+        <p class="a">Except for single-cell sites, downloading daily and hourly output is restricted to one calendar year at a time.
+        This is because the NetCDF files involved become very large.
+        However, if you want to write an automated script to do this for you, you can just do the following:
+            <ol>
+        <li>Find the URL of the dataset you want to download (right-click -> copy URL on the 'download' link).</li>
+        <li>Change the year parameter in the URL to match the desired year to download.</li>
+        <li>Make a HTTP POST request to that URL and pass in as POST parameters your username and password.</li>
+    </ol>
+       In Python it might look something like this:</p>
+        <p><code class="block">import urllib<br/>
+                 import urllib2<br/>
+                    <br/>
+        output_file_template = "majic_output_{year}.dat"<br/>
+        login_data = urllib.urlencode({'login': 'my.username', 'password': 'mypassword123'})<br/>
+        url_template = "https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year={year}&amp;format=ASCII"<br/>
+        <br/>
+            for year in range(1901, 2001):<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;url = url_template.format(year=str(year))<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;request = urllib2.urlopen(url, login_data)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;out_file_path = output_file_template.format(year=str(year))<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;with open(out_file_path, 'w') as out_file:<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for line in request.readlines():<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out_file.write(line)
+    </code></p>Or, using WGET:
+        <p><code class="block">
+for year in `seq 1901 2001`<br/>
+do<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;url_template=https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year=$$year&amp;format=ASCII<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;Wget –post=”username=my.username&amp;password=mypassword123” $$url_template<br/>
+done<br/>
+</code></p>
+
     </div>
 
     <div id="q2" class="qa">

@@ -112,7 +112,7 @@ We have created you an account in Majic. To access the account please follow thi
 This link is only valid for the next 24 hours but if you visit this page after that time a new link will be sent to you.
 If you did not request an account please ignore this email.
 
-We hope you enjoying using the system.
+We hope you enjoy using the system.
 
 Regards,
 

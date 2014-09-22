@@ -67,19 +67,22 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
             self.dap_client = self.dap_client_factory.get_dap_client(url)
         return self.dap_client
 
-    def set_response_header(self, header_dict, filepath):
+    def set_response_header(self, header_dict, filepath, model_run, var_name, period, year):
         """
         Set the download information on a Pylons header
         :param header_dict: Pylons Header (response.header)
         :param filepath: File path (relative to run dir)
+        :param var_name: Variable name being downloaded
+        :param period: Period of run
+        :param model_run: Model run
+        :param year: Year to download (or None)
         :return:
         """
+        filename = self._get_filename_for_download(model_run, var_name, period, year,
+                                                   constants.USER_DOWNLOAD_DATA_FILE_EXTENSION)
         dap_client = self._get_dap_client(filepath)
-        filename = filepath.split('/')[-1]
-        path, ext = os.path.splitext(filename)
-        ascii_filename = path + constants.USER_DOWNLOAD_DATA_FILE_EXTENSION
         header_dict['Content-Type'] = str('text/plain')
-        header_dict['Content-Disposition'] = str('attachment; filename="%s"' % ascii_filename)
+        header_dict['Content-Disposition'] = str('attachment; filename="%s"' % filename)
         header_dict['Content-Length'] = str(self._estimate_filesize(dap_client))
 
     def download_file_generator(self, file_path, model_run):

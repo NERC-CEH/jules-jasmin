@@ -1,8 +1,12 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/">
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
     <script src="../../js/summary_download.js"></script>
 <py:if test="c.extents_values['site'] == 'multi'">
-<div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.</div>
+<div class="alert alert-info">Hourly and Daily data can only be downloaded one calendar year at a time.
+    <a href="/home/faq#q_download_multi_years">
+        <img src="/layout/icons/faq-icon.png"/>
+        </a></div>
     <br/>
 <div class="input-prepend" style="margin-right:25px;">
     <span class="add-on">Year</span>
@@ -24,7 +28,7 @@
 <div py:for="download in c.downloads">
     ${c.output_variable_dict[download]}
     <ul class="fa-ul"><li py:for="period in c.downloads[download]">
-            <a class="dl-link" data-output="${c.output_variable_id_dict[download]}"
+            <a class="dl-link" href="" data-output="${c.output_variable_id_dict[download]}"
                data-period="${period}"  data-model_run_id="${c.model_run.id}">
                 <i class="fa-li fa fa-download"></i>${period} (<span class="link-format">${c.download_formats[0]}</span>,
                 <py:choose>

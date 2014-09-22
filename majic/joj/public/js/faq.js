@@ -1,7 +1,8 @@
 var link_templ = "<p class='qlink'><a href={url}>{text}</a></p>";
 
 var add_link = function() {
-    var id = $(this).attr("id");
+    var anchor = $(this).find('a.anchor');
+    var id = anchor.attr("id");
     var url = '#' + id;
     var text = $(this).find(".q").text();
     var fragment = link_templ.replace(/{url}/g, url).replace(/{text}/g, text);

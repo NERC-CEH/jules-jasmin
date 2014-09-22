@@ -3,18 +3,20 @@
 Provides the BaseController class for subclassing, and other objects
 utilized by Controllers.
 """
-from formencode.rewritingparser import html_quote
+# Some of these 'unused' imports are actually imported in other places in the code
+# from this file, so don't remove them without checking.
 from pylons import cache, config, request, response, session, url
-from pylons import tmpl_context as c
-from pylons.controllers import WSGIController
 from pylons.controllers.util import abort, etag_cache, redirect
 from pylons.decorators import jsonify, validate
 from pylons.i18n import ungettext, N_
 from pylons.templating import render_genshi as render
+from formencode.rewritingparser import html_quote
+from pylons import tmpl_context as c
+from pylons.controllers import WSGIController
 from paste import httpexceptions
 import paste.request
 from sqlalchemy.orm.exc import NoResultFound
-from joj.crowd.repoze_plugin import is_public_page, is_home_page
+from joj.crowd.repoze_plugin import is_public_page, is_responsible_for_own_user_authentication
 
 from joj.services.user import UserService
 from joj.lib import helpers
@@ -51,7 +53,7 @@ class BaseController(WSGIController):
             else:
             # It's OK to allow access to the home URL with no user logged in because the home controller
             # will sort out what page to show
-                if not is_home_page(environ):
+                if not is_responsible_for_own_user_authentication(environ):
                     raise httpexceptions.HTTPUnauthorized()
 
         # WSGIController.__call__ dispatches to the Controller method

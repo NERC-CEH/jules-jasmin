@@ -343,7 +343,7 @@ class ExtentsControllerHelper(object):
                        [constants.JULES_PARAM_SPINUP_NVARS, 2],
                        [constants.JULES_PARAM_SPINUP_VAR, ["smcl", "t_soil"]],
                        [constants.JULES_PARAM_SPINUP_USE_PERCENT, [True, True]],
-                       [constants.JULES_PARAM_SPINUP_TOLERANCE, [0.1, 0.1]]]
+                       [constants.JULES_PARAM_SPINUP_TOLERANCE, [-1, -1]]]
         old_spin_params = [constants.JULES_PARAM_SPINUP_START,
                            constants.JULES_PARAM_SPINUP_END,
                            constants.JULES_PARAM_SPINUP_CYCLES,

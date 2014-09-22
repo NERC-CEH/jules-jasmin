@@ -200,7 +200,7 @@ def crowd_challenge_decider(environ, status, headers):
 
     # Are we logging in anyway? So we don't get caught in an infinite loop,
     # don't challenge for the login controller
-    if is_public_page(environ) or is_home_page(environ):
+    if is_public_page(environ) or is_responsible_for_own_user_authentication(environ):
         return False
     else:
         # The middleware should populate REMOTE_USER
@@ -227,9 +227,10 @@ def is_public_page(environ):
     return _check_actions(path_info, 'request_account', ['license', 'request'])
 
 
-def is_home_page(environ):
+def is_responsible_for_own_user_authentication(environ):
     """
     Determines if the currently requested URL is for the home controller
+    or another controller that checks whether user is logged in.
     :param environ: WSGI environment
     :return: True if home page, False otherwise
     """
@@ -238,14 +239,15 @@ def is_home_page(environ):
     if path_info == '/':
         return True
 
-    if 'home' not in path_info:
+    if 'home' not in path_info and 'dataset' not in path_info:
         return False
     path = urlparse(path_info).path
 
     if path == '/home' or path == '/home/':
         return True
 
-    return _check_actions(path_info, 'home', ['about', 'index', 'password'])
+    return _check_actions(path_info, 'home', ['about', 'index', 'password']) \
+        or _check_actions(path_info, 'dataset', ['download'])
 
 
 def _check_actions(path_info, controller, actions):
