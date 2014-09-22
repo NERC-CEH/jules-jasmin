@@ -62,8 +62,7 @@ var EcomapsMap = (function() {
                 //find the pane of the first example of the selected model and select that tab
                 var tab_name = $('#' + mod_hdr_id).parents('.tab-pane').first().prop('id')
                 selectTab(tab_name.replace('pane_', ''));
-                //$('#mod_ds_out_' + selected_id).find('a').first().click();
-                $('#' + ds_out_id).find('a').click();
+                $('#' + ds_out_id).find('a').first().click();
             }
             else {
                 var tab_name = $('.tab-pane').prop('id');
