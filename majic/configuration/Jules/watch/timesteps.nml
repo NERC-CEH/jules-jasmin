@@ -4,5 +4,12 @@
   timestep_len = 1800
 /
 &JULES_SPINUP
-
+  use_percent = .true.    .true.,
+  tolerance = -1    -1,
+  max_spinup_cycles = 13,
+  nvars = 2,
+  spinup_start = '1901-01-01 00:00:00',
+  spinup_end = '1906-01-01 00:00:00',
+  var = 'smcl'    't_soil',
+  terminate_on_spinup_fail = .false.
 /

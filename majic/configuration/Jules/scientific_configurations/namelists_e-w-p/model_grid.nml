@@ -1,0 +1,18 @@
+# Set by driving data
+&JULES_INPUT_GRID
+/
+
+# Set by driving data
+&JULES_LATLON
+/
+
+# Set by driving data
+&JULES_LAND_FRAC 
+/
+
+# Set by run
+&JULES_MODEL_GRID 
+/
+
+&JULES_SURF_HGT
+/

@@ -35,9 +35,8 @@ def _create_chess_data_basic(conf):
     chess_driving_dataset = DrivingDataset()
     chess_driving_dataset.name = "UK CHESS Forcing Data"
     chess_driving_dataset.description = \
-        "The Climate, Hydrochemistry and Economics of Surface-water Systems (CHESS)" \
-        " project has explored effects of climate change on the water quality of European" \
-        " rivers, with the purpose of informing future catchment management."
+        "A daily meteorological forcing dataset: based on MORECS at 40km and downscaled to 1km using sub-grid scale " \
+        "topography. See Robinson et al, 2014. manuscript in prep."
     chess_driving_dataset.geographic_region = 'UK'
     chess_driving_dataset.temporal_resolution = '24 Hours'
     chess_driving_dataset.spatial_resolution = '1 km'

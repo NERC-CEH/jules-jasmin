@@ -1,0 +1,35 @@
+# From driving data
+&JULES_FRAC
+/
+
+
+&JULES_SOIL_PARAM
+  zsmc    = 1.0,
+  zst     = 1.0,
+  confrac = 0.3,
+
+  dzsoil_io = 0.1000 0.2500 0.6500 2.0000
+/
+
+
+# From driving data
+&JULES_SOIL_PROPS
+/
+
+
+# PDM
+&JULES_PDM
+  b_pdm  = 1.00,
+  dz_pdm = 1.00
+/
+
+
+# Not used
+&JULES_TOP
+/
+
+
+# Agricultural fraction
+&JULES_AGRIC
+  zero_agric = T
+/

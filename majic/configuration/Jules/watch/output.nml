@@ -75,6 +75,3 @@
   output_period = -1,
   output_type = 'M'
 /
-&JULES_OUTPUT_PROFILE
-
-/

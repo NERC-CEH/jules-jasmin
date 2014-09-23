@@ -35,12 +35,12 @@ def _create_watch_driving_data_basic(conf):
     watch_driving_dataset = DrivingDataset()
     watch_driving_dataset.name = "WATCH Forcing Data 20th Century"
     watch_driving_dataset.description = \
-        "A meteorological forcing dataset (based on ERA-40) for land surface and " \
-        "hydrological models (1901-2001). Five variables are at 6 hourly resolution and " \
-        "five variables are at 3 hourly resolution."
+        "A sub-diurnal meteorological forcing dataset: based on ERA-40 for the sub-monthly variability, " \
+        "tuned to CRU monthly observations. " \
+        "See Weedon et al, 2011, Journal of Hydrometeorology, doi: 10.1175/2011JHM1369.1"
     watch_driving_dataset.geographic_region = 'Global'
     watch_driving_dataset.temporal_resolution = '3 Hours'
-    watch_driving_dataset.spatial_resolution = '1 km'
+    watch_driving_dataset.spatial_resolution = '0.5 Degrees'
     watch_driving_dataset.boundary_lat_north = 90
     watch_driving_dataset.boundary_lat_south = -90
     watch_driving_dataset.boundary_lon_west = -180
