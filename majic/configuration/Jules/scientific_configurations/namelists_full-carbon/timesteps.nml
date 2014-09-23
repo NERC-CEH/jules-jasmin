@@ -6,15 +6,11 @@
 
 # Dates set by run
 &JULES_SPINUP
-  max_spinup_cycles = 20
-  spinup_start = 'xxx',
-  spinup_end   = 'xxx',
 
-  terminate_on_spinup_fail = F
+terminate_on_spinup_fail = F
   nvars = 2 ,
   var = 'smcl' 't_soil'
-  tolerance = 1.0 0.2
-  use_percent = T F
-
+  tolerance = -1 -1
+  use_percent = T T
 
 /

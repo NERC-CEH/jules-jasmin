@@ -21,16 +21,19 @@ class JulesNamelistParser(object):
     # Scientific configurations:
     #    [name,
     #    directory
+    #    spin up time in years
     #    descriptions]
     _SCIENCE_CONFIGURATIONS = [
         ['Energy-Water-Photosynthesis',
          'namelists_e-w-p',
+         5,
          'this configuration includes the full water and energy budgets, and also includes photosynthesis. '
          'However, it uses a fixed soil and vegetation carbon pools, so the carbon budgets are not closed. '
          'It includes a five year spin up. '],
 
         ['Full carbon cycle',
          'namelists_full-carbon',
+         100,
          'this configuration includes updated soil and vegetation carbon budgets as well as the full water and energy '
          'budgets. It includes a 100 year spin up.']
     ]
@@ -188,7 +191,7 @@ class JulesNamelistParser(object):
 
         model_runs = []
 
-        for name, dir_name, description in self._SCIENCE_CONFIGURATIONS:
+        for name, dir_name, spinup_in_years, description in self._SCIENCE_CONFIGURATIONS:
             config_dir = os.path.join(base_filename, dir_name)
 
             model_run = self.parse_namelist_files_to_create_a_model_run(
@@ -198,13 +201,14 @@ class JulesNamelistParser(object):
                 name,
                 namelist_files,
                 status,
-                user)
+                user,
+                spinup_in_years)
             model_runs.append(model_run)
 
         return model_runs
 
     def parse_namelist_files_to_create_a_model_run(self, code_version, description, config_dir,
-                                                   name, namelist_files, status, user):
+                                                   name, namelist_files, status, user, spinup_in_years):
         """
         Ceate a model run
         :param code_version: the code version object
@@ -214,6 +218,7 @@ class JulesNamelistParser(object):
         :param namelist_files: namelist_files object
         :param status: status the model is to have
         :param user: the user creating the model run
+        :param spinup_in_years: the spin up in years, for a science configuration
         :return: a model run
         """
         model_run = ModelRun()
@@ -222,6 +227,7 @@ class JulesNamelistParser(object):
         model_run.code_version = code_version
         model_run.description = description
         model_run.status = status
+        model_run.science_configuration_spinup_in_years = spinup_in_years
 
         model_run.parameter_values = []
         log.info("Creating Model Run For: {0} ({1})".format(model_run.name, config_dir))
@@ -327,5 +333,6 @@ if __name__ == "__main__":
         "../configuration/Jules/watch",
         "Watch 100 Years Data",
         default_namelist_files,
+        None,
         None,
         None)

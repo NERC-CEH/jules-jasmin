@@ -163,12 +163,13 @@ class ExtentsControllerHelper(object):
         tmpl_context.start_date = self._get_acceptable_start_datetime(model_run, driving_data, is_user_data).date()
         tmpl_context.end_date = self._get_acceptable_end_datetime(model_run, driving_data, is_user_data).date()
 
-    def save_extents_against_model_run(self, values, driving_data, model_run, parameter_service, user):
+    def save_extents_against_model_run(self, values, driving_data, model_run, spinup_duration, parameter_service, user):
         """
         Save spatial and temporal extents against the model run currently being created
         :param values: The extents page POST values
         :param driving_data: Chosen driving data
         :param model_run: The model run currently being used
+        :param spinup_duration: Spinup duration in years
         :param parameter_service: Model run service to use
         :param user: Currently logged in user
         :return: Nothing
@@ -216,7 +217,8 @@ class ExtentsControllerHelper(object):
         params_to_save.append([constants.JULES_PARAM_RUN_END, run_end])
         parameter_service.save_new_parameters(params_to_save, params_to_delete, user.id)
 
-        self._save_spinup(self._get_acceptable_start_datetime(model_run, driving_data, is_user_data),
+        self._save_spinup(spinup_duration,
+                          self._get_acceptable_start_datetime(model_run, driving_data, is_user_data),
                           self._get_acceptable_end_datetime(model_run, driving_data, is_user_data),
                           run_start, parameter_service, user.id)
 
@@ -331,25 +333,24 @@ class ExtentsControllerHelper(object):
     def _is_user_driving_data(self, driving_data):
         return driving_data.id == self.dataset_service.get_id_for_user_upload_driving_dataset()
 
-    def _save_spinup(self, driving_start, driving_end, run_start, parameter_service, user_id):
-
-        spin_start = self.spinup_helper.calculate_spinup_start(driving_start, run_start)
-        spin_end = self.spinup_helper.calculate_spinup_end(spin_start, driving_end)
-        spin_cycles = self.spinup_helper.calculate_spinup_cycles(spin_start, spin_end)
+    def _save_spinup(self, duration, driving_start, driving_end, run_start, parameter_service, user_id):
+        """
+        Save the spinup parameters
+        :param duration: duration in years
+        :param driving_start: start
+        :param driving_end: end
+        :param run_start: run start
+        :param parameter_service: parameter service
+        :param user_id: users id
+        :return: nothing
+        """
+        spin_start = self.spinup_helper.calculate_spinup_start(driving_start, run_start, duration)
+        spin_end = self.spinup_helper.calculate_spinup_end(spin_start, driving_end, duration)
+        spin_cycles = self.spinup_helper.calculate_spinup_cycles(spin_start, spin_end, duration)
         spin_params = [[constants.JULES_PARAM_SPINUP_START, spin_start],
                        [constants.JULES_PARAM_SPINUP_END, spin_end],
-                       [constants.JULES_PARAM_SPINUP_CYCLES, spin_cycles],
-                       [constants.JULES_PARAM_SPINUP_TERMINATE_ON_FAIL, False],
-                       [constants.JULES_PARAM_SPINUP_NVARS, 2],
-                       [constants.JULES_PARAM_SPINUP_VAR, ["smcl", "t_soil"]],
-                       [constants.JULES_PARAM_SPINUP_USE_PERCENT, [True, True]],
-                       [constants.JULES_PARAM_SPINUP_TOLERANCE, [-1, -1]]]
+                       [constants.JULES_PARAM_SPINUP_CYCLES, spin_cycles]]
         old_spin_params = [constants.JULES_PARAM_SPINUP_START,
                            constants.JULES_PARAM_SPINUP_END,
-                           constants.JULES_PARAM_SPINUP_CYCLES,
-                           constants.JULES_PARAM_SPINUP_TERMINATE_ON_FAIL,
-                           constants.JULES_PARAM_SPINUP_NVARS,
-                           constants.JULES_PARAM_SPINUP_VAR,
-                           constants.JULES_PARAM_SPINUP_USE_PERCENT,
-                           constants.JULES_PARAM_SPINUP_TOLERANCE]
+                           constants.JULES_PARAM_SPINUP_CYCLES]
         parameter_service.save_new_parameters(spin_params, old_spin_params, user_id)

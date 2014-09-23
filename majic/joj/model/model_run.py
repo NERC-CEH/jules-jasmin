@@ -34,6 +34,7 @@ class ModelRun(Base):
     driving_data_lon = Column(Float)
     driving_data_rows = Column(Integer)
     land_cover_frac = Column(String(constants.DB_STRING_SIZE))
+    science_configuration_spinup_in_years = Column(Integer)
     # If Adding to this list don't forget to add to the duplicate from method below
 
     # amount of storage the run takes up excluding the common driving data sets,
@@ -61,6 +62,7 @@ class ModelRun(Base):
         self.driving_data_lon = other.driving_data_lon
         self.driving_data_rows = other.driving_data_rows
         self.land_cover_frac = other.land_cover_frac
+        self.science_configuration_spinup_in_years = other.science_configuration_spinup_in_years
 
     def change_status(self, session, new_status, error_message=""):
         """

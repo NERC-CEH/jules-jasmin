@@ -173,7 +173,8 @@ def setup_app(command, conf, vars):
             "Watch 100 Years Data",
             namelist_files,
             stat_published,
-            core_user)
+            core_user,
+            None)
         watch_model_run.date_created = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.date_submitted = datetime.datetime(2014, 8, 26, 16, 00, 00)
         watch_model_run.date_started = datetime.datetime(2014, 8, 26, 16, 00, 00)

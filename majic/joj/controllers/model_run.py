@@ -419,8 +419,18 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
             try:
-                extents_controller_helper.save_extents_against_model_run(values, driving_data, model_run,
-                                                                         self._parameter_service, self.current_user)
+                spinup_duration = constants.SPINUP_DURATION_YEARS
+                science_config = \
+                    self._model_run_service.get_science_configuration_by_id(model_run.science_configuration_id)
+                if science_config.science_configuration_spinup_in_years is not None:
+                    spinup_duration = science_config.science_configuration_spinup_in_years
+                extents_controller_helper.save_extents_against_model_run(
+                    values,
+                    driving_data,
+                    model_run,
+                    spinup_duration,
+                    self._parameter_service, self.current_user)
+
             except DapClientException as ex:
                 helpers.error_flash("Error submitting extents: %s" % ex.message)
                 return htmlfill.render(
