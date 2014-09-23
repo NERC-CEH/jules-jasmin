@@ -48,6 +48,7 @@ class JulesParameterParser(object):
                 Parameter(name="l_disagg_rh", type="integer"),
                 Parameter(name="precip_disagg_method", type="real"),
                 Parameter(name="dur_conv_rain", type="real"),
+                Parameter(name="dur_conv_snow", type="real"),
                 Parameter(name="dur_ls_rain", type="real"),
                 Parameter(name="dur_ls_snow", type="real")]
         }
@@ -161,6 +162,8 @@ class JulesParameterParser(object):
             if namelist.name.upper() in self._EXTRA_PARAMETERS:
                 log.info("Adding extra parameters for %s" % namelist.name)
                 namelist.parameters.extend(self._EXTRA_PARAMETERS[namelist.name])
+                for parameter in namelist.parameters:
+                    parameter.code_versions = [code_version]
 
             #parameters in optional sections
             parameters.extend(

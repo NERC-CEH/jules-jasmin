@@ -303,7 +303,7 @@ def setup_app(command, conf, vars):
 
     with session_scope() as session:
         watch_model = session.query(ModelRun).filter(ModelRun.name == watch_model_run.name).one()
-        science_config = session.query(ModelRun).filter(ModelRun.name == "EURO4").one()
+        science_config = session.query(ModelRun).filter(ModelRun.name == "Full carbon cycle").one()
         driving_dataset = session.query(DrivingDataset).filter(DrivingDataset.name == watch_driving_data_name).one()
 
         watch_model.science_configuration_id = science_config.id
