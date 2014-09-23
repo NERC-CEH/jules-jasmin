@@ -17,3 +17,8 @@ class OutputVariable(Base):
     name = Column(String(constants.DB_STRING_SIZE))
     description = Column(String(constants.DB_LONG_STRING_SIZE))
     depends_on_nsmax = Column(Boolean, default=False)
+
+    def __repr__(self):
+        """String representation"""
+
+        return "<Parameter(name=%s)>" % self.name

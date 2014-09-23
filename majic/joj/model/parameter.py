@@ -1,5 +1,6 @@
+"""
 # Header
-
+"""
 
 from joj.model.meta import Base
 from sqlalchemy.orm import relationship, backref
@@ -14,6 +15,7 @@ _parameter_code_version_association_table = \
         Column('parameter', Integer, ForeignKey('parameters.id')),
         Column('code_version', SmallInteger, ForeignKey('code_versions.id'))
     )
+
 
 class Parameter(Base):
     """A parameter for the Jules model
@@ -51,21 +53,3 @@ class Parameter(Base):
         """String representation"""
 
         return "<Parameter(name=%s)>" % self.name
-
-
-# class PossibleValues(Base):
-#         """A possible value for a parameter for the Jules model. The value must be constrained to one of these values
-#         This is includes filenames which are restricted by the admin
-#         """
-#
-#         __tablename__ = 'parameter'
-#
-#         #this is the value as it will end up in the final files
-#         value =
-#
-#         #this is the display value as it is shown
-#         display_value =
-#
-#         parameter = relationship("Parameter", backref=backref('possible_values', order_by=id))
-#
-#         possibleValues = Column(Integer, ForeignKey('possible_value.id'), nullable=True)

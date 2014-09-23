@@ -18,10 +18,21 @@ class JulesNamelistParser(object):
     A parser to parse the Jules Name list into parameter value objects
     """
 
-    # Scientific configurations: name, directory and descriptions
+    # Scientific configurations:
+    #    [name,
+    #    directory
+    #    descriptions]
     _SCIENCE_CONFIGURATIONS = [
-        ['Full carbon cycle', 'namelists_full-carbon', 'A full carbon scientific configuration'],
-        ['Energy-Water-Photosynthesis', 'namelists_e-w-p', 'An enery water and photosynthesis configuration']
+        ['Energy-Water-Photosynthesis',
+         'namelists_e-w-p',
+         'this configuration includes the full water and energy budgets, and also includes photosynthesis. '
+         'However, it uses a fixed soil and vegetation carbon pools, so the carbon budgets are not closed. '
+         'It includes a five year spin up. '],
+
+        ['Full carbon cycle',
+         'namelists_full-carbon',
+         'this configuration includes updated soil and vegetation carbon budgets as well as the full water and energy '
+         'budgets. It includes a 100 year spin up.']
     ]
 
     def _read_namelist(self, nml_fname, verbose=False):

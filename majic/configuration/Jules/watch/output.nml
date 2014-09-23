@@ -13,22 +13,6 @@
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'gpp_gb',
-  nvars = 1,
-  profile_name = 'gpp_gb_daily',
-  output_period = 86400,
-  output_type = 'M'
-/
-&JULES_OUTPUT_PROFILE
-  output_main_run = .true.,
-  var = 'gpp_gb',
-  nvars = 1,
-  profile_name = 'gpp_gb_hourly',
-  output_period = 3600,
-  output_type = 'M'
-/
-&JULES_OUTPUT_PROFILE
-  output_main_run = .true.,
   var = 'smc_tot',
   nvars = 1,
   profile_name = 'smc_tot_monthly',
