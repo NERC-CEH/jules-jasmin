@@ -10,11 +10,11 @@ TOTAL=$LSB_DJOB_NUMPROC
 source ../../../../../virtual_env/bin/activate
 for file in $files
 do
-   echo "Converting $file"
    if [ "`expr $i % $TOTAL + 1`" == "$LSF_PM_TASKID" ]
    then
-     python ../../../../job_runner/job_runner/post_processing_scripts/Convert1Dto2D.py $file >> out_$file.log 2>&1
-     finished=`grep -c 'Post processing finished' out_$file.log`
+     echo "Converting $i) $file"
+     python ../../../../job_runner/job_runner/post_processing_scripts/Convert1Dto2D.py $file >> out_$i.log 2>&1
+     finished=`grep -c 'Post processing finished' out_$i.log`
      if [ "$finished" -eq 1 ]
      then
         rm $file

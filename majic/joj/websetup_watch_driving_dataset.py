@@ -136,13 +136,13 @@ def _create_watch_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         [constants.JULES_PARAM_SOIL_PROPS_VAR_NAME,
          "'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil'"],
 
-        [constants.JULES_PARAM_INITIAL_NVARS, "8"],
+        [constants.JULES_PARAM_INITIAL_NVARS, "10"],
         [constants.JULES_PARAM_INITIAL_VAR,
-         "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
+         "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'  'lai' 'canht'"],
         [constants.JULES_PARAM_INITIAL_USE_FILE,
-         ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
+         ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false. .false.  .false."],
         [constants.JULES_PARAM_INITIAL_CONST_VAL,
-         "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+         "0.9     0.0      0.0         50.0     275.0        278.0    10.0   0.0   1.0   2.0"],
 
         [constants.JULES_PARAM_POST_PROCESSING_ID, "1"]
     ]

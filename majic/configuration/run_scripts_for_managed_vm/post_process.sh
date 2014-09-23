@@ -19,11 +19,11 @@ fi
 source $JOB_RUNNER_DIR/virtual_env/bin/activate
 for file in $files
 do
-   echo "Converting $file"
    if [ "`expr $i % $TOTAL + 1`" == "$LSF_PM_TASKID" ]
    then
-     python $CONVERT_SCRIPT $file >> out_$file.log 2>&1
-     finished=`grep -c 'Post processing finished' out_$file.log`
+     echo "Converting $file"
+     python $CONVERT_SCRIPT $file >> out_$i.log 2>&1
+     finished=`grep -c 'Post processing finished' out_$i.log`
      if [ "$finished" -eq 1 ]
      then
         rm $file
