@@ -118,14 +118,34 @@ class DatasetController(BaseController):
         :param id:
         :return: ID of the dataset to get single cell location for
         """
-        dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
-        model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
         if latlon is not None:
             lat, lon = latlon
             return {'lat': lat, 'lon': lon}
         else:
             return {'error': 'No single cell lat lon information found for this dataset'}
+
+    @jsonify
+    def multi_cell_location(self, id):
+        """
+        Gets the boundaries for a multi cell dataset
+        :param id: Run ID to get location for
+        :return:
+        """
+        model_run = self._model_run_service.get_model_by_id(self.current_user, id)
+        lat_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS, is_list=True)
+        lon_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS, is_list=True)
+
+        if lat_bounds is not None and lon_bounds is not None:
+            lat_s, lat_n = lat_bounds
+            lon_w, lon_e = lon_bounds
+            return {'lat_n': lat_n,
+                    'lat_s': lat_s,
+                    'lon_w': lon_w,
+                    'lon_e': lon_e}
+        else:
+            return {'error': 'Multi cell location information unavailable for this dataset'}
 
     def download(self):
         """

@@ -58,7 +58,7 @@
             padding-right:30px;
             width:300px;
         }
-        a.dataset-link {
+        a.dataset-heading {
             color:rgb(153,153,153);
             padding-left:10px
         }
@@ -155,4 +155,9 @@
         }
         .graph-loading  p {
             margin-top: 90px;
+        }
+        #graph-title {
+            padding-top:5px;
+            font-weight:bold;
+            text-align:center;
         }

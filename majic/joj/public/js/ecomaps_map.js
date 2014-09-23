@@ -6,10 +6,9 @@
  */
 
 // Used to collapse or expand the model runs / datasets list
-function expandCollapse(elem) {
-    var div = $('#' + elem);
-    div.toggle();
-    var icon = $('#' + elem + '_icon');
+function expandCollapse() {
+    $(this).parent().siblings('div').toggle();
+    var icon = $(this).find('div.expand-icon');
     if (icon.text() == ' -')
     {
         icon.text(' +')
@@ -50,20 +49,16 @@ var EcomapsMap = (function() {
         {
             var selected_id = $('#selected_id').text();
             if (selected_id) {
-                var model_run_header = $('div[model-run-id="' + selected_id + '"]');
-                var mod_hdr_id = model_run_header.attr('id');
-                var ds_out_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_out_");
-                var ds_in_id = mod_hdr_id.replace("mod_hdr_", "mod_ds_in_");
-
-                expandCollapse(mod_hdr_id);
-                expandCollapse(ds_out_id);
-                expandCollapse(ds_in_id);
+                var model_run_header = $("a.dataset-heading[data-model_run_id='" + selected_id + "']").filter('.model-run').first();
+                model_run_header.click();
+                var datasetHeaders = model_run_header.parent().siblings('div').find("a.dataset-heading");
+                datasetHeaders.click();
+                var outputDiv = datasetHeaders.filter('.output').parent().siblings('div');
+                outputDiv.find('a.dataset').first().click();
 
                 //find the pane of the first example of the selected model and select that tab
-                var tab_name = $('#' + mod_hdr_id).parents('.tab-pane').first().prop('id')
+                var tab_name = datasetHeaders.parents('.tab-pane').first().prop('id')
                 selectTab(tab_name.replace('pane_', ''));
-                //$('#mod_ds_out_' + selected_id).find('a').first().click();
-                $('#' + ds_out_id).find('a').click();
             }
             else {
                 var tab_name = $('.tab-pane').prop('id');
@@ -82,6 +77,19 @@ var EcomapsMap = (function() {
     var initHandlers = function(){
         // Each dataset link in the menu...
         $("a.dataset").click(loadUnloadDataset);
+
+        var datasetHeadings = $("a.dataset-heading");
+        datasetHeadings.click(expandCollapse);
+
+        datasetHeadings.filter('.model-run').click(function() {
+            var run_id = $(this).data("model_run_id");
+            var dataset_type = $(this).parent().siblings('div').find('a.dataset').last().attr('dataset-type');
+            if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
+                loadBoundaries(run_id, function() {});
+            } else if (dataset_type == DATASET_TYPE_SINGLE_CELL) {
+                loadPositions(run_id, function() {});
+            }
+        });
 
         // Image export
         $("a#image-export").click(exportMapImage);
@@ -198,6 +206,54 @@ var EcomapsMap = (function() {
         });
     };
 
+    var boundsDict = {};
+    var positionsDict = {}
+
+    var waitForBoundaries = function(run_id, callback) {
+        waitForResult(run_id, boundsDict, loadBoundaries, callback);
+    }
+
+    var waitForPositions = function(run_id, callback) {
+        waitForResult(run_id, positionsDict, loadPositions, callback);
+    }
+
+    var waitForResult = function(key, dict, loadFunction, callback) {
+        if (key in dict) {
+            result = dict[key];
+            if (result == 'loading') {
+                setTimeout(function() {
+                    if (dict[key] == 'loading') {
+                        loadFunction(key, callback);
+                    } else {
+                        callback();
+                    }
+                }, 2500);
+            } else {
+                callback();
+            }
+        }
+    }
+
+    var loadBoundaries = function(run_id, callback) {
+        boundsDict[run_id] = 'loading';
+        $.getJSON('/dataset/multi_cell_location/' + run_id, function(data){
+            var projection = new OpenLayers.Projection("EPSG:4326");
+            var bounds = new OpenLayers.Bounds(data.lon_w, data.lat_s, data.lon_e, data.lat_n);
+            bounds.transform(projection, map.getProjectionObject());
+            boundsDict[run_id] = bounds;
+            callback();
+        });
+    }
+
+    var loadPositions = function(run_id, callback) {
+        positionsDict[run_id] = 'loading';
+        $.getJSON("/dataset/single_cell_location/" + run_id, function(result) {
+            var position = new OpenLayers.LonLat(result.lon, result.lat);
+            positionsDict[run_id] = position;
+            callback();
+        });
+    }
+
     /*
      * loadUnloadDataset
      *
@@ -246,37 +302,26 @@ var EcomapsMap = (function() {
 
 
     var loadDataset = function(dataset_type, layerId, datasetId, datasetLink) {
-
+        var run_id = datasetLink.find('a.dataset').data("model_run_id");
+        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
+            centerOnMap(run_id);
+            getMapDataAndShow(layerId, datasetId, '');
+        }
         if (dataset_type == DATASET_TYPE_TRANSECT) {
             alert("Transects (datasets which are only 1 cell deep) are not supported for visualisation");
             return false;
-        } else if (dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
-            datasetLink.addClass("active");
-            setLoadingState(true);
-            // Load the layers UI straight from the response
-            $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
-
-                $("div#layer-container").prepend(result);
-                var dimensionItems = $("div#layer-list").find("li.dimension");
-
-                if(dimensionItems.length > 0){
-                    dimensionItems.detach().appendTo("ol#dimension-list");
-                    $("div#dimension-panel").show();
-                }
-                if($("li.layer").length == 0) {
-                    $("div#layer-panel").hide();
-                } else {
-                    $("div#layer-panel").show();
-                }
-                $("div#options-panel").show();
-                createSortableList();
-            });
         } else {
             // Plop the loading panel over the map
             datasetLink.addClass("active");
             setLoadingState(true);
             // Load the layers UI straight from the response
             $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
+                var ds_li = $("a.dataset[layer-id='" + layerId + "']").parent();
+                var loadCancelled = !ds_li.hasClass('active');
+                if (loadCancelled) {
+                    setLoadingState(false);
+                    return false;
+                }
 
                 $("div#layer-container").prepend(result);
                 var dimensionItems = $("div#layer-list").find("li.dimension");
@@ -295,15 +340,11 @@ var EcomapsMap = (function() {
                 if (dataset_type == DATASET_TYPE_COVERAGE) {
                     updateGraph();
                 } else {
-                    $.get("/dataset/single_cell_location/" + datasetId, function(result) {
-                        var position = new OpenLayers.LonLat(result.lon, result.lat);
-                        createGraph(position);
+                    waitForPositions(run_id, function () {
+                        createGraph(positionsDict[run_id]);
                     });
                 }
             });
-        }
-        if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
-            getMapDataAndShow(layerId, datasetId, '');
         }
         // All done
         setLoadingState(false);
@@ -314,7 +355,9 @@ var EcomapsMap = (function() {
         // Make the request for the WMS layer data
         $.getJSON('/viewdata/get_layer_data?dsid=' + datasetId + "&variable=" + variable,
             function(data){
-
+                var ds_li = $("a.dataset[layer-id='" + layerId + "']").parent();
+                var loadCancelled = !ds_li.hasClass('active');
+                if (loadCancelled) {setLoadingState(false);return false;}
                 for(var i=0; i< data.length; i++){
 
                     // Give it a unique ID for our layer bag
@@ -342,6 +385,20 @@ var EcomapsMap = (function() {
             alert("An error occurred loading the dataset, please try again.");
             setLoadingState(false);
         });
+    }
+
+    /*
+     * centerOnMap
+     *
+     * If the loaded dataset is the only dataset on the map, center the map viewer
+     * on the geographical extent of the dataset.
+     */
+    var centerOnMap = function (run_id) {
+        if (Object.keys(layerDict).length == 0) {
+            waitForBoundaries(run_id, function() {
+                map.zoomToExtent(boundsDict[run_id]);
+            });
+        }
     }
 
 
@@ -409,6 +466,11 @@ var EcomapsMap = (function() {
         // Perform the zoom to the UK
         map.setCenter(position, 6);
 
+        var loadingPanel = $('div.olControlLoadingPanel');
+        var zoom = $('div.olControlZoom');
+        var lp_z = parseInt(loadingPanel.css('z-index'));
+        zoom.css('z-index', lp_z + 100);
+
         // Add a click event handler in the graphing JS
         map.events.register("click", map, function(e) {
             var position = map.getLonLatFromPixel(e.xy);
@@ -454,14 +516,17 @@ var EcomapsMap = (function() {
         var layerObj = layerDict[layerId];
 
         //..remove from the map...
-        map.removeLayer(layerObj.wmsObject);
+        if (typeof layerObj != 'undefined') {
+            map.removeLayer(layerObj.wmsObject);
 
-        //..legend..
-        removeLegend(layerId);
 
-        //..and make sure we remove from the bag
-        delete layerDict[layerId];
-        currentLayerIndex--;
+            //..legend..
+            removeLegend(layerId);
+
+            //..and make sure we remove from the bag
+            delete layerDict[layerId];
+            currentLayerIndex--;
+        }
     };
 
     /*

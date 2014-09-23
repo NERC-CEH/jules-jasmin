@@ -39,17 +39,14 @@ function createGraph(position)
  * Update the graph
  */
 var updateGraph = function() {
-    var graphDiv = $("#graph");
-    //if (graphDiv.is(':visible')) {
-        if (typeof stored_position != 'undefined') {
-            var position = stored_position;
-            var graphs_added = createGraph(position);
-            if (!(graphs_added)) {
-                hideGraph();
-                stored_position = position;
-            }
+    if (typeof stored_position != 'undefined') {
+        var position = stored_position;
+        var graphs_added = createGraph(position);
+        if (!(graphs_added)) {
+            hideGraph();
+            stored_position = position;
         }
-    //}
+    }
 }
 
 /**
@@ -185,6 +182,9 @@ function getData(layerIds, position)
             // If this is the last one then we can go ahead and plot them all
             if (data.length == layerIds.length){
                 plotGraph(data);
+                var graph_title_template = "Measurements at {lat}, {lon}";
+                var title = graph_title_template.replace(/{lat}/g, data[0].lat).replace(/{lon}/g, data[0].lon);
+                $('#graph-title').text(title);
             }
         }).fail(function() {
             alert("An error occurred loading the dataset, please try again.");
@@ -228,8 +228,9 @@ function plotGraph(data)
             }
         };
     }
+    graph_placeholder = $("#graph-placeholder");
 
-    $.plot(graph, dataList, {
+    $.plot(graph_placeholder, dataList, {
         xaxis: {
             mode: "time",
             max: data.xmax,
