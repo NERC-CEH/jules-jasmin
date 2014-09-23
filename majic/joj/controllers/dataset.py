@@ -118,8 +118,7 @@ class DatasetController(BaseController):
         :param id:
         :return: ID of the dataset to get single cell location for
         """
-        dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
-        model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         latlon = model_run.get_python_parameter_value(constants.JULES_PARAM_POINTS_FILE, is_list=True)
         if latlon is not None:
             lat, lon = latlon
@@ -131,11 +130,10 @@ class DatasetController(BaseController):
     def multi_cell_location(self, id):
         """
         Gets the boundaries for a multi cell dataset
-        :param id:
-        :return:ID of the dataset to get location for
+        :param id: Run ID to get location for
+        :return:
         """
-        dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
-        model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, id)
         lat_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LAT_BOUNDS, is_list=True)
         lon_bounds = model_run.get_python_parameter_value(constants.JULES_PARAM_LON_BOUNDS, is_list=True)
 

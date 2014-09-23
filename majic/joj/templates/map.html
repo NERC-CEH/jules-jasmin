@@ -9,7 +9,7 @@
     <link href="/layout/joj.css" rel="stylesheet" media="screen" />
     <link href="/layout/sortable.css" rel="stylesheet" media="screen" />
     <link href="/layout/map.css" rel="stylesheet" />
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/layout/font-awesome-4.2.0/css/font-awesome.min.css"/>
 
     <script type="text/javascript" src="/js/jquery.js"></script>
     <script type="text/javascript" src="/js/jquery-sortable-min.js"></script>
@@ -60,21 +60,21 @@
                                 <div class="nav nav-list tab-pane" py:for="model_run_sort in c.model_run_sorts" id="pane_${model_run_sort['name']}" style="padding-right:0px;">
                                     <ul class="nav nav-list" py:for="model_run in model_run_sort['model_runs']" style="padding:0px">
                                         <li class="nav-header">
-                                            <a href="#" onclick="expandCollapse('mod_hdr_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
-                                                ${model_run.name}<div id="mod_hdr_${model_run_sort['name']}${model_run.id}_icon"  style="display:inline"> +</div>
+                                                    <a href="#" data-model_run_id="${model_run.id}" class="dataset-heading model-run">
+                                                ${model_run.name}<div class="expand-icon" style="display:inline"> +</div>
                                             </a>
                                         </li>
-                                        <div id="mod_hdr_${model_run_sort['name']}${model_run.id}"  model-run-id="${model_run.id}" style="display:none">
+                                        <div model-run-id="${model_run.id}" style="display:none">
                                             <ul class="nav nav-list">
                                                 <li class="nav-header">
-                                                    <a href="#" onclick="expandCollapse('mod_ds_in_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
-                                                        Input Datasets<div id="mod_ds_in_${model_run_sort['name']}${model_run.id}_icon" style="display:inline"> +</div>
+                                                    <a href="#" data-model_run_id="${model_run.id}" class="dataset-heading input">
+                                                        Input Datasets<div class="expand-icon" style="display:inline"> +</div>
                                                     </a>
                                                 </li>
-                                                <div id="mod_ds_in_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
+                                                <div class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
                                                         <py:if test="ds.is_input == 1">
-                                                        <a class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}" dataset-type="${ds.dataset_type.type}">
+                                                        <a class="dataset" href="#" layer-id="${ds.layer_id}" data-dsid="${ds.id}" data-model_run_id="${model_run.id}" dataset-type="${ds.dataset_type.type}">
                                                             <py:choose>
                                                                 <py:when test="ds.dataset_type.type == c.DATASET_TYPE_SINGLE_CELL">
                                                                     <i class="fa fa-map-marker"></i>
@@ -99,14 +99,14 @@
                                             </ul>
                                             <ul class="nav nav-list">
                                                 <li class="nav-header">
-                                                    <a href="#" onclick="expandCollapse('mod_ds_out_${model_run_sort['name']}${model_run.id}');return false" class="dataset-link">
-                                                        Output Datasets<div id="mod_ds_out_${model_run_sort['name']}${model_run.id}_icon" style="display:inline"> +</div>
+                                                    <a href="#" data-model_run_id="${model_run.id}" class="dataset-heading output">
+                                                        Output Datasets<div class="expand-icon" style="display:inline"> +</div>
                                                     </a>
                                                 </li>
-                                                <div id="mod_ds_out_${model_run_sort['name']}${model_run.id}" class="nav nav-list" style="display:none">
+                                                <div class="nav nav-list" style="display:none">
                                                     <li py:for="ds in model_run.datasets">
                                                         <a py:if="ds.is_input == 0" class="dataset" href="#" layer-id="${ds.layer_id}"
-                                                           data-dsid="${ds.id}" dataset-type="${ds.dataset_type.type}">
+                                                           data-dsid="${ds.id}" dataset-type="${ds.dataset_type.type}" data-model_run_id="${model_run.id}">
                                                         <py:choose>
                                                             <py:when test="ds.dataset_type.type == c.DATASET_TYPE_SINGLE_CELL">
                                                                 <i class="fa fa-map-marker"></i>
