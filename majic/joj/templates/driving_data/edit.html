@@ -26,7 +26,7 @@
 
     Use this page to define all the parameters for a driving data set. It is recommended that you test your driving
     data before making it available to normal users. To restrict the data to admins only make sure the
-    <a href="#is_restricted_to_admins">Restricted to Admins</a> checkbox is ticked.
+    <a href="#is_restricted_to_admins_link">Restricted to Admins</a> checkbox is ticked.
     Perform a successful run then edit this set again and untick the button to make
     it available to everyone.
 
@@ -172,7 +172,7 @@
         </div>
 
         <div class="control-group">
-            <label for="view" class="control-label">
+            <label for="view_order_index" class="control-label">
                 View List Order
                 <i class="fa fa-info-circle" data-toggle="tooltip" title="View List Order" data-trigger="click | hover"
                      data-content="On the driving data page in new model run the driving data sets are ordered by this value (smallest at the top)"></i>
@@ -183,7 +183,7 @@
         </div>
 
         <div class="control-group">
-            <label for="view" class="control-label">
+            <label for="usage_order_index" class="control-label">
                 Mask Usage Order
                 <i class="fa fa-info-circle" data-toggle="tooltip" title="Mask Usage Order" data-trigger="click | hover"
                      data-content="The soil properties and default land cover values for a single site uploaded dataset are obtained from
@@ -195,16 +195,29 @@
             </div>
         </div>
 
-        <a id="is_restricted_to_admins"/>
+
         <div class="control-group">
-            <label for="view" class="control-label">
+            <label for="post_processing_script_id" class="control-label">
+                Post Processing Script Id
+                <i class="fa fa-info-circle" data-toggle="tooltip" title="Post Processing Script Id" data-trigger="click | hover"
+                     data-content="The id for the post processing script to use. This gets written to a post processing namelist
+                     which the post processing script will read and determine which script to use to post process the data"></i>
+            </label>
+            <div class="controls">
+               ${h.html_tags.text('post_processing_script_id', placeholder='Post processing script id')}
+            </div>
+        </div>
+
+        <a class="anchor" id="is_restricted_to_admins_link" />
+        <div class="control-group">
+            <label for="is_restricted_to_admins" class="control-label">
                 Restricted to Admins
                 <i class="fa fa-info-circle" data-toggle="tooltip" title="Restricted to Admins" data-trigger="click | hover"
                      data-content="If ticked this driving dataset is viewable only by admins. It is advised that you
                      test a new driving dataset before unticking this box."></i>
             </label>
             <div class="controls">
-               ${h.html_tags.checkbox('is_restricted_to_admins', checked=True)}
+               ${h.html_tags.checkbox('is_restricted_to_admins', value='1')}
             </div>
         </div>
 

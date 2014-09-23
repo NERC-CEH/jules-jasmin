@@ -145,6 +145,7 @@ class DrivingDataController(BaseController):
         else:
             if id is None:
                 driving_dataset = DrivingDataset()
+                driving_dataset.is_restricted_to_admins = True
                 c.regions = []
 
             else:

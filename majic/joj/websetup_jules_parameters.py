@@ -218,6 +218,14 @@ class JulesParameterParser(object):
         :return: namelist file objects
         """
         namelist_files = []
+
+        post_processing_parameter = Parameter(name="id", type="integer", code_versions=[code_version])
+        post_processing_namelist = Namelist(name='POST_PROCESSING', index_in_file=1)
+        post_processing_namelist.parameters = [post_processing_parameter]
+        post_processing_namelist_file = NamelistFile(filename="post_processing.nml")
+        post_processing_namelist_file.namelists = [post_processing_namelist]
+        namelist_files.append(post_processing_namelist_file)
+
         namelist_file = ""
         try:
             for namelist_file in self._NAMELIST_FILES:

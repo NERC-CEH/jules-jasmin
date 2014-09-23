@@ -151,6 +151,7 @@ def _create_chess_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
 
         [constants.JULES_PARAM_SURF_HGT_ZERO_HEIGHT, ".true."],
 
+        [constants.JULES_PARAM_POST_PROCESSING_ID, "2"]
 
     ]
 

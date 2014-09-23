@@ -22,8 +22,9 @@ do
    echo "Converting $file"
    if [ "`expr $i % $TOTAL + 1`" == "$LSF_PM_TASKID" ]
    then
-     python $CONVERT_SCRIPT $file 2>> err_$LSF_PM_TASKID.log >> out_$LSF_PM_TASKID.log
-     if [ $? = 0 ]
+     python $CONVERT_SCRIPT $file >> out_$file.log 2>&1
+     finished=`grep -c 'Post processing finished' out_$file.log`
+     if [ "$finished" -eq 1 ]
      then
         rm $file
      else
@@ -35,7 +36,7 @@ done
 
 if [ "$LSF_PM_TASKID" == 1 ]
 then
-    python $LAND_COVER_CONVERT_SCRIPT 2>> err_$LSF_PM_TASKID.log >> out_$LSF_PM_TASKID.log
+    python $LAND_COVER_CONVERT_SCRIPT >> out_land_cover.log 2>&1
     if [ ! $? = 0 ]
     then
        echo "[POST PROCESS ERROR] Post processing of land cover file failed"

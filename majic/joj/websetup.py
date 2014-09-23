@@ -254,7 +254,6 @@ def setup_app(command, conf, vars):
         watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
         chess_driving_data_name = create_chess_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
 
-
     with session_scope(Session) as session:
 
         driving_ds_upload = DrivingDataset()
@@ -265,7 +264,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.is_restricted_to_admins = False
 
         parameters_upload = [
-
+            [constants.JULES_PARAM_POST_PROCESSING_ID, "3"],
             [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
             [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
 
