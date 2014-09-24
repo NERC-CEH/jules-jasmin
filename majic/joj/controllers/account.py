@@ -4,7 +4,7 @@
 import logging
 import formencode
 
-from pylons import request, tmpl_context as c, url
+from pylons import request, tmpl_context as c, url, config
 from pylons.controllers.util import redirect
 from webob.exc import HTTPFound
 
@@ -106,7 +106,8 @@ class AccountController(BaseController):
                         except ServiceException as sx:
 
                             # Something has gone wrong at a fundamental level, so we can't realistically continue
-                            message = 'The Majic database is unavailable, please contact technical support'
+                            message = 'The Majic database is unavailable, please try again later or alert ' \
+                                      'the Majic administrator: %s' % config['email.admin_address']
                             log.exception("Majic database unavailable: %s" % sx)
 
                 else:

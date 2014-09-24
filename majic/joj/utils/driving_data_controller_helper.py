@@ -2,6 +2,7 @@
 header
 """
 import datetime
+from dateutil.relativedelta import relativedelta
 from pylons import config
 
 from joj.utils import constants
@@ -12,6 +13,7 @@ from joj.model.non_database.spatial_extent import SpatialExtent
 from joj.utils.extents_controller_helper import ExtentsControllerHelper
 from joj.utils.ascii_download_helper import AsciiDownloadHelper
 from joj.model.non_database.datetime_period_validator import DatetimePeriodValidator
+from joj.lib import helpers
 
 
 class DrivingDataParsingException(Exception):
@@ -93,6 +95,11 @@ class DrivingDataControllerHelper(object):
             errors['driving-file'] = e.message
             self.job_runner_client.delete_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
             return
+
+        data_duration = relativedelta(end_date, start_date)
+        if data_duration.years < 1:
+            helpers.warning_flash("It's recommended that you upload driving data for a minimum of one year - "
+                                  "otherwise JULES may not provide accurate results.")
 
         # Do database stuff
         new_driving_dataset = self._create_uploaded_driving_dataset(start_date, end_date, lat, lon, model_run_service)
@@ -244,7 +251,10 @@ class DrivingDataControllerHelper(object):
 
         seconds = (end_date - start_date).total_seconds()
         period = seconds / (self.n_lines - 1)
-        self.period = int(period)
+        if period % constants.TIMESTEP_LEN != 0:
+            raise DrivingDataParsingException("Period must be a multiple of 30 mins"
+                                              " (was %ss)" % period)
+        self.period = period
         self.job_runner_client.close_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
 
     def _process_header(self, var_line, interp_line):

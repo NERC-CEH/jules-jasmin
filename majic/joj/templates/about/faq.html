@@ -53,8 +53,13 @@ done<br/>
     </div>
 
     <div id="q2" class="qa">
-        <p class="q"><b>Frequently asked Question 2?</b></p>
-        <p class="a">Answer to that question goes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much textgoes here and here and more text so much text</p>
+        <p class="q"><b>When uploading driving data I get the error 'Period must be a multiple of 30 mins'. Why is this?</b></p>
+        <p class="a">
+            MAJIC runs JULES using a timestep of 30 minutes, so any uploaded driving data needs to have a time period between values
+            which synchronises with this. Any multiple of the timestep is acceptable. If you thought your uploaded file had a
+            period which was valid, double check the start and end datetimes are correct and that the number of lines in the
+            file is what you would expect for those times.
+        </p>
     </div>
 
     <div id="q3" class="qa">

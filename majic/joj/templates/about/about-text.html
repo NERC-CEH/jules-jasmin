@@ -1,16 +1,54 @@
-<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/" py:strip="">
-<body>
 <div>
-    All Majic users must agree to abide by the Terms &amp; Conditions. These are summarized here but new
-    users should read the <a href="/docs/license.pdf">full PDF document</a> before requesting an account:
-    <br/><ul>
-    <li>Don't do this</li>
-    <li>Or this</li>
-    <li>Especially not this</li>
-    <li>But always make sure you do this.</li>
-</ul><br/>
+<p>Majic is a web application that allows users to run the JULES land-surface model within a high performance
+       computing environment over the web. You can create new model runs, easily customise some of the main JULES
+       parameters, and view and download results for new and existing model runs.</p>
+<h4>What is JULES?</h4>
+<p>JULES is the Joint UK Land Environment Simulator, a community land surface model designed for use within a climate
+    and weather prediction system. It is the core component of both the <a href="http://www.metoffice.gov.uk/">Met Office</a>'s
+    modelling infrastructure and <a href="http://www.nerc.ac.uk/">NERC</a>'s
+    <a href="http://www.nerc.ac.uk/research/funded/programmes/esm/">Earth System Modelling Strategy</a>, and hence is continually
+    improving, placing it firmly at the cutting edge of land surface modelling.</p>
+<p>By allowing different land surface processes (surface energy balance, hydrological cycle, carbon cycle, dynamic
+    vegetation, etc.) to interact with each other, JULES provides a framework to assess the impact of modifying a
+    particular process on the ecosystem as a whole, e.g. the impact of climate change on hydrology, and to study potential
+    feedbacks.</p>
+<p>JULES is available to any researcher, free of charge. Its development is governed by a community process, and is
+    presided over by a management committee comprised of organisations providing significant resources for the ongoing
+    development of JULES.</p>
+<h4>Why should I use Majic rather than downloading and using the JULES model?</h4>
+<p>JULES is a large, complex and flexible model. Running it requires some skill in Fortran, detailed knowledge of the
+    model parameters and some effort in obtaining and formatting suitable driving data. Long runs over large areas can
+    take significant time, and the data volumes produced can be very large.</p>
+<p>Majic overcomes these problems by providing
+    access to run the model through a simple set of web pages. The model code has been set up to run on the JASMIN high
+    performance computing environment. A number of driving datasets, for the globe and for the UK, for current and future
+    climates are provided. The model parameters available have been restricted to a core set of options, and Majic
+    guides you through the process of setting these parameters. The JASMIN computing environment allows the model to run
+    very fast meaning model runs can be completed more quickly. JASMIN also provides a large amount of storage space for
+    outputs. It’s Majic.</p>
+<h4>Who wouldn’t want to use Majic?</h4>
+<p>There are many reasons why you might prefer to download and run the JULES model code rather than using Majic: if you
+    want to change a wider set of JULES parameters; if you want to edit the JULES code and/or add new processes; if you
+    want to run it with your own gridded driving data (note it is possible to upload single cell or point driving data
+    within Majic).</p>
+<h4>What JULES options can I set with Majic?</h4>
+<p>The principal modelling options within Majic are changes to the land cover representation. This can be set to a single
+    land cover type over a large area, or individual cells can be modelled within which the proportion of each land cover
+    class can be varied.</p>
+<h4>I don’t know how JULES works, I want access to results modelled by experts?</h4>
+<p>Majic contains some baseline JULES runs for each driving dataset that reflect sensible model parameters. You can use
+    Majic to view or download this data.</p>
+<h4>What driving datasets are available?</h4>
+<p>Initially the only driving data available will be the global
+    <a href="http://www.waterandclimatechange.eu/about/watch-forcing-data-20th-century">WATCH Forcing Data</a>
+    and the new CHESS 1km dataset for the UK (1961 – 2012). Additional datasets, such a future climate scenarios, will
+    be added over time.</p>
+<h4>What am I allowed to use data from Majic for?</h4>
+<p>The data are generally available for academic use, but please see the <a href="/request_account/license">Terms and Conditions</a> of use for details.</p>
+<h4>I have meteorological data for my own site of interest. Can I use this data within Majic?</h4>
+<p>Single cell or point location model runs can be undertaken either using data from the driving datasets provided, or
+    using user defined driving data.</p>
 </div>
-</body>
 </html>
