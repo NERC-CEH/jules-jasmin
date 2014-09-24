@@ -21,10 +21,10 @@ function add_mask()
 {
     mask_template = ' \
         <div class="controls-row"> \
-            <input id="region-%template%.id" name="region-%template%.id" placeholder="Category" type="hidden" value="" /> \
-            <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" class="span3"/> \
-            <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" class="span3"/> \
-            <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" class="span3"/> \
+            <input id="region-%template%.id" name="region-%template%.id" type="hidden" value="" /> \
+            <input id="region-%template%.category" name="region-%template%.category" placeholder="Category" type="text" value="" class="span3" /> \
+            <input id="region-%template%.name" name="region-%template%.name" placeholder="Name" type="text" value="" class="span3" /> \
+            <input id="region-%template%.path" name="region-%template%.path" placeholder="data/filepath/filename.nc" type="text" value="" class="span3" /> \
             <i class="fa fa-times-circle fa-2x ico red span1"></i> \
         </div>';
 
