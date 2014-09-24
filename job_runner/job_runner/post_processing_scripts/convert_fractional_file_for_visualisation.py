@@ -41,15 +41,15 @@ class VariableSplitter(object):
                 for layer_index in range(len(var_to_split)):
                     layer_name = long_name % (variable_prefix, str(layer_index + 1))
                     layer = ds_out.createVariable(layer_name, datatype, dims_to_keep)
-                    layer.long_name = layer_name
                     self._copy_attrs(variable, layer)
+                    layer.long_name = layer_name
                     layer[:] = var_to_split[layer_index]
 
             else:
                 datatype = self._get_datatype_string(variable)
                 copied_variable = ds_out.createVariable(var_name, datatype, variable.dimensions)
-                copied_variable[:] = variable[:]
                 self._copy_attrs(variable, copied_variable)
+                copied_variable[:] = variable[:]
 
         # Copy across the attributes
         self._copy_attrs(ds_in, ds_out)
@@ -76,7 +76,7 @@ def insert_before_file_extension(path, string):
 
 
 if __name__ == '__main__':
-    USER_EDITED_FRACTIONAL_FILENAME = 'user_edited_land_cover_fractional_file.nc'
+    USER_EDITED_FRACTIONAL_FILENAME = 'data/CHESS/ancils/chess_landcover_2000_copy.nc'
     MODIFIED_FOR_VISUALISATION_EXTENSION = '_MODIFIED_FOR_VISUALISATION'
     try:
         file_path = USER_EDITED_FRACTIONAL_FILENAME  # Default is to try to find a user edited file
@@ -90,6 +90,8 @@ if __name__ == '__main__':
                 frac_converter.convert(file_path, vis_path)
             else:
                 print "File already exists and has been converted"
+        else:
+            print "File does not exists: %s " % file_path
         exit(0)
     except Exception as e:
         print e.message
