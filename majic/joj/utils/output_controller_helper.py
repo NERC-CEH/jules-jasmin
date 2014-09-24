@@ -1,10 +1,7 @@
 """
 header
 """
-from hamcrest import assert_that, is_
 from joj.utils import constants
-
-TIMESTEP_DESCRIPTION = 'Hourly'  # The description used on the web page for output_period == timestep.
 
 
 def add_selected_outputs_to_template_context(template_context, model_run):
@@ -19,8 +16,7 @@ def add_selected_outputs_to_template_context(template_context, model_run):
     template_context.yearly_output_ids = []
     template_context.monthly_output_ids = []
     template_context.daily_output_ids = []
-    template_context.timestep_output_ids = []
-    template_context.timestep_description = TIMESTEP_DESCRIPTION
+    template_context.hourly_output_ids = []
 
     # Get the list of ParameterValues for the JULES params 'var' and 'output_period'
     selected_vars = model_run.get_parameter_values(constants.JULES_PARAM_OUTPUT_VAR)
@@ -49,7 +45,7 @@ def add_selected_outputs_to_template_context(template_context, model_run):
                 elif period == constants.JULES_DAILY_PERIOD:
                     template_context.daily_output_ids.append(param_id)
                 else:
-                    template_context.timestep_output_ids.append(param_id)
+                    template_context.hourly_output_ids.append(param_id)
 
 
 def create_output_variable_groups(post_values, model_run_service, model_run):
@@ -62,20 +58,11 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
     :return: List of output variable groups, where each group contains a list of parameters to set and values
     (also as a list)
     """
-    # If the timestep is not set we expect an error thrown here:
-    timestep = model_run.get_python_parameter_value(constants.JULES_PARAM_TIMESTEP_LEN)
     multicell = model_run.get_python_parameter_value(constants.JULES_PARAM_LATLON_REGION)
     if multicell:
         collate_period = -2
     else:
         collate_period = 0
-    # The daily time period needs to be a multiple of the timestep so check this here to raise errors
-    # before they are sent to JULES
-    assert_that(constants.JULES_DAILY_PERIOD % timestep, is_(0),
-                "The duration of a day (24 * 60 * 60 seconds) as used for the "
-                "output variables is not divisible by the timestep length. "
-                "You should set JULES_TIME::timestep_len to be a factor of "
-                "86400 or JULES won't run correctly.")
     output_variable_groups = []
     for value in post_values:
         if "ov_select_" in value:
@@ -105,10 +92,10 @@ def create_output_variable_groups(post_values, model_run_service, model_run):
                     [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, collate_period]
                 ]
                 output_variable_groups.append(output_variable_group)
-            if "ov_timestep_" + str(output_id) in post_values:
+            if "ov_hourly_" + str(output_id) in post_values:
                 output_variable_group = [
                     [constants.JULES_PARAM_OUTPUT_VAR, output_param_name],
-                    [constants.JULES_PARAM_OUTPUT_PERIOD, timestep],
+                    [constants.JULES_PARAM_OUTPUT_PERIOD, constants.JULES_HOURLY_PERIOD],
                     [constants.JULES_PARAM_OUTPUT_PROFILE_NAME, output_param_name + "_hourly"],
                     [constants.JULES_PARAM_OUTPUT_FILE_PERIOD, collate_period]
                 ]
