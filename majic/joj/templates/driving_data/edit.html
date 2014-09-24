@@ -410,6 +410,15 @@
             <code>&lt;data&gt;/&lt;driving data set name&gt;/ancils</code> where data is the data directory of the
             jules-bd group space; the path for this can be found in the <i>Deployment View: Managed Cloud</i> subsection of the Architectural Description Document.
         </p>
+        <p> Once uploaded the land cover fractional file needs to be post processed to allow Majic to read it.
+            <ol>
+            <li>Activate the virtual python environment</li>
+            <li><code>source &lt;path to virtual environment on bd1&gt;/bin/activate </code></li>
+            <li>Run the post processing script on the land cover file:</li>
+            <li><code>python &lt;group workspace&gt;/job_runner/post_processing/convert_fractional_file_for_visualisation.py &lt;land cover file&gt;</code></li>
+            </ol>
+            This should produce a file with <i>MODIFIED_FOR_VISUALISATION</i> in its name.
+        </p>
 
         <div class="control-group">
             <label for="latlon_file" class="control-label">Lat-Lon Filename</label>
