@@ -4,7 +4,6 @@ header
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import math
-from joj.utils import constants
 
 
 class SpinupHelper(object):
@@ -33,8 +32,8 @@ class SpinupHelper(object):
         :return: Spin-up start (datetime)
         """
         spinup_length = relativedelta(years=duration_in_years)
-        spinup_start = spin_start + spinup_length
-        return min(driving_end, spinup_start)
+        spinup_end = spin_start + spinup_length
+        return min(driving_end, spinup_end)
 
     def calculate_spinup_cycles(self, spin_start, spin_end, duration_in_years):
         """
