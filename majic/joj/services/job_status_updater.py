@@ -116,10 +116,10 @@ class JobStatusUpdaterService(DatabaseService):
                 model_run.time_elapsed_secs = 0
                 if constants.JSON_STATUS_START_TIME in job_status \
                         and job_status[constants.JSON_STATUS_START_TIME] is not None:
-                    model_run.date_started = parse(job_status[constants.JSON_STATUS_START_TIME])
+                    model_run.date_started = parse(job_status[constants.JSON_STATUS_START_TIME]).replace(tzinfo=None)
                     if constants.JSON_STATUS_END_TIME in job_status\
                             and job_status[constants.JSON_STATUS_END_TIME] is not None:
-                        end = parse(job_status[constants.JSON_STATUS_END_TIME])
+                        end = parse(job_status[constants.JSON_STATUS_END_TIME]).replace(tzinfo=None)
                         model_run.time_elapsed_secs = int((end - model_run.date_started).total_seconds())
 
                 model_run.change_status(session, job_status['status'], job_status['error_message'])

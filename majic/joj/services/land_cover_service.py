@@ -53,7 +53,7 @@ class LandCoverService(DatabaseService):
 
         ice_index = self.find_ice_index(land_cover_values)
         if ice_index is None:
-            return  ice_index
+            return ice_index
 
         non_ice_values = []
         for land_cover_value in land_cover_values:
@@ -147,7 +147,7 @@ class LandCoverService(DatabaseService):
             raise ServiceException("Could not get default fractional cover: the model run does not have any "
                                    "saved single cell location information")
         lat, lon = latlon
-        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user)
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user, model_run)
         if driving_dataset is not None:
             try:
                 land_cover_url, land_cover_key = self._get_land_cover_url_and_key_for_driving_dataset(driving_dataset)
@@ -171,7 +171,7 @@ class LandCoverService(DatabaseService):
             raise ServiceException("Could not get default soil properties: the model run does not have any "
                                    "saved single cell location information")
         lat, lon = latlon
-        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user)
+        driving_dataset = self._get_best_matching_dataset_to_use(lat, lon, user, model_run)
         if driving_dataset is not None:
             nvars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_NVARS)
             vars = driving_dataset.get_python_parameter_value(constants.JULES_PARAM_SOIL_PROPS_VAR)
@@ -235,10 +235,12 @@ class LandCoverService(DatabaseService):
             if len(category.regions) == 0:
                 session.delete(category)
 
-    def _get_best_matching_dataset_to_use(self, lat, lon, user):
-        driving_datasets = self.dataset_service.get_driving_datasets(user)
+    def _get_best_matching_dataset_to_use(self, lat, lon, user, model_run):
         user_upload_ds_id = self.dataset_service.get_id_for_user_upload_driving_dataset()
+        if model_run.driving_dataset.id != user_upload_ds_id:
+            return self.dataset_service.get_driving_dataset_by_id(model_run.driving_dataset_id)
         usable_datasets = []
+        driving_datasets = self.dataset_service.get_driving_datasets(user)
         for dataset in driving_datasets:
             if dataset.id == user_upload_ds_id:
                 continue

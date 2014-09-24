@@ -19,6 +19,9 @@ error_flash = _Flash("errors")
 # Flash area for success messages
 success_flash = _Flash("success")
 
+# Flash area for warning messages
+warning_flash = _Flash("warning")
+
 
 def jsonParseIfNotEmpty(var):
     if var is not None and var != "":

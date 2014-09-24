@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      xmlns:py="http://genshi.edgewall.org/">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Request a Majic Account</title>
     <link href="/layout/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
@@ -12,7 +10,6 @@
 </head>
 <body>
 <div id="logo"></div>
-<!--<div id="banner"></div>-->
 
     <div class="container">
         <div class="row">
@@ -25,14 +22,12 @@
                 <p class="lead">Request an account</p>
 
                     <div>
-                    Majic is freely available to any researcher for non-commercial use, as set out in the
-                    <a href="${h.url(controller='request_account', action='license')}" target="_blank">
-                        Majic Terms &amp; Conditions.
-                    </a>
-                    <br/><br/>
-                    To request an account for Majic, please fill in the form below. Any information supplied will be
-                    used in accordance with the <a href="/docs/privacy.pdf" target="_blank">Majic privacy policy</a>.
-                        <br/><br/>
+                    <p>Majic is freely available to researchers and other non-commercial users as set out in the
+                        <a href="${h.url(controller='request_account', action='license')}" target="_blank">Majic
+                        Terms and Conditions.</a> Please ensure you have read and understood these Terms and Conditions
+                        before requesting an account.</p>
+                    <p>To request an account for Majic, please complete the form below. Any information supplied will be
+                        used in accordance with the <a href="/docs/privacy.pdf" target="_blank">Majic privacy policy.</a></p>
                 </div>
                 <form class="form-horizontal" method="POST" action="${url(controller='request_account', action='request')}">
                     <div class="control-group">
@@ -62,7 +57,8 @@
                     <div class="control-group">
                         <label class="control-label" for="usage">
                             How will you use Majic?<p style="font-size:12px; color:#808080; text-align: justify">
-                            Give a brief but specific description of how you intend to use Majic in your research.</p>
+                            Give a brief but specific description of what you intend to use Majic for. This will help us
+                            to understand our user needs when planning new functionality.</p>
                         </label>
                         <div class="controls">
                             ${h.html_tags.textarea('usage', rows=5, placeholder='How will you use Majic?')}

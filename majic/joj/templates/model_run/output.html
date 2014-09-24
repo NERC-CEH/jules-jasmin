@@ -61,10 +61,10 @@
             </div>
 
             <div class="span1 output_period">
-                <input name="ov_timestep_${output_var.id}" type="checkbox"
-                       checked="${1 if output_var.id in c.timestep_output_ids else None}"/>
+                <input name="ov_hourly_${output_var.id}" type="checkbox"
+                       checked="${1 if output_var.id in c.hourly_output_ids else None}"/>
                 <br/>
-                ${c.timestep_description}
+                Hourly
             </div>
 
             <div class="span1 ico-span">

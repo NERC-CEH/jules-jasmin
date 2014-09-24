@@ -145,6 +145,7 @@ LAND_COVER_FRAC_FILE_INPUT_NAME = 'frac_file'
 JULES_YEARLY_PERIOD = -2
 JULES_MONTHLY_PERIOD = -1
 JULES_DAILY_PERIOD = 24 * 60 * 60
+JULES_HOURLY_PERIOD = 60 * 60
 
 #Month abbreviations for templates
 JULES_MONTH_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']

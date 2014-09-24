@@ -86,7 +86,7 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="upload">
-                            <form id="form-upload" class="form-horizontal" method="POST" action="${url(controller='model_run', action='upload_driving_data')}" enctype="multipart/form-data">
+                            <form id="form-upload" class="form-horizontal" method="POST" action="${url(controller='model_run', action='driving_data')}" enctype="multipart/form-data">
 
                                 <p>Optionally, upload your own single cell driving data to use for your JULES run (you don't need to do this
                                     to run single cell calculations using the driving data already supplied by Majic).</p>
@@ -173,7 +173,7 @@
                             </form>
                         </div>
                         <div class="tab-pane" id="download">
-                            <form id="form-download" class="form-horizontal" method="POST" action="${url(controller='model_run', action='download_driving_data')}" enctype="multipart/form-data">
+                            <form id="form-download" class="form-horizontal" method="POST" action="${url(controller='model_run', action='driving_data')}" enctype="multipart/form-data">
 
                                 <p>Download single cell data from a chosen driving dataset for a specified location and time frame.
                                     This can then be used as a template for your own data. </p>

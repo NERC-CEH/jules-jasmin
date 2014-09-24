@@ -65,7 +65,7 @@ class GraphingDapClient(DapClient):
         min_data_value = min(variable_data)
         max_data_value = max(variable_data)
         return {'data': data,
-                'label': "%s (%s) @ %s, %s" % (self.get_longname(), self._variable.units, lat, lon),
+                'label': "%s (%s)" % (self.get_longname(), self._variable.units),
                 'lat': lat,
                 'lon': lon,
                 'xmin': self._get_millis_since_epoch(min(timestamps)),

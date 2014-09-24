@@ -40,6 +40,12 @@
                             ${error_messages}
                     </div>
                 </py:with>
+
+                <py:with vars="warning_messages = h.warning_flash.pop_messages()">
+                    <div  py:if="warning_messages" id="warning_error" class="alert alert-warning">
+                            ${warning_messages}
+                    </div>
+                </py:with>
                 ${select('*|text()')}
             </div>
             <div id="push"></div>

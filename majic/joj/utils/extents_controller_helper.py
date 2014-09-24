@@ -2,6 +2,7 @@
 header
 """
 import datetime
+from dateutil.relativedelta import relativedelta
 
 from pylons import config
 
@@ -97,7 +98,14 @@ class ExtentsControllerHelper(object):
 
     def _get_end_datetime(self, model_run, driving_data, is_user_data):
         end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
-        return end if end is not None else self._get_acceptable_end_datetime(model_run, driving_data, is_user_data)
+        if end is not None:
+            return end
+        else:
+            acceptable_end = self._get_acceptable_end_datetime(model_run, driving_data, is_user_data)
+            default_start = self._get_acceptable_start_datetime(model_run, driving_data, is_user_data)
+            max_default_end = default_start + relativedelta(years=10)
+            default_end = min(max_default_end, acceptable_end)
+            return default_end
 
     def _get_acceptable_start_datetime(self, model_run, driving_data, is_user_data):
         """
