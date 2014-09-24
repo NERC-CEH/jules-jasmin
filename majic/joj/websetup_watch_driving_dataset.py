@@ -56,30 +56,34 @@ def _create_watch_driving_data_basic(conf):
     return watch_driving_dataset
 
 
-def _create_watch_regions(watch_driving_dataset):
-    cat1 = LandCoverRegionCategory()
-    cat1.name = "Test Regions"
-    cat1.driving_dataset = watch_driving_dataset
-    region1 = LandCoverRegion()
-    region1.name = "Equator Horizontal Strip (20 deg)"
-    region1.category = cat1
-    region1.mask_file = "data/WATCH_2D/masks/equator-20-degree-horizontal-strip.nc"
-    region2 = LandCoverRegion()
-    region2.name = "Prime Meridian Vertical Strip (30 deg)"
-    region2.category = cat1
-    region2.mask_file = "data/WATCH_2D/masks/meridian-30-degree-vertical-strip.nc"
-    region3 = LandCoverRegion()
-    region3.name = "Russia Square (big)"
-    region3.category = cat1
-    region3.mask_file = "data/WATCH_2D/masks/russia-square-big.nc"
-    region4 = LandCoverRegion()
-    region4.name = "Russia Square (small)"
-    region4.category = cat1
-    region4.mask_file = "data/WATCH_2D/masks/russia-square-small.nc"
-    region5 = LandCoverRegion()
-    region5.name = "Wrong Shape Mask"
-    region5.category = cat1
-    region5.mask_file = "data/WATCH_2D/masks/wrong-shape.nc"
+def _create_watch_regions(watch_driving_dataset, regions_csv_file):
+    categories = []
+    f = open(regions_csv_file, "r")
+    for line in f:
+        stripped_line = line.strip()
+        if not stripped_line.startswith('#') and len(stripped_line) > 0:
+            values = line.split(',')
+            if len(values) != 3:
+                log.error("Regions csv file has incorrect number of elements on line reading %s" % stripped_line)
+                exit(-1)
+            category_name = values[0].strip()
+            cat = None
+            for category in categories:
+                if category.name == category_name:
+                    cat = category
+
+            if cat is None:
+                log.info("  adding category {}".format(category_name))
+                cat = LandCoverRegionCategory(name=category_name)
+                cat.driving_dataset = watch_driving_dataset
+                categories.append(cat)
+
+            region = LandCoverRegion()
+            region.name = values[1].strip()
+            region.mask_file = "data/WATCH_2D/masks/{}".format(values[2].strip())
+            region.category = cat
+            log.info("  adding region {} to {} with file {}".format(region.name, category_name, region.mask_file))
+    f.close()
 
 
 def _create_watch_parameters_and_locations(cover_dst, land_cover_frac_dst, soild_prop_dst, watch_driving_dataset, conf):
@@ -158,7 +162,7 @@ def _create_watch_parameters_and_locations(cover_dst, land_cover_frac_dst, soild
         DrivingDatasetParameterValue(model_run_service, watch_driving_dataset, constant, value)
 
 
-def create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst):
+def create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst, regions_csv_file):
     """
     Create the watch driving data
     :param conf: configuration
@@ -170,7 +174,7 @@ def create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_ds
     log.info("Creating Watch Driving Dataset:")
     with session_scope(Session) as session:
         watch_driving_dataset = _create_watch_driving_data_basic(conf)
-        _create_watch_regions(watch_driving_dataset)
+        _create_watch_regions(watch_driving_dataset, regions_csv_file)
         _create_watch_parameters_and_locations(
             cover_dst,
             land_cover_frac_dst,

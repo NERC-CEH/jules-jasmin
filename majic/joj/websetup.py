@@ -251,7 +251,8 @@ def setup_app(command, conf, vars):
             stat_created)
 
     with session_scope(Session) as session:
-        watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
+        watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst,
+                                                            "configuration/Jules/country.csv")
         chess_driving_data_name = create_chess_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
 
     with session_scope(Session) as session:
