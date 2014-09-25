@@ -50,9 +50,9 @@ class ExtentsControllerHelper(object):
         values['lat_s'], values['lat_n'] = self._get_lat_bounds(model_run, driving_data, is_user_data)
         values['lon_w'], values['lon_e'] = self._get_lon_bounds(model_run, driving_data, is_user_data)
 
-        point_value = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA) or False
-        if not point_value:
-            values['average_over_cell'] = 1
+        point_data = model_run.get_python_parameter_value(constants.JULES_PARAM_SWITCHES_L_POINT_DATA) or False
+        if point_data:
+            values['point_data'] = 1
 
         values['start_date'] = self._get_start_datetime(model_run, driving_data, is_user_data).date()
         values['end_date'] = self._get_end_datetime(model_run, driving_data, is_user_data).date()
@@ -212,7 +212,7 @@ class ExtentsControllerHelper(object):
                 lat, lon = dap_client.get_closest_lat_lon(values['lat'], values['lon'])
 
             params_to_save.append([constants.JULES_PARAM_POINTS_FILE, [lat, lon]])
-            params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'average_over_cell' not in values])
+            params_to_save.append([constants.JULES_PARAM_SWITCHES_L_POINT_DATA, 'point_data' in values])
 
         is_user_data = self._is_user_driving_data(driving_data)
         run_start = datetime.datetime.combine(values['start_date'],
