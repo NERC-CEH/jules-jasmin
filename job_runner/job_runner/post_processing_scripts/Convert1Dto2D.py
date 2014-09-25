@@ -5,6 +5,7 @@ from sys import argv
 
 import os
 from postProcessingRes0p5 import convert1Din2D
+from postProcessBNG import convert1Din2DChess
 
 PP_ID_LINE_START = 'id ='
 
@@ -62,7 +63,7 @@ elif post_processing_script_id == 1:
     convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
 elif post_processing_script_id == 2:
     print "Chess conversion"
-    convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
+    convert1Din2DChess(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
 elif post_processing_script_id == 3:
     print "Single cell conversion"
     convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
