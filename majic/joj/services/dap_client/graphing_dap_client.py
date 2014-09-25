@@ -62,8 +62,11 @@ class GraphingDapClient(DapClient):
             else:
                 data_value = None
             data.append([t, data_value])
-        min_data_value = min(variable_data)
-        max_data_value = max(variable_data)
+        min_data_value = None
+        max_data_value = None
+        if len(data) > 0:
+            min_data_value = min([row[1] for row in data])
+            max_data_value = max([row[1] for row in data])
         return {'data': data,
                 'label': "%s (%s)" % (self.get_longname(), self._variable.units),
                 'lat': lat,
