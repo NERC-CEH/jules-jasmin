@@ -127,7 +127,7 @@ USER_UPLOAD_ALLOWED_VARS = ['pstar', 'q', 't', 'rad_net', 'sw_down', 'lw_down', 
                             'wind', 'u', 'v']
 USER_UPLOAD_ALLOWED_INTERPS = ['b', 'c', 'f', 'i', 'nb', 'nc', 'nf']
 USER_DOWNLOAD_DATA_FILE_EXTENSION = ".dat"
-USER_DOWNLOAD_CACHE_SIZE = 100  # Number of timesteps to cache when downloading driving data
+USER_DOWNLOAD_CACHE_SIZE = 10000  # Number of timesteps to cache when downloading driving data
 
 # These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
 # or end of a run.
