@@ -55,7 +55,9 @@ except OSError as e:
 
 basename = os.path.basename(file_to_process)
 dirname = os.path.dirname(file_to_process)
-if post_processing_script_id == 1:
+if post_processing_script_id == 0:
+    print "No conversion"
+elif post_processing_script_id == 1:
     print "Watch conversion"
     convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
 elif post_processing_script_id == 2:
