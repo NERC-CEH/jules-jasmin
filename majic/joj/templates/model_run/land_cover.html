@@ -15,7 +15,12 @@
      and the type of land cover to change that region to, then click 'Add'. Remove an edit by clicking the 'remove' icon
     on that edit, or reorder them by dragging an edit up or down.</p>
 <div class="alert alert-info">These changes <b>will not</b> be applied to cells whose land cover type is <b>ice</b>.</div>
-<div class="well">
+<py:choose>
+    <py:when test="len(c.land_cover_categories) == 0">
+            <div class="alert alert-warning">No land cover regions are available for your chosen driving data</div>
+    </py:when>
+    <py:otherwise>
+        <div class="well">
     <div class="drop-down-holder">
         <p>Category:</p>
         <select id="lc_cat">
@@ -38,6 +43,9 @@
         <button id="lc_add"><i class='fa fa-plus fa-1x' style='color:green'></i>&nbsp;&nbsp;Add</button>
     </div>
 </div>
+
+    </py:otherwise>
+</py:choose>
 
 <form class="form-horizontal" method="POST" action="${url(controller='model_run', action='land_cover')}">
     <div class="well">
