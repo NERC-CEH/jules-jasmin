@@ -26,8 +26,11 @@ class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
         """
         url = self.dap_client_factory.get_full_url_for_file(file_path, service="fileServer", config=self.config)
         dataset = create_request_and_open_url(url)
-        for line in dataset.read(constants.GENERATORS_SIZE_TO_READ):
-            yield line
+        while True:
+            chunk = dataset.read(constants.GENERATORS_SIZE_TO_READ)
+            if not chunk:
+                break
+            yield chunk
 
     def set_response_header(self, header_dict, filepath, model_run, var_name, period, year):
         """
