@@ -241,7 +241,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         #  Set NetCDF format
         netcdfformat = 'NETCDF4'
         #  Set compression option for NetCDF4 files
-        zlib = False
+        zlib = True
         #  Check NetCDF format and compression option are compatible
         if netcdfformat == 'NETCDF3_CLASSIC' and zlib:
             print '\n' * 5 + \
@@ -667,7 +667,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         #  Set NetCDF format
         netcdfformat = 'NETCDF4'
         #  Set compression option for NetCDF4 files
-        zlib = False
+        zlib = True
         #  Check NetCDF format and compression option are compatible
         if netcdfformat == 'NETCDF3_CLASSIC' and zlib:
             print '\n' * 5 + \

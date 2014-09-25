@@ -6,6 +6,7 @@ from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.model_run_service import ModelRunService
 from joj.lib.wmc_util import create_request_and_open_url
 from joj.utils.download.dataset_download_helper import DatasetDownloadHelper
+from joj.utils import constants
 
 
 class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
@@ -25,7 +26,7 @@ class NetcdfDatasetDownloadHelper(DatasetDownloadHelper):
         """
         url = self.dap_client_factory.get_full_url_for_file(file_path, service="fileServer", config=self.config)
         dataset = create_request_and_open_url(url)
-        for line in dataset.read():
+        for line in dataset.read(constants.GENERATORS_SIZE_TO_READ):
             yield line
 
     def set_response_header(self, header_dict, filepath, model_run, var_name, period, year):

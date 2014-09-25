@@ -86,10 +86,16 @@ class AsciiDownloadHelper(object):
                                     interps=interps).replace('\n', '\r\n')
         yield str(header)
         line_date = actual_start
+        data_to_send = ""
+        line_index = 0
         while line_date <= actual_end:
             data_line = self._get_data_line(driving_data, lat, lon, line_date)
             line_date += datetime.timedelta(seconds=period)
-            yield str(data_line)
+            data_to_send += data_line
+            if line_index % constants.GENERATORS_LINES_TO_READ == 0:
+                yield str(data_to_send)
+                data_to_send = ""
+        yield str(data_to_send)
 
     def get_driving_data_filename(self, driving_data, lat, lon, start, end):
         """

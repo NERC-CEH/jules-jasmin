@@ -1,7 +1,6 @@
 """
 header
 """
-import os
 import sys
 from pylons import config
 from joj.utils.download.dataset_download_helper import DatasetDownloadHelper
@@ -100,5 +99,7 @@ class AsciiDatasetDownloadHelper(DatasetDownloadHelper):
         while index <= n_points:
             data = dap_client.get_data_by_chunk(index, chunk_size=constants.GRAPH_NPOINTS)
             index += constants.GRAPH_NPOINTS
+            lines_to_send = ""
             for datum in data:
-                yield str(datum) + str("\r\n")
+                lines_to_send += str(datum) + str("\r\n")
+            yield lines_to_send
