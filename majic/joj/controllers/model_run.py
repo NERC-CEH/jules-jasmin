@@ -531,6 +531,10 @@ class ModelRunController(BaseController):
             # periods so that we can render these onto the page as selected
             output_controller_helper.add_selected_outputs_to_template_context(c, model_run)
 
+            # Finally we need to know if we must disable yearly or monthly outputs
+            c.yearly_allowed = output_controller_helper.yearly_output_allowed(model_run)
+            c.monthly_allowed = output_controller_helper.monthly_output_allowed(model_run)
+
             return render("model_run/output.html")
         else:
             values = dict(request.params)

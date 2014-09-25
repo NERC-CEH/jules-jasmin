@@ -487,23 +487,6 @@ class JobRunnerClient(object):
         run_end = utils.get_first_parameter_value_from_parameter_list(parameters,
                                                                       constants.JULES_PARAM_RUN_END)
 
-        def _is_first_of_year(datetime):
-            return datetime.month == 1 and _is_first_of_month(datetime)
-
-        def _is_first_of_month(datetime):
-            return datetime.day == 1 \
-                and datetime.hour == 0 \
-                and datetime.minute == 0 \
-                and datetime.second == 0
-
-        def _next_year(datetime):
-            return dt.datetime(datetime.year + 1, 1, 1)
-
-        def _next_month(datetime):
-            month = relativedelta(months=1)
-            next_month = datetime + month
-            return dt.datetime(next_month.year, next_month.month, 1)
-
         output_starts_to_add = []
 
         for parameter in parameters:
@@ -513,16 +496,16 @@ class JobRunnerClient(object):
                         period = pv_output_period.get_value_as_python()
                         group_id = pv_output_period.group_id
                         if period == constants.JULES_YEARLY_PERIOD:
-                            if not _is_first_of_year(run_start):
-                                next_year = _next_year(run_start)
+                            if not utils.is_first_of_year(run_start):
+                                next_year = utils.next_first_of_year(run_start)
                                 if next_year <= run_end:
                                     output_start = ParameterValue()
                                     output_start.set_value_from_python(next_year)
                                     output_start.group_id = group_id
                                     output_starts_to_add.append(output_start)
                         elif period == constants.JULES_MONTHLY_PERIOD:
-                            if not _is_first_of_month(run_start):
-                                next_month = _next_month(run_start)
+                            if not utils.is_first_of_month(run_start):
+                                next_month = utils.next_first_of_month(run_start)
                                 if next_month <= run_end:
                                     output_start = ParameterValue()
                                     output_start.set_value_from_python(next_month)

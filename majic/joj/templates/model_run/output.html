@@ -15,13 +15,19 @@
 <h1>Select Output Variables</h1>
 <p>Choose which variables you'd like JULES to output. You can also choose how frequently you'd like those variables
     to be output.</p>
-
+<div py:if="not (c.monthly_allowed and c.yearly_allowed)" class="alert alert-info">Some output periods are unavailable
+for your chosen model run duration.
+    <a href="/home/faq#q_output_yearly_monthly">
+        <img src="/layout/icons/faq-icon.png"/>
+        </a>
+</div>
 <div id="input-bar" class="input-prepend">
     <button id="input-bar-btn" class="btn" type="button">
         <i class='fa fa-plus fa-1x' style='color:green'></i>
     </button>
     <input id="autoText" type="text" style="width:500px" placeholder="Start typing to see matching output variables"/>
 </div>
+
 <ul id="results" class="uneditable-input" style="display:none; overflow-y:scroll">
 </ul>
 <form id="output_rows" class="form-horizontal" method="POST" action="${url(controller='model_run', action='output')}" style="margin-top: 5px">
@@ -38,7 +44,7 @@
             </div>
 
             <div class="span1 output_period">
-                <input name="ov_yearly_${output_var.id}" type="checkbox"
+                <input name="ov_yearly_${output_var.id}" type="checkbox" py:attrs="{} if c.yearly_allowed else {'disabled' :True}"
                        checked="${1 if output_var.id in c.yearly_output_ids else None}"/>
                 <br/>
                 Yearly
@@ -46,9 +52,9 @@
 
             <div class="span1 output_period">
                 <!--We want new rows to be selected as monthly by default - so if this row is not selected, tick monthly-->
-                <input name="ov_monthly_${output_var.id}" type="checkbox"
+                <input name="ov_monthly_${output_var.id}" type="checkbox" py:attrs="{} if c.monthly_allowed else {'disabled' :True}"
                        checked="${1 if (output_var.id in c.monthly_output_ids or
-                        output_var.id not in c.selected_output_ids) else None}"/>
+                        output_var.id not in c.selected_output_ids) and c.monthly_allowed else None}"/>
                 <br/>
                 Monthly
             </div>

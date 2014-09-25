@@ -347,40 +347,6 @@ class TestJobRunnerClient(TestController):
                                                                            group_id=1)
         assert_that(output_start, is_(datetime.datetime(1902, 1, 1)))
 
-    def test_GIVEN_yearly_output_but_not_enough_time_WHEN_alter_output_profiles_THEN_output_profile_removed(self):
-        job_runner_client = JobRunnerClient(config)
-
-        param1 = Parameter(name='main_run_start')
-        param1.namelist = Namelist(name='JULES_TIME')
-        param1_val = "'1901-01-02 00:00:00'"
-        param1.parameter_values = [ParameterValue(value=param1_val)]
-
-        param2 = Parameter(name='main_run_end')
-        param2.namelist = Namelist(name='JULES_TIME')
-        param2_val = "'1901-01-31 21:00:00'"
-        param2.parameter_values = [ParameterValue(value=param2_val)]
-
-        param3 = Parameter(name='output_period')
-        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
-        param3_val = "%s" % constants.JULES_YEARLY_PERIOD
-        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
-
-        param4 = Parameter(name='output_start')
-        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
-        param4.parameter_values = []
-
-        parameters = [param1, param2, param3, param4]
-        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
-
-        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
-                                                                           constants.JULES_PARAM_OUTPUT_START,
-                                                                           group_id=1)
-        output_profile = utils.get_first_parameter_value_from_parameter_list(parameters,
-                                                                             constants.JULES_PARAM_OUTPUT_PERIOD,
-                                                                             group_id=1)
-        assert_that(output_start, is_(None))
-        assert_that(output_profile, is_(None))
-
     def test_GIVEN_monthly_output_but_run_starts_mid_month_WHEN_alter_output_profiles_THEN_output_start_added(self):
         job_runner_client = JobRunnerClient(config)
 
@@ -410,37 +376,3 @@ class TestJobRunnerClient(TestController):
                                                                            constants.JULES_PARAM_OUTPUT_START,
                                                                            group_id=1)
         assert_that(output_start, is_(datetime.datetime(1901, 7, 1)))
-
-    def test_GIVEN_monthly_output_but_not_enough_time_WHEN_alter_output_profiles_THEN_output_profile_removed(self):
-        job_runner_client = JobRunnerClient(config)
-
-        param1 = Parameter(name='main_run_start')
-        param1.namelist = Namelist(name='JULES_TIME')
-        param1_val = "'1901-01-05 00:00:00'"
-        param1.parameter_values = [ParameterValue(value=param1_val)]
-
-        param2 = Parameter(name='main_run_end')
-        param2.namelist = Namelist(name='JULES_TIME')
-        param2_val = "'1901-01-31 21:00:00'"
-        param2.parameter_values = [ParameterValue(value=param2_val)]
-
-        param3 = Parameter(name='output_period')
-        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
-        param3_val = "%s" % constants.JULES_MONTHLY_PERIOD
-        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
-
-        param4 = Parameter(name='output_start')
-        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
-        param4.parameter_values = []
-
-        parameters = [param1, param2, param3, param4]
-        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
-
-        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
-                                                                           constants.JULES_PARAM_OUTPUT_START,
-                                                                           group_id=1)
-        output_profile = utils.get_first_parameter_value_from_parameter_list(parameters,
-                                                                             constants.JULES_PARAM_OUTPUT_PERIOD,
-                                                                             group_id=1)
-        assert_that(output_start, is_(None))
-        assert_that(output_profile, is_(None))
