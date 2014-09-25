@@ -246,7 +246,7 @@ def is_responsible_for_own_user_authentication(environ):
     if path == '/home' or path == '/home/':
         return True
 
-    return _check_actions(path_info, 'home', ['about', 'index', 'password']) \
+    return _check_actions(path_info, 'home', ['about', 'index', 'password', 'cookies']) \
         or _check_actions(path_info, 'dataset', ['download'])
 
 
