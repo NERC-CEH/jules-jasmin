@@ -56,8 +56,8 @@ def _create_watch_driving_data_basic(conf):
     watch_driving_dataset.geographic_region = 'Global'
     watch_driving_dataset.temporal_resolution = '3 Hours'
     watch_driving_dataset.spatial_resolution = '0.5 Degrees'
-    watch_driving_dataset.boundary_lat_north = 90
-    watch_driving_dataset.boundary_lat_south = -90
+    watch_driving_dataset.boundary_lat_north = 84
+    watch_driving_dataset.boundary_lat_south = -56
     watch_driving_dataset.boundary_lon_west = -180
     watch_driving_dataset.boundary_lon_east = 180
     watch_driving_dataset.time_start = datetime.datetime(1901, 1, 1, 0, 0, 0)

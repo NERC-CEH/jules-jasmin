@@ -27,12 +27,13 @@ from joj.services.model_run_service import ModelRunService
 from joj.services.general import DatabaseService
 from joj.services.email_service import EmailService
 from joj.model import ModelRun, ModelRunStatus, Session, Dataset, DatasetType, DrivingDatasetLocation, \
-    SystemAlertEmail, User
+    SystemAlertEmail, User, DrivingDataset
 from joj.utils import constants
 from joj.utils.utils import KeyNotFound, find_by_id_in_dict, insert_before_file_extension
 from joj.utils import email_messages, utils
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.dap_client.dap_client import DapClientException
+from joj.services.dataset import DatasetService
 
 
 log = logging.getLogger(__name__)
@@ -50,6 +51,7 @@ class JobStatusUpdaterService(DatabaseService):
             session=Session,
             model_run_service=ModelRunService(),
             email_service=None,
+            dataset_service=DatasetService(),
             dap_client_factory=DapClientFactory()):
         """
         Initiate
@@ -61,6 +63,7 @@ class JobStatusUpdaterService(DatabaseService):
         :return:nothing
         """
         super(JobStatusUpdaterService, self).__init__(session)
+        self.dataset_service = dataset_service
         self._job_runner_client = job_runner_client
         self._model_run_service = model_run_service
         if email_service is None:
@@ -101,9 +104,9 @@ class JobStatusUpdaterService(DatabaseService):
             model_runs = session.query(ModelRun) \
                 .join(ModelRunStatus) \
                 .filter(ModelRunStatus.name.in_([
-                    constants.MODEL_RUN_STATUS_PENDING,
-                    constants.MODEL_RUN_STATUS_RUNNING,
-                    constants.MODEL_RUN_STATUS_SUBMITTED])) \
+                constants.MODEL_RUN_STATUS_PENDING,
+                constants.MODEL_RUN_STATUS_RUNNING,
+                constants.MODEL_RUN_STATUS_SUBMITTED])) \
                 .all()
             return [model_run.id for model_run in model_runs]
 
@@ -132,7 +135,7 @@ class JobStatusUpdaterService(DatabaseService):
                 if constants.JSON_STATUS_START_TIME in job_status \
                         and job_status[constants.JSON_STATUS_START_TIME] is not None:
                     model_run.date_started = parse(job_status[constants.JSON_STATUS_START_TIME]).replace(tzinfo=None)
-                    if constants.JSON_STATUS_END_TIME in job_status\
+                    if constants.JSON_STATUS_END_TIME in job_status \
                             and job_status[constants.JSON_STATUS_END_TIME] is not None:
                         end = parse(job_status[constants.JSON_STATUS_END_TIME]).replace(tzinfo=None)
                         model_run.time_elapsed_secs = int((end - model_run.date_started).total_seconds())
@@ -304,11 +307,15 @@ class JobStatusUpdaterService(DatabaseService):
             self._create_dataset(dataset_type, soil_props_file, True, model_run, session)
 
         frac_file = model_run.get_python_parameter_value(constants.JULES_PARAM_FRAC_FILE)
-        if len(model_run.land_cover_actions) > 0:
+        user_upload_id = session.query(DrivingDataset) \
+            .filter(DrivingDataset.name == constants.USER_UPLOAD_DRIVING_DATASET_NAME) \
+            .one().id
+        is_user_uploaded = model_run.driving_dataset_id == user_upload_id
+        if len(model_run.land_cover_actions) > 0 or (model_run.is_for_single_cell() and not is_user_uploaded):
             frac_file = 'run{model_id}/{user_edited_file}'.format(
                 model_id=model_run.id,
                 user_edited_file=constants.USER_EDITED_FRACTIONAL_FILENAME)
-        if frac_file is not None:
+        if frac_file is not None and frac_file != constants.FRACTIONAL_FILENAME:
             dataset_type = self.get_dataset_type(constants.DATASET_TYPE_LAND_COVER_FRAC, session)
             frac_file_vis = insert_before_file_extension(frac_file, constants.MODIFIED_FOR_VISUALISATION_EXTENSION)
             self._create_dataset(dataset_type, frac_file_vis, True, model_run, session)
