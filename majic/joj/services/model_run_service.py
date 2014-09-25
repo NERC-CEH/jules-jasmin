@@ -3,7 +3,7 @@ header
 """
 
 import logging
-from sqlalchemy.orm import subqueryload, contains_eager, joinedload
+from sqlalchemy.orm import subqueryload, contains_eager, joinedload, make_transient
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_, desc, or_
@@ -329,6 +329,13 @@ class ModelRunService(DatabaseService):
         with self.readonly_scope() as session:
             model = self._get_model_run_being_created(session, user)
             parameters = self._get_parameters_for_creating_model(session, user)
+            # 'Disconnect' parameters from session so you can edit them
+            for parameter in parameters:
+                session.expunge(parameter)
+                make_transient(parameter)
+                for parameter_value in parameter.parameter_values:
+                    session.expunge(parameter_value)
+                    make_transient(parameter_value)
 
         land_cover_service = LandCoverService()
         land_cover_actions = land_cover_service.get_land_cover_actions_for_model(model)

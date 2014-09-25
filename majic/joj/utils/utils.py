@@ -114,7 +114,7 @@ def find_first_parameter_value_in_param_vals_list(parameter_values, parameter_na
     return None
 
 
-def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist_name, is_list=False):
+def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist_name, is_list=False, group_id=None):
     """
     Get a parameter value from a list of parameters
     :param parameters: List of parameters
@@ -127,7 +127,12 @@ def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist
         if parameter.namelist.name == parameter_namelist_name[0]:
             if parameter.name == parameter_namelist_name[1]:
                 if len(parameter.parameter_values) > 0:
-                    return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+                    if group_id is None:
+                        return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+                    else:
+                        group_params = [param for param in parameter.parameter_values if param.group_id == group_id]
+                        if len(group_params) > 0:
+                            return group_params[0].get_value_as_python(is_list=is_list_local)
     return None
 
 

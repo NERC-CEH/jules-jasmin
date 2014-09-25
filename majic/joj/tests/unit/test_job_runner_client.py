@@ -1,6 +1,7 @@
 """
 # header
 """
+import datetime
 from hamcrest import *
 from joj.model import Parameter, ModelRun, CodeVersion, ParameterValue, NamelistFile, Namelist, User, LandCoverAction, \
     LandCoverRegion
@@ -8,6 +9,7 @@ from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
 from joj.tests import TestController
 from pylons import config
+from joj.utils import utils
 
 
 class TestJobRunnerClient(TestController):
@@ -274,3 +276,171 @@ class TestJobRunnerClient(TestController):
         parameters_result = namelist_file_result[constants.JSON_MODEL_NAMELISTS][0][constants.JSON_MODEL_PARAMETERS]
         assert_that(parameters_result['file'], is_("'" + constants.USER_EDITED_FRACTIONAL_FILENAME + "'"))
         assert_that(parameters_result['frac_name'], is_("'frac'"))
+
+    def test_GIVEN_spinup_start_in_middle_of_driving_data_WHEN_alter_driving_data_start_THEN_driving_data_start_moved(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='data_start')
+        param1.namelist = Namelist(name='JULES_DRIVE')
+        param1_val = "'1901-01-01 00:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='spinup_start')
+        param2.namelist = Namelist(name='JULES_SPINUP')
+        param2_val = "'1950-01-01 00:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+
+        parameters = [param1, param2]
+        parameters = job_runner_client.alter_driving_data_start(parameters)
+
+        dd_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                       constants.JULES_PARAM_DRIVE_DATA_START)
+        assert_that(dd_start, is_(datetime.datetime(1940, 1, 1)))
+
+    def test_GIVEN_spinup_start_at_beginning_of_driving_data_WHEN_alter_driving_data_start_THEN_driving_data_start_unmoved(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='data_start')
+        param1.namelist = Namelist(name='JULES_DRIVE')
+        param1_val = "'1901-01-01 00:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='spinup_start')
+        param2.namelist = Namelist(name='JULES_SPINUP')
+        param2_val = "'1901-01-01 00:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+
+        parameters = [param1, param2]
+        parameters = job_runner_client.alter_driving_data_start(parameters)
+
+        dd_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                       constants.JULES_PARAM_DRIVE_DATA_START)
+        assert_that(dd_start, is_(datetime.datetime(1901, 1, 1)))
+        
+    def test_GIVEN_yearly_output_but_run_starts_in_feb_WHEN_alter_output_profiles_THEN_output_start_added(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='main_run_start')
+        param1.namelist = Namelist(name='JULES_TIME')
+        param1_val = "'1901-02-01 00:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='main_run_end')
+        param2.namelist = Namelist(name='JULES_TIME')
+        param2_val = "'1903-02-01 00:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+        
+        param3 = Parameter(name='output_period')
+        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param3_val = "%s" % constants.JULES_YEARLY_PERIOD
+        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
+
+        param4 = Parameter(name='output_start')
+        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param4.parameter_values = []
+
+        parameters = [param1, param2, param3, param4]
+        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
+
+        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                           constants.JULES_PARAM_OUTPUT_START,
+                                                                           group_id=1)
+        assert_that(output_start, is_(datetime.datetime(1902, 1, 1)))
+
+    def test_GIVEN_yearly_output_but_not_enough_time_WHEN_alter_output_profiles_THEN_output_profile_removed(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='main_run_start')
+        param1.namelist = Namelist(name='JULES_TIME')
+        param1_val = "'1901-01-02 00:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='main_run_end')
+        param2.namelist = Namelist(name='JULES_TIME')
+        param2_val = "'1901-01-31 21:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+
+        param3 = Parameter(name='output_period')
+        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param3_val = "%s" % constants.JULES_YEARLY_PERIOD
+        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
+
+        param4 = Parameter(name='output_start')
+        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param4.parameter_values = []
+
+        parameters = [param1, param2, param3, param4]
+        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
+
+        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                           constants.JULES_PARAM_OUTPUT_START,
+                                                                           group_id=1)
+        output_profile = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                             constants.JULES_PARAM_OUTPUT_PERIOD,
+                                                                             group_id=1)
+        assert_that(output_start, is_(None))
+        assert_that(output_profile, is_(None))
+
+    def test_GIVEN_monthly_output_but_run_starts_mid_month_WHEN_alter_output_profiles_THEN_output_start_added(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='main_run_start')
+        param1.namelist = Namelist(name='JULES_TIME')
+        param1_val = "'1901-6-25 12:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='main_run_end')
+        param2.namelist = Namelist(name='JULES_TIME')
+        param2_val = "'1904-02-01 00:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+
+        param3 = Parameter(name='output_period')
+        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param3_val = "%s" % constants.JULES_MONTHLY_PERIOD
+        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
+
+        param4 = Parameter(name='output_start')
+        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param4.parameter_values = []
+
+        parameters = [param1, param2, param3, param4]
+        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
+
+        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                           constants.JULES_PARAM_OUTPUT_START,
+                                                                           group_id=1)
+        assert_that(output_start, is_(datetime.datetime(1901, 7, 1)))
+
+    def test_GIVEN_monthly_output_but_not_enough_time_WHEN_alter_output_profiles_THEN_output_profile_removed(self):
+        job_runner_client = JobRunnerClient(config)
+
+        param1 = Parameter(name='main_run_start')
+        param1.namelist = Namelist(name='JULES_TIME')
+        param1_val = "'1901-01-05 00:00:00'"
+        param1.parameter_values = [ParameterValue(value=param1_val)]
+
+        param2 = Parameter(name='main_run_end')
+        param2.namelist = Namelist(name='JULES_TIME')
+        param2_val = "'1901-01-31 21:00:00'"
+        param2.parameter_values = [ParameterValue(value=param2_val)]
+
+        param3 = Parameter(name='output_period')
+        param3.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param3_val = "%s" % constants.JULES_MONTHLY_PERIOD
+        param3.parameter_values = [ParameterValue(value=param3_val, group_id=1)]
+
+        param4 = Parameter(name='output_start')
+        param4.namelist = Namelist(name='JULES_OUTPUT_PROFILE')
+        param4.parameter_values = []
+
+        parameters = [param1, param2, param3, param4]
+        parameters = job_runner_client.alter_yearly_monthly_output_profiles(parameters)
+
+        output_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                           constants.JULES_PARAM_OUTPUT_START,
+                                                                           group_id=1)
+        output_profile = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                             constants.JULES_PARAM_OUTPUT_PERIOD,
+                                                                             group_id=1)
+        assert_that(output_start, is_(None))
+        assert_that(output_profile, is_(None))
