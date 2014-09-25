@@ -126,8 +126,8 @@ DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_til
 # Set the timestep length in seconds
 TIMESTEP_LEN = 30 * 60  # half an hour
 
-# Sets the spin up duration in ywears (can not be 0)
-SPINUP_DURATION_YEARS = 5
+# Sets the spin up duration in years (can not be 0)
+SPINUP_MAX_TIME_RANGE_YEARS = 5
 
 # Set the name of the run and consequently the name of the output files
 RUN_ID = "majic"

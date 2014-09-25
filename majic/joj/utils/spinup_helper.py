@@ -5,6 +5,8 @@ import datetime as dt
 from dateutil.relativedelta import relativedelta
 import math
 
+from joj.utils import constants
+
 
 class SpinupHelper(object):
     """
@@ -19,7 +21,8 @@ class SpinupHelper(object):
         :param duration_in_years: Duration in years
         :return: Spin-up start (datetime)
         """
-        spinup_length = relativedelta(years=duration_in_years)
+        duration = min(duration_in_years, constants.SPINUP_MAX_TIME_RANGE_YEARS)
+        spinup_length = relativedelta(years=duration)
         spinup_start = run_start - spinup_length
         return max(driving_start, spinup_start)
 
@@ -31,7 +34,8 @@ class SpinupHelper(object):
         :param duration_in_years: Duration in years
         :return: Spin-up start (datetime)
         """
-        spinup_length = relativedelta(years=duration_in_years)
+        duration = min(duration_in_years, constants.SPINUP_MAX_TIME_RANGE_YEARS)
+        spinup_length = relativedelta(years=duration)
         spinup_end = spin_start + spinup_length
         return min(driving_end, spinup_end)
 

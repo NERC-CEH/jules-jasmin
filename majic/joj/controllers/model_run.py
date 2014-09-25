@@ -396,7 +396,7 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
             try:
-                spinup_duration = constants.SPINUP_DURATION_YEARS
+                spinup_duration = constants.SPINUP_MAX_TIME_RANGE_YEARS
                 science_config = \
                     self._model_run_service.get_science_configuration_by_id(model_run.science_configuration_id)
                 if science_config.science_configuration_spinup_in_years is not None:
