@@ -74,7 +74,8 @@ class DrivingDatasetJulesParams(object):
             'frac_type_dim_name': constants.JULES_PARAM_INPUT_TYPE_DIM_NAME,
             'land_frac_file': constants.JULES_PARAM_LAND_FRAC_FILE,
             'land_frac_frac_name': constants.JULES_PARAM_LAND_FRAC_LAND_FRAC_NAME,
-            'soil_props_file': constants.JULES_PARAM_SOIL_PROPS_FILE}
+            'soil_props_file': constants.JULES_PARAM_SOIL_PROPS_FILE,
+            'post_processing_script_id': constants.JULES_PARAM_POST_PROCESSING_ID}
 
         self.values = {}
         self._extra_parameters = {}
@@ -215,6 +216,8 @@ class DrivingDatasetJulesParams(object):
 
         values_dict["param_names"] = [param[0] for param in params]
         values_dict['params_count'] = len(params)
+        if values_dict.get("is_restricted_to_admins", False):
+            values_dict["is_restricted_to_admins"] = 1
 
         mask_count = 0
         for region in self.regions:

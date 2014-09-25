@@ -113,7 +113,7 @@ USER_DOWNLOAD_CACHE_SIZE = 100  # Number of timesteps to cache when downloading 
 # These two dictionaries allow us to identify which interpolation flags need extra driving data steps at the start
 # or end of a run.
 INTERPS_EXTRA_STEPS_RUN_START = {'b': 0, 'c': 1, 'f': 1, 'i': 0, 'nb': 0, 'nc': 0, 'nf': 0}
-INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 0}
+INTERPS_EXTRA_STEPS_RUN_END = {'b': 2, 'c': 2, 'f': 1, 'i': 1, 'nb': 1, 'nc': 1, 'nf': 1}
 
 FRACTIONAL_FILENAME = 'fractional.dat'
 FRACTIONAL_ICE_NAME = 'Ice'
@@ -282,6 +282,13 @@ JULES_PARAM_INITIAL_CONST_VAL = [JULES_NML_INITIAL, "const_val"]
 
 JULES_NML_SWITCHES = "JULES_SWITCHES"
 JULES_PARAM_SWITCHES_L_POINT_DATA = [JULES_NML_SWITCHES, "l_point_data"]
+JULES_PARAM_SWITCHES_L_VG_SOIL = [JULES_NML_SWITCHES, "l_vg_soil"]
+
+JULES_NML_PFTPARM = "JULES_PFTPARM"
+#the parameters are not been made into constants but are used in the chess driving data setup
+
+JULES_NML_POST_PROCESSING = "POST_PROCESSING"
+JULES_PARAM_POST_PROCESSING_ID = [JULES_NML_POST_PROCESSING, "id"]
 
 DATASET_TYPE_COVERAGE = 'Coverage'
 DATASET_TYPE_SINGLE_CELL = 'Single Cell'

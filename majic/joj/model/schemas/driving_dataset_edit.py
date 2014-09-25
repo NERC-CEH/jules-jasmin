@@ -119,6 +119,9 @@ class DrivingDatasetEdit(Schema):
     land_frac_frac_name = validators.String(not_empty=True, max=constants.DB_PARAMETER_VALUE_STRING_SIZE)
     soil_props_file = validators.String(not_empty=True, max=constants.DB_PARAMETER_VALUE_STRING_SIZE)
 
+    post_processing_script_id = validators.Int(not_empty=True, min=0)
+    is_restricted_to_admins = validators.StringBoolean(if_missing=False)
+
     region = ForEach(Region())
     drive_var_ = ForEach(DriveVar())
     param = ForEach(ExtraParameter())

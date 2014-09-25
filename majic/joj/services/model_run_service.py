@@ -131,6 +131,12 @@ class ModelRunService(DatabaseService):
                                        "has not completed or you are not authorised to access it")
             model_run.change_status(session, constants.MODEL_RUN_STATUS_PUBLISHED)
 
+            datasets = session.query(Dataset) \
+                .filter(Dataset.model_run_id == model_run.id) \
+                .all()
+            for dataset in datasets:
+                dataset.viewable_by_user_id = None
+
     def get_code_versions(self):
         """
         Get the list of code versions the user can select from

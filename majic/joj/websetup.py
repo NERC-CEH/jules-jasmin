@@ -251,9 +251,9 @@ def setup_app(command, conf, vars):
             stat_created)
 
     with session_scope(Session) as session:
-        watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
+        watch_driving_data_name = create_watch_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst,
+                                                            "configuration/Jules/country.csv")
         chess_driving_data_name = create_chess_driving_data(conf, cover_dst, land_cover_frac_dst, soil_prop_dst)
-
 
     with session_scope(Session) as session:
 
@@ -265,7 +265,7 @@ def setup_app(command, conf, vars):
         driving_ds_upload.is_restricted_to_admins = False
 
         parameters_upload = [
-
+            [constants.JULES_PARAM_POST_PROCESSING_ID, "3"],
             [constants.JULES_PARAM_INPUT_GRID_NX, "1"],
             [constants.JULES_PARAM_INPUT_GRID_NY, "1"],
 
@@ -278,13 +278,13 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL,
              "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
 
-            [constants.JULES_PARAM_INITIAL_NVARS, "8"],
-            [constants.JULES_PARAM_INITIAL_VAR,
-             "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'"],
-            [constants.JULES_PARAM_INITIAL_USE_FILE,
-             ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false."],
-            [constants.JULES_PARAM_INITIAL_CONST_VAL,
-             "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
+            [constants.JULES_PARAM_INITIAL_NVARS, "10"],
+        [constants.JULES_PARAM_INITIAL_VAR,
+         "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'  'lai' 'canht'"],
+        [constants.JULES_PARAM_INITIAL_USE_FILE,
+         ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false. .false.  .false."],
+        [constants.JULES_PARAM_INITIAL_CONST_VAL,
+         "0.9     0.0      0.0         50.0     275.0        278.0    10.0   0.0   1.0   2.0"]
         ]
 
         model_run_service = ModelRunService()
