@@ -50,7 +50,7 @@ class GraphingDapClient(DapClient):
         # First we identify the closest positions we can use (by index):
         is_inside_grid = (self.gse_lat_s <= lat <= self.gse_lat_n) and (self.gse_lon_w <= lon <= self.gse_lon_e)
 
-        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
+        lat_index, lon_index = self.get_lat_lon_index(lat, lon)
         if time is None:
             plot_point_time_index = 0
         else:

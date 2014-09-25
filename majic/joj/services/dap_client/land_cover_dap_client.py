@@ -40,6 +40,6 @@ class LandCoverDapClient(BaseDapClient):
         """
         if 'run_in_test_mode' in config and config['run_in_test_mode'].lower() == 'true':
             return 8 * [0.125] + [0.0]
-        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
+        lat_index, lon_index = self.get_lat_lon_index(lat, lon)
         frac_array = self._frac[:, lat_index, lon_index].tolist()
         return [val[0][0] for val in frac_array]

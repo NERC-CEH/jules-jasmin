@@ -157,16 +157,15 @@ class DapClient(BaseDapClient):
         """
         return len(self._time)
 
-    def get_data_at(self, lat, lon, date):
+    def get_data_at(self, lat_index, lon_index, date):
         """
         Get the value of the independent variable at a specified location and datetime
-        :param lat: Latitude to get at
-        :param lon: Longitude to get at
+        :param lat_index: Latitude index to get at
+        :param lon_index: Longitude index to get at
         :param date: Datetime to get at
         :return: The data value at that time/space
         """
         # First we identify the closest positions we can use (by index):
-        lat_index, lon_index = self._get_lat_lon_index(lat, lon)
         time_secs_elapsed = self._get_seconds_elapsed(date)
         time_index = self._get_closest_value_index(self._time, time_secs_elapsed)
 

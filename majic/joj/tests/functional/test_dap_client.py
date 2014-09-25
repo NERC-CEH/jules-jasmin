@@ -147,31 +147,36 @@ class TestBaseDapClientOnWatchData(BaseDapClientTest):
     def test_GIVEN_location_and_time_in_grid_WHEN_get_data_at_THEN_correct_data_returned(self):
         lat, lon = 51.75, -0.25
         time = datetime.datetime(1901, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, is_(102080.1875))
 
     def test_GIVEN_location_outside_grid_WHEN_get_data_at_THEN_missing_value_returned(self):
         lat, lon = 90, 360
         time = datetime.datetime(1901, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, is_(-9999.99))
 
     def test_GIVEN_time_outside_range_WHEN_get_data_at_THEN_closest_value_returned(self):
         lat, lon = 51.75, -0.25
         time = datetime.datetime(1066, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, is_(102080.1875))
 
     def test_GIVEN_already_got_data_at_a_point_WHEN_get_data_at_different_point_THEN_new_data_returned(self):
         # Testing that the cache is updated if we have moved lat / lon but not time.
         lat, lon = 51.75, -0.25
         time = datetime.datetime(1901, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, is_(102080.1875))
 
         lat, lon = 41.75, -0.25
         time = datetime.datetime(1901, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, is_(97743.3984375))
 
     def test_GIVEN_nothing_WHEN_get_timestamps_THEN_timestamps_returned(self):
@@ -250,19 +255,22 @@ class TestBaseDapClientOnCHESSData(BaseDapClientTest):
         # point at (60, 200)
         lat, lon = 50.405754059495266, -4.815923234749663
         time = datetime.datetime(1961, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, close_to(5.2, 0.001))
 
     def test_GIVEN_location_outside_grid_WHEN_get_data_at_THEN_missing_value_returned(self):
         lat, lon = 90, 360
         time = datetime.datetime(1961, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, close_to(-99999.0, 0.001))
 
     def test_GIVEN_time_outside_range_WHEN_get_data_at_THEN_closest_value_returned(self):
         lat, lon = 50.405754059495266, -4.815923234749663
         time = datetime.datetime(1066, 1, 1)
-        data = self.dap_client.get_data_at(lat, lon, time)
+        lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
+        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time)
         assert_that(data, close_to(5.2, 0.001))
 
 # noinspection PyArgumentList

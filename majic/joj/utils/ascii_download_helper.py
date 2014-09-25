@@ -103,8 +103,10 @@ class AsciiDownloadHelper(object):
         line_date = actual_start
         data_to_send = ""
         line_index = 0
+        self._create_dap_clients_if_missing(driving_data)
+        lat_index, lon_index = self._dap_clients[0].get_lat_lon_index(lat, lon)
         while line_date <= actual_end:
-            data_line = self._get_data_line(driving_data, lat, lon, line_date)
+            data_line = self._get_data_line(lat_index, lon_index, line_date)
             line_date += datetime.timedelta(seconds=period)
             data_to_send += data_line
             if line_index % constants.GENERATORS_LINES_TO_READ == 0:
@@ -207,11 +209,10 @@ class AsciiDownloadHelper(object):
                                    "Cannot process download")
         return ends[0]
 
-    def _get_data_line(self, driving_data, lat, lon, date):
-        self._create_dap_clients_if_missing(driving_data)
+    def _get_data_line(self, lat_index, lon_index, date):
         data_values = []
         for dap_client in self._dap_clients:
-            data = dap_client.get_data_at(lat, lon, date)
+            data = dap_client.get_data_at(lat_index, lon_index, date)
             data_values.append((data))
         return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\r\n"
 

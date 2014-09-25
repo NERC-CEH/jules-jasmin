@@ -49,7 +49,7 @@ class SoilPropertiesDapClient(BaseDapClient):
             return {'bexp': 0.9, 'sathh': 0.0, 'satcon': 0.0, 'vsat': 50.0, 'vcrit': 275.0, 'vwilt': 300.0,
                     'hcap': 10.0, 'hcon': 0.0, 'albsoil': 0.5}
         try:
-            lat_index, lon_index = self._get_lat_lon_index(lat, lon)
+            lat_index, lon_index = self.get_lat_lon_index(lat, lon)
             soil_props = {}
             use_files_or_default = use_file_list
             if use_file_list is None:
