@@ -76,7 +76,7 @@ def insert_before_file_extension(path, string):
 
 
 if __name__ == '__main__':
-    USER_EDITED_FRACTIONAL_FILENAME = 'data/CHESS/ancils/chess_landcover_2000_copy.nc'
+    USER_EDITED_FRACTIONAL_FILENAME = 'user_edited_land_cover_fractional_file.nc'
     MODIFIED_FOR_VISUALISATION_EXTENSION = '_MODIFIED_FOR_VISUALISATION'
     try:
         file_path = USER_EDITED_FRACTIONAL_FILENAME  # Default is to try to find a user edited file
@@ -91,7 +91,7 @@ if __name__ == '__main__':
             else:
                 print "File already exists and has been converted"
         else:
-            print "File does not exists: %s " % file_path
+            print "File does not exist: %s " % file_path
         exit(0)
     except Exception as e:
         print e.message
