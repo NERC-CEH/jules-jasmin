@@ -1,5 +1,20 @@
 """
-# header
+#    Majic
+#    Copyright (C) 2014  CEH
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
 import datetime
@@ -217,29 +232,33 @@ def setup_app(command, conf, vars):
             ds.is_input = True
             ds.model_run = watch_model_run
 
+        profiles = ["Yearly", "Monthly", "Daily"]
         outputs = [
-            ['gpp_gb_monthly', 'Gridbox gross primary productivity (Monthly)', 0, 100],
-            ['rad_net_monthly', 'Surface net radiation of land points (Monthly)', 0, 100],
-            ['resp_p_gb_monthly', 'Gridbox plant respiration (Monthly)', 0, 100],
-            ['smc_tot_monthly', 'Gridbox total soil moisture in column (Monthly)', 0, 100],
-            ['sub_surf_roff_monthly', 'Gridbox sub-surface runoff (Monthly)', 0, 100],
-            ['surf_roff_monthly', 'Gridbox surface runoff (Monthly)', 0, 100],
-            ['swet_liq_tot_monthly', 'Gridbox unfrozen soil moisture as fraction of saturation (Monthly)', 0, 100]]
+            ['gpp_gb_{}', 'Gridbox gross primary productivity ({})', 0, 100],
+            ['rad_net_{}', 'Surface net radiation of land points ({})', 0, 100],
+            ['resp_p_gb_{}', 'Gridbox plant respiration ({})', 0, 100],
+            ['smc_tot_{}', 'Gridbox total soil moisture in column ({})', 0, 100],
+            ['sub_surf_roff_{}', 'Gridbox sub-surface runoff ({})', 0, 100],
+            ['surf_roff_{}', 'Gridbox surface runoff ({})', 0, 100],
+            ['swet_liq_tot_{}', 'Gridbox unfrozen soil moisture as fraction of saturation ({})', 0, 100]]
 
-        for path, name, min, max in outputs:
-            ds = Dataset()
-            ds.name = name
-            ds.wms_url = conf.local_conf['thredds.server_url'] \
-                          + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
-                            "?service=WMS&version=1.3.0&request=GetCapabilities"
-            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." + path + ".ncml"
-            ds.data_range_from = min
-            ds.data_range_to = max
-            ds.is_categorical = 0
-            ds.deleted = 0
-            ds.dataset_type = cover_dst
-            ds.is_input = False
-            ds.model_run = watch_model_run
+        for profile in profiles:
+            for path_template, name_template, min, max in outputs:
+                path = path_template.format(profile.lower())
+                name = name_template.format(profile)
+                ds = Dataset()
+                ds.name = name
+                ds.wms_url = conf.local_conf['thredds.server_url'] \
+                              + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
+                                "?service=WMS&version=1.3.0&request=GetCapabilities"
+                ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." + path + ".ncml"
+                ds.data_range_from = min
+                ds.data_range_to = max
+                ds.is_categorical = 0
+                ds.deleted = 0
+                ds.dataset_type = cover_dst
+                ds.is_input = False
+                ds.model_run = watch_model_run
 
         session.add(watch_model_run)
 

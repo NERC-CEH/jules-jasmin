@@ -279,7 +279,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         #
         #  Create out NetDCF file attributes
         setattr(outnc, 'title', 'WATCH OUTPUT Data')
-        setattr(outnc, 'institution', 'Centre for Ecology & Hydrology (CEH) Lancaster')
+        setattr(outnc, 'institution', 'Centre for Ecology & Hydrology (CEH) Wallingford')
         setattr(outnc, 'source', 'Derived from WATCH 1D Output Data')
         setattr(outnc, 'reference', 'reference')
         setattr(outnc, 'description', 'Derived from WATCH 1D Output Data')
@@ -298,7 +298,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         setattr(outnc, 'geospatial_lon_max', multipoint.GetEnvelope()[1] + (resolution * 0.5))
         setattr(outnc, 'geospatial_lat_max', multipoint.GetEnvelope()[3] + (resolution * 0.5))
 
-        setattr(outnc, 'licence', 'Restricted to THREDDS/WATCH proof of concept purposes only.')
+        setattr(outnc, 'licence', 'https://majic.ceh.ac.uk/docs/majic_terms_and_conditions.pdf')
         setattr(outnc, 'publisher_name', 'Centre for Ecology & Hydrology')
         setattr(outnc, 'publisher_url', 'http://www.ceh.ac.uk')
         setattr(outnc, 'publisher_email', 'enquiries@ceh.ac.uk')
@@ -705,7 +705,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         #
         #  Create out NetDCF file attributes
         setattr(outnc, 'title', 'WATCH OUTPUT Data')
-        setattr(outnc, 'institution', 'Centre for Ecology & Hydrology (CEH) Lancaster')
+        setattr(outnc, 'institution', 'Centre for Ecology & Hydrology (CEH) Wallingford')
         setattr(outnc, 'source', 'Derived from WATCH 1D Output Data')
         setattr(outnc, 'reference', 'reference')
         setattr(outnc, 'description', 'Derived from WATCH 1D Output Data')
@@ -724,7 +724,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         setattr(outnc, 'geospatial_lon_max', multipoint.GetEnvelope()[1] + (resolution * 0.5))
         setattr(outnc, 'geospatial_lat_max', multipoint.GetEnvelope()[3] + (resolution * 0.5))
 
-        setattr(outnc, 'licence', 'Restricted to THREDDS/WATCH proof of concept purposes only.')
+        setattr(outnc, 'licence', 'https://majic.ceh.ac.uk/docs/majic_terms_and_conditions.pdf')
         setattr(outnc, 'publisher_name', 'Centre for Ecology & Hydrology')
         setattr(outnc, 'publisher_url', 'http://www.ceh.ac.uk')
         setattr(outnc, 'publisher_email', 'enquiries@ceh.ac.uk')

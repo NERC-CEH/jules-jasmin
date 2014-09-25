@@ -114,7 +114,7 @@ def lastPostProcessCHESS(inputFolder,outputFolder,inputnetCDF):
 
     # Add metadata
     setattr(outnc, 'title', 'CHESS output data')
-    setattr(outnc, 'institution', 'CEH-Wallingford - NERC')
+    setattr(outnc, 'institution', 'Centre for Ecology & Hydrology (CEH) Wallingford')
     setattr(outnc, 'grid_mapping', 'crs')
     setattr(outnc, 'source', 'run using MAJIC')
     setattr(outnc, 'reference', '')
@@ -139,6 +139,7 @@ def lastPostProcessCHESS(inputFolder,outputFolder,inputnetCDF):
     setattr(outnc, 'spatial_resolution_distance', 1000)
     setattr(outnc, 'spatial_resolution_unit', 'urn:ogc:def:uom:EPSG::9001')
     setattr(outnc, 'id', '') # http://www.guidgenerator.com/
+    setattr(outnc, 'licence', 'https://majic.ceh.ac.uk/docs/majic_terms_and_conditions.pdf')
     setattr(outnc, 'history', 'created on ' + str(datetime.datetime.now())[:10])
 
     # Create variable Time
