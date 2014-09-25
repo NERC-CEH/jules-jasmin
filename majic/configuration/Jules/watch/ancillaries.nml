@@ -3,22 +3,25 @@
   file = 'data/WATCH_2D/ancils/frac_igbp_watch_0p5deg_capUM6.6_2D.nc'
 /
 &JULES_SOIL_PARAM
+  zst = 1.0,
+  zsmc = 1.0,
+  confrac = 0.3,
   dzsoil_io = 0.1    0.25    0.65    2.0
 /
 &JULES_SOIL_PROPS
   var = 'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil',
-  const_z = .true.,
+  nvars = 9,
   var_name = 'bexp'    'sathh'  'satcon'  'vsat'    'vcrit'    'vwilt'    'hcap'      'hcon'   'albsoil',
   file = 'data/WATCH_2D/ancils/soil_igbp_bc_watch_0p5deg_capUM6.6_2D.nc',
-  nvars = 9
+  const_z = .true.
 /
 &JULES_PDM
-  dz_pdm = 0.5,
-  b_pdm = 0.4
+  dz_pdm = 1.0,
+  b_pdm = 1.0
 /
 &JULES_TOP
 
 /
 &JULES_AGRIC
-
+  zero_agric = .true.
 /

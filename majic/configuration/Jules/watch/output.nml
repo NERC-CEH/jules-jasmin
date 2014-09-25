@@ -1,61 +1,305 @@
 &JULES_OUTPUT
   run_id = 'majic',
-  nprofiles = 7,
+  nprofiles = 33,
   output_dir = './output'
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'gpp_gb_yearly',
   var = 'gpp_gb',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
   nvars = 1,
   profile_name = 'gpp_gb_monthly',
-  output_period = -1,
-  output_type = 'M'
+  var = 'gpp_gb',
+  output_type = 'M',
+  output_period = -1
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'smc_tot',
+  file_period = -2,
   nvars = 1,
-  profile_name = 'smc_tot_monthly',
-  output_period = -1,
-  output_type = 'M'
+  profile_name = 'gpp_gb_daily',
+  var = 'gpp_gb',
+  output_type = 'M',
+  output_period = 86400
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'surf_roff',
+  file_period = 0,
   nvars = 1,
-  profile_name = 'surf_roff_monthly',
-  output_period = -1,
-  output_type = 'M'
+  profile_name = 'tstar_gb_yearly',
+  var = 'tstar_gb',
+  output_type = 'M',
+  output_period = -2
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'sub_surf_roff',
+  file_period = 0,
   nvars = 1,
-  profile_name = 'sub_surf_roff_monthly',
-  output_period = -1,
-  output_type = 'M'
+  profile_name = 'tstar_gb_monthly',
+  var = 'tstar_gb',
+  output_type = 'M',
+  output_period = -1
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'swet_liq_tot',
+  file_period = -2,
   nvars = 1,
-  profile_name = 'swet_liq_tot_monthly',
-  output_period = -1,
-  output_type = 'M'
+  profile_name = 'tstar_gb_daily',
+  var = 'tstar_gb',
+  output_type = 'M',
+  output_period = 86400
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
-  var = 'resp_p_gb',
+  file_period = 0,
   nvars = 1,
-  profile_name = 'resp_p_gb_monthly',
-  output_period = -1,
-  output_type = 'M'
+  profile_name = 'snow_mass_gb_yearly',
+  var = 'snow_mass_gb',
+  output_type = 'M',
+  output_period = -2
 /
 &JULES_OUTPUT_PROFILE
   output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'snow_mass_gb_monthly',
+  var = 'snow_mass_gb',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'snow_mass_gb_daily',
+  var = 'snow_mass_gb',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'fqw_gb_yearly',
+  var = 'fqw_gb',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'fqw_gb_monthly',
+  var = 'fqw_gb',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'fqw_gb_daily',
+  var = 'fqw_gb',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'rad_net_yearly',
   var = 'rad_net',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
   nvars = 1,
   profile_name = 'rad_net_monthly',
-  output_period = -1,
-  output_type = 'M'
+  var = 'rad_net',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'rad_net_daily',
+  var = 'rad_net',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'surf_roff_yearly',
+  var = 'surf_roff',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'surf_roff_monthly',
+  var = 'surf_roff',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'surf_roff_daily',
+  var = 'surf_roff',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'ftl_gb_yearly',
+  var = 'ftl_gb',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'ftl_gb_monthly',
+  var = 'ftl_gb',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'ftl_gb_daily',
+  var = 'ftl_gb',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'resp_p_gb_yearly',
+  var = 'resp_p_gb',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'resp_p_gb_monthly',
+  var = 'resp_p_gb',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'resp_p_gb_daily',
+  var = 'resp_p_gb',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'sub_surf_roff_yearly',
+  var = 'sub_surf_roff',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'sub_surf_roff_monthly',
+  var = 'sub_surf_roff',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'sub_surf_roff_daily',
+  var = 'sub_surf_roff',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'swet_liq_tot_yearly',
+  var = 'swet_liq_tot',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'swet_liq_tot_monthly',
+  var = 'swet_liq_tot',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'swet_liq_tot_daily',
+  var = 'swet_liq_tot',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'smc_tot_yearly',
+  var = 'smc_tot',
+  output_type = 'M',
+  output_period = -2
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = 0,
+  nvars = 1,
+  profile_name = 'smc_tot_monthly',
+  var = 'smc_tot',
+  output_type = 'M',
+  output_period = -1
+/
+&JULES_OUTPUT_PROFILE
+  output_main_run = .true.,
+  file_period = -2,
+  nvars = 1,
+  profile_name = 'smc_tot_daily',
+  var = 'smc_tot',
+  output_type = 'M',
+  output_period = 86400
+/
+&JULES_OUTPUT_PROFILE
+
 /
