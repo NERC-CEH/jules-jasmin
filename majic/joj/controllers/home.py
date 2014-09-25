@@ -62,6 +62,13 @@ class HomeController(BaseController):
         """
         return render("about/cookies.html")
 
+    def privacy(self):
+        """
+        Privacy policy
+        :return:
+        """
+        return render("about/privacy_policy.html")
+
     def password(self, id=None):
         """
         Action for when the user selects password
