@@ -3,12 +3,15 @@
 """
 import logging
 import json
+from dateutil.relativedelta import relativedelta
+import datetime as dt
 import requests
 import sys
 from joj.utils import constants
 from joj.services.general import ServiceException
 from joj.utils import utils
 from joj.services.land_cover_service import LandCoverService
+from joj.model import ParameterValue
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +49,7 @@ class JobRunnerClient(object):
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % response.text
         else:
             log.exception("Failed to submit job %s" % response.text)
-            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED,\
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, \
                 "Could not submit model because there is an error in the job runner."
 
     def get_run_model_statuses(self, model_ids):
@@ -95,7 +98,8 @@ class JobRunnerClient(object):
         :param land_cover_actions:
         :return: dictionary for the run model
         """
-
+        parameters = self.alter_driving_data_start(parameters)
+        parameters = self.alter_yearly_monthly_output_profiles(parameters)
         # We need to identify if using fractional file, edited land cover or default .nc file
         # If multicell AND land cover actions saved --> use edited fractional.nc file
         # If multicell AND no land cover actions saved --> leave the .nc file as is
@@ -450,3 +454,68 @@ class JobRunnerClient(object):
             raise ServiceException("{} {}".format(service_exception_with_text_prefix, response.text))
 
         raise ServiceException(service_exception_with_no_text)
+
+    def alter_driving_data_start(self, parameters):
+        """
+        Moves the driving data start to be closer to the main run start
+        Due to a bug in JULES if the driving data start is too far before the main run start,
+        an integer overflows and causes an error. We therefore need to move the driving data
+        start close to the model run
+        :param parameters: List of parameters
+        :return:
+        """
+        driving_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                            constants.JULES_PARAM_DRIVE_DATA_START)
+        spinup_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                           constants.JULES_PARAM_SPINUP_START)
+        time_gap = relativedelta(years=10)
+        new_driving_start = max(spinup_start - time_gap, driving_start)
+        utils.set_parameter_value_in_parameter_list(
+            parameters, constants.JULES_PARAM_DRIVE_DATA_START, new_driving_start)
+        return parameters
+
+    def alter_yearly_monthly_output_profiles(self, parameters):
+        """
+        Adjusts the output profiles to avoid JULES errors like:
+        "Jules error:file_ts_open: When using data_period=-1, data must start at 00:00:00 on 1st of month"
+        caused by asking for output profiles that aren't valid for the selected run starts and ends
+        :param parameters: List of parameters
+        :return:
+        """
+        run_start = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                        constants.JULES_PARAM_RUN_START)
+        run_end = utils.get_first_parameter_value_from_parameter_list(parameters,
+                                                                      constants.JULES_PARAM_RUN_END)
+
+        output_starts_to_add = []
+
+        for parameter in parameters:
+            if parameter.namelist.name == constants.JULES_PARAM_OUTPUT_PERIOD[0]:
+                if parameter.name == constants.JULES_PARAM_OUTPUT_PERIOD[1]:
+                    for pv_output_period in parameter.parameter_values:
+                        period = pv_output_period.get_value_as_python()
+                        group_id = pv_output_period.group_id
+                        if period == constants.JULES_YEARLY_PERIOD:
+                            if not utils.is_first_of_year(run_start):
+                                next_year = utils.next_first_of_year(run_start)
+                                if next_year <= run_end:
+                                    output_start = ParameterValue()
+                                    output_start.set_value_from_python(next_year)
+                                    output_start.group_id = group_id
+                                    output_starts_to_add.append(output_start)
+                        elif period == constants.JULES_MONTHLY_PERIOD:
+                            if not utils.is_first_of_month(run_start):
+                                next_month = utils.next_first_of_month(run_start)
+                                if next_month <= run_end:
+                                    output_start = ParameterValue()
+                                    output_start.set_value_from_python(next_month)
+                                    output_start.group_id = group_id
+                                    output_starts_to_add.append(output_start)
+
+        # Add parameter values (output_start)
+        for parameter in parameters:
+            if parameter.namelist.name == constants.JULES_PARAM_OUTPUT_START[0]:
+                if parameter.name == constants.JULES_PARAM_OUTPUT_START[1]:
+                    parameter.parameter_values += output_starts_to_add
+
+        return parameters

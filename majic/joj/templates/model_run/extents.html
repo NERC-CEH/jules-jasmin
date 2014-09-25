@@ -111,16 +111,16 @@
     </div>
 
     <div class="control-group">
-        <label for="average_over_cell" class="control-label">
-            Average over cell
+        <label for="point_data" class="control-label">
+            Use single point data
             <p class="label-explain">
-                Use average driving data over the whole cell in which your chosen site is located, instead
-                of just one point.
+                Use driving data from a single point instead of averaged data over the whole cell in which your chosen
+                site is located
             </p>
         </label>
         <div class="controls">
             <i id="check_av" class="fa fa-check-square-o fa-2x green checkbox"></i>
-            ${h.html_tags.checkbox('average_over_cell', style='display:none')}
+            ${h.html_tags.checkbox('point_data', style='display:none')}
         </div>
     </div>
 

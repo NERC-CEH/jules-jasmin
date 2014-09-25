@@ -396,7 +396,7 @@ class ModelRunController(BaseController):
                     errors=errors,
                     auto_error_formatter=BaseController.error_formatter)
             try:
-                spinup_duration = constants.SPINUP_DURATION_YEARS
+                spinup_duration = constants.SPINUP_MAX_TIME_RANGE_YEARS
                 science_config = \
                     self._model_run_service.get_science_configuration_by_id(model_run.science_configuration_id)
                 if science_config.science_configuration_spinup_in_years is not None:
@@ -530,6 +530,10 @@ class ModelRunController(BaseController):
             # We want to pass the renderer a list of which output variables are already selected and for which time
             # periods so that we can render these onto the page as selected
             output_controller_helper.add_selected_outputs_to_template_context(c, model_run)
+
+            # Finally we need to know if we must disable yearly or monthly outputs
+            c.yearly_allowed = output_controller_helper.yearly_output_allowed(model_run)
+            c.monthly_allowed = output_controller_helper.monthly_output_allowed(model_run)
 
             return render("model_run/output.html")
         else:

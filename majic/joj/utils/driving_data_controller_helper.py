@@ -254,7 +254,7 @@ class DrivingDataControllerHelper(object):
         if period % constants.TIMESTEP_LEN != 0:
             raise DrivingDataParsingException("Period must be a multiple of 30 mins"
                                               " (was %ss)" % period)
-        self.period = period
+        self.period = int(period)
         self.job_runner_client.close_file(model_run_id, constants.USER_UPLOAD_FILE_NAME)
 
     def _process_header(self, var_line, interp_line):

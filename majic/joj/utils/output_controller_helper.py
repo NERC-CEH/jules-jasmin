@@ -2,6 +2,37 @@
 header
 """
 from joj.utils import constants
+from joj.utils import utils
+
+
+def yearly_output_allowed(model_run):
+    """
+    Determine whether yearly output is allowed for the model run
+    :param model_run: Model Run being created
+    :return: True if allowed, otherwise False
+    """
+    run_start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START)
+    run_end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
+    if utils.is_first_of_year(run_start):
+        return True
+    else:
+        next_year = utils.next_first_of_year(run_start)
+        return next_year <= run_end
+
+
+def monthly_output_allowed(model_run):
+    """
+    Determine whether monthly output is allowed for the model run
+    :param model_run: Model Run being created
+    :return: True if allowed, otherwise False
+    """
+    run_start = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_START)
+    run_end = model_run.get_python_parameter_value(constants.JULES_PARAM_RUN_END)
+    if utils.is_first_of_month(run_start):
+        return True
+    else:
+        next_month = utils.next_first_of_month(run_start)
+        return next_month <= run_end
 
 
 def add_selected_outputs_to_template_context(template_context, model_run):

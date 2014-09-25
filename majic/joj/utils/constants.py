@@ -130,8 +130,8 @@ DEPENDS_ON_NSMAX = ['snow_ice_gb', 'snow_liq_gb', 'snow_ice_tile', 'snow_liq_til
 # Set the timestep length in seconds
 TIMESTEP_LEN = 30 * 60  # half an hour
 
-# Sets the spin up duration in ywears (can not be 0)
-SPINUP_DURATION_YEARS = 5
+# Sets the spin up duration in years (can not be 0)
+SPINUP_MAX_TIME_RANGE_YEARS = 5
 
 # Set the name of the run and consequently the name of the output files
 RUN_ID = "majic"
@@ -187,6 +187,7 @@ JULES_PARAM_OUTPUT_FILE_PERIOD = [JULES_NML_OUTPUT_PROFILE, "file_period"]
 JULES_PARAM_OUTPUT_NVARS = [JULES_NML_OUTPUT_PROFILE, "nvars"]
 JULES_PARAM_OUTPUT_VAR = [JULES_NML_OUTPUT_PROFILE, "var"]
 JULES_PARAM_OUTPUT_TYPE = [JULES_NML_OUTPUT_PROFILE, "output_type"]
+JULES_PARAM_OUTPUT_START = [JULES_NML_OUTPUT_PROFILE, "output_start"]
 
 JULES_NML_OUTPUT = "JULES_OUTPUT"
 JULES_PARAM_OUTPUT_NPROFILES = [JULES_NML_OUTPUT, "nprofiles"]

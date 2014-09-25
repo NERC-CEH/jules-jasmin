@@ -1,6 +1,9 @@
 """
 header
 """
+from dateutil.relativedelta import relativedelta
+import datetime as dt
+
 from joj.utils import constants
 
 
@@ -114,7 +117,7 @@ def find_first_parameter_value_in_param_vals_list(parameter_values, parameter_na
     return None
 
 
-def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist_name, is_list=False):
+def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist_name, is_list=False, group_id=None):
     """
     Get a parameter value from a list of parameters
     :param parameters: List of parameters
@@ -127,7 +130,12 @@ def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist
         if parameter.namelist.name == parameter_namelist_name[0]:
             if parameter.name == parameter_namelist_name[1]:
                 if len(parameter.parameter_values) > 0:
-                    return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+                    if group_id is None:
+                        return parameter.parameter_values[0].get_value_as_python(is_list=is_list_local)
+                    else:
+                        group_params = [param for param in parameter.parameter_values if param.group_id == group_id]
+                        if len(group_params) > 0:
+                            return group_params[0].get_value_as_python(is_list=is_list_local)
     return None
 
 
@@ -144,3 +152,44 @@ def set_parameter_value_in_parameter_list(parameters, parameter_namelist_name, p
             if parameter.name == parameter_namelist_name[1]:
                 if len(parameter.parameter_values) > 0:
                     parameter.parameter_values[0].set_value_from_python(python_value)
+
+
+def is_first_of_year(datetime):
+    """
+    Is this datetime the first of the year at 00:00:00?
+    :param datetime: Datetime to test
+    :return: True if first of year, otherwise False
+    """
+    return datetime.month == 1 and is_first_of_month(datetime)
+
+
+def is_first_of_month(datetime):
+    """
+    Is this datetime the first of the month at 00:00:00?
+    :param datetime: Datetime to test
+    :return: True if first of month, otherwise False
+    """
+    return datetime.day == 1 \
+        and datetime.hour == 0 \
+        and datetime.minute == 0 \
+        and datetime.second == 0
+
+
+def next_first_of_year(datetime):
+    """
+    Return the next first of year
+    :param datetime: Datetime
+    :return: Next first of year at 00:00:00
+    """
+    return dt.datetime(datetime.year + 1, 1, 1)
+
+
+def next_first_of_month(datetime):
+    """
+    Return the next first of month
+    :param datetime: Datetime
+    :return: Next first of month at 00:00:00
+    """
+    month = relativedelta(months=1)
+    next_month = datetime + month
+    return dt.datetime(next_month.year, next_month.month, 1)

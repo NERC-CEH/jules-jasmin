@@ -46,7 +46,7 @@ var updatePageFromSelect = function() {
  * over the top of a standard check box).
  */
  var updateCheckBoxIcon = function() {
-    var check = $('#average_over_cell');
+    var check = $('#point_data');
     var icon = $('#check_av');
     if (check.is(':checked')) {
         icon.removeClass('grey');
@@ -66,7 +66,7 @@ var updatePageFromSelect = function() {
  */
 var toggleAverageCheckBox = function () {
     //toggle the box
-    var check = $('#average_over_cell');
+    var check = $('#point_data');
     if (check.is(':checked')) {
         check.prop('checked', false);
     } else {
@@ -89,6 +89,6 @@ $(document).ready(function() {
 
     // Set click handlers for the 'average driving data over cell' custom checkbox.
     $('#check_av').click(toggleAverageCheckBox);
-    $('#average_over_cell').change(updateCheckBoxIcon);
+    $('#point_data').change(updateCheckBoxIcon);
     updateCheckBoxIcon(); // Call this once to make sure it's ticked if needed
 });
