@@ -17,3 +17,6 @@ if [ $EXITCODE -ne 0 ] ; then
 else
   echo "Database backup Success. Dump is at $dump_filename" | mail -s "success: database backup" majic@ceh.ac.uk
 fi
+
+#remove unwanted files
+find "$BACKUP_DIR/joj_database_*.bck" -mtime +10 -exec rm {} \;
