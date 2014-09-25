@@ -55,6 +55,13 @@ class HomeController(BaseController):
         c.admin_email = config["email.admin_address"]
         return render("about/faq.html")
 
+    def cookies(self):
+        """
+        Cookies policy
+        :return:
+        """
+        return render("about/cookies.html")
+
     def password(self, id=None):
         """
         Action for when the user selects password
