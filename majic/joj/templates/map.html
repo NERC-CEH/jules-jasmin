@@ -135,6 +135,9 @@
 
                         </div>
                         <div><hr/></div>
+                        <div id="layers-loading" class="alert alert-info" style="display:none">
+                            <h4><img src="/layout/images/loading7.gif"/>&nbsp;&nbsp;&nbsp;Loading Layers...</h4>
+                        </div>
                         <div class="hidden" id="options-panel">
 
                             <div id="layer-list" class="sidebar-nav">
@@ -142,7 +145,6 @@
                                 <button class="btn btn-mini" id="reset-button"><i class="icon-backward"></i> Clear All Datasets</button><br/><br/>
                                 <button class="btn btn-mini disabled" disabled="disabled" id="reset-graph"><i class="icon-screenshot"></i> Reset Graph Zoom</button>
                                 <button class="btn btn-mini disabled" disabled="disabled" id="close-graph"><i class="icon-remove"></i> Close Graph</button>
-
                                 <div id="dimension-panel" class="hidden">
                                     <h5>Dimension controls</h5>
                                     <div class="alert alert-info">Graphing is limited to the ${c.GRAPH_NPOINTS} closest points to times chosen below:</div>

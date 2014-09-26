@@ -114,7 +114,7 @@ class BaseDapClient(object):
         # Won't always get the one we expect but will always be equally close (e.g. 6.5 might go to 6 not 7)
         return min(range(len(data)), key=lambda i: abs(data[i] - value))
 
-    def _get_lat_lon_index(self, lat_to_find, lon_to_find):
+    def get_lat_lon_index(self, lat_to_find, lon_to_find):
         """
         Get the lat and lon indexes for the poin closest to the given values
         :param lat_to_find: latitude to find

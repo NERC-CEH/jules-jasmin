@@ -17,7 +17,6 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import sys
-import datetime
 
 from joj.utils import constants
 from joj.services.dataset import DatasetService
@@ -100,14 +99,16 @@ class AsciiDownloadHelper(object):
                                     vars=vars,
                                     interps=interps).replace('\n', '\r\n')
         yield str(header)
-        line_date = actual_start
         data_to_send = ""
-        line_index = 0
-        while line_date <= actual_end:
-            data_line = self._get_data_line(driving_data, lat, lon, line_date)
-            line_date += datetime.timedelta(seconds=period)
+        self._create_dap_clients_if_missing(driving_data)
+        lat_index, lon_index = self._dap_clients[0].get_lat_lon_index(lat, lon)
+        time_index = self._dap_clients[0].get_time_index(actual_start)
+        end_time_index = self._dap_clients[0].get_time_index(actual_end)
+        while time_index <= end_time_index:
+            data_line = self._get_data_line(lat_index, lon_index, time_index)
+            time_index += 1
             data_to_send += data_line
-            if line_index % constants.GENERATORS_LINES_TO_READ == 0:
+            if time_index % constants.GENERATORS_LINES_TO_READ == 0:
                 yield str(data_to_send)
                 data_to_send = ""
         yield str(data_to_send)
@@ -207,11 +208,10 @@ class AsciiDownloadHelper(object):
                                    "Cannot process download")
         return ends[0]
 
-    def _get_data_line(self, driving_data, lat, lon, date):
-        self._create_dap_clients_if_missing(driving_data)
+    def _get_data_line(self, lat_index, lon_index, time_index):
         data_values = []
         for dap_client in self._dap_clients:
-            data = dap_client.get_data_at(lat, lon, date)
+            data = dap_client.get_data_at(lat_index, lon_index, time_index)
             data_values.append((data))
         return '\t'.join(('%-*G' % (self.col_size, x) for x in data_values)) + "\r\n"
 
