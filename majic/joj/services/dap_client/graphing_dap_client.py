@@ -38,13 +38,14 @@ class GraphingDapClient(DapClient):
         self.gse_lon_w = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_min']
         self.gse_lon_e = self._dataset.attributes['NC_GLOBAL']['geospatial_lon_max']
 
-    def get_graph_data(self, lat, lon, time, npoints=constants.GRAPH_NPOINTS):
+    def get_graph_data(self, lat, lon, time, npoints=constants.GRAPH_NPOINTS, run_name=''):
         """
         Get the time series graphing data for a given point
         :param lat: Latitude of point to graph
         :param lon: Longitude of point to graph
         :param time: Time to graph around
         :param npoints: Max number of points to plot
+        :param run_name: Model run name to prefix legend with
         :return: JSON-like dictionary of data and metadata
         """
         # First we identify the closest positions we can use (by index):
@@ -82,8 +83,11 @@ class GraphingDapClient(DapClient):
         if len(data) > 0:
             min_data_value = min([row[1] for row in data])
             max_data_value = max([row[1] for row in data])
+        label = "%s (%s)" % (self.get_longname(), self._variable.units)
+        if len(run_name) > 0:
+            label = "%s - %s" % (run_name, label)
         return {'data': data,
-                'label': "%s (%s)" % (self.get_longname(), self._variable.units),
+                'label': label,
                 'lat': lat,
                 'lon': lon,
                 'xmin': self._get_millis_since_epoch(min(timestamps)),

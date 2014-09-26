@@ -149,7 +149,7 @@ class TestBaseDapClientOnWatchData(BaseDapClientTest):
         time = datetime.datetime(1901, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, is_(102080.1875))
 
     def test_GIVEN_location_outside_grid_WHEN_get_data_at_THEN_missing_value_returned(self):
@@ -165,7 +165,7 @@ class TestBaseDapClientOnWatchData(BaseDapClientTest):
         time = datetime.datetime(1066, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, is_(102080.1875))
 
     def test_GIVEN_already_got_data_at_a_point_WHEN_get_data_at_different_point_THEN_new_data_returned(self):
@@ -174,14 +174,14 @@ class TestBaseDapClientOnWatchData(BaseDapClientTest):
         time = datetime.datetime(1901, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, is_(102080.1875))
 
         lat, lon = 41.75, -0.25
         time = datetime.datetime(1901, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, is_(97743.3984375))
 
     def test_GIVEN_nothing_WHEN_get_timestamps_THEN_timestamps_returned(self):
@@ -296,7 +296,7 @@ class TestGraphingDapClient(BaseDapClientTest):
         data = self.dap_client.get_graph_data(lat, lon, time)
         assert_that(data['lat'], is_(lat))
         assert_that(data['lon'], is_(lon))
-        assert_that(data['label'], is_("Surface pressure (Pa) @ 51.75, -0.25"))
+        assert_that(data['label'], is_("Surface pressure (Pa)"))
         assert_that(data['xmin'], is_(-2177452800000.0))  # Milliseconds since the UNIX epoch
         assert_that(data['xmax'], is_(-2174785200000.0))  # Milliseconds since the UNIX epoch
         assert_that(data['ymin'], is_(98193.515625))
@@ -312,7 +312,7 @@ class TestGraphingDapClient(BaseDapClientTest):
         data = self.dap_client.get_graph_data(lat, lon, time)
         assert_that(data['lat'], is_(lat))
         assert_that(data['lon'], is_(lon))
-        assert_that(data['label'], is_("Surface pressure (Pa) @ 51.75, -0.25"))
+        assert_that(data['label'], is_("Surface pressure (Pa)"))
         assert_that(data['xmin'], is_(-2177452800000.0))  # Milliseconds since the UNIX epoch
         assert_that(data['xmax'], is_(-2174785200000.0))  # Milliseconds since the UNIX epoch
         assert_that(data['ymin'], is_(98193.515625))

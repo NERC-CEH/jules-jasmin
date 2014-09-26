@@ -257,7 +257,7 @@ var EcomapsMap = (function() {
     /*
      * loadUnloadDataset
      *
-     * Loads or unloads an EcoMaps dataset into the map control
+     * Loads or unloads an EcoMaps dataset into the map page
      *
      */
     var loadUnloadDataset = function() {
@@ -275,7 +275,12 @@ var EcomapsMap = (function() {
         }
     };
 
-
+    /*
+     * unloadDataset
+     *
+     * Unloads an EcoMaps dataset from the map page
+     *
+     */
     var unloadDataset = function(dataset_type, layerId, datasetLink) {
         datasetLink.removeClass("active");
 
@@ -300,7 +305,31 @@ var EcomapsMap = (function() {
         updateGraph();
     }
 
+    /*
+     * showPanelLoading
+     *
+     * Shows message indicating that the layers panel is loading
+     */
+    var showPanelLoading = function() {
+        $('#layers-loading').show();
+    }
 
+    /*
+     * hidePanelLoading
+     *
+     * Hides message indicating that the layers panel is loading
+     */
+    var hidePanelLoading = function() {
+        $('#layers-loading').hide();
+    }
+
+
+    /*
+     * loadDataset
+     *
+     * Loads an EcoMaps dataset to the map page
+     *
+     */
     var loadDataset = function(dataset_type, layerId, datasetId, datasetLink) {
         var run_id = datasetLink.find('a.dataset').data("model_run_id");
         if (dataset_type == DATASET_TYPE_COVERAGE || dataset_type == DATASET_TYPE_LAND_COVER_FRAC || dataset_type == DATASET_TYPE_SOIL_PROP) {
@@ -313,6 +342,7 @@ var EcomapsMap = (function() {
         } else {
             // Plop the loading panel over the map
             datasetLink.addClass("active");
+            showPanelLoading();
             setLoadingState(true);
             // Load the layers UI straight from the response
             $.get("/viewdata/layers?dsid=" + datasetId + "&layerid=" + layerId, function(result) {
@@ -320,6 +350,7 @@ var EcomapsMap = (function() {
                 var loadCancelled = !ds_li.hasClass('active');
                 if (loadCancelled) {
                     setLoadingState(false);
+                    hidePanelLoading();
                     return false;
                 }
 
@@ -344,6 +375,10 @@ var EcomapsMap = (function() {
                         createGraph(positionsDict[run_id]);
                     });
                 }
+                hidePanelLoading();
+            }).fail(function() {
+                setLoadingState(false);
+                hidePanelLoading();
             });
         }
         // All done
@@ -765,7 +800,7 @@ var EcomapsMap = (function() {
         });
 
         context.font = "bold 20px sans-serif";
-        context.fillText("EcoMaps Image Export - " + $("#map-title").html(), 10,25);
+        context.fillText("Majic Image Export - " + $("#map-title").html(), 10,25);
 
         var layerCount = 1;
 

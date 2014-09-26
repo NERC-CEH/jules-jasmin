@@ -197,7 +197,7 @@ function getData(layerIds, position)
             // If this is the last one then we can go ahead and plot them all
             if (data.length == layerIds.length){
                 plotGraph(data);
-                var graph_title_template = "Measurements at {lat}, {lon}";
+                var graph_title_template = "Measurements at Lat: {lat}, Lon: {lon}";
                 var title = graph_title_template.replace(/{lat}/g, data[0].lat).replace(/{lon}/g, data[0].lon);
                 $('#graph-title').text(title);
             }

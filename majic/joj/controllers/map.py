@@ -127,6 +127,7 @@ class MapController(BaseController):
         else:
             time = None
         dataset = self._dataset_service.get_dataset_by_id(id, self.current_user.id)
+        model_run = self._model_run_service.get_model_by_id(self.current_user, dataset.model_run_id)
         url = dataset.netcdf_url
         dap_client = self._dap_factory.get_graphing_dap_client(url)
-        return dap_client.get_graph_data(lat, lon, time)
+        return dap_client.get_graph_data(lat, lon, time, run_name=model_run.name)
