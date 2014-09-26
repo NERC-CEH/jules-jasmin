@@ -155,14 +155,11 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
     #  Open cordinate netCDF file
     fh = netCDF4.Dataset(coordinatenetCDFFile, mode='r')
 
-    print 'what is happening?'
+    print 'Dimensions:'
     for elem in fh.dimensions:
-        print 'hello'
         print elem
 
     yDim = fh.dimensions[u'y']
-
-
 
 #######################################################################
 ####################### IF JULES OUTPUT IS 1D #########################
@@ -363,13 +360,17 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
 
         #
         # Transform netcdf time units into datetime units
-        t1 = outncvartime[0]
-        t2 = outncvartime[intervals-1]
+        if intervals > 0:
+            t1 = outncvartime[0]
+            t2 = outncvartime[intervals-1]
+        else:
+            t1 = 0
+            t2 = 0
 
         netcdfUnits = getattr(fh.variables[DIM_TIME_ORIGINAL],'units')
 
-        startdatetime = netcdf2datetime(t1,netcdfUnits)
-        enddatetime = netcdf2datetime(t2,netcdfUnits)
+        startdatetime = netcdf2datetime(t1, netcdfUnits)
+        enddatetime = netcdf2datetime(t2, netcdfUnits)
         setattr(outnc, 'time_coverage_start', str(startdatetime))
         setattr(outnc, 'time_coverage_end', str(enddatetime))
 
@@ -432,7 +433,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
                     print '\t\t#\n\t\tarray.shape:\t\t\t{0}'.format(array.shape)
                     print '\t\tarray.size:\t\t\t\t{0}'.format(array.size)
 
-
+                values = None
                 #
                 # If variable is 3 dimensional
                 if len(newDim)==3:
@@ -584,7 +585,8 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
                             The array will be left empty'
 
                 #  Delete values numpy array
-                del values
+                if values is not None:
+                    del values
 
                 #  Create out netCDF parameter variable
                 #outncvar = outnc.createVariable(var, 'f8', ('Time', 'Latitude', 'Longitude'), zlib=zlib, fill_value=MISSINGVALUE)
@@ -790,8 +792,12 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
 
         #
         # Transform netcdf time units into datetime units
-        t1 = outncvartime[0]
-        t2 = outncvartime[intervals-1]
+        if intervals > 0:
+            t1 = outncvartime[0]
+            t2 = outncvartime[intervals-1]
+        else:
+            t1 = 0
+            t2 = 0
 
         netcdfUnits = getattr(fh.variables[DIM_TIME_ORIGINAL],'units')
 

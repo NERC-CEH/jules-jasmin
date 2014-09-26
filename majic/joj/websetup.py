@@ -234,8 +234,8 @@ def setup_app(command, conf, vars):
 
         profiles = ["Yearly", "Monthly", "Daily"]
         outputs = [
-            ['gpp_gb_{}', 'Gridbox gross primary productivity ({})', 0, 100],
-            ['rad_net_{}', 'Surface net radiation of land points ({})', 0, 100],
+            ['gpp_gb_{}', 'Gridbox gross primary productivity ({})', 0, 2e-7],
+            ['rad_net_{}', 'Surface net radiation of land points ({})', -50, 200],
             ['resp_p_gb_{}', 'Gridbox plant respiration ({})', 0, 100],
             ['smc_tot_{}', 'Gridbox total soil moisture in column ({})', 0, 100],
             ['sub_surf_roff_{}', 'Gridbox sub-surface runoff ({})', 0, 100],

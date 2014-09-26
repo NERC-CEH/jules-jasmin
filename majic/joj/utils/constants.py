@@ -113,6 +113,9 @@ NETCDF_CRS = ['crs']
 NETCDF_CRS_X = ['x']
 NETCDF_CRS_Y = ['y']
 
+#mLAYER names not not display on the map, must be lowercase
+LAYERS_NOT_TO_DISPLAY = ['latitude', 'lat', 'longitude', 'lon', 'crs', 'time']
+
 # Max number of points to get for graph:
 GRAPH_NPOINTS = 1000
 # Date time string format used by the graph / visualisation.
