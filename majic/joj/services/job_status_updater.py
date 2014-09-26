@@ -333,6 +333,21 @@ class JobStatusUpdaterService(DatabaseService):
         :return:
         """
         try:
+            netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
+            if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+                data_range_from, data_range_to = [0, 1]
+                name = "Land Cover Fractions"
+            elif dataset_type.type == constants.DATASET_TYPE_SOIL_PROP:
+                data_range_from, data_range_to = [0, 1]
+                name = "Soil Properties"
+            else:
+                dap_client = self._dap_client_factory.get_dap_client(netcdf_url)
+                if frequency:
+                    name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+                else:
+                    name = dap_client.get_longname()
+                data_range_from, data_range_to = dap_client.get_data_range()
+
             dataset = Dataset()
             dataset.model_run_id = model_run.id
             dataset.dataset_type = dataset_type
@@ -342,23 +357,13 @@ class JobStatusUpdaterService(DatabaseService):
             dataset.wms_url = "{url}?{query}".format(
                 url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
                 query="?service=WMS&version=1.3.0&request=GetCapabilities")
-            dataset.netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
-            if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
-                dataset.data_range_from, dataset.data_range_to = [0, 1]
-                dataset.name = "Land Cover Fractions"
-            elif dataset_type.type == constants.DATASET_TYPE_SOIL_PROP:
-                dataset.data_range_from, dataset.data_range_to = [0, 1]
-                dataset.name = "Soil Properties"
-            else:
-                dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
-                if frequency:
-                    dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
-                else:
-                    dataset.name = dap_client.get_longname()
-                dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
+            dataset.netcdf_url = netcdf_url
+            dataset.data_range_from = data_range_from
+            dataset.data_range_to = dataset.data_range_to
+            dataset.name = name
             session.add(dataset)
         except DapClientInternalServerErrorException:
-            log.exception("Trouble creating the dataset %s" %dataset.netcdf_url)
+            log.exception("Trouble creating the dataset %s" % dataset.netcdf_url)
             #dont register the dataset just continue
 
     def _check_total_allocation_and_alert(self):
