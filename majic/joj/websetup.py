@@ -232,15 +232,15 @@ def setup_app(command, conf, vars):
             ds.is_input = True
             ds.model_run = watch_model_run
 
-        profiles = ["Yearly", "Monthly", "Daily"]
+        profiles = ["Monthly"]
         outputs = [
-            ['gpp_gb_{}', 'Gridbox gross primary productivity ({})', 0, 2e-7],
-            ['rad_net_{}', 'Surface net radiation of land points ({})', -50, 200],
-            ['resp_p_gb_{}', 'Gridbox plant respiration ({})', 0, 100],
-            ['smc_tot_{}', 'Gridbox total soil moisture in column ({})', 0, 100],
-            ['sub_surf_roff_{}', 'Gridbox sub-surface runoff ({})', 0, 100],
-            ['surf_roff_{}', 'Gridbox surface runoff ({})', 0, 100],
-            ['swet_liq_tot_{}', 'Gridbox unfrozen soil moisture as fraction of saturation ({})', 0, 100]]
+            ['gpp_gb_{}', 'Gridbox gross primary productivity ({})', 0, 1e-7],
+            ['rad_net_{}', 'Surface net radiation of land points ({})', -50, 150],
+            ['resp_p_gb_{}', 'Gridbox plant respiration ({})', 0, 4e-8],
+            ['smc_tot_{}', 'Gridbox total soil moisture in column ({})', 0, 1500],
+            ['sub_surf_roff_{}', 'Gridbox sub-surface runoff ({})', 0, 1e-6],
+            ['surf_roff_{}', 'Gridbox surface runoff ({})', 0, 5e-5],
+            ['swet_liq_tot_{}', 'Gridbox unfrozen soil moisture as fraction of saturation ({})', 0, 1]]
 
         for profile in profiles:
             for path_template, name_template, min, max in outputs:
