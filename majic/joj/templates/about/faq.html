@@ -70,14 +70,40 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out_file.write(line)
     </code></p>Or, using WGET:
         <p><code class="block">
-for year in `seq 1901 2001`<br/>
-do<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;url_template=https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year=$$year&amp;format=ASCII<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;Wget –post=”username=my.username&amp;password=mypassword123” $$url_template<br/>
-done<br/>
-</code></p>
-
+        for year in `seq 1901 2001`<br/>
+        do<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;url_template=https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year=$$year&amp;format=ASCII<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;Wget –post=”username=my.username&amp;password=mypassword123” $$url_template<br/>
+        done<br/>
+        </code></p>
     </div>
+
+    <div class="qa">
+        <a id="q_statuses" class="anchor"></a>
+        <p class="q"><b>What are the different run statuses and what do they mean?</b></p>
+        <p class="a">
+            Once they have been created, Majic model runs will pass through the following stages in this order:
+            <!--<ul style="list-style-type:none">-->
+        <ol>
+                <li><b style="color:#f6b26b">Submitted</b> - The run has been submitted but has not yet been queued.</li>
+                <li><b style="color:#f6b26b">Pending</b> - The model run is in the JASMIN queue waiting for an available slot.</li>
+                <li><b style="color:#f6b26b">Running</b> - JULES is currently performing the run.</li>
+                <li><b style="color:#38761d">Completed</b> - The run successfully completed.</li>
+                <li><b style="color:#711780">Published</b> - A completed run has been made publicly available (optional).</li>
+        </ol>
+        <p>If a problem occurs, the model run may reach one of the following statuses:</p>
+        <ul>
+                <li><b style="color:#990000">Submission Failed</b> - The run could not be submitted to JASMIN.
+                    You may wish to try again later (you can always duplicate a failed run).</li>
+                <li><b style="color:#990000">Failed</b> - JULES encountered an error whilst trying to perfom the run.
+                    This may be a problem with how your run is configured - the summary page for this run will give more
+                specific information.</li>
+                <li><b style="color:#990000">Unknown</b> - An unknown error occurred and Majic doesn't know the status of the run.</li>
+            </ul>
+        </p>
+    </div>
+
+
 
 </body>
 </html>
