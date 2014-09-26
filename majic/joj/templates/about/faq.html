@@ -10,58 +10,180 @@
     <link href="/layout/faq.css" rel="stylesheet" media="screen" />
 </head>
 <body id="help">
-    <h1>Frequently Asked Questions</h1>
-    <p>Here are some of the most commonly asked questions about Majic:</p>
-    <div id="links"></div>
-    <p>Got a question that isn't answered here? Email <a href="mailto:${c.admin_email}">${c.admin_email}</a> for help.</p>
-    <!--!TO ADD TO THESE FAQS:
-        1) Add a div of class 'qa'. <div class='qa'></div>
-        2) Add an anchor inside that with a unique ID. <a id="unqiue_id" class="anchor"></a>
-        3) Put the text inside <p></p> in that div.
-        4) The list of questions at top of page (with links) will be auto-generated.
-    -->
-    <div class="qa">
-        <a id="q_upload_dd_period" class="anchor"></a>
-        <p class="q"><b>When uploading driving data I get the error 'Period must be a multiple of 30 mins'. Why is this?</b></p>
-        <p class="a">
-            Majic runs JULES using a timestep of 30 minutes, so any uploaded driving data needs to have a time duration between values
-            which synchronises with this. Any multiple of the timestep is acceptable. If you thought your uploaded file had a
-            period which was valid, double check the start and end datetimes are correct and that the number of lines in the
-            file is what you would expect for those times.
-        </p>
-    </div>
+<h1>Frequently Asked Questions</h1>
+<p>Here are some of the most commonly asked questions about Majic:</p>
+<div id="links"></div>
+<p>Got a question that isn't answered here? Email <a href="mailto:${c.admin_email}">${c.admin_email}</a> for help.</p>
+<!--!TO ADD TO THESE FAQS:
+    1) Add a div of class 'qa'. <div class='qa'></div>
+    2) Add an anchor inside that with a unique ID. <a id="unqiue_id" class="anchor"></a>
+    3) Put the text inside <p></p> in that div.
+    4) The list of questions at top of page (with links) will be auto-generated.
+-->
+<div class="qa">
+    <a id="q_upload_dd_period" class="anchor"></a>
+    <p class="q">When uploading driving data I get the error 'Period must be a multiple of 30 mins'. Why is this?</p>
+    <p class="a">
+        Majic runs JULES using a timestep of 30 minutes, so any uploaded driving data needs to have a time duration between values
+        which synchronises with this. Any multiple of the timestep is acceptable. If you thought your uploaded file had a
+        period which was valid, double check the start and end datetimes are correct and that the number of lines in the
+        file is what you would expect for those times.
+    </p>
+</div>
 
-    <div class="qa">
-        <a id="q_output_yearly_monthly" class="anchor"></a>
-        <p class="q"><b>Why are yearly or monthly outputs not available for my run?</b></p>
-        <p class="a">
-            JULES calculates yearly output at the start of January the 1st, and monthly output at the start of the 1st
-            day of the month. If your run doesn't include any of these times then that output period will not be available -
-            e.g. if your run starts January 2nd 1990 and finishes December 31st 1990, you won't be able to choose a yearly
-            output period.
-        </p>
-    </div>
+<div class="qa">
+    <a id="q_output_yearly_monthly" class="anchor"></a>
+    <p class="q">Why are yearly or monthly outputs not available for my run?</p>
+    <p class="a">
+        JULES calculates yearly output at the start of January the 1st, and monthly output at the start of the 1st
+        day of the month. If your run doesn't include any of these times then that output period will not be available -
+        e.g. if your run starts January 2nd 1990 and finishes December 31st 1990, you won't be able to choose a yearly
+        output period.
+    </p>
+</div>
 
-    <div class="qa">
-        <a id="q_download_multi_years" class="anchor"></a>
-        <p class="q"><b>Is there an easy way to download daily and hourly output datasets for all years?</b></p>
-        <p class="a">Except for single-cell sites, downloading daily and hourly output is restricted to one calendar year at a time.
+<div class="qa">
+    <a id="q_statuses" class="anchor"></a>
+    <p class="q">What are the different run statuses and what do they mean?</p>
+    <p class="a">
+        Once they have been created, Majic model runs will pass through the following stages in this order:
+        <!--<ul style="list-style-type:none">-->
+    <ol>
+        <li><b style="color:#f6b26b">Submitted</b> - The run has been submitted but has not yet been queued.</li>
+        <li><b style="color:#f6b26b">Pending</b> - The model run is in the JASMIN queue waiting for an available slot.</li>
+        <li><b style="color:#f6b26b">Running</b> - JULES is currently performing the run.</li>
+        <li><b style="color:#38761d">Completed</b> - The run successfully completed.</li>
+        <li><b style="color:#711780">Published</b> - A completed run has been made publicly available (optional).</li>
+    </ol>
+    <p>If a problem occurs, the model run may reach one of the following statuses:</p>
+    <ul>
+        <li><b style="color:#990000">Submission Failed</b> - The run could not be submitted to JASMIN.
+            You may wish to try again later (you can always duplicate a failed run).</li>
+        <li><b style="color:#990000">Failed</b> - JULES encountered an error whilst trying to perfom the run.
+            This may be a problem with how your run is configured - the summary page for this run will give more
+            specific information.</li>
+        <li><b style="color:#990000">Unknown</b> - An unknown error occurred and Majic doesn't know the status of the run.</li>
+    </ul>
+    </p>
+</div>
+
+<div class="qa">
+    <a id="q_upload_variables" class="anchor"></a>
+    <p class="q">What variables do I need when I upload my own site driving data?</p>
+    <p class="a">Typically, shortwave downwards radiation at the surface (W/m2), longwave downwards
+        radiation at the surface (W/m2), surface wind speed (m/s), precipitation rate (mm/s), surface air
+        temperature (K), surface pressure (Pa) and surface specific humidity (kg/kg). But other combinations are
+        possible, for further information go to the
+        <a href="http://www.jchmr.org/jules/documentation/user_guide/vn3.4/namelists/drive.nml.html#list-of-jules-forcing-variables" target="_blank">
+            online JULES documentation for driving variables</a>.</p>
+</div>
+
+<div class="qa">
+    <a id="xxx" class="anchor"></a>
+    <p class="q"></p>
+    <p class="a"></p>
+</div>
+
+<div class="qa">
+    <a id="q_upload_missing_variables" class="anchor"></a>
+    <p class="q">Can I upload my own driving data when I do not have all the variables required?</p>
+    <p class="a">Yes, you can go to the download tab and download in a text file the driving data for
+        your site from a prescribed dataset (WATCH global data at 0.5 degrees resolution, for instance),
+        then edit the column with the variables you have available at the same temporal resolution (3-hourly
+        for the WATCH dataset), and finally upload the new text file.</p>
+</div>
+
+<div class="qa">
+    <a id="q_upload_period" class="anchor"></a>
+    <p class="q">Can I upload driving data at any temporal resolution?</p>
+    <p class="a">The model will read and work with any data frequency as long as
+        it is a multiple of 1800 seconds (30 min).</p>
+</div>
+
+<div class="qa">
+    <a id="q_spinup" class="anchor"></a>
+    <p class="q">How do I know if the model is spun up to equilibrium?</p>
+    <p class="a">We have set the spin up period for the water/energy configuration to be 5 years which should ensure
+        equilibrium rates for all conditions. For the carbon configuration, the spin up is set to be 100 years. For very
+        cold conditions such as the Arctic, this would not be enough time for the slow soil carbon pools to get into
+        equilibrium, but much longer would mean very long computer-runs. So we increased the soil-carbon turnover rate
+        of the slowest carbon pool by a factor of ten. This means that the model will be in equilibrium after 100 years,
+        so the soil respiration rates will be correct, but the total soil carbon pool will be too low.</p>
+</div>
+
+<div class="qa">
+    <a id="q_plotting_points" class="anchor"></a>
+    <p class="q">Why can I only see 2 years of data when I plot it?</p>
+    <p class="a">A limit of plus and minus 500 timesteps of data on the plotting was set to limit the uploading time.
+        If you want to plot more, you need to download the data onto your own plotting package.</p>
+</div>
+
+<div class="qa">
+    <a id="q_why_publish" class="anchor"></a>
+    <p class="q">Why should I publish my runs?</p>
+    <p class="a">It allows others to see and access the results of your successful runs. Publishing a run frees up your
+        own limited user space, so you can create more runs.</p>
+</div>
+
+<div class="qa">
+    <a id="q_points_excluded" class="anchor"></a>
+    <p class="q">What does the error ‘Jules error:init_model_grid: All points in input grid have been excluded from model grid’ mean?</p>
+    <p class="a">You have chosen an area to model that is entirely in the sea.</p>
+</div>
+
+<div class="qa">
+    <a id="q_upload_format" class="anchor"></a>
+    <p class="q">What is the format the system is expecting when I upload my own site driving data?</p>
+    <p class="a">The system is expecting a few lines (or none) with metadata about the file (lines 1 to 12 in the
+        example below), a line with the name of the driving variable as recognised by the model (line 13 in the
+        example below), a line with the temporal interpolation flags for each variable (line 14 in the example
+        below, for further information please check the
+        <a href="http://www.jchmr.org/jules/documentation/user_guide/vn3.4/input/temporal-interpolation.html" target="_blank">
+            online JULES documentation for temporal interpolation flags</a>), and the rows with the data
+        (from line 15 in the example below).</p>
+    <code class="block">
+        # Data measured at Rollesbroich site<br/>
+        # Name: Rollesbroich halfhourly<br/>
+        # lon: 6.30<br/>
+        # lat: 50.62<br/>
+        # start date: 2011-01-10 00:30<br/>
+        # end date: 2012-09-30 22:00<br/>
+        #<br/>
+        # On upload only the last two lines of this header will be read<br/>
+        # The  last but one line are the variable names in Jules (see the documentation)<br/>
+        # The last line is the interpolation flag which is one of i, fc .... etc (see the documentation)<br/>
+        #<br/>
+        # description        description            description<br/>
+        #  sw_down lw_down wind precip t pstar q<br/>
+        #  i i i i i i i<br/>
+        0.00000000       314.077118       2.29999995       0.00000000       273.049988       96010.0000       3.78206186E-03<br/>
+        0.00000000       313.808167       2.50000000       0.00000000       272.949982       95990.0000       3.75533267E-03<br/>
+        0.00000000       313.808167       2.59999990       0.00000000       272.949982       95970.0000       3.75220063E-03<br/>
+        0.00000000       313.808167       2.90000010       0.00000000       272.949982       95950.0000       3.74906743E-03<br/>
+        0.00000000       313.808167       2.90000010       0.00000000       272.949982       95940.0000       3.74554191E-03
+    </code>
+</div>
+
+<div class="qa">
+    <a id="q_download_multi_years" class="anchor"></a>
+    <p class="q">Is there an easy way to download daily and hourly output datasets for all years?</p>
+    <p class="a">Except for single-cell sites, downloading daily and hourly output is restricted to one calendar year at a time.
         This is because the NetCDF files involved become very large.
         However, if you want to write an automated script to do this for you, you can just do the following:
-            <ol>
+    <ol>
         <li>Find the URL of the dataset you want to download (right-click -> copy URL on the 'download' link).</li>
         <li>Change the year parameter in the URL to match the desired year to download.</li>
         <li>Make a HTTP POST request to that URL and pass in as POST parameters your username and password.</li>
     </ol>
-       In Python it might look something like this:</p>
-        <p><code class="block">import urllib<br/>
-                 import urllib2<br/>
-                    <br/>
+    In Python it might look something like this:</p>
+    <p><code class="block">import urllib<br/>
+        import urllib2<br/>
+        <br/>
         output_file_template = "majic_output_{year}.dat"<br/>
         login_data = urllib.urlencode({'login': 'my.username', 'password': 'mypassword123'})<br/>
         url_template = "https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year={year}&amp;format=ASCII"<br/>
         <br/>
-            for year in range(1901, 2001):<br/>
+        for year in range(1901, 2001):<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;url = url_template.format(year=str(year))<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;request = urllib2.urlopen(url, login_data)<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;out_file_path = output_file_template.format(year=str(year))<br/>
@@ -69,39 +191,14 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for line in request.readlines():<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out_file.write(line)
     </code></p>Or, using WGET:
-        <p><code class="block">
+    <p><code class="block">
         for year in `seq 1901 2001`<br/>
         do<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;url_template=https://majic.ceh.ac.uk/dataset/download?model_run_id=77&amp;output=25&amp;period=Monthly&amp;year=$$year&amp;format=ASCII<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;Wget –post=”username=my.username&amp;password=mypassword123” $$url_template<br/>
         done<br/>
-        </code></p>
-    </div>
-
-    <div class="qa">
-        <a id="q_statuses" class="anchor"></a>
-        <p class="q"><b>What are the different run statuses and what do they mean?</b></p>
-        <p class="a">
-            Once they have been created, Majic model runs will pass through the following stages in this order:
-            <!--<ul style="list-style-type:none">-->
-        <ol>
-                <li><b style="color:#f6b26b">Submitted</b> - The run has been submitted but has not yet been queued.</li>
-                <li><b style="color:#f6b26b">Pending</b> - The model run is in the JASMIN queue waiting for an available slot.</li>
-                <li><b style="color:#f6b26b">Running</b> - JULES is currently performing the run.</li>
-                <li><b style="color:#38761d">Completed</b> - The run successfully completed.</li>
-                <li><b style="color:#711780">Published</b> - A completed run has been made publicly available (optional).</li>
-        </ol>
-        <p>If a problem occurs, the model run may reach one of the following statuses:</p>
-        <ul>
-                <li><b style="color:#990000">Submission Failed</b> - The run could not be submitted to JASMIN.
-                    You may wish to try again later (you can always duplicate a failed run).</li>
-                <li><b style="color:#990000">Failed</b> - JULES encountered an error whilst trying to perfom the run.
-                    This may be a problem with how your run is configured - the summary page for this run will give more
-                specific information.</li>
-                <li><b style="color:#990000">Unknown</b> - An unknown error occurred and Majic doesn't know the status of the run.</li>
-            </ul>
-        </p>
-    </div>
+    </code></p>
+</div>
 
 
 

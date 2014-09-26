@@ -5,3 +5,7 @@ div.qa {
 code.block {
     display:block;
 }
+
+p.q {
+    font-weight: bold;
+}
