@@ -76,6 +76,9 @@ class DapClient(BaseDapClient):
         try:
             return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
         except (KeyError, ValueError):
+            pass
+
+        try:
             fill_value = self._variable.attributes.get('_FillValue', None)
             missing_value = self._variable.attributes.get('missing_value', None)
             if fill_value is not None and missing_value is not None:
@@ -93,7 +96,13 @@ class DapClient(BaseDapClient):
                 min = 0
             if math.isnan(max):
                 max = 100
-            return [min, max]
+        except:
+            # Use the default result if something goes wrong
+            log.exception("Can not calculate data range using default")
+            min = 0
+            max = 100
+
+        return [min, max]
 
     def get_variable_units(self):
         """
