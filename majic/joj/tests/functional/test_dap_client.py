@@ -157,7 +157,7 @@ class TestBaseDapClientOnWatchData(BaseDapClientTest):
         time = datetime.datetime(1901, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, is_(-9999.99))
 
     def test_GIVEN_time_outside_range_WHEN_get_data_at_THEN_closest_value_returned(self):
@@ -421,6 +421,10 @@ class TestSoilPropsDapClient(BaseDapClientTest):
             'vsat': 0.43060800433158875,
             'vwilt': 0.1995505690574646
         }
-        returned_soil_props = self.dap_client.get_soil_properties(lat, lon)
+        #def get_soil_properties(self, lat, lon, var_names_in_file, use_file_list, const_vals):
+        var_names = expected_soil_props.keys()
+        use_file = 10 * [True]
+        const_vals = 10 * [None]
+        returned_soil_props = self.dap_client.get_soil_properties(lat, lon, var_names, use_file, const_vals)
         assert_that(len(returned_soil_props), is_(10))
         assert_that(returned_soil_props, has_entries(expected_soil_props))

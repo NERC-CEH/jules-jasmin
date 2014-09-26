@@ -17,10 +17,12 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import datetime
+
 from hamcrest import assert_that, is_
 from mock import Mock
+
 from joj.services.job_runner_client import JobRunnerClient
-from joj.services.tests.base import BaseTest
+from joj.tests.base import BaseTest
 from joj.utils.driving_data_controller_helper import DrivingDataParsingException, DrivingDataControllerHelper
 
 

@@ -17,13 +17,13 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 from urlparse import urlparse
-from hamcrest import assert_that, is_, contains_string, is_not, contains_inanyorder
+from hamcrest import assert_that, is_, contains_string, is_not
 from lxml import html
 from pylons import url
 from joj.services.model_run_service import ModelRunService
 from joj.tests import TestController
 from joj.utils.constants import *
-from joj.model import ModelRun, session_scope, Session
+from joj.model import session_scope, Session, ParameterValue
 
 
 class TestModelRunOutput(TestController):
@@ -37,15 +37,28 @@ class TestModelRunOutput(TestController):
             'ov_yearly_1': 1,
             'ov_monthly_1': 1,
             'ov_select_2': 1,
-            'ov_timestep_2': 1,
+            'ov_hourly_2': 1,
             'ov_daily_2': 1,
             'ov_select_3': 1,
             'ov_monthly_3': 1
         }
         self.model_run_service = ModelRunService()
+        param_run_start = self.model_run_service.get_parameter_by_constant(JULES_PARAM_RUN_START)
+        param_run_end = self.model_run_service.get_parameter_by_constant(JULES_PARAM_RUN_END)
         with session_scope(Session) as session:
             self.model_run = self.model_run_service._create_new_model_run(session, self.user)
             self.model_run.name = "MR1"
+
+            pv_run_start = ParameterValue()
+            pv_run_start.parameter_id = param_run_start.id
+            pv_run_start.value = "'1901-01-01 00:00:00'"
+
+            pv_run_end = ParameterValue()
+            pv_run_end.parameter_id = param_run_end.id
+            pv_run_end.value = "'1902-01-01 00:00:00'"
+
+            self.model_run.parameter_values = [pv_run_start, pv_run_end]
+
             session.add(self.model_run)
 
     def test_GIVEN_no_model_being_created_WHEN_page_get_THEN_redirect_to_create_model_run(self):
@@ -76,26 +89,26 @@ class TestModelRunOutput(TestController):
         ov_yearly_1 = doc.xpath('//input[@name="ov_yearly_1"]/@checked')
         ov_monthly_1 = doc.xpath('//input[@name="ov_monthly_1"]/@checked')
         ov_daily_1 = doc.xpath('//input[@name="ov_daily_1"]/@checked')
-        ov_timestep_1 = doc.xpath('//input[@name="ov_timestep_1"]/@checked')
+        ov_hourly_1 = doc.xpath('//input[@name="ov_hourly_1"]/@checked')
         assert_that(len(ov_select_1), is_(1))
         assert_that(len(ov_yearly_1), is_(1))
         assert_that(len(ov_monthly_1), is_(1))
         assert_that(len(ov_daily_1), is_(0))
-        assert_that(len(ov_timestep_1), is_(0))
+        assert_that(len(ov_hourly_1), is_(0))
         
-        # For the second we expect the same but with the custom period box selected
+        # For the second we expect the same but with the hourly period box selected
         output_row_2 = doc.xpath('//div[@id="output_row_2"]/@style')
         assert_that(output_row_2, is_not(contains_string('display:none')))
         ov_select_2 = doc.xpath('//input[@name="ov_select_2"]/@checked')
         ov_yearly_2 = doc.xpath('//input[@name="ov_yearly_2"]/@checked')
         ov_monthly_2 = doc.xpath('//input[@name="ov_monthly_2"]/@checked')
         ov_daily_2 = doc.xpath('//input[@name="ov_daily_2"]/@checked')
-        ov_timestep_2 = doc.xpath('//input[@name="ov_timestep_2"]/@checked')
+        ov_hourly_2 = doc.xpath('//input[@name="ov_hourly_2"]/@checked')
         assert_that(len(ov_select_2), is_(1))
         assert_that(len(ov_yearly_2), is_(0))
         assert_that(len(ov_monthly_2), is_(0))
         assert_that(len(ov_daily_2), is_(1))
-        assert_that(len(ov_timestep_2), is_(1))
+        assert_that(len(ov_hourly_2), is_(1))
         
         # For the third we expect the monthly box selected
         output_row_3 = doc.xpath('//div[@id="output_row_3"]/@style')
@@ -104,12 +117,12 @@ class TestModelRunOutput(TestController):
         ov_yearly_3 = doc.xpath('//input[@name="ov_yearly_3"]/@checked')
         ov_monthly_3 = doc.xpath('//input[@name="ov_monthly_3"]/@checked')
         ov_daily_3 = doc.xpath('//input[@name="ov_daily_3"]/@checked')
-        ov_timestep_3 = doc.xpath('//input[@name="ov_timestep_3"]/@checked')
+        ov_hourly_3 = doc.xpath('//input[@name="ov_hourly_3"]/@checked')
         assert_that(len(ov_select_3), is_(1))
         assert_that(len(ov_yearly_3), is_(0))
         assert_that(len(ov_monthly_3), is_(1))
         assert_that(len(ov_daily_3), is_(0))
-        assert_that(len(ov_timestep_3), is_(0))
+        assert_that(len(ov_hourly_3), is_(0))
         
         # Finally we check that no other output parameters are selected or visible
         ov_selects = doc.xpath('//input[contains(@name, "ov_select_") and not(@checked)]')
@@ -183,7 +196,7 @@ class TestModelRunOutput(TestController):
                                             output_var_2.name + '_daily', output_var_2.name + '_hourly',
                                             output_var_3.name + '_monthly']))
         assert_that(output_main_run_vals, is_([True, True, True, True, True]))
-        assert_that(output_period_vals, is_([-2, -1, 24 * 60 * 60, TIMESTEP_LEN, -1]))
+        assert_that(output_period_vals, is_([-2, -1, JULES_DAILY_PERIOD, JULES_HOURLY_PERIOD, -1]))
         assert_that(output_types, is_(['M', 'M', 'M', 'M', 'M']))
 
     def test_GIVEN_selected_outputs_WHEN_go_back_THEN_previous_paged_rendered(self):
@@ -219,7 +232,7 @@ class TestModelRunOutput(TestController):
         new_params = {
             'submit': u'Next',
             'ov_select_1': 1,
-            'ov_timestep_1': 1,
+            'ov_hourly_1': 1,
             'ov_select_10': 1,
             'ov_yearly_10': 1,
             'ov_monthly_10': 1
@@ -262,10 +275,10 @@ class TestModelRunOutput(TestController):
         # The order is assured consistent by the sort in model_run.get_parameter_values()
         output_var_1 = self.model_run_service.get_output_variable_by_id(1)
         output_var_10 = self.model_run_service.get_output_variable_by_id(10)
-        assert_that(var_vals, is_([output_var_10.name, output_var_10.name, output_var_1.name]))
+        assert_that(var_vals, is_([output_var_1.name, output_var_10.name, output_var_10.name]))
         assert_that(nvars_vals, is_([1, 1, 1]))
-        assert_that(profile_name_vals, is_([output_var_10.name + '_yearly', output_var_10.name + '_monthly',
-                                            output_var_1.name + '_hourly']))
+        assert_that(profile_name_vals, is_([output_var_1.name + '_hourly', output_var_10.name + '_yearly',
+                                            output_var_10.name + '_monthly']))
         assert_that(output_main_run_vals, is_([True, True, True]))
-        assert_that(output_period_vals, is_([-2, -1, TIMESTEP_LEN]))
+        assert_that(output_period_vals, is_([JULES_HOURLY_PERIOD, -2, -1]))
         assert_that(output_types, is_(['M', 'M', 'M']))

@@ -18,7 +18,8 @@
 """
 from hamcrest import assert_that, is_
 from mock import MagicMock
-from joj.services.tests.base import BaseTest
+
+from joj.tests.base import BaseTest
 from joj.utils.land_cover_controller_helper import LandCoverControllerHelper
 from joj.model import ModelRun, DrivingDataset, LandCoverRegion, LandCoverRegionCategory, LandCoverValue, \
     LandCoverAction, User

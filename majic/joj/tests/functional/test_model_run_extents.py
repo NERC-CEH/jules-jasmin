@@ -35,6 +35,7 @@ class TestModelRunExtents(TestController):
             self.model_run.status = self._status(MODEL_RUN_STATUS_CREATED)
             self.model_run.driving_dataset_id = self.driving_data.id
             self.model_run.user = self.user
+            self.model_run.science_configuration_id = 2
 
             param1 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_INTERP)
             pv1 = ParameterValue()
@@ -63,6 +64,7 @@ class TestModelRunExtents(TestController):
             self.model_run.driving_data_lat = 25
             self.model_run.driving_data_lon = 40
             self.model_run.driving_data_rows = 248
+            self.model_run.science_configuration_id = 2
 
             param1 = self.model_run_service.get_parameter_by_constant(JULES_PARAM_DRIVE_INTERP)
             pv1 = ParameterValue()
@@ -123,8 +125,8 @@ class TestModelRunExtents(TestController):
     def test_GIVEN_driving_dataset_selected_for_model_WHEN_page_get_THEN_driving_data_temporal_extents_rendered(self):
         response = self.app.get(
             url(controller='model_run', action='extents'))
-        assert_that(response.normal_body, contains_string(self.driving_data.time_start.strftime("%Y-%m-%d")))
-        assert_that(response.normal_body, contains_string(self.driving_data.time_end.strftime("%Y-%m-%d")))
+        assert_that(response.normal_body, contains_string("1901-01-01"))
+        assert_that(response.normal_body, contains_string("1911-01-01"))
 
     def test_GIVEN_multi_cell_spatial_extents_already_chosen_WHEN_page_get_THEN_existing_extents_rendered(self):
         self.model_run_service.save_parameter(JULES_PARAM_LON_BOUNDS, [12.3, 35.5], self.user)
@@ -261,7 +263,7 @@ class TestModelRunExtents(TestController):
         assert_that(use_subgrid, is_(".true."))
         assert_that(latlon_region, is_(".true."))
         assert_that(str(start_run), is_("'1940-10-13 00:00:00'"))
-        assert_that(str(end_run), is_("'1950-10-13 00:00:00'"))
+        assert_that(str(end_run), is_("'1950-10-13 23:00:00'"))  # Time is moved forward to match the acceptable end
 
     def test_GIVEN_valid_single_cell_extents_WHEN_post_THEN_extents_saved(self):
         self.set_up_single_cell_user_driving_data()
@@ -290,7 +292,7 @@ class TestModelRunExtents(TestController):
         assert_that(latlon_region, is_(".false."))
         assert_that(l_point_data, is_(".false."))
         assert_that(str(start_run), is_("'1901-01-04 00:00:00'"))
-        assert_that(str(end_run), is_("'1901-01-13 21:00:00'"))
+        assert_that(str(end_run), is_("'1901-01-13 20:00:00'"))  # Interpolation flag brings us forward an hour
 
     def test_GIVEN_valid_extents_WHEN_post_THEN_redirect_to_output(self):
         response = self.app.post(

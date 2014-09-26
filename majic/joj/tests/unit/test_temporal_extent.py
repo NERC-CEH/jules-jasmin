@@ -2,8 +2,9 @@
 #header
 """
 import datetime
+
 from joj.model.non_database.temporal_extent import TemporalExtent, InvalidTemporalExtent
-from joj.services.tests.base import BaseTest
+from joj.tests.base import BaseTest
 
 
 class TestTemporalExtent(BaseTest):

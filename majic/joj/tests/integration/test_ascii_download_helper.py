@@ -45,16 +45,26 @@ class TestAsciiDownloadHelper(TestController):
                 return date - self.end_delta
 
             def _data(lat, lon, date):
-                return len(var_name) * lat * lon + date.hour + 24 * date.day
+                return len(var_name) * lat * lon + date
 
             def _desc():
                 return var_name + "_desc"
+
+            def _lat_lon_index(lat, lon):
+                return lat, lon
+
+            def _time_index(date):
+                start = datetime.datetime(1900, 1, 1)
+                secs = (date - start).total_seconds()
+                return int(secs / (60 * 30))
 
             mock_dap_client = MagicMock()
             mock_dap_client.get_time_immediately_after = _gtia
             mock_dap_client.get_time_immediately_before = _gtib
             mock_dap_client.get_data_at = _data
             mock_dap_client.get_longname = _desc
+            mock_dap_client.get_lat_lon_index = _lat_lon_index
+            mock_dap_client.get_time_index = _time_index
             return mock_dap_client
 
         def _create_dap_client(url):
@@ -69,7 +79,7 @@ class TestAsciiDownloadHelper(TestController):
         self.download_helper = AsciiDownloadHelper("test_url", dap_client_factory=mock_dap_client_factory)
         self.model_run_service = ModelRunService()
         self.nvars = 2
-        self.period = 3600
+        self.period = 30 * 60
         with session_scope(Session) as session:
             driving_data = DrivingDataset()
             driving_data.name = "Test Driving Dataset"
@@ -124,7 +134,7 @@ class TestAsciiDownloadHelper(TestController):
 
     def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_header_has_correct_period(self):
         text = self.get_download_text_lines()
-        assert_that(text[0], contains_string("3600"))
+        assert_that(text[0], contains_string("1800"))
         assert_that(text[0], contains_string("1900-01-02 22:00"))
 
     def test_GIVEN_dataset_locations_WHEN_get_file_gen_THEN_header_has_var_names_interps_and_descs(self):
@@ -166,7 +176,9 @@ class TestAsciiDownloadHelper(TestController):
         start = datetime.datetime(1900, 1, 1, 0, 0, 0)
         end = datetime.datetime(1900, 1, 3, 0, 0, 0)
         file_gen = self.download_helper.get_driving_data_file_gen(self.driving_data, lat, lon, start, end)
-        text = []
+        returned = []
         for line in file_gen:
-            text.append(line)
-        return text
+            returned.append(line)
+        header = returned[0]
+        lines = [line for line in returned[1].split("\r\n") if len(line) > 0]
+        return [header] + lines

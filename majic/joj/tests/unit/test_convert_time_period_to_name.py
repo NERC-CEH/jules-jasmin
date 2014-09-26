@@ -1,9 +1,10 @@
 """
 #header
 """
-from joj.services.tests.base import BaseTest
-from joj.utils import utils
 from hamcrest import *
+
+from joj.tests.base import BaseTest
+from joj.utils import utils
 
 
 class TestTimPeriodToName(BaseTest):

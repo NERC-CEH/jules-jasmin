@@ -20,7 +20,7 @@ from hamcrest import assert_that, is_
 from mock import MagicMock
 from sqlalchemy.orm.exc import NoResultFound
 
-from joj.services.tests.base import BaseTest
+from joj.tests.base import BaseTest
 from joj.utils.download.netcdf_dataset_download_helper import NetcdfDatasetDownloadHelper
 from joj.model import User, ModelRun
 from joj.model.output_variable import OutputVariable
@@ -135,7 +135,7 @@ class TestDatasetDownloadHelper(BaseTest):
         assert_that(period, is_('Daily'))
         assert_that(year, is_(1901))
 
-    def test_GIVEN_model_run_id_not_viewable_by_user_WHEN_validate_THEN_ValueError(self):
+    def test_GIVEN_model_run_id_not_viewable_by_user_WHEN_validate_THEN_NoResultFound(self):
         self.download_helper.model_run_service.get_model_by_id = MagicMock(side_effect=NoResultFound)
         params = {
             'model_run_id': u'13',
@@ -143,8 +143,8 @@ class TestDatasetDownloadHelper(BaseTest):
             'period': u'Daily',
             'year': u'1901'
         }
-        with self.assertRaises(ValueError):
-            model_run, output, period, year = self.download_helper.validate_parameters(params, self.user)
+        with self.assertRaises(NoResultFound):
+            self.download_helper.validate_parameters(params, self.user)
 
     def test_GIVEN_year_WHEN_generate_file_path_THEN_file_path_correctly_generated(self):
         path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'daily', 1901)

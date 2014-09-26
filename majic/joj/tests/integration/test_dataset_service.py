@@ -74,9 +74,10 @@ class TestDatasetService(TestController):
     def test_GIVEN_driving_dataset_THEN_when_view_by_admin_THEN_shown(self):
         user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
         self.clean_database()
+        n_dd = len(self.dataset_service.get_driving_datasets(user))
         with session_scope() as session:
             self.create_driving_dataset(session, is_restricted_to_admins=True)
 
         driving_datasets = self.dataset_service.get_driving_datasets(user)
 
-        assert_that(len(driving_datasets), is_(2), "Driving dataset count")
+        assert_that(len(driving_datasets), is_(n_dd + 1), "Driving dataset count")

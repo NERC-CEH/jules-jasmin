@@ -2,9 +2,11 @@
 #header
 """
 import datetime
+
 from hamcrest import assert_that, is_
+
 from joj.model import ParameterValue
-from joj.services.tests.base import BaseTest
+from joj.tests.base import BaseTest
 
 
 class TestParameterValue(BaseTest):

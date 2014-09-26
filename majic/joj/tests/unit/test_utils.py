@@ -17,7 +17,8 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 from hamcrest import is_, assert_that
-from joj.services.tests.base import BaseTest
+
+from tests.base import BaseTest
 from joj.utils.utils import insert_before_file_extension
 
 

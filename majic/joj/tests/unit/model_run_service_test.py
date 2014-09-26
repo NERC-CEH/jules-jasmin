@@ -15,10 +15,10 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from mock import MagicMock, ANY
-
-from joj.services.tests.base import BaseTest
+from mock import MagicMock
 from hamcrest import *
+
+from joj.tests.base import BaseTest
 from joj.model import User
 from joj.services.model_run_service import ModelRunService
 

@@ -95,7 +95,7 @@ class TestWithFullModelRun(TestController):
                                  params={
                                      'submit': u'Next',
                                      'ov_select_1': 1,
-                                     'ov_timestep_1': 1,
+                                     'ov_hourly_1': 1,
                                      'ov_select_10': 1,
                                      'ov_yearly_10': 1,
                                      'ov_monthly_10': 1
@@ -108,7 +108,7 @@ class TestWithFullModelRun(TestController):
         # The Create page
         self.model_name = u'alternate name'
         self.model_description = u'This is a description of another model_run'
-        self.science_config = self.model_run_service.get_scientific_configurations()[2]
+        self.science_config = self.model_run_service.get_scientific_configurations()[0]
         model_science_config_id = self.science_config['id']
         response = self.app.post(url=url(controller='model_run', action='create'),
                                  params={
@@ -148,7 +148,7 @@ class TestWithFullModelRun(TestController):
                                  params={
                                      'submit': u'Next',
                                      'ov_select_6': 1,
-                                     'ov_timestep_6': 1,
+                                     'ov_hourly_6': 1,
                                      'ov_monthly_6': 1,
                                      'ov_select_11': 1,
                                      'ov_yearly_11': 1,
@@ -162,7 +162,7 @@ class TestWithFullModelRun(TestController):
         # The Create page
         self.model_name = u'Run with my own driving data'
         self.model_description = u'This is a description of a model_run'
-        self.science_config = self.model_run_service.get_scientific_configurations()[2]
+        self.science_config = self.model_run_service.get_scientific_configurations()[0]
         model_science_config_id = self.science_config['id']
         response = self.app.post(url=url(controller='model_run', action='create'),
                                  params={
@@ -214,7 +214,7 @@ class TestWithFullModelRun(TestController):
                                  params={
                                      'submit': u'Next',
                                      'ov_select_6': 1,
-                                     'ov_timestep_6': 1,
+                                     'ov_hourly_6': 1,
                                      'ov_monthly_6': 1,
                                      'ov_select_11': 1,
                                      'ov_yearly_11': 1,

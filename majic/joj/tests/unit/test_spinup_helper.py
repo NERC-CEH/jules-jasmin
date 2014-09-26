@@ -16,9 +16,11 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-from hamcrest import assert_that, is_
-from services.tests.base import BaseTest
 import datetime as dt
+
+from hamcrest import assert_that, is_
+
+from joj.tests.base import BaseTest
 from joj.utils.spinup_helper import SpinupHelper
 from joj.utils import constants
 

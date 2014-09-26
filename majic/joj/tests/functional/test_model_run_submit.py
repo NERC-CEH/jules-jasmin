@@ -17,6 +17,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 from urlparse import urlparse
+import datetime as dt
 
 from hamcrest import *
 from joj.tests import *
@@ -72,8 +73,10 @@ class TestModelRunSummaryController(TestWithFullModelRun):
     def test_GIVEN_select_submit_WHEN_post_THEN_redirect_to_index_page_job_submitted(self):
         self.model_run_service.update_model_run(self.user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
         self.model_run_service.store_parameter_values({'1': 12}, self.user)
-        self.parameter_service.save_new_parameters([[constants.JULES_PARAM_LATLON_REGION, True]], [], self.user.id)
-
+        self.parameter_service.save_new_parameters([[constants.JULES_PARAM_LATLON_REGION, True],
+                                                    [constants.JULES_PARAM_DRIVE_DATA_START, dt.datetime(1901, 1, 1)],
+                                                    [constants.JULES_PARAM_SPINUP_START, dt.datetime(1905, 1, 1)]],
+                                                   [], self.user.id)
         response = self.app.post(
             url=url(controller='model_run', action='submit'),
             params={

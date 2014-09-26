@@ -15,12 +15,10 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 from formencode import Invalid
-
-from mock import MagicMock, ANY
-
-from joj.services.tests.base import BaseTest
 from hamcrest import *
-from joj.model import User, Parameter
+
+from joj.tests.base import BaseTest
+from joj.model import Parameter
 from joj.model.model_run_create_parameters import ModelRunCreateParameters
 from joj.utils import constants
 
