@@ -195,7 +195,12 @@ class ViewdataController(WmsvizController):
                     layer_sublist.append(layer)
             layer_list[0] = layer_sublist
         else:
-            layer_list[0] = layer_list[0][0:1]
+            layer_sublist = []
+            for layer in layer_list[0]:
+                if layer.entity.title.lower() not in constants.LAYERS_NOT_TO_DISPLAY:
+                    layer_sublist.append(layer)
+
+            layer_list[0] = layer_sublist
 
         for layer in layer_list[0]:
             layer_obj = layer.entity.getAsDict()
