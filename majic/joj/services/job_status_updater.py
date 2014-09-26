@@ -34,6 +34,7 @@ from joj.utils import email_messages, utils
 from joj.services.dap_client.dap_client_factory import DapClientFactory
 from joj.services.dap_client.dap_client import DapClientException
 from joj.services.dataset import DatasetService
+from joj.services.dap_client.base_dap_client import DapClientInternalServerErrorException
 
 
 log = logging.getLogger(__name__)
@@ -331,30 +332,34 @@ class JobStatusUpdaterService(DatabaseService):
         :param frequency: extra label to append to the name to indicate frequency
         :return:
         """
-        dataset = Dataset()
-        dataset.model_run_id = model_run.id
-        dataset.dataset_type = dataset_type
-        dataset.is_categorical = False
-        dataset.is_input = is_input
-        dataset.viewable_by_user_id = model_run.user.id
-        dataset.wms_url = "{url}?{query}".format(
-            url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
-            query="?service=WMS&version=1.3.0&request=GetCapabilities")
-        dataset.netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
-        if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
-            dataset.data_range_from, dataset.data_range_to = [0, 1]
-            dataset.name = "Land Cover Fractions"
-        elif dataset_type.type == constants.DATASET_TYPE_SOIL_PROP:
-            dataset.data_range_from, dataset.data_range_to = [0, 1]
-            dataset.name = "Soil Properties"
-        else:
-            dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
-            if frequency:
-                dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+        try:
+            dataset = Dataset()
+            dataset.model_run_id = model_run.id
+            dataset.dataset_type = dataset_type
+            dataset.is_categorical = False
+            dataset.is_input = is_input
+            dataset.viewable_by_user_id = model_run.user.id
+            dataset.wms_url = "{url}?{query}".format(
+                url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
+                query="?service=WMS&version=1.3.0&request=GetCapabilities")
+            dataset.netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
+            if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
+                dataset.data_range_from, dataset.data_range_to = [0, 1]
+                dataset.name = "Land Cover Fractions"
+            elif dataset_type.type == constants.DATASET_TYPE_SOIL_PROP:
+                dataset.data_range_from, dataset.data_range_to = [0, 1]
+                dataset.name = "Soil Properties"
             else:
-                dataset.name = dap_client.get_longname()
-            dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
-        session.add(dataset)
+                dap_client = self._dap_client_factory.get_dap_client(dataset.netcdf_url)
+                if frequency:
+                    dataset.name = "{name} ({frequency})".format(name=dap_client.get_longname(), frequency=frequency)
+                else:
+                    dataset.name = dap_client.get_longname()
+                dataset.data_range_from, dataset.data_range_to = dap_client.get_data_range()
+            session.add(dataset)
+        except DapClientInternalServerErrorException:
+            log.exception("Trouble creating the dataset %s" %dataset.netcdf_url)
+            #dont register the dataset just continue
 
     def _check_total_allocation_and_alert(self):
         """

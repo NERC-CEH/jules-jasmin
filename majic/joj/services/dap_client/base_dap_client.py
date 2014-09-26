@@ -16,6 +16,7 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+from urllib2 import HTTPError
 import numpy as np
 import logging
 from pydap.client import open_url
@@ -29,6 +30,13 @@ log = logging.getLogger(__name__)
 class DapClientException(Exception):
     """
     Exception for when there is a problem in the dap client
+    """
+    pass
+
+
+class DapClientInternalServerErrorException(DapClientException):
+    """
+    Exception for when there is a problem in the dap client with the THREDDs server
     """
     pass
 
@@ -66,6 +74,13 @@ class BaseDapClient(object):
             # this is a modified open url. See pydap factory
             self._dataset = open_url(url)
             self.url = url
+        except HTTPError as ex:
+            if ex.code == 500:
+                log.exception("Can not open the dataset URL '%s'." % url)
+                raise DapClientInternalServerErrorException("Can not open the dataset URL.")
+            else:
+                log.exception("Can not open the dataset URL '%s'." % url)
+                raise DapClientException("Can not open the dataset URL.")
         except Exception:
             log.exception("Can not open the dataset URL '%s'." % url)
             raise DapClientException("Can not open the dataset URL.")
