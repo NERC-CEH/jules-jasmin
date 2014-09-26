@@ -32,6 +32,15 @@ class TestJobRunnerClient(TestController):
 
         job_runner_client = JobRunnerClient(config)
 
+        def _alter_yearly_monthly_output_profiles(params):
+            return params
+
+        def _alter_driving_data_start(params):
+            return params
+
+        job_runner_client.alter_yearly_monthly_output_profiles = _alter_yearly_monthly_output_profiles
+        job_runner_client.alter_driving_data_start = _alter_driving_data_start
+
         parameter = Parameter(name=constants.JULES_PARAM_POINTS_FILE[1])
         expected_parameter_value = '51 0.5'
         expected_index = 3
@@ -78,6 +87,15 @@ class TestJobRunnerClient(TestController):
 
     def test_GIVEN_model_contains_repeated_namelists_WHEN_convert_to_dictionary_THEN_namelists_grouped_correctly(self):
         job_runner_client = JobRunnerClient(config)
+
+        def _alter_yearly_monthly_output_profiles(params):
+            return params
+
+        def _alter_driving_data_start(params):
+            return params
+
+        job_runner_client.alter_yearly_monthly_output_profiles = _alter_yearly_monthly_output_profiles
+        job_runner_client.alter_driving_data_start = _alter_driving_data_start
 
         # Set the namelists here:
         nml_output = Namelist(name=constants.JULES_NML_OUTPUT)
@@ -162,6 +180,16 @@ class TestJobRunnerClient(TestController):
 
         job_runner_client = JobRunnerClient(config)
 
+        def _alter_yearly_monthly_output_profiles(params):
+            return params
+
+        def _alter_driving_data_start(params):
+            return params
+
+        job_runner_client.alter_yearly_monthly_output_profiles = _alter_yearly_monthly_output_profiles
+        job_runner_client.alter_driving_data_start = _alter_driving_data_start
+
+
         parameter = Parameter(name='param1')
         expected_parameter_value = '12'
         #There is no parameter value:
@@ -210,6 +238,15 @@ class TestJobRunnerClient(TestController):
     def test_GIVEN_model_with_land_cover_actions_WHEN_convert_to_dictionary_THEN_land_cover_actions_present(self):
 
         job_runner_client = JobRunnerClient(config)
+
+        def _alter_yearly_monthly_output_profiles(params):
+            return params
+
+        def _alter_driving_data_start(params):
+            return params
+
+        job_runner_client.alter_yearly_monthly_output_profiles = _alter_yearly_monthly_output_profiles
+        job_runner_client.alter_driving_data_start = _alter_driving_data_start
 
         parameter = Parameter(name='file')
         expected_parameter_value = "'base_frac_file.nc'"
