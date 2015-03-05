@@ -13,6 +13,7 @@
     <module name="majic" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/joj/cron_scripts/update_job_statuses.py" />
     <option name="PARAMETERS" value="development.ini" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
     <RunnerSettings RunnerId="PyDebugRunner" />
     <RunnerSettings RunnerId="PythonRunner" />
     <ConfigurationWrapper RunnerId="PyDebugRunner" />

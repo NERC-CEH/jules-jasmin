@@ -12,7 +12,6 @@
     <option name="requirementsPath" value="" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="myDocStringFormat" value="reStructuredText" />
     <option name="analyzeDoctest" value="false" />
   </component>
   <component name="TestRunnerService">
@@ -20,4 +19,3 @@
     <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
   </component>
 </module>
-
