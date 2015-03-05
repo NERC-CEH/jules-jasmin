@@ -38,7 +38,7 @@ def netcdf2datetime(t,netcdfUnits):
 
 #--------------------------------------------------------------------------
 
-def lastPostProcessCHESS(inputFolder,outputFolder,inputnetCDF):
+def lastPostProcessCHESS(input_file_path, output_file_path):
     """
     This is the main fonction.
     inputnetCDF is the path to the netCDF file that needs processing.
@@ -51,10 +51,9 @@ def lastPostProcessCHESS(inputFolder,outputFolder,inputnetCDF):
 
     # At the moment, a copy of the original netCDF file is created, and the original
     # one is not deleted
-    outputnetCDF = outputFolder + inputnetCDF
 
-    fh = netCDF4.Dataset(inputFolder + inputnetCDF, mode='r')
-    outnc = netCDF4.Dataset(outputnetCDF, mode='w', format = "NETCDF4")
+    fh = netCDF4.Dataset(input_file_path, mode='r')
+    outnc = netCDF4.Dataset(output_file_path, mode='w', format = "NETCDF4")
 
     # Loops through existing dimensions
     for dim in fh.dimensions.values():
@@ -221,8 +220,24 @@ def lastPostProcessCHESS(inputFolder,outputFolder,inputnetCDF):
     # fill in variables lat and lon
     print '\nVariable: lat and lon'
 
-    realLatFull = np.load('Lat.npy')
-    realLonFull = np.load('Lon.npy')
+    # define coordinate systems
+    wgs84=pyproj.Proj("+init=EPSG:4326") # LatLon with WGS84 datum
+    osgb36=pyproj.Proj("+init=EPSG:27700") # UK Ordnance Survey, 1936 datum
+
+    realLatFull = np.zeros((1057,656))
+    realLonFull = np.zeros((1057,656))
+    for y in range(1057):
+        if y%100 == 0:
+            print y
+        for x in range(656):
+            Lon, Lat = pyproj.transform(osgb36, wgs84, outnc.variables['x'][x], outnc.variables['y'][y])
+            #print Lon, Lat
+            #print y,x
+            realLatFull[y,x] = Lat
+            realLonFull[y,x] = Lon
+
+    #realLatFull = np.load('Lat.npy')
+    #realLonFull = np.load('Lon.npy')
     realLat = realLatFull[iniY/1000:ysize,iniX/1000:xsize]
     realLon = realLonFull[iniY/1000:ysize,iniX/1000:xsize]
 
