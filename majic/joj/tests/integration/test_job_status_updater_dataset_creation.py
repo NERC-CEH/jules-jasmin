@@ -69,7 +69,7 @@ class TestJobDataUpdaterCreation(TestWithFullModelRun):
                 .all()
             assert_that(len(datasets), is_(2), "Number of input datasets")
 
-    def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_dap_client_not_availiable_THEN_model_run_status_is_not_updated(self):
+    def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_dap_client_not_available_THEN_model_run_status_is_not_updated(self):
 
         self.dap_client_factory.get_dap_client = Mock(side_effect=DapClientException("trouble"))
         self.create_model_run_ready_for_submit()

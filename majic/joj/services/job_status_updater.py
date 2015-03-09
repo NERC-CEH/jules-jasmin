@@ -105,9 +105,9 @@ class JobStatusUpdaterService(DatabaseService):
             model_runs = session.query(ModelRun) \
                 .join(ModelRunStatus) \
                 .filter(ModelRunStatus.name.in_([
-                constants.MODEL_RUN_STATUS_PENDING,
-                constants.MODEL_RUN_STATUS_RUNNING,
-                constants.MODEL_RUN_STATUS_SUBMITTED])) \
+                    constants.MODEL_RUN_STATUS_PENDING,
+                    constants.MODEL_RUN_STATUS_RUNNING,
+                    constants.MODEL_RUN_STATUS_SUBMITTED])) \
                 .all()
             return [model_run.id for model_run in model_runs]
 
@@ -332,6 +332,7 @@ class JobStatusUpdaterService(DatabaseService):
         :param frequency: extra label to append to the name to indicate frequency
         :return:
         """
+        netcdf_url = "Did not get url but filename is {}".format(filename)
         try:
             netcdf_url = self._dap_client_factory.get_full_url_for_file(filename, config=self._config)
             if dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
@@ -359,12 +360,12 @@ class JobStatusUpdaterService(DatabaseService):
                 query="?service=WMS&version=1.3.0&request=GetCapabilities")
             dataset.netcdf_url = netcdf_url
             dataset.data_range_from = data_range_from
-            dataset.data_range_to = dataset.data_range_to
+            dataset.data_range_to = data_range_to
             dataset.name = name
             session.add(dataset)
         except DapClientInternalServerErrorException:
-            log.exception("Trouble creating the dataset %s" % dataset.netcdf_url)
-            #dont register the dataset just continue
+            log.exception("Trouble creating the dataset %s" % netcdf_url)
+            #  do not register the dataset just continue
 
     def _check_total_allocation_and_alert(self):
         """
