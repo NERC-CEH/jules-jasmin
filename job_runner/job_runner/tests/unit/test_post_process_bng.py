@@ -89,6 +89,13 @@ class TestPostProcessBNG(TestController):
 
         return file_in_handle
 
+
+    def setUp(self):
+        self.process = PostProcessBNG()
+
+    def tearDown(self):
+        self.process.close()
+
     def assert_that_variables_are_as_expected(self, expected_lats, expected_lons, expected_values, expected_x,
                                               expected_y, expected_t=None, expected_pusedo=None):
         out_variables = self.process.output_file_handle.variables
@@ -107,8 +114,6 @@ class TestPostProcessBNG(TestController):
             self.assert_that_arrays_almost_the_same(expected_pusedo, out_variables['pusedo'], "pusedo variable")
 
         assert_that(self.process.output_file_handle.variables, has_key('crs'), "crs is in variable")
-
-
 
     def test_GIVEN_file_with_3x2_points_in_WHEN_convert_THEN_return_file_with_all_3x2_points_populated(self):
         expected_x = np.array([0, 1000, 2000])
@@ -136,12 +141,6 @@ class TestPostProcessBNG(TestController):
 
         self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
                                                    expected_y)
-
-    def setUp(self):
-        self.process = PostProcessBNG()
-
-    def tearDown(self):
-        self.process.close()
 
     def test_GIVEN_file_with_3x2_points_and_points_missing_WHEN_convert_THEN_return_file_with_all_3x2_points_populated_and_missing_values_for_non_populated(self):
         expected_x = np.array([0, 1000, 2000])

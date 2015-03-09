@@ -731,7 +731,7 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
         setattr(outnc, 'publisher_url', 'http://www.ceh.ac.uk')
         setattr(outnc, 'publisher_email', 'enquiries@ceh.ac.uk')
         setattr(outnc, 'Conventions', 'CF-1.6')
-        setattr(outnc, 'comment', 'Created using Python script converting WATCH WFD 1-Dimensinal to gridded netCDF fiels')
+        setattr(outnc, 'comment', 'Created using Python script converting WATCH WFD 1-Dimensional to gridded netCDF files')
         #
         #  Define varibales to hold minimum and maximum parameter values (for output
         #  netCDF file valid_min and valid_max attributes
