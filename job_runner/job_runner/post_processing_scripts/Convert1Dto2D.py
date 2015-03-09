@@ -20,10 +20,13 @@ from sys import argv
 
 import os
 from postProcessingRes0p5 import convert1Din2D
-from postProcessBNG import convert1Din2DChess
+from postProcessBNG import ProcessingError, PostProcessBNG
 
+#  prefix in the post processing namelist file indicating the id
 PP_ID_LINE_START = 'id ='
 
+
+#  directory where processed files should be written to
 PROCESSED_PATH = 'processed'
 
 NCML_FILE = \
@@ -70,26 +73,36 @@ except OSError as e:
 
 
 basename = os.path.basename(file_to_process)
-dirname = os.path.dirname(file_to_process)
-if post_processing_script_id == 0:
-    print "No conversion"
-elif post_processing_script_id == 1:
-    print "Watch conversion"
-    convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
-elif post_processing_script_id == 2:
-    print "Chess conversion"
-    convert1Din2DChess(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
-elif post_processing_script_id == 3:
-    print "Single cell conversion"
-    convert1Din2D(os.path.dirname(file_to_process), PROCESSED_PATH, basename, verbose=True)
-else:
-    print "[POST PROCESS ERROR] Post processing script id not recognised"
+input_dir_name = os.path.dirname(file_to_process)
+try:
+    if post_processing_script_id == 0:
+        print "No conversion"
+    elif post_processing_script_id == 1:
+        print "Watch conversion"
+        convert1Din2D(input_dir_name, PROCESSED_PATH, basename, verbose=True)
+        os.remove(file_to_process)
+    elif post_processing_script_id == 2:
+        print "Chess conversion"
+        p = PostProcessBNG()
+        p.open(input_dir_name, PROCESSED_PATH, basename)
+        p.convert_jules_1d_to_thredds_2d_for_chess(verbose=True)
+        p.close()
+        os.remove(file_to_process)
+    elif post_processing_script_id == 3:
+        print "Single cell conversion"
+        convert1Din2D(input_dir_name, PROCESSED_PATH, basename, verbose=True)
+        os.remove(file_to_process)
+    else:
+        print "[POST PROCESS ERROR] Post processing script id not recognised"
+        exit()
+except ProcessingError as ex:
+    print("[POST PROCESS ERROR] {}".format(ex.message))
     exit()
 
-#create ncml file if needed
+# create ncml file if needed
 parts = basename.split('.')
 netcdf_file_name_pattern = ".".join(parts[:2])
-ncml_filename = os.path.join(dirname, netcdf_file_name_pattern + '.ncml')
+ncml_filename = os.path.join(input_dir_name, netcdf_file_name_pattern + '.ncml')
 
 if not os.path.exists(ncml_filename):
     print "Creating ncml file " + ncml_filename

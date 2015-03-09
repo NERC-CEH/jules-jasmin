@@ -24,10 +24,8 @@ do
      echo "Converting $file"
      python $CONVERT_SCRIPT $file >> out_$i.log 2>&1
      finished=`grep -c 'Post processing finished' out_$i.log`
-     if [ "$finished" -eq 1 ]
+     if [ "$finished" -ne 1 ]
      then
-        rm $file
-     else
        echo "[POST PROCESS ERROR] Post processing of $file failed"
      fi
    fi
