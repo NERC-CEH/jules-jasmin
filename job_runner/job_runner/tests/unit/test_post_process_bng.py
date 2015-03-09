@@ -57,13 +57,15 @@ class TestPostProcessBNG(TestController):
         reference_file.variables['y'][:] = expected_y
         return reference_file
 
-    def create_input_file(self, in_lats, in_lons, in_values, in_time=None):
+    def create_input_file(self, in_lats, in_lons, in_values, in_time=None, in_pusedo=None):
         file_in_handle = netCDF4.Dataset("input", mode="w", diskless=True)
 
         file_in_handle.createDimension('x', in_lats.shape[0])
         file_in_handle.createDimension('y', in_lats.shape[1])
         if in_time is not None:
             file_in_handle.createDimension('time', in_time.shape[0])
+        if in_pusedo is not None:
+            file_in_handle.createDimension('pusedo', in_pusedo.shape[0])
 
         lat_var = file_in_handle.createVariable('latitude', 'f4', ('y', 'x'))
         lat_var[:] = in_lats
@@ -71,18 +73,24 @@ class TestPostProcessBNG(TestController):
         lon_var = file_in_handle.createVariable('longitude', 'f4', ('y', 'x'))
         lon_var[:] = in_lons
 
-        if in_time is not None:
+        if in_time is None:
+            values_var = file_in_handle.createVariable('values', 'f4', ('y', 'x'), fill_value=-99999.0)
+        else:
             time_var = file_in_handle.createVariable('time', 'f4', ('time',))
             time_var[:] = in_time
-            values_var = file_in_handle.createVariable('values', 'f4', ('time', 'y', 'x'))
-        else:
-            values_var = file_in_handle.createVariable('values', 'f4', ('y', 'x'))
+            if in_pusedo is None:
+                values_var = file_in_handle.createVariable('values', 'f4', ('time', 'y', 'x'), fill_value=-99999.0)
+            else:
+                pusedo_var = file_in_handle.createVariable('pusedo', 'f4', ('pusedo',))
+                pusedo_var[:] = in_pusedo
+                values_var = file_in_handle.createVariable('values', 'f4', ('pusedo', 'time', 'y', 'x'), fill_value=-99999.0)
+
         values_var[:] = in_values
 
         return file_in_handle
 
     def assert_that_variables_are_as_expected(self, expected_lats, expected_lons, expected_values, expected_x,
-                                              expected_y, expected_t=None):
+                                              expected_y, expected_t=None, expected_pusedo=None):
         out_variables = self.process.output_file_handle.variables
         self.assert_that_arrays_almost_the_same(expected_values, out_variables['values'], "values")
         assert_that(out_variables['values'].getncattr('_FillValue'), is_(-99999.0), "fill value for values")
@@ -95,6 +103,9 @@ class TestPostProcessBNG(TestController):
             # deliberate upper case of T for time
             assert_that(self.process.output_file_handle.dimensions, has_key('Time'), "Time is in dimensions")
             self.assert_that_arrays_almost_the_same(expected_t, out_variables['Time'], "Time variable")
+        if expected_pusedo is not None:
+            self.assert_that_arrays_almost_the_same(expected_pusedo, out_variables['pusedo'], "pusedo variable")
+
         assert_that(self.process.output_file_handle.variables, has_key('crs'), "crs is in variable")
 
 
@@ -190,7 +201,7 @@ class TestPostProcessBNG(TestController):
         self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
                                                    expected_y)
 
-    def test_GIVEN_file_with_3x2x1_points_in_WHEN_convert_THEN_return_file_with_all_5x3x2_points_populated_and_time_var_is_Time(self):
+    def test_GIVEN_file_with_3x2x1_points_in_WHEN_convert_THEN_return_file_with_all_3x2x1_points_populated_and_time_var_is_Time(self):
         ref_x = np.array([0, 1000, 2000])
         ref_y = np.array([1, 1001, 2001])
         ref_lats = np.array(
@@ -222,6 +233,37 @@ class TestPostProcessBNG(TestController):
 
         self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
                                                    expected_y, expected_time)
+
+    def test_GIVEN_file_with_4x3x2x1_points_in_WHEN_convert_THEN_return_file_with_all_4x3x2x1_points_populated_and_time_var_is_Time(self):
+        ref_x = np.array([1000, 2000])
+        ref_y = np.array([1001])
+        ref_lats = np.array(
+            [[49.22, 49.32]])
+        ref_lons = np.array(
+            [[7.22, 7.32]])
+
+        expected_x = np.array([1000, 2000])
+        expected_y = np.array([1001])
+        expected_pusedo = np.array([10.0, 11.0, 12.0, 13.0])
+        expected_time = np.array([4.0, 5.0, 6.0])
+        expected_lats = np.array([[49.22, 49.32]])
+        expected_lons = np.array([[7.22, 7.32]])
+        expected_values = np.arange(24).reshape((4, 3, 1, 2))
+
+        in_lats = expected_lats
+        in_lons = expected_lons
+        in_time = expected_time
+        in_pusedo = expected_pusedo
+        in_values = [expected_values.flatten()]
+
+        self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time, in_pusedo)
+        self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
+        self.process.output_file_handle = netCDF4.Dataset("output", mode="w", diskless=True)
+
+        self.process.convert_jules_1d_to_thredds_2d_for_chess()
+
+        self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
+                                                   expected_y, expected_time, expected_pusedo)
 
     def test_GIVEN_file_with_no_points_WHEN_convert_THEN_return_file_with_no_points_populated(self):
         ref_x = np.array([0, 1000, 2000])
@@ -280,3 +322,40 @@ class TestPostProcessBNG(TestController):
 
         assert_that(self.process.output_file_handle.ncattrs(), has_item('grid_mapping'), "grid_mapping items exists")
         assert_that(self.process.output_file_handle.grid_mapping, is_('crs'), "grid mapping is set to crs")
+
+    def test_GIVEN_file_with_time_bounds_in_WHEN_convert_THEN_return_file_with_time_bound_in(self):
+        ref_x = np.array([1000, 2000])
+        ref_y = np.array([1001])
+        ref_lats = np.array(
+            [[49.22, 49.32]])
+        ref_lons = np.array(
+            [[7.22, 7.32]])
+
+        expected_x = np.array([1000, 2000])
+        expected_y = np.array([1001])
+        expected_time = np.array([4.0, 5.0, 6.0])
+        expected_lats = np.array([[49.22, 49.32]])
+        expected_lons = np.array([[7.22, 7.32]])
+        expected_values = np.arange(6).reshape((3, 1, 2))
+
+        in_lats = expected_lats
+        in_lons = expected_lons
+        in_time = expected_time
+        in_values = [expected_values.flatten()]
+
+        self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time)
+        self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
+        self.process.output_file_handle = netCDF4.Dataset("output", mode="w", diskless=True)
+
+        self.process.input_file_handle.createDimension('nt', 2)
+        bnds = self.process.input_file_handle.createVariable('time_bounds', 'f4', ('time', 'nt'))
+        expected_bnds = np.arange(2 * 3).reshape((3, 2))
+        bnds[:] = expected_bnds
+
+        self.process.convert_jules_1d_to_thredds_2d_for_chess()
+
+        self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
+                                                   expected_y, expected_time)
+        self.assert_that_arrays_almost_the_same(bnds,
+                                                self.process.output_file_handle.variables['time_bounds'],
+                                                "time bounds")

@@ -159,6 +159,27 @@ class PostProcessBNG(object):
             for t in range(variable_in.shape[0]):
                 for z in range(variable_in.shape[1]):
                     variable_out[t, z, self.y_ref_index, self.x_ref_index] = variable_in[t, z, :, :].flatten()
+        elif len(variable_in.shape) == 5:
+            for i1 in range(variable_in.shape[0]):
+                for i2 in range(variable_in.shape[1]):
+                    for i3 in range(variable_in.shape[2]):
+                        variable_out[i1, i2, i3, self.y_ref_index, self.x_ref_index] =\
+                            variable_in[i1, i2, i3, :, :].flatten()
+        elif len(variable_in.shape) == 6:
+            for i1 in range(variable_in.shape[0]):
+                for i2 in range(variable_in.shape[1]):
+                    for i3 in range(variable_in.shape[2]):
+                        for i4 in range(variable_in.shape[3]):
+                            variable_out[i1, i2, i3, i4, self.y_ref_index, self.x_ref_index] =\
+                                variable_in[i1, i2, i3, i4, :, :].flatten()
+        elif len(variable_in.shape) == 7:
+            for i1 in range(variable_in.shape[0]):
+                for i2 in range(variable_in.shape[1]):
+                    for i3 in range(variable_in.shape[2]):
+                        for i4 in range(variable_in.shape[3]):
+                            for i5 in range(variable_in.shape[3]):
+                                variable_out[i1, i2, i3, i4, i5, self.y_ref_index, self.x_ref_index] =\
+                                    variable_in[i1, i2, i3, i4, i5, :, :].flatten()
         else:
             raise ProcessingError("too many dimensions to remap")
 
@@ -199,13 +220,14 @@ class PostProcessBNG(object):
                     print("converting variable: {}".format(variable_name))
                 variable_in = file_in_handle.variables[variable_name]
                 dimensions_in = variable_in.dimensions
+                var_attributes_in = variable_in.ncattrs()
 
                 fill_value_in = None
-                if '_FillValue' in variable_in.ncattrs():
-                    fill_value_in = variable_in.fill_value()
-                elif 'fill_value' in variable_in.ncattrs():
+                if '_FillValue' in var_attributes_in:
+                    fill_value_in = variable_in.getncattr('_FillValue')
+                elif 'fill_value' in var_attributes_in:
                     fill_value_in = variable_in.fill_value
-                elif 'missing_value' in variable_in.ncattrs():
+                elif 'missing_value' in var_attributes_in:
                     fill_value_in = variable_in.missing_value
                 elif "x" in dimensions_in and "y" in dimensions_in:
                     fill_value_in = np.float_(-99999.0)
@@ -231,7 +253,7 @@ class PostProcessBNG(object):
                         fill_value=fill_value_in,
                         zlib=compress_netcdf_file)
 
-                for attr in variable_in.ncattrs():
+                for attr in var_attributes_in:
                     if attr not in ('_FillValue', 'fill_value', 'missing_value'):
                         variable_out.setncattr(attr, variable_in.getncattr(attr))
 
