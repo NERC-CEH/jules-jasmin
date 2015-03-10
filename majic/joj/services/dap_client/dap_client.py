@@ -74,6 +74,12 @@ class DapClient(BaseDapClient):
         :return: min and max tuple for the range
         """
         try:
+            actual_range = self._variable.attributes['actual_range']
+            return [float(actual_range[0]), float(actual_range[1])]
+        except (KeyError, ValueError):
+            pass
+
+        try:
             return [float(self._variable.attributes['valid_min']), float(self._variable.attributes['valid_max'])]
         except (KeyError, ValueError):
             pass

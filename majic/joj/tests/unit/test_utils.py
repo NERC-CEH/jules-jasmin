@@ -18,7 +18,7 @@
 """
 from hamcrest import is_, assert_that
 
-from tests.base import BaseTest
+from joj.tests.base import BaseTest
 from joj.utils.utils import insert_before_file_extension
 
 
