@@ -234,7 +234,7 @@ class PostProcessBNG(object):
 
                 dimensions_out = ['Time' if x == 'time' else x for x in dimensions_in]
 
-                if variable_name is "time":
+                if variable_name == "time":
                     variable_name_out = "Time"
                 else:
                     variable_name_out = variable_name
