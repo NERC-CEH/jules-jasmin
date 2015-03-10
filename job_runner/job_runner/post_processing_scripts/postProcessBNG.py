@@ -234,7 +234,7 @@ class PostProcessBNG(object):
 
                 dimensions_out = ['Time' if x == 'time' else x for x in dimensions_in]
 
-                if variable_name is "time":
+                if variable_name == "time":
                     variable_name_out = "Time"
                 else:
                     variable_name_out = variable_name
@@ -262,6 +262,9 @@ class PostProcessBNG(object):
                         np.ones(self.output_file_handle.variables[variable_name].shape) * fill_value_in, fill_value_in)
                     self._remap_variable_data(variable_in, remapped_array)
                     variable_out[:] = remapped_array[:]
+                    # as long one element is not masked then set the actual range
+                    if not np.all(np.ma.getmaskarray(remapped_array)):
+                        variable_out.actual_range = remapped_array.min(), remapped_array.max()
                 else:
                     variable_out[:] = variable_in[:]
 
