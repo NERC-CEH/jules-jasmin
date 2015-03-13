@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+VENV="/var/local/majic_test/venv"
+
+source $VENV/bin/activate
+
+cd majic
+sed -i "s#sqlalchemy.url.*#sqlalchemy.url = mysql+mysqlconnector://joj_admin:$1@localhost/joj_test#g" test.ini
+sed -i "s/password_template/$2/g" test.ini
+
+$VENV/bin/paster setup-app test.ini
+
+cd joj
+$VENV/bin/nosetests
