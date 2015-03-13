@@ -601,6 +601,9 @@ def convert1Din2D(inputFolder, outputFolder, inputFileName, verbose=False):
                             print '    ' + att
                         setattr(outncvar, att, getattr(fh.variables[var],att))
 
+                if parametermaxvalue != MISSINGVALUE and parameterminvalue != MISSINGVALUE * MISSINGVALUE:
+                    setattr(outncvar, "actual_range", [parameterminvalue, parametermaxvalue])
+
         if outputinterval:
             print '\t\t#'
 

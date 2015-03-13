@@ -147,13 +147,13 @@ class TestDatasetDownloadHelper(BaseTest):
             self.download_helper.validate_parameters(params, self.user)
 
     def test_GIVEN_year_WHEN_generate_file_path_THEN_file_path_correctly_generated(self):
-        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'daily', 1901)
+        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'daily', 1901, False)
         assert_that(path, is_('run12/output/majic.gpp_gb_daily.1901.nc'))
 
     def test_GIVEN_year_but_not_needed_WHEN_generate_file_path_THEN_file_path_correctly_generated(self):
-        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'monthly', 1901)
+        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'monthly', 1901, False)
         assert_that(path, is_('run12/output/majic.gpp_gb_monthly.nc'))
 
     def test_GIVEN_no_year_WHEN_generate_file_path_THEN_file_path_correctly_generated(self):
-        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'monthly')
+        path = self.download_helper.generate_output_file_path(12, 'gpp_gb', 'monthly', False)
         assert_that(path, is_('run12/output/majic.gpp_gb_monthly.nc'))

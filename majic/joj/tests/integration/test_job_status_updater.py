@@ -40,12 +40,18 @@ class TestJobDataUpdater(TestController):
         self.running_job_client = JobRunnerClient([])
         self.email_service = EmailService()
         self.email_service.send_email = Mock()
-
+        self.data_range_to = 80
+        self.data_range_from = -100
+        self.longname = "my longname"
+        self.dap_client_factory_mock = self.create_mock_dap_factory_client(
+            data_range_to=self.data_range_to,
+            data_range_from=self.data_range_from,
+            longname=self.longname)
         self.job_status_updater = JobStatusUpdaterService(
             job_runner_client=self.running_job_client,
             config=config,
             email_service=self.email_service,
-            dap_client_factory=self.create_mock_dap_factory_client())
+            dap_client_factory=self.dap_client_factory_mock)
         self.user = self.login()
 
     def test_GIVEN_one_pending_job_in_the_database_which_has_completed_WHEN_update_THEN_model_run_is_set_to_complete_and_email_sent(self):
@@ -254,3 +260,24 @@ class TestJobDataUpdater(TestController):
                 .one()
 
         assert_that(self.email_service.send_email.called, is_(False), "An email has been sent")
+
+    def test_GIVEN_job_has_completed_WHEN_update_THEN_check_data_set_values_are_correct(self):
+        model_run = self.create_run_model(status=constants.MODEL_RUN_STATUS_PENDING, name="test", user=self.user, storage_in_mb=10)
+
+        self.running_job_client.get_run_model_statuses = Mock(
+            return_value=[{'id': model_run.id,
+                           'status': constants.MODEL_RUN_STATUS_COMPLETED,
+                           'error_message': ''
+                           }])
+
+        self.job_status_updater.update()
+
+        with session_scope(Session) as session:
+            datasets = session.query(Dataset) \
+                              .filter(Dataset.model_run_id == model_run.id) \
+                              .all()
+
+        assert_that(len(datasets), greater_than(0), "There are datasets")
+        assert_that(datasets[0].data_range_from, is_(self.data_range_from), "data range from")
+        assert_that(datasets[0].data_range_to, is_(self.data_range_to), "data range to")
+        assert_that(datasets[0].name, is_("{} ({frequency})".format(self.longname, frequency="Monthly")), "long name")

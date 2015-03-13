@@ -365,14 +365,17 @@ class TestController(TestCase):
             modified_user = session.query(User).filter(User.id == user.id).one()
             assert_that(modified_user.model_run_creation_action, is_(expected_action), "model run creation action")
 
-    def create_mock_dap_factory_client(self):
+    def create_mock_dap_factory_client(self, data_range_from=10, data_range_to=12, longname="long_name"):
         """
-        Create a mock for the dap client
+        Create a dap factory which returns a mock dap client
+        :param data_range_to: maximum data value for dap client to return
+        :param data_range_from: minimum data value for dap client to return
+        :param longname: long name that client should return
         :return:
         """
         self.dap_client = Mock()
-        self.dap_client.get_longname = Mock(return_value="long_name")
-        self.dap_client.get_data_range = Mock(return_value=[10, 12])
+        self.dap_client.get_longname = Mock(return_value=longname)
+        self.dap_client.get_data_range = Mock(return_value=[data_range_from, data_range_to])
         self.dap_client_factory = DapClientFactory()
         self.dap_client_factory.get_dap_client = Mock(return_value=self.dap_client)
         return self.dap_client_factory

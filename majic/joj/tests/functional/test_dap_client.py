@@ -262,7 +262,7 @@ class TestBaseDapClientOnCHESSData(BaseDapClientTest):
         time = datetime.datetime(1961, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, close_to(5.2, 0.001))
 
     def test_GIVEN_location_outside_grid_WHEN_get_data_at_THEN_missing_value_returned(self):
@@ -270,7 +270,7 @@ class TestBaseDapClientOnCHESSData(BaseDapClientTest):
         time = datetime.datetime(1961, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, close_to(-99999.0, 0.001))
 
     def test_GIVEN_time_outside_range_WHEN_get_data_at_THEN_closest_value_returned(self):
@@ -278,7 +278,7 @@ class TestBaseDapClientOnCHESSData(BaseDapClientTest):
         time = datetime.datetime(1066, 1, 1)
         lat_index, lon_index = self.dap_client.get_lat_lon_index(lat, lon)
         time_index = self.dap_client.get_time_index(time)
-        data = self.dap_client.get_data_at(lat_index, lon, lon_index, time_index)
+        data = self.dap_client.get_data_at(lat_index, lon_index, time_index)
         assert_that(data, close_to(5.2, 0.001))
 
 # noinspection PyArgumentList

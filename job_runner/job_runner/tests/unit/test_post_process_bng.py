@@ -131,7 +131,7 @@ class TestPostProcessBNG(TestController):
             [[-7.5571598, -7.54333898, -7.529518, -7.5581867, -7.544363, -7.53054]])
         expected_values = np.array([[0.0, 1.0, 2.0],
                                     [1.0, 1.1, 2.1]])
-        in_values = [expected_values.flatten()]
+        in_values = expected_values.flatten()
 
         self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values)
         self.process.reference_file_handle = self.create_reference_file(expected_lats, expected_lons, expected_x, expected_y)
@@ -200,6 +200,35 @@ class TestPostProcessBNG(TestController):
         self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
                                                    expected_y)
 
+    def test_GIVEN_file_with_1x1_point_with_a_masked_value_WHEN_convert_THEN_return_file_with_all_1x1_points_populated_as_a_masked_value(self):
+        ref_x = np.array([0, 1000, 2000])
+        ref_y = np.array([1, 1001, 2001])
+        ref_lats = np.array(
+            [[49.11, 49.21, 49.31],
+             [49.12, 49.22, 49.32],
+             [49.13, 49.23, 49.33]])
+        ref_lons = np.array(
+            [[7.11, 7.21, 7.31],
+             [7.12, 7.22, 7.32],
+             [7.13, 7.23, 7.33]])
+
+        in_lats = np.array([[49.22]])
+        in_lons = np.array([[7.22]])
+        expected_x = np.array([1000])
+        expected_y = np.array([1001])
+        expected_lats = np.array([[49.22]])
+        expected_lons = np.array([[7.22]])
+        expected_values = np.ma.array([[6]], mask=[[True]])
+
+        self.process.input_file_handle = self.create_input_file(in_lats, in_lons, expected_values)
+        self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
+        self.process.output_file_handle = netCDF4.Dataset("output", mode="w", diskless=True)
+
+        self.process.convert_jules_1d_to_thredds_2d_for_chess()
+
+        self.assert_that_variables_are_as_expected(expected_lats, expected_lons, expected_values, expected_x,
+                                                   expected_y)
+
     def test_GIVEN_file_with_3x2x1_points_in_WHEN_convert_THEN_return_file_with_all_3x2x1_points_populated_and_time_var_is_Time(self):
         ref_x = np.array([0, 1000, 2000])
         ref_y = np.array([1, 1001, 2001])
@@ -222,7 +251,7 @@ class TestPostProcessBNG(TestController):
         in_lats = expected_lats
         in_lons = expected_lons
         in_time = expected_time
-        in_values = [expected_values.flatten()]
+        in_values = expected_values.flatten()
 
         self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time)
         self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
@@ -253,7 +282,7 @@ class TestPostProcessBNG(TestController):
         in_lons = expected_lons
         in_time = expected_time
         in_pusedo = expected_pusedo
-        in_values = [expected_values.flatten()]
+        in_values = expected_values.flatten()
 
         self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time, in_pusedo)
         self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
@@ -340,7 +369,7 @@ class TestPostProcessBNG(TestController):
         in_lats = expected_lats
         in_lons = expected_lons
         in_time = expected_time
-        in_values = [expected_values.flatten()]
+        in_values = expected_values.flatten()
 
         self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time)
         self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
@@ -358,3 +387,73 @@ class TestPostProcessBNG(TestController):
         self.assert_that_arrays_almost_the_same(bnds,
                                                 self.process.output_file_handle.variables['time_bounds'],
                                                 "time bounds")
+
+    def test_GIVEN_file__WHEN_convert_THEN_check_max_min_range_is_correct(self):
+        ref_x = np.array([0, 1000, 2000])
+        ref_y = np.array([1, 1001, 2001])
+        ref_lats = np.array(
+            [[49.11, 49.21, 49.31],
+             [49.12, 49.22, 49.32],
+             [49.13, 49.23, 49.33]])
+        ref_lons = np.array(
+            [[7.11, 7.21, 7.31],
+             [7.12, 7.22, 7.32],
+             [7.13, 7.23, 7.33]])
+
+        expected_x = np.array([1000, 2000])
+        expected_y = np.array([1001])
+        expected_time = np.array([4.0, 5.0, 6.0])
+        expected_lats = np.array([[49.22, 49.32]])
+        expected_lons = np.array([[7.22, 7.32]])
+        expected_min = 0.8
+        expected_max = 22
+        expected_values = np.ma.array([[[10000, 7]], [[expected_min, 9]], [[expected_max, 10]]],
+                                      mask=[[[True, False]], [[False, False]], [[False, False]]])
+
+        in_lats = expected_lats
+        in_lons = expected_lons
+        in_time = expected_time
+        in_values = expected_values.flatten()
+
+        self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time)
+        self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
+        self.process.output_file_handle = netCDF4.Dataset("output", mode="w", diskless=True)
+
+        self.process.convert_jules_1d_to_thredds_2d_for_chess()
+        actual_range = self.process.output_file_handle.variables["values"].actual_range
+        assert_that(actual_range[0], close_to(expected_min, 1e-4), "actual range min")
+        assert_that(actual_range[1], close_to( expected_max, 1e-4), "actual range max")
+
+    def test_GIVEN_file_with_all_values_missing_WHEN_convert_THEN_max_min_range_are_not_in_file(self):
+        ref_x = np.array([0, 1000, 2000])
+        ref_y = np.array([1, 1001, 2001])
+        ref_lats = np.array(
+            [[49.11, 49.21, 49.31],
+             [49.12, 49.22, 49.32],
+             [49.13, 49.23, 49.33]])
+        ref_lons = np.array(
+            [[7.11, 7.21, 7.31],
+             [7.12, 7.22, 7.32],
+             [7.13, 7.23, 7.33]])
+
+        expected_x = np.array([1000, 2000])
+        expected_y = np.array([1001])
+        expected_time = np.array([4.0, 5.0, 6.0])
+        expected_lats = np.array([[49.22, 49.32]])
+        expected_lons = np.array([[7.22, 7.32]])
+        expected_min = 0.8
+        expected_max = 22
+        expected_values = np.ma.array([[[6, 7]], [[expected_min, 9]], [[expected_max, 10]]],
+                                      mask=[[[True, True]], [[True, True]], [[True, True]]])
+
+        in_lats = expected_lats
+        in_lons = expected_lons
+        in_time = expected_time
+        in_values = expected_values.flatten()
+
+        self.process.input_file_handle = self.create_input_file(in_lats, in_lons, in_values, in_time)
+        self.process.reference_file_handle = self.create_reference_file(ref_lats, ref_lons, ref_x, ref_y)
+        self.process.output_file_handle = netCDF4.Dataset("output", mode="w", diskless=True)
+
+        self.process.convert_jules_1d_to_thredds_2d_for_chess()
+        assert_that(self.process.output_file_handle.variables["values"].ncattrs(), is_not(has_item('actual_range')), "actual range should not be in file because there is not data")
