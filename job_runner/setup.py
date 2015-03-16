@@ -41,5 +41,8 @@ setup(
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
+
+    [nose.plugins]
+    pylons = pylons.test:PylonsPlugin
     """,
 )
