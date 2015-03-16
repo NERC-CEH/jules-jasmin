@@ -70,7 +70,7 @@ class TestJobService(TestController):
 
         assert_that(os.path.exists(self.run_dir), is_(True), "directory '%s' exists" % self.run_dir)
         assert_that(os.path.exists(self.run_dir + '/jules_run.sh'), is_(True), 'jules_run.sh in run directory')
-        assert_that(os.path.exists(self.run_dir + '/data'), is_(True), 'data in run directory')
+        assert_that(os.path.lexists(self.run_dir + '/data'), is_(True), 'softlink to data in run directory')
         assert_that(os.path.exists(self.run_dir + '/timesteps.nml'), is_(True), 'timesteps.nml in run directory')
         assert_that(result, greater_than(0), "PID is greater than 0")
 
