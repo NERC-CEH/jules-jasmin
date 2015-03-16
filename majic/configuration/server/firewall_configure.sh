@@ -7,15 +7,21 @@ IP_ADMIN=192.171.156.100
 IP_RANGES_CEH="192.171.129.0/24 192.171.156.0/25 192.171.172.0/24 192.171.178.0/24 192.171.192.0/24 193.62.153.0/24"
 IP_RANGES_TESSELLA="212.140.132.200"
 IP_LOCAL_NETWORK="192.168.3.0/24"
+IP_TEAMCITY_SERVER="192.168.3.3"
+IP_BUILD_AGENT="192.168.3.2"
 
 IPS_FOR_SSH="$IP_RANGES_CEH $IP_RANGES_TESSELLA $IP_LOCAL_NETWORK"
 
 if [ "$1" == "majic" ]
 then
  https=1
+ build_agent=1
+ teamcity_server=0
 elif [ "$1" == "teamcity" ]
 then
  https=0
+ build_agent=0
+ teamcity_server=1
 else
   echo "Usage: config_firewall <majic | teamcity>- configures the firewall to allow access to the machine"
   echo "                       majic for the majic web server, teamcity for the teamcity server"
@@ -60,6 +66,18 @@ for ip_for_ssh in $IPS_FOR_SSH
 do
   iptables -A INPUT -p tcp -s $ip_for_ssh --dport 443 -j ACCEPT
 done
+
+# Teamcity access
+if [ $build_agent == 1 ]
+then
+  iptables -A INPUT -p tcp -s $IP_TEAMCITY_SERVER --dport 9090 -j ACCEPT
+fi
+if [ $teamcity_server == 1 ]
+then
+  iptables -A INPUT -p tcp -s $IP_BUILD_AGENT --dport 9090 -j ACCEP
+  # Allow the local network to see teamcity gui
+  iptables -A INPUT -p tcp -s $IP_LOCAL_NETWORK --dport 8111 -j ACCEPT
+fi
 
 #
 # Save settings
