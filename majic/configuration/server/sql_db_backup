@@ -1,0 +1,2 @@
+# Backup the joj database at 2:01 in the morning
+01 02 * * * mysql sh /var/local/majic/jules-jasmin/majic/joj/cron_scripts/database_backup_and_mainentance.sh 1>>/var/local/majic/backups/database_backup_and_mainentance.log 2>>/var/local/majic/backups/database_backup_and_mainentance.log &
