@@ -48,6 +48,7 @@ class BjobsParser(object):
 
         statuses = {}
         for line in self._lines:
+            log.error("Line from bjobs: {}".format(line))
             match = re.search('^\s*(\d+)', line)
             if match is not None:
                 job_id = int(match.group(1))
