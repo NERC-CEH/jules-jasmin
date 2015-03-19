@@ -263,8 +263,10 @@ class JobService(object):
             return bjobs_parser.parse()
 
         except subprocess.CalledProcessError, ex:
+            log.exception("When getting running jobs.")
             raise ServiceException('When getting running jobs, failed with non-zero error code. "%s"' % ex.output)
         except Exception, ex:
+            log.exception("Problem getting running jobs.")
             raise ServiceException('Problem getting running jobs. "%s"' % ex.message)
 
     def _create_parameter_files(self, run_directory, model_run):
