@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONFIGURATION=production.ini
-if [ in "$1" ]
+if [ -n "$1" ]
 then
   CONFIGURATION=$1
 fi
