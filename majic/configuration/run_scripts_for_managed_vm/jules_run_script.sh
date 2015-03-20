@@ -3,7 +3,7 @@
 #BSUB –e %J.e
 #BSUB –q lotus
 #BSUB -n procs_template
-#BSUB -m lotusr620
+#BSUB -m lotus2
 
 cd model_run_dir_template
 
