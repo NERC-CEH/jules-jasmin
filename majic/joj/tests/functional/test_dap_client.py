@@ -47,7 +47,7 @@ class BaseDapClientTest(TestController):
         super(BaseDapClientTest, self).__init__(*args, **kwargs)
         try:
             code = urllib.urlopen(config['thredds.server_url']).getcode()
-            self.is_thredds_available = code == 200
+            self.is_thredds_available = (code == 200 or code == 302)
         except:
             self.is_thredds_available = False
         self.dap_client_factory = DapClientFactory()

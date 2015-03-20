@@ -33,7 +33,7 @@ setup(
         'webhelpers',
         'requests',
         'lxml',
-        'f90nml',
+        'f90nml==0.4',
         'pycairo'],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
@@ -53,5 +53,8 @@ setup(
 
     [console_scripts]
     load_endpoints = joj.scripts.load_endpoints:main
+
+    [nose.plugins]
+    pylons = pylons.test:PylonsPlugin
     """,
 )

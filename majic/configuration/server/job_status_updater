@@ -1,0 +1,2 @@
+# Run MAJIC scheduled jobs every 5 minutes.
+*/5 * * * * apache /var/local/majic/jules-jasmin/majic/joj/cron_scripts/cron_tab_script.sh 2>&1 >> /dev/null
