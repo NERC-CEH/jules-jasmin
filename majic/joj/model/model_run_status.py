@@ -23,7 +23,10 @@ from joj.utils import constants
 
 
 class ModelRunStatus(Base):
-    """The status of the model run
+    """
+    The status of the model run
+
+    IMPORTANT: This table is used by the majic web service too so if it changes make sure the changes do not conflict
     """
 
     __tablename__ = 'model_run_statuses'

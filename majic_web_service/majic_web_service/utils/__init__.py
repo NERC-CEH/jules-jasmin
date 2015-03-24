@@ -1,6 +1,6 @@
 """
 #    Majic
-#    Copyright (C) 2014  CEH
+#    Copyright (C) 2015  CEH
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,14 +18,3 @@
 """
 
 
-"""SQLAlchemy Metadata and Session object"""
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
-
-__all__ = ['Base', 'Session']
-
-# SQLAlchemy session manager. Updated by model.init_model()
-Session = scoped_session(sessionmaker())
-
-# The declarative Base
-Base = declarative_base()

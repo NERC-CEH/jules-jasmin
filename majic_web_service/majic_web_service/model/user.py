@@ -16,16 +16,25 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+from sqlalchemy import Column, Integer, String
+
+from majic_web_service.model.meta import Base
+from majic_web_service.utils import constants
 
 
-"""SQLAlchemy Metadata and Session object"""
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+class User(Base):
+    """
+    A user of the system
 
-__all__ = ['Base', 'Session']
+    IMPORTANT: This table is based on the one in majic if it changes make sure the changes are reflected
+    """
 
-# SQLAlchemy session manager. Updated by model.init_model()
-Session = scoped_session(sessionmaker())
+    __tablename__ = 'users'
 
-# The declarative Base
-Base = declarative_base()
+    id = Column(Integer, primary_key=True)
+    username = Column(String(constants.DB_STRING_SIZE))
+
+    def __repr__(self):
+        """String representation of the user"""
+
+        return "<User(username=%s, name=%s)>" % (self.username, self.name)

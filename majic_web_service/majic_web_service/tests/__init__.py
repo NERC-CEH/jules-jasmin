@@ -17,9 +17,11 @@ from paste.deploy import loadapp
 from pylons import url
 from paste.script.appinstall import SetupCommand
 from routes.util import URLGenerator
+from sqlalchemy.orm.exc import NoResultFound
 from webtest import TestApp
 
 from majic_web_service.config.environment import load_environment
+from majic_web_service.model import session_scope, ModelRun, User, ModelRunStatus
 
 __all__ = ['environ', 'url', 'TestController']
 
@@ -44,3 +46,37 @@ class TestController(TestCase):
         url._push_object(URLGenerator(config['routes.map'], environ))
         self.app = TestApp(wsgiapp)
         TestCase.__init__(self, *args, **kwargs)
+
+    def clean_database(self):
+        """
+        Cleans the dynamic data from the database
+        """
+        with session_scope() as session:
+            # delete all runs except the scientific configurations
+            session \
+                .query(ModelRun) \
+                .delete()
+
+            session \
+                .query(User) \
+                .delete()
+
+    def add_model_run(self, username, last_status_change, status, model_name="model name", description="a description"):
+        with session_scope() as session:
+            try:
+                user = session.query(User).filter(User.username == username).one()
+            except NoResultFound:
+                user = User(username=username)
+                session.add(user)
+
+            found_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == status).one()
+
+            model_run = ModelRun()
+            model_run.name = model_name
+            model_run.status = found_status
+            model_run.last_status_change = last_status_change
+            model_run.description = description
+            model_run.user = user
+            session.add(model_run)
+            session.flush()
+            return model_run.id

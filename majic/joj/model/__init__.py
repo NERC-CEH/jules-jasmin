@@ -22,7 +22,7 @@ from joj.model.meta import Session, Base
 from contextlib import contextmanager
 import logging
 
-#import all the database models in so they can be built
+# import all the database models in so they can be built
 from joj.model.account_request import AccountRequest
 from joj.model.model_run_status import ModelRunStatus
 from joj.model.model_file import ModelFile
@@ -88,22 +88,25 @@ def session_scope(session_class=Session):
     finally:
         session.close()
 
+
+# noinspection PyUnusedLocal
 @event.listens_for(Pool, "checkout")
 def ping_connection(dbapi_connection, connection_record, connection_proxy):
     """
     Test the sql connection before using it to avoid  "MySQL Connection not available" see JOJ101
-    see http://stackoverflow.com/questions/7912731/mysql-server-has-gone-away-disconnect-handling-via-checkout-event-handler-does
+    see http://stackoverflow.com/questions/7912731/
+      mysql-server-has-gone-away-disconnect-handling-via-checkout-event-handler-does
     :param dbapi_connection: sql connection
     :param connection_record: record
     :param connection_proxy: proxy
     :return: nothing
     """
-    logging.debug("***********ping_connection**************")
+    logging.debug("ping_connection")
     cursor = dbapi_connection.cursor()
     try:
         cursor.execute("SELECT 1")
     except:
-        logging.debug("######## DISCONNECTION ERROR #########")
+        logging.debug("DISCONNECTION ERROR")
         # optional - dispose the whole pool
         # instead of invalidating one at a time
         # connection_proxy._pool.dispose()

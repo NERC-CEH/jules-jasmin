@@ -16,6 +16,13 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+import logging
+from sqlalchemy import asc
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import NoResultFound
+from majic_web_service.model import readonly_scope, ModelRun, User, ModelRunStatus
+
+log = logging.getLogger(__name__)
 
 
 class ServiceException(Exception):
@@ -29,4 +36,24 @@ class RunPropertyService(object):
     """
     Service to access model run properties
     """
-    pass
+
+    def list(self):
+        """
+        List all the model runs with their properties
+        :return: list of model runs with there properties
+        """
+        with readonly_scope() as session:
+            try:
+                return session \
+                    .query(ModelRun) \
+                    .join(User) \
+                    .join(ModelRunStatus) \
+                    .order_by(asc(ModelRun.last_status_change)) \
+                    .options(joinedload('user')) \
+                    .options(joinedload('status')) \
+                    .all()
+            except NoResultFound:
+                return []
+            except:
+                log.exception("Problems accessing model runs in the database")
+                raise ServiceException("Problems accessing model runs in the database")

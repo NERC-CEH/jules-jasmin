@@ -23,7 +23,11 @@ from joj.utils import constants
 
 
 class User(Base):
-    """A user of the system"""
+    """
+    A user of the system
+
+    IMPORTANT: This table is used by the majic web service too so if it changes make sure the changes do not conflict
+    """
 
     __tablename__ = 'users'
 
