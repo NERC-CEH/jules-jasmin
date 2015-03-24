@@ -6,7 +6,7 @@ except ImportError:
     from setuptools import setup, find_packages
 
 setup(
-    name='majic_web_service/',
+    name='majic_web_service',
     version='0.1',
     description='',
     author='',
@@ -16,6 +16,11 @@ setup(
         "WebOb<=1.3.1",
         "Pylons>=1.0.1rc1",
         "SQLAlchemy>=0.5",
+        "mysql-connector-python",
+    ],
+    tests_require=[
+        "PyHamcrest",
+        "Mock"
     ],
     setup_requires=["PasteScript>=1.6.3"],
     packages=find_packages(exclude=['ez_setup']),
@@ -34,5 +39,8 @@ setup(
 
     [paste.app_install]
     main = pylons.util:PylonsInstaller
+
+    [nose.plugins]
+    pylons = pylons.test:PylonsPlugin
     """,
 )

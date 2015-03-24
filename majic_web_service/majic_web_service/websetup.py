@@ -1,4 +1,4 @@
-"""Setup the majic_web_service/ application"""
+"""Setup the majic_web_service application"""
 import logging
 
 from majic_web_service.config.environment import load_environment
