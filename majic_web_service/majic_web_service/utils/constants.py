@@ -39,6 +39,8 @@ MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submitted a model but it can not be submitted
 MODEL_RUN_STATUS_UNKNOWN = 'Unknown'  # Job is in the bjobs list but the status is not understood
 
+DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%M:%S %z'
+
 # Constants for the names of the dictionary values in the json submitted
 JSON_MODEL_RUNS = 'model_runs'
 JSON_MODEL_RUN_ID = 'model_run_id'

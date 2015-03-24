@@ -10,6 +10,7 @@ setup-app`) and provides the base testing objects.
 from unittest import TestCase
 import os
 import sys
+from hamcrest import assert_that, is_
 
 import pylons
 from pylons.i18n.translation import _get_translator
@@ -22,6 +23,8 @@ from webtest import TestApp
 
 from majic_web_service.config.environment import load_environment
 from majic_web_service.model import session_scope, ModelRun, User, ModelRunStatus
+from majic_web_service.utils.constants import JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, \
+    JSON_LAST_STATUS_CHANGE
 
 __all__ = ['environ', 'url', 'TestController']
 
@@ -80,3 +83,19 @@ class TestController(TestCase):
             session.add(model_run)
             session.flush()
             return model_run.id
+
+    def assert_model_run_json_is(self, model_run_json_dict, model_id, last_status_change, username, is_published):
+        """
+        assert that the model_run_json_dict has the expected answers
+        :param model_run_json_dict: dictionary to check
+        :param model_id: model id
+        :param last_status_change: last status change
+        :param username: the username who owns the model run
+        :param is_published: whether model run is published
+        :return: nothing
+        :raises AssertionError: if the two don't match
+        """
+        assert_that(model_run_json_dict[JSON_MODEL_RUN_ID], is_(model_id), "model run id")
+        assert_that(model_run_json_dict[JSON_USER_NAME], is_(username), "username")
+        assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is not published")
+        assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(last_status_change), "last changed")

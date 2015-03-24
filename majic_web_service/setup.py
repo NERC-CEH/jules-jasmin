@@ -17,6 +17,7 @@ setup(
         "Pylons>=1.0.1rc1",
         "SQLAlchemy>=0.5",
         "mysql-connector-python",
+        'pytz'
     ],
     tests_require=[
         "PyHamcrest",
