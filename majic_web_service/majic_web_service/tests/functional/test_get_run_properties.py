@@ -62,8 +62,6 @@ class TestGetRunProperties(TestController):
         self.assert_model_run_json_is(
             response[JSON_MODEL_RUNS][0],
             model_id,
-            convert_time_to_standard_string(last_status_change),
+            last_status_change,
             username,
             False)
-
-

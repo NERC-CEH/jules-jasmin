@@ -25,6 +25,7 @@ from majic_web_service.config.environment import load_environment
 from majic_web_service.model import session_scope, ModelRun, User, ModelRunStatus
 from majic_web_service.utils.constants import JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, \
     JSON_LAST_STATUS_CHANGE
+from majic_web_service.utils.general import convert_time_to_standard_string
 
 __all__ = ['environ', 'url', 'TestController']
 
@@ -98,4 +99,4 @@ class TestController(TestCase):
         assert_that(model_run_json_dict[JSON_MODEL_RUN_ID], is_(model_id), "model run id")
         assert_that(model_run_json_dict[JSON_USER_NAME], is_(username), "username")
         assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is not published")
-        assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(last_status_change), "last changed")
+        assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(convert_time_to_standard_string(last_status_change)), "last changed")

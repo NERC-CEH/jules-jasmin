@@ -17,7 +17,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 from datetime import datetime
-
+import pytz
 from hamcrest import *
 
 from majic_web_service.services.run_property_service import RunPropertyService
@@ -39,7 +39,7 @@ class TestGetRunPropertiesController(TestController):
 
     def test_GIVEN_database_has_one_row_WHEN_request_run_properties_THEN_return_list_with_item_in(self):
         username = "username"
-        last_status_change = datetime(2015, 5, 3, 2, 1)
+        last_status_change = datetime(2015, 5, 3, 2, 1, tzinfo=pytz.utc)
         status = MODEL_RUN_STATUS_COMPLETED
         model_id = self.add_model_run(username, last_status_change, status)
 

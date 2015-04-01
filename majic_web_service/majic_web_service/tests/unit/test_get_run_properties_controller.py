@@ -30,11 +30,12 @@ from majic_web_service.tests import TestController
 class TestGetRunPropertiesController(TestController):
 
     def setUp(self):
+        pylons = Mock()
         pylons.response = Mock()
         pylons.response.headers = {}
         self.runs_properties_service = Mock(RunPropertyService)
         self.runs_properties = RunPropertyController(self.runs_properties_service)
-        self.runs_properties._py_object = None
+        self.runs_properties._py_object = pylons
 
     def test_GIVEN_database_is_not_up_WHEN_request_run_properties_THEN_return_fail(self):
         error_message = "Database is not available"
