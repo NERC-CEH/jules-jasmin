@@ -86,12 +86,12 @@ ERROR_MESSAGE_NO_LOG_FILE = 'No output from the model run'
 ERROR_MESSAGE_OUTPUT_IS_EMPTY = 'Output from the model run is empty'
 ERROR_MESSAGE_UNKNOWN_JULES_ERROR = 'Jules did not complete successfully'
 
-#filename for the file containg the bsub id
+# filename for the file containing the bsub id
 FILENAME_BSUB_ID = 'bsub_id'
 FILENAME_OUTPUT_LOG = 'out.log'
 FILENAME_JOBS_RUN_LOG = 'jobs_run.log'
 
-DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%m:%S %z'
+DATA_FORMAT_WITH_TZ = '%Y-%m-%d %H:%M:%S %z'
 
 JULES_NML_MODEL_GRID = "JULES_MODEL_GRID"
 JULES_PARAM_POINTS_FILE = [JULES_NML_MODEL_GRID, "points_file"]

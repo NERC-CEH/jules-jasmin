@@ -16,6 +16,7 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+from job_runner.utils.constants import DATA_FORMAT_WITH_TZ
 
 
 def insert_before_file_extension(path, string):
@@ -27,3 +28,15 @@ def insert_before_file_extension(path, string):
     """
     file_extens_idx = path.rfind('.')
     return "".join((path[0:file_extens_idx], string, path[file_extens_idx:]))
+
+
+def convert_time_to_standard_string(datetime_to_convert):
+    """
+    Convert a datetime into a standard format string
+    :param datetime_to_convert: the date time to convert
+    :return: the converted string, none return an empty string
+    """
+    if datetime_to_convert is None:
+        return ""
+    else:
+        return datetime_to_convert.strftime(DATA_FORMAT_WITH_TZ)

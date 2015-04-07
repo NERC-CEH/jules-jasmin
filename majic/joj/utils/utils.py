@@ -138,6 +138,7 @@ def get_first_parameter_value_from_parameter_list(parameters, parameter_namelist
     :param parameters: List of parameters
     :param parameter_namelist_name: namelist and name of parameter to get
     :param is_list: Return as list
+    :param group_id: id of the group in which to find the parameter
     :return: First matching parameter value as Python
     """
     is_list_local = _is_list(is_list, parameter_namelist_name)

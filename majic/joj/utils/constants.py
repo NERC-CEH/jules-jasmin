@@ -25,7 +25,7 @@ DB_PARAMETER_VALUE_STRING_SIZE = 1000  # Default size (chars) to use for a Jules
 DB_URL_STRING_SIZE = 1000  # Default size (chars) to use when creating urls
 DB_PATH_SIZE = 4000  # Default size (chars) to use for a file path
 
-#Username for the core user, The core user will have scientific configurations and model runs
+# Username for the core user, The core user will have scientific configurations and model runs
 CORE_USERNAME = 'system'
 
 USER_ACCESS_LEVEL_ADMIN = "Admin"
@@ -35,7 +35,7 @@ USER_ACCESS_LEVEL_EXTERNAL = "External"
 QUOTA_WARNING_LIMIT_PERCENT = 80
 QUOTA_ABSOLUTE_LIMIT_PERCENT = 100
 
-#Size to cache when read file for a generator
+# Size to cache when read file for a generator
 GENERATORS_SIZE_TO_READ = 100000
 GENERATORS_LINES_TO_READ = 100
 
@@ -46,7 +46,7 @@ PASSWORD_MINIMUM_LENGTH = 10
 # The default science configuration to use
 DEFAULT_SCIENCE_CONFIGURATION = 2
 
-# Model Run status descriptions *** If you update these update the same ones in job runner****
+# Model Run status descriptions *** If you update these update the same ones in job runner and web services ****
 MODEL_RUN_STATUS_CREATED = 'Created'
 MODEL_RUN_STATUS_SUBMITTED = 'Submitted'
 MODEL_RUN_STATUS_PENDING = 'Pending'
@@ -113,7 +113,7 @@ NETCDF_CRS = ['crs']
 NETCDF_CRS_X = ['x']
 NETCDF_CRS_Y = ['y']
 
-#mLAYER names not not display on the map, must be lowercase
+# LAYER names not not display on the map, must be lowercase
 LAYERS_NOT_TO_DISPLAY = ['latitude', 'lat', 'longitude', 'lon', 'crs', 'time']
 
 # Max number of points to get for graph:
@@ -121,7 +121,7 @@ GRAPH_NPOINTS = 1000
 # Date time string format used by the graph / visualisation.
 GRAPH_TIME_FORMAT = "%Y-%m-%dT%X.%fZ"
 
-#The name of the driving dataset which represents the 'upload your own driving dataset' option
+# The name of the driving dataset which represents the 'upload your own driving dataset' option
 USER_UPLOAD_DRIVING_DATASET_NAME = "Use My Own Single Cell Driving Data"
 USER_UPLOAD_FILE_NAME = "user_uploaded_driving_data.dat"  # The name of the file we store user driving data in
 USER_UPLOAD_DATE_FORMAT = "%Y-%m-%d %H:%M"
@@ -169,7 +169,7 @@ JULES_MONTHLY_PERIOD = -1
 JULES_DAILY_PERIOD = 24 * 60 * 60
 JULES_HOURLY_PERIOD = 60 * 60
 
-#Month abbreviations for templates
+# Month abbreviations for names in the JULES driving data file templates
 JULES_MONTH_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 # Constants for Jules Parameters (so we can easily update if they change name etc)
@@ -268,7 +268,7 @@ JULES_PARAM_DRIVE_DUR_CONV_RAIN = [JULES_NML_DRIVE, "dur_conv_rain"]
 JULES_PARAM_DRIVE_DUR_LS_RAIN = [JULES_NML_DRIVE, "dur_ls_rain"]
 JULES_PARAM_DRIVE_DUR_LS_SNOW = [JULES_NML_DRIVE, "dur_ls_snow"]
 
-#ancils namelist file
+# ancils namelist file
 JULES_NML_FRAC = "JULES_FRAC"
 JULES_PARAM_FRAC_FILE = [JULES_NML_FRAC, "file"]
 JULES_PARAM_FRAC_NAME = [JULES_NML_FRAC, "frac_name"]
@@ -295,7 +295,7 @@ JULES_PARAM_PDM_B_PDM = [JULES_NML_PDM, "b_pdm"]
 JULES_NML_AGRIC = "JULES_AGRIC"
 JULES_PARAM_AGRIC_ZERO_AGRIC = [JULES_NML_AGRIC, "zero_agric"]
 
-#initial namelist file
+# initial namelist file
 JULES_NML_INITIAL = "JULES_INITIAL"
 JULES_PARAM_INITIAL_NVARS = [JULES_NML_INITIAL, "nvars"]
 JULES_PARAM_INITIAL_VAR = [JULES_NML_INITIAL, "var"]
@@ -307,8 +307,8 @@ JULES_PARAM_SWITCHES_L_POINT_DATA = [JULES_NML_SWITCHES, "l_point_data"]
 JULES_PARAM_SWITCHES_L_VG_SOIL = [JULES_NML_SWITCHES, "l_vg_soil"]
 
 JULES_NML_PFTPARM = "JULES_PFTPARM"
-#the parameters are not been made into constants but are used in the chess driving data setup
 
+# the parameters are not been made into constants but are used in post processing step
 JULES_NML_POST_PROCESSING = "POST_PROCESSING"
 JULES_PARAM_POST_PROCESSING_ID = [JULES_NML_POST_PROCESSING, "id"]
 

@@ -1,0 +1,3 @@
+include majic_web_service/config/deployment.ini_tmpl
+recursive-include majic_web_service/public *
+recursive-include majic_web_service/templates *

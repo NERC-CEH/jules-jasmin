@@ -27,7 +27,11 @@ from joj.model import ModelRunStatus
 
 
 class ModelRun(Base):
-    """ A single run of a model """
+    """
+    A single run of a model
+
+    IMPORTANT: This table is used by the majic web service too so if it changes make sure the changes do not conflict
+    """
 
     __tablename__ = 'model_runs'
 
