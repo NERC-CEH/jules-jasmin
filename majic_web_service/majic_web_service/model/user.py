@@ -33,6 +33,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(constants.DB_STRING_SIZE))
+    workbench_username = Column(String(constants.DB_STRING_SIZE))
 
     def __repr__(self):
         """String representation of the user"""

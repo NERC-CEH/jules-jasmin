@@ -46,6 +46,7 @@ def _get_result_image():
         return image_file.read()
 
 
+# noinspection PyUnusedLocal,PyShadowingBuiltins
 def setup_app(command, conf, vars):
     """
     Place any commands to setup joj here - currently creating db tables
@@ -59,7 +60,7 @@ def setup_app(command, conf, vars):
     if not pylons.test.pylonsapp:
         load_environment(conf.global_conf, conf.local_conf)
 
-    # Create the tables if they don't already exist
+    # Create the tables
     Base.metadata.drop_all(bind=Session.bind)
     Base.metadata.create_all(bind=Session.bind)
 
@@ -169,18 +170,18 @@ def setup_app(command, conf, vars):
         default_code_version.is_default = True
         session.add(default_code_version)
 
-        #Namelists from docs
+        # Namelists from docs
         jules_parameter_parser = JulesParameterParser()
         namelist_files = jules_parameter_parser.parse_all("docs/Jules/user_guide/html/namelists/", default_code_version)
         for namelist_file in namelist_files:
             session.add(namelist_file)
 
-        #Output variable from docs
+        # Output variable from docs
         jules_output_variables_parser = JulesOutputVariableParser()
         output_variables = jules_output_variables_parser.parse("docs/Jules/user_guide/html/output-variables.html")
         session.add_all(output_variables)
 
-        ## Add WATCH 100 Years run
+        # Add WATCH 100 Years run
         watch_model_run = jules_config_parser.parse_namelist_files_to_create_a_model_run(
             default_code_version,
             "Watch data run over the length of the data",
@@ -206,9 +207,10 @@ def setup_app(command, conf, vars):
             ds = Dataset()
             ds.name = name
             ds.wms_url = conf.local_conf['thredds.server_url'] \
-                          + "wms/model_runs/run1/data/WATCH_2D/driving/" + path + ".ncml"\
-                            "?service=WMS&version=1.3.0&request=GetCapabilities"
-            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/data/WATCH_2D/driving/" + path + ".ncml"
+                + "wms/model_runs/run1/data/WATCH_2D/driving/" + path + ".ncml"\
+                "?service=WMS&version=1.3.0&request=GetCapabilities"
+            ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/data/WATCH_2D/driving/" + \
+                path + ".ncml"
             ds.data_range_from = min
             ds.data_range_to = max
             ds.is_categorical = 0
@@ -221,8 +223,8 @@ def setup_app(command, conf, vars):
             ds = Dataset()
             ds.name = name
             ds.wms_url = conf.local_conf['thredds.server_url'] \
-                          + "wms/model_runs/run1/" + path + \
-                            "?service=WMS&version=1.3.0&request=GetCapabilities"
+                + "wms/model_runs/run1/" + path + \
+                "?service=WMS&version=1.3.0&request=GetCapabilities"
             ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/" + path
             ds.data_range_from = min
             ds.data_range_to = max
@@ -249,9 +251,10 @@ def setup_app(command, conf, vars):
                 ds = Dataset()
                 ds.name = name
                 ds.wms_url = conf.local_conf['thredds.server_url'] \
-                              + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
-                                "?service=WMS&version=1.3.0&request=GetCapabilities"
-                ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." + path + ".ncml"
+                    + "wms/model_runs/run1/output/majic." + path + ".ncml" + \
+                    "?service=WMS&version=1.3.0&request=GetCapabilities"
+                ds.netcdf_url = conf.local_conf['thredds.server_url'] + "dodsC/model_runs/run1/output/majic." \
+                    + path + ".ncml"
                 ds.data_range_from = min
                 ds.data_range_to = max
                 ds.is_categorical = 0
@@ -293,17 +296,17 @@ def setup_app(command, conf, vars):
             [constants.JULES_PARAM_SOIL_PROPS_VAR,
              "'b'       'sathh'  'satcon'  'sm_sat'  'sm_crit'  'sm_wilt'  'hcap'      'hcon'   'albsoil'"],
             [constants.JULES_PARAM_SOIL_PROPS_USE_FILE, ".false. .false. .false. .false. .false. .false. .false. "
-                                                  ".false. .false."],
+                ".false. .false."],
             [constants.JULES_PARAM_SOIL_PROPS_CONST_VAL,
              "0.9     0.0      0.0         50.0     275.0        278.0    10.0 0.0"],
 
             [constants.JULES_PARAM_INITIAL_NVARS, "10"],
-        [constants.JULES_PARAM_INITIAL_VAR,
-         "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'  'lai' 'canht'"],
-        [constants.JULES_PARAM_INITIAL_USE_FILE,
-         ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false. .false.  .false."],
-        [constants.JULES_PARAM_INITIAL_CONST_VAL,
-         "0.9     0.0      0.0         50.0     275.0        278.0    10.0   0.0   1.0   2.0"]
+            [constants.JULES_PARAM_INITIAL_VAR,
+                "'sthuf' 'canopy' 'snow_tile' 'rgrain' 'tstar_tile' 't_soil' 'cs' 'gs'  'lai' 'canht'"],
+            [constants.JULES_PARAM_INITIAL_USE_FILE,
+                ".false.  .false.  .false.  .false.  .false.  .false.  .false.  .false. .false.  .false."],
+            [constants.JULES_PARAM_INITIAL_CONST_VAL,
+                "0.9     0.0      0.0         50.0     275.0        278.0    10.0   0.0   1.0   2.0"]
         ]
 
         model_run_service = ModelRunService()
