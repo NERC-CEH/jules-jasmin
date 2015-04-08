@@ -7,11 +7,11 @@ except ImportError:
 
 setup(
     name='joj',
-    version="1.0.0",
-    #description='',
-    #author='',l
-    #author_email='',
-    #url='',
+    version="1.3.0",
+    description='Majic Web Application',
+    author='Tessella Ltd',
+    author_email='majic@ceh.ac.uk',
+    url='https://majic.ceh.ac.uk',
     install_requires=[
         "WebOb<=1.3.1",
         "pylons",
@@ -34,7 +34,8 @@ setup(
         'requests',
         'lxml',
         'f90nml==0.4',
-        'pycairo'],
+        'pycairo',
+        "alembic"],
     tests_require=[
         "PyHamcrest",
         "Mock"

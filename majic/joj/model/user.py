@@ -43,6 +43,7 @@ class User(Base):
     model_run_creation_action = Column(String(constants.DB_STRING_SIZE))
     forgotten_password_uuid = Column(String(constants.DB_STRING_SIZE))
     forgotten_password_expiry_date = Column(DateTime)
+    workbench_username = Column(String(constants.DB_STRING_SIZE))
 
     def is_admin(self):
         """

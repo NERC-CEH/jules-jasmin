@@ -48,7 +48,7 @@ class ModelRun(Base):
     def __json__(self):
         return {
             JSON_MODEL_RUN_ID: self.id,
-            JSON_USER_NAME: self.user.username,
+            JSON_USER_NAME: self.user.workbench_username,
             JSON_IS_PUBLISHED: self.status.is_published(),
             JSON_LAST_STATUS_CHANGE: convert_time_to_standard_string(self.last_status_change)}
 

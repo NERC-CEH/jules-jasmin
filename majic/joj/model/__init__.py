@@ -44,6 +44,7 @@ from joj.model.land_cover_region import LandCoverRegion
 from joj.model.land_cover_region_category import LandCoverRegionCategory
 from joj.model.land_cover_action import LandCoverAction
 from joj.model.land_cover_value import LandCoverValue
+from joj.model.output_variable import OutputVariable
 
 log = logging.getLogger(__name__)
 

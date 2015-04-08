@@ -65,3 +65,30 @@ class TestGetRunPropertiesController(TestController):
         self.assert_model_run_json_is(result[0].__json__(), model_ids[1], last_status_changes[1], usernames[1], expected_is_published[1])
         self.assert_model_run_json_is(result[1].__json__(), model_ids[0], last_status_changes[0], usernames[0], expected_is_published[0])
 
+
+    def test_GIVEN_database_has_two_rows_with_different_statuses_WHEN_request_run_properties_THEN_return_list_with_only_completed_and_published_rows(self):
+        username = "username"
+        last_status_change = datetime(2015, 5, 3, 2, 1)
+        statuses = [
+            MODEL_RUN_STATUS_COMPLETED,
+            MODEL_RUN_STATUS_PUBLISHED,
+            MODEL_RUN_STATUS_CREATED,
+            MODEL_RUN_STATUS_FAILED,
+            MODEL_RUN_STATUS_PENDING,
+            MODEL_RUN_STATUS_RUNNING,
+            MODEL_RUN_STATUS_SUBMIT_FAILED,
+            MODEL_RUN_STATUS_SUBMITTED,
+            MODEL_RUN_STATUS_UNKNOWN,
+            None]
+        expected_is_published = [False, True]
+        model_ids = []
+        for status in statuses:
+            model_id = self.add_model_run(username, last_status_change, status)
+            model_ids.append(model_id)
+
+        result = self.property_service.list()
+
+        assert_that(result, has_length(2), "model run count")
+        self.assert_model_run_json_is(result[0].__json__(), model_ids[0], last_status_change, username, expected_is_published[0])
+        self.assert_model_run_json_is(result[1].__json__(), model_ids[1], last_status_change, username, expected_is_published[1])
+

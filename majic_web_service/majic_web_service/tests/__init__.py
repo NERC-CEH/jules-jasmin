@@ -65,15 +65,41 @@ class TestController(TestCase):
                 .query(User) \
                 .delete()
 
-    def add_model_run(self, username, last_status_change, status, model_name="model name", description="a description"):
+    def add_model_run(
+            self,
+            workbench_username,
+            last_status_change,
+            status, model_name="model name",
+            description="a description",
+            majic_username=None):
+        """
+        Add a model run to the db
+        :param workbench_username: username for the workbench
+        :param last_status_change: last staus change
+        :param status: current status (as string)
+        :param model_name: name of the model
+        :param description: description of the model
+        :param majic_username: username in majic, defaults to the workbench_username if not set
+        :return:id of model run created
+        """
         with session_scope() as session:
             try:
-                user = session.query(User).filter(User.username == username).one()
+                if majic_username is not None:
+                    user = session.query(User).filter(User.username == majic_username).one()
+                else:
+                    user = session.query(User).filter(User.username == workbench_username).one()
             except NoResultFound:
-                user = User(username=username)
+                user = User(workbench_username=workbench_username)
+                if majic_username is None:
+                    user.username = workbench_username
+                else:
+                    user.username = majic_username
                 session.add(user)
 
-            found_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == status).one()
+            if status is not None:
+                found_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == status).one()
+            else:
+                found_status = None
 
             model_run = ModelRun()
             model_run.name = model_name
@@ -98,5 +124,5 @@ class TestController(TestCase):
         """
         assert_that(model_run_json_dict[JSON_MODEL_RUN_ID], is_(model_id), "model run id")
         assert_that(model_run_json_dict[JSON_USER_NAME], is_(username), "username")
-        assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is not published")
+        assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is published")
         assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(convert_time_to_standard_string(last_status_change)), "last changed")
