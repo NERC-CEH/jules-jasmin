@@ -65,12 +65,35 @@ class TestController(TestCase):
                 .query(User) \
                 .delete()
 
-    def add_model_run(self, username, last_status_change, status, model_name="model name", description="a description"):
+    def add_model_run(
+            self,
+            workbench_username,
+            last_status_change,
+            status, model_name="model name",
+            description="a description",
+            majic_username=None):
+        """
+        Add a model run to the db
+        :param workbench_username: username for the workbench
+        :param last_status_change: last staus change
+        :param status: current status (as string)
+        :param model_name: name of the model
+        :param description: description of the model
+        :param majic_username: username in majic, defaults to the workbench_username if not set
+        :return:id of model run created
+        """
         with session_scope() as session:
             try:
-                user = session.query(User).filter(User.username == username).one()
+                if majic_username is not None:
+                    user = session.query(User).filter(User.username == majic_username).one()
+                else:
+                    user = session.query(User).filter(User.username == workbench_username).one()
             except NoResultFound:
-                user = User(username=username)
+                user = User(workbench_username=workbench_username)
+                if majic_username is None:
+                    user.username = workbench_username
+                else:
+                    user.username = majic_username
                 session.add(user)
 
             if status is not None:
