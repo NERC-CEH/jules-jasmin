@@ -73,7 +73,10 @@ class TestController(TestCase):
                 user = User(username=username)
                 session.add(user)
 
-            found_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == status).one()
+            if status is not None:
+                found_status = session.query(ModelRunStatus).filter(ModelRunStatus.name == status).one()
+            else:
+                found_status = None
 
             model_run = ModelRun()
             model_run.name = model_name
@@ -98,5 +101,5 @@ class TestController(TestCase):
         """
         assert_that(model_run_json_dict[JSON_MODEL_RUN_ID], is_(model_id), "model run id")
         assert_that(model_run_json_dict[JSON_USER_NAME], is_(username), "username")
-        assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is not published")
+        assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is published")
         assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(convert_time_to_standard_string(last_status_change)), "last changed")

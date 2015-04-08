@@ -17,10 +17,11 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import logging
-from sqlalchemy import asc
+from sqlalchemy import asc, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from majic_web_service.model import readonly_scope, ModelRun, User, ModelRunStatus
+from majic_web_service.utils.constants import MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED
 
 log = logging.getLogger(__name__)
 
@@ -39,8 +40,8 @@ class RunPropertyService(object):
 
     def list(self):
         """
-        List all the model runs with their properties
-        :return: list of model runs with there properties
+        List all the model runs with their properties that are completed or published
+        :return: list of model runs with their properties
         """
         with readonly_scope() as session:
             try:
@@ -48,9 +49,11 @@ class RunPropertyService(object):
                     .query(ModelRun) \
                     .join(User) \
                     .join(ModelRunStatus) \
-                    .order_by(asc(ModelRun.last_status_change)) \
+                    .order_by(asc(ModelRun.last_status_change), asc(ModelRun.id)) \
                     .options(joinedload('user')) \
                     .options(joinedload('status')) \
+                    .filter(or_(ModelRunStatus.name == MODEL_RUN_STATUS_COMPLETED,
+                                ModelRunStatus.name == MODEL_RUN_STATUS_PUBLISHED)) \
                     .all()
             except NoResultFound:
                 return []
