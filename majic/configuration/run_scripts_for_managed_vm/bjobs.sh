@@ -1,5 +1,5 @@
 #!/bin/bash
-command=`modulecmd bash load /utils/Modules/default/modulefiles/lsfmodules/8.0`
+command=`modulecmd bash load /utils/Modules/default/modulefiles/lsfmodules/9.1`
 
 eval "$command"
 
