@@ -25,7 +25,7 @@ SECRET=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c20`
 
 cd majic_web_service
 sed -i "s#sqlalchemy.url.*#sqlalchemy.url = mysql+mysqlconnector://joj_reader:${DB_PASSWORD}@localhost/joj#g" $CONFIGURATION
-sed -i "s/beaker.session.secret/${SECRET}/g" $CONFIGURATION
+sed -i "s/beaker.session.secret.*/beaker.session.secret = ${SECRET}/g" $CONFIGURATION
 
 source $VENV/bin/activate
 $VENV/bin/python setup.py install
