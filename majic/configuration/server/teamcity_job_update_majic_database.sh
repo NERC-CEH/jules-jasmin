@@ -10,4 +10,5 @@ cd majic
 sed -i "s#sqlalchemy.url.*#sqlalchemy.url = mysql+mysqlconnector://joj_admin:${DB_PASSWORD}@localhost/joj#g" $CONFIGURATION
 sed -i "s/password_template/${CROWD_PASSWORD}/g" $CONFIGURATION
 
+source $VENV/bin/activate
 alembic -c $CONFIGURATION upgrade head
