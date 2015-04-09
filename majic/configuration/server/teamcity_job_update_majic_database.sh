@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 DB_PASSWORD=$1
-CROWD_PASSWORD=$2
-CONFIGURATION=$3
+CONFIGURATION=$2
 
 MAJIC_SOURCE_PATH="/var/local/majic/jules-jasmin"
 VENV="/var/local/majic/virtual_env"
