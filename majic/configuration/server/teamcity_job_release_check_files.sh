@@ -7,6 +7,13 @@ then
    exit 1
 fi
 
+diff -w -c /etc/httpd/conf.d/z_majic_ws_runner.conf majic/configuration/apache/z_majic_ws_runner.conf
+if [ $? -ne 0 ]
+then
+   echo "z_majic_ws_runner.conf files differ (NB Webservice)"
+   exit 1
+fi
+
 diff -w -c /etc/cron.d/job_status_updater majic/configuration/server/job_status_updater
 if [ $? -ne 0 ]
 then
