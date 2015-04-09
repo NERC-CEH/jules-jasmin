@@ -4,7 +4,12 @@ PRODUCTION_FILE=/var/local/majic/jules-jasmin/majic/production.ini
 BACKUP_DIR=/var/local/majic_backups
 
 USERNAME='joj_admin'
-PASSWORD=`grep sqlalchemy.url $PRODUCTION_FILE | sed 's/.*://g' | sed 's/@localhost.*//g'`
+if [ -n "$1" ]
+then
+    PASSWORD=$1
+else
+    PASSWORD=`grep sqlalchemy.url $PRODUCTION_FILE | sed 's/.*://g' | sed 's/@localhost.*//g'`
+fi
 DATE=`date +%Y_%m_%d_%H_%M`
 
 dump_filename="$BACKUP_DIR/joj_database_$DATE.bck"
