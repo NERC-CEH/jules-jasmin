@@ -15,6 +15,7 @@ EXITCODE=$?
 if [ $EXITCODE -ne 0 ] ; then
   echo "Database backup Failed."
   echo "Database backup Failed. Check the reason why, see file $dump_filename" | mail -s "FAILED: Database backup" majic@ceh.ac.uk
+  exit -1
 else
   echo "Database backup Success."
   echo "Database backup Success. Dump is at $dump_filename" | mail -s "success: database backup" majic@ceh.ac.uk
