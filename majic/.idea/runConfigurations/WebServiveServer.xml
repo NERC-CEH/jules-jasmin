@@ -1,0 +1,24 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="WebServiveServer" type="PythonConfigurationType" factoryName="Python">
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="PYTHONIOENCODING" value="UTF-8" />
+      <env name="PYCHARM_HOSTED" value="1" />
+      <env name="PYTHONUNBUFFERED" value="1" />
+    </envs>
+    <option name="SDK_HOME" value="$USER_HOME$/majic_ws_venv/bin/python2.7" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../majic_web_service" />
+    <option name="IS_MODULE_SDK" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="false" />
+    <option name="ADD_SOURCE_ROOTS" value="false" />
+    <module name="majic" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+    <option name="SCRIPT_NAME" value="$USER_HOME$/projectenv/bin/paster" />
+    <option name="PARAMETERS" value="serve --reload $PROJECT_DIR$/../majic_web_service/development.ini" />
+    <option name="SHOW_COMMAND_LINE" value="true" />
+    <RunnerSettings RunnerId="PythonRunner" />
+    <ConfigurationWrapper RunnerId="PythonRunner" />
+    <method />
+  </configuration>
+</component>
