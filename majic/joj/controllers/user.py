@@ -208,13 +208,22 @@ class UserController(BaseController):
                                        prefix_error=False,
                                        auto_error_formatter=BaseController.error_formatter)
             else:
+                if c.form_result.get('is_admin'):
+                    access_level = constants.USER_ACCESS_LEVEL_ADMIN
+                else:
+                    if "@" in c.user_to_edit.username:
+                        access_level = constants.USER_ACCESS_LEVEL_EXTERNAL
+                    else:
+                        access_level = constants.USER_ACCESS_LEVEL_CEH
+
                 # By default a user will be an external user
                 self._user_service.update(c.form_result.get('first_name'),
                                           c.form_result.get('last_name'),
                                           user_email,
-                                          "Admin" if c.form_result.get('is_admin') else "CEH",
+                                          access_level,
                                           c.form_result.get('user_id'),
-                                          c.form_result.get('storage_quota'))
+                                          c.form_result.get('storage_quota'),
+                                          c.form_result.get('workbench_username'))
 
                 return redirect(url(controller="user"))
 

@@ -40,7 +40,15 @@ class UserService(DatabaseService):
         self._email_service = email_service
         self._crowd_client_factory = crowd_client_factory
 
-    def create_in_session(self, session, username, first_name, last_name, email, access_level, institution=""):
+    def create_in_session(self,
+                          session,
+                          username,
+                          first_name,
+                          last_name,
+                          email,
+                          access_level,
+                          institution="",
+                          workbench_username=None):
         """
         Creates a user within a session
 
@@ -51,6 +59,7 @@ class UserService(DatabaseService):
         :param email: User's email address
         :param access_level: Set to 'Admin' for administrative functions
         :param institution: users institution may be blank
+        :param workbench_username: username within the workbench may be none
         :return: nothing
         """
 
@@ -62,6 +71,7 @@ class UserService(DatabaseService):
         user.first_name = first_name
         user.last_name = last_name
         user.institution = institution
+        user.workbench_username = workbench_username
         if user.access_level == constants.USER_ACCESS_LEVEL_ADMIN:
             user.storage_quota_in_gb = config['storage_quota_admin_GB']
         else:
@@ -69,7 +79,7 @@ class UserService(DatabaseService):
         session.add(user)
         return user
 
-    def create(self, username, first_name, last_name, email, access_level, institution=""):
+    def create(self, username, first_name, last_name, email, access_level, institution="", workbench_username=None):
         """
         Creates a user
 
@@ -79,11 +89,20 @@ class UserService(DatabaseService):
         :param email: User's email address
         :param access_level: Set to 'Admin' for administrative functions
         :param institution: users institution may be blank
+        :param workbench_username: username within the workbench may be none
         :return: nothing
         """
 
         with self.transaction_scope() as session:
-            self.create_in_session(session, username, first_name, last_name, email, access_level, institution)
+            self.create_in_session(
+                session,
+                username,
+                first_name,
+                last_name,
+                email,
+                access_level,
+                institution,
+                workbench_username=workbench_username)
 
     def get_user_by_username(self, username):
         """
@@ -151,7 +170,7 @@ class UserService(DatabaseService):
                 .order_by(User.email)\
                 .all()
 
-    def update(self, first_name, last_name, email, access_level, user_id, storage_quota):
+    def update(self, first_name, last_name, email, access_level, user_id, storage_quota, workbench_username):
         """ Updates the user specified by the ID passed in
 
             :param first_name: New friendly name for the user
@@ -160,6 +179,7 @@ class UserService(DatabaseService):
             :param access_level: New access level
             :param user_id: ID of the user to update
             :param storage_quota: the new storage quota for the user
+            :param workbench_username: the username in the workbench
         """
         with self.transaction_scope() as session:
 
@@ -171,6 +191,7 @@ class UserService(DatabaseService):
             user.email = email
             user.access_level = access_level
             user.storage_quota_in_gb = storage_quota
+            user.workbench_username = workbench_username
 
             session.add(user)
 

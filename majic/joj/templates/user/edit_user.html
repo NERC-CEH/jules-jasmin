@@ -54,6 +54,14 @@
                 <input type="checkbox" name="is_admin" id="is_admin" class="checkbox" py:attrs="{ 'checked' : 'true' } if c.user_to_edit.access_level == 'Admin' else {}" />
             </div>
         </div>
+        <div class="control-group">
+            <label for="workbench_username" class="control-label">
+                Workbench username
+            </label>
+            <div class="controls">
+                <input id="workbench_username" name="workbench_username" type="text" value="${c.user_to_edit.workbench_username}"/>
+            </div>
+        </div>
             <input type="hidden" name="user_id" value="${c.user_to_edit.id}" />
         <div class="controls">
             <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />

@@ -11,13 +11,14 @@ from unittest import TestCase
 import datetime
 import sys
 
-from hamcrest import assert_that, is_
+from hamcrest import assert_that, is_, contains_string, is_not, any_of, not_none
 from mock import Mock
 import os
 import pylons
 from pylons.i18n.translation import _get_translator
 from paste.deploy import loadapp
 from pylons import url
+import re
 from routes.util import URLGenerator
 from sqlalchemy import or_
 from webtest import TestApp
@@ -59,18 +60,29 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         TestCase.__init__(self, *args, **kwargs)
 
-    def login(self, username="test", access_level=constants.USER_ACCESS_LEVEL_EXTERNAL):
+    def login(self,
+              username="test",
+              access_level=constants.USER_ACCESS_LEVEL_EXTERNAL,
+              workbench_username=None):
         """
         Setup the request as if the user has already logged in as a non admin user
 
-        :param username the username for the user to log in, stored in self.login_username, default "test"
+        :param username: the username for the user to log in, stored in self.login_username, default "test"
+        :param access_level: the access level of the user
+        :param workbench_username: the workbench username for this user
         :return the details for the logged in user
         """
         self.login_username = username
         user_service = UserService()
         user = user_service.get_user_by_username(self.login_username)
         if user is None:
-            user_service.create(self.login_username, 'test', 'testerson', 'test@ceh.ac.uk', access_level)
+            user_service.create(
+                self.login_username,
+                'test',
+                'testerson',
+                'test@ceh.ac.uk',
+                access_level,
+                workbench_username=workbench_username)
             user = user_service.get_user_by_username(self.login_username)
 
         self.app.extra_environ['REMOTE_USER'] = str(user.username)
@@ -434,3 +446,15 @@ class TestController(TestCase):
     def _add_model_run_being_created(self, user):
         model_run_service = ModelRunService()
         model_run_service.update_model_run(user, "test", constants.DEFAULT_SCIENCE_CONFIGURATION)
+
+    def assert_input_has_correct_label_and_value(self, element_id, label, response, value):
+        assert_that(response.normal_body, contains_string(label))
+        workbench_input = re.search('<input id="{}"[^>]*>'.format(element_id), response.normal_body)
+        assert_that(workbench_input, not_none, "workbench username input")
+        if value is None or value is "":
+            assert_that(workbench_input.group(0), any_of(
+                contains_string('value=""'.format(value)),
+                is_not(contains_string('value="'))
+                ))
+        else:
+            assert_that(workbench_input.group(0), contains_string('value="{}"'.format(value)))
