@@ -32,9 +32,9 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(constants.DB_STRING_SIZE))
+    username = Column(String(constants.DB_LONG_STRING_SIZE))
     email = Column(String(constants.DB_LONG_STRING_SIZE))
-    name = Column(String(constants.DB_STRING_SIZE))
+    name = Column(String(2 * constants.DB_STRING_SIZE))
     access_level = Column(String(constants.DB_STRING_SIZE))
     first_name = Column(String(constants.DB_STRING_SIZE))
     last_name = Column(String(constants.DB_STRING_SIZE))

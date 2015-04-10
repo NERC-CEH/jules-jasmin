@@ -151,3 +151,16 @@ class TestAdminUsersEdit(TestController):
 
         assert_that(response.status_code, is_(302), "redirect after successful post")
         assert_that(user.workbench_username, is_(expected_name), "workbench username")
+
+    def test_GIVEN_post_workbench_username_is_too_long_WHEN_update_THEN_error(self):
+        expected_name = "x" * (constants.DB_STRING_SIZE + 1)
+        self.login_setup_params(workbench_username=expected_name)
+
+        response = self.app.post(
+            url=url(controller='user', action='edit', id=self.user.id),
+            params=self.params,
+            expect_errors=True
+        )
+
+        assert_that(response.status_code, is_(200), "back to the error page no redirect")
+        assert_that(response.normal_body, contains_string("Enter a value not more than"), "error message in page")

@@ -17,8 +17,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import formencode
-
-__author__ = 'Chirag Mistry (Tessella)'
+from joj.utils import constants
 
 
 class UpdateUserForm(formencode.Schema):
@@ -28,11 +27,12 @@ class UpdateUserForm(formencode.Schema):
     allow_extra_fields = True
     filter_extra_fields = False
 
-    first_name = formencode.validators.String(not_empty=True, max=50)
-    last_name = formencode.validators.String(not_empty=True, max=50)
-    email = formencode.validators.Email(not_empty=True, max=255)
+    first_name = formencode.validators.String(not_empty=True, max=constants.DB_STRING_SIZE)
+    last_name = formencode.validators.String(not_empty=True, max=constants.DB_STRING_SIZE)
+    email = formencode.validators.Email(not_empty=True, max=constants.DB_LONG_STRING_SIZE)
     is_admin = formencode.validators.Bool()
     storage_quota = formencode.validators.Int(not_empty=True, min=1)
+    workbench_username = formencode.validators.String(not_empty=False, max=constants.DB_STRING_SIZE)
 
 
 class CreateUserForm(UpdateUserForm):
