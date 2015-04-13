@@ -109,7 +109,7 @@ class UserController(BaseController):
         """Create a new user
         """
 
-        if not self.current_user.access_level == 'Admin':
+        if not self.current_user.access_level == constants.USER_ACCESS_LEVEL_ADMIN:
             return render('not_found.html')
 
         if not request.POST:
@@ -216,14 +216,14 @@ class UserController(BaseController):
                     else:
                         access_level = constants.USER_ACCESS_LEVEL_CEH
 
-                # By default a user will be an external user
-                self._user_service.update(c.form_result.get('first_name'),
+                self._user_service.update(c.form_result.get('user_id'),
+                                          c.form_result.get('first_name'),
                                           c.form_result.get('last_name'),
                                           user_email,
+                                          c.form_result.get('workbench_username'),
                                           access_level,
-                                          c.form_result.get('user_id'),
-                                          c.form_result.get('storage_quota'),
-                                          c.form_result.get('workbench_username'))
+                                          c.form_result.get('storage_quota')
+                                          )
 
                 return redirect(url(controller="user"))
 

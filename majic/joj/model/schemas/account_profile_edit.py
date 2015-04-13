@@ -16,25 +16,19 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-import formencode
-from joj.model.schemas.account_profile_edit import AccountProfileEdit
+
+from joj.utils import constants
+from formencode import Schema, validators
 
 
-class UpdateUserForm(AccountProfileEdit):
+class AccountProfileEdit(Schema):
     """
-    Schema used to validate update users form
+    Schema for editing a profile
     """
-    allow_extra_fields = True
-    filter_extra_fields = False
-
-    is_admin = formencode.validators.Bool()
-    storage_quota = formencode.validators.Int(not_empty=True, min=1)
-
-
-class CreateUserForm(UpdateUserForm):
-    """Used to validate data from the Create New User page"""
 
     allow_extra_fields = False
     filter_extra_fields = True
-
-    user_name = formencode.validators.String(not_empty=True)
+    first_name = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    last_name = validators.String(not_empty=True, max=constants.DB_STRING_SIZE, strip=True)
+    email = validators.Email(not_empty=True, max=constants.DB_LONG_STRING_SIZE)
+    workbench_username = validators.String(not_empty=False, max=constants.DB_STRING_SIZE, strip=True)

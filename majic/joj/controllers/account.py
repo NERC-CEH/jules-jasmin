@@ -21,22 +21,22 @@ import formencode
 
 from pylons import request, tmpl_context as c, url, config
 from pylons.controllers.util import redirect
+from pylons.decorators import validate
 from webob.exc import HTTPFound
 
 from joj.lib.base import BaseController, render
 from repoze.who.api import get_api
 from joj.model.loginform import LoginForm
 from formencode import htmlfill
+from joj.model.schemas.account_profile_edit import AccountProfileEdit
 from joj.services.general import ServiceException
 from joj.services.user import UserService
-
-__author__ = 'Phil Jenkins (Tessella)'
 
 log = logging.getLogger(__name__)
 
 
 class AccountController(BaseController):
-    """Encapsulates operations on a user's ecomaps account"""
+    """Encapsulates operations on a user's account"""
 
     _user_service = None
 
@@ -94,7 +94,7 @@ class AccountController(BaseController):
 
                     # Who is this user?
                     # If we've got enough info, we should see if they are in
-                    # the ecomaps database already
+                    # the database already
 
                     if request.environ['user.username']:
 
@@ -129,7 +129,7 @@ class AccountController(BaseController):
                     # Authentication not successful
                     message = 'Login failed: check your username and/or password.'
         else:
-             # Forcefully forget any existing credentials.
+            # Forcefully forget any existing credentials.
             _, headers = who_api.login({})
 
             request.response_headerlist = headers
@@ -147,9 +147,38 @@ class AccountController(BaseController):
         """Action to log the user out - removing their session"""
 
         who_api = get_api(request.environ)
-        headers = who_api.logout()
+        who_api.logout()
 
         redirect(url(controller='home', action='index'))
+
+    @validate(schema=AccountProfileEdit(), form='profile', post_only=False, on_get=False, prefix_error=False,
+              auto_error_formatter=BaseController.error_formatter)
+    def profile(self):
+        """
+        Deal with a logged in users profile
+        :return: page to render
+        """
+
+        c.user_to_edit = self.current_user
+        if request.POST:
+            self._user_service.update(
+                self.current_user.id,
+                self.form_result['first_name'],
+                self.form_result['last_name'],
+                self.form_result['email'],
+                self.form_result['workbench_username']
+            )
+            return redirect(url(controller='home', action='index'))
+        else:
+            values = c.user_to_edit.__dict__
+            errors = {}
+
+        # render the form if there are errors on Post or if this is a get
+        return htmlfill.render(
+            render('account/profile.html'),
+            defaults=values,
+            errors=errors,
+            auto_error_formatter=BaseController.error_formatter)
 
 
 def _custom_formatter(error):

@@ -36,8 +36,15 @@ class BaseController(WSGIController):
             Params:
                 user_service: User service to use within the controller
         """
+
+        # user service for controller
         self._user_service = user_service
+
+        # currently logged in user
         self.current_user = None
+
+        # form result used by the validation decorator to add results to
+        self.form_result = None
 
     def __call__(self, environ, start_response):
         """Invoke the Controller"""
@@ -51,8 +58,8 @@ class BaseController(WSGIController):
             if self.current_user:
                 c.admin_user = self.current_user.is_admin()
             else:
-            # It's OK to allow access to the home URL with no user logged in because the home controller
-            # will sort out what page to show
+                # It's OK to allow access to the home URL with no user logged in because the home controller
+                # will sort out what page to show
                 if not is_responsible_for_own_user_authentication(environ):
                     raise httpexceptions.HTTPUnauthorized()
 

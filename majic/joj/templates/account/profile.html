@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:py="http://genshi.edgewall.org/">
+<xi:include href="../layout.html" />
+<head>
+    <title>Your Profile</title>
+    <link rel="stylesheet" type="text/css" href="/layout/joj.css"/>
+</head>
+<body id="profile">
+    <h1>Your Profile</h1>
+
+    <form class="form-horizontal" method="POST">
+        <div class="control-group" title="Your login name can not be changed">
+            <label class="control-label">
+                Login Name
+            </label>
+            <div class="controls">
+                <span class="uneditable-input">
+                    ${c.user_to_edit.username}
+                </span>
+             </div>
+        </div>
+        <div class="control-group">
+            <label for="first_name" class="control-label">First name</label>
+            <div class="controls">
+               <input id="first_name" name="first_name" type="text" value="$"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="last_name" class="control-label">Last name</label>
+            <div class="controls">
+               <input id="last_name" name="last_name" type="text" value=""/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="email" class="control-label">Email</label>
+            <div class="controls">
+                <input type="text" name="email" id="email" value="" />
+            </div>
+        </div>
+        <div class="control-group" title="Your storage quota may only be changed by an admin">
+            <label class="control-label">
+                Storage Quota (GB)
+            </label>
+            <div class="controls">
+                <span class="uneditable-input">
+                    ${c.user_to_edit.storage_quota_in_gb}
+                </span>
+             </div>
+        </div>
+        <div class="control-group">
+            <label for="workbench_username" class="control-label">
+                Workbench username
+            </label>
+            <div class="controls">
+                <input id="workbench_username" name="workbench_username" type="text" value="$"/>
+            </div>
+        </div>
+        <div class="controls">
+            <input type="submit" class="btn btn-primary btn-large pull-right control-group" value="Update" />
+        </div>
+    </form>
+</body>
+</html>

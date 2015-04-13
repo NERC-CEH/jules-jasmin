@@ -209,3 +209,12 @@ def next_first_of_month(datetime):
     month = relativedelta(months=1)
     next_month = datetime + month
     return dt.datetime(next_month.year, next_month.month, 1)
+
+
+def is_none_or_empty(a_string):
+    """
+    Return whether a string is none or empty
+    :param a_string: the string to test
+    :return: true is a string is None or ""
+    """
+    return a_string is None or a_string == ""

@@ -28,6 +28,7 @@ from joj.utils import constants
 import uuid
 from joj.services.email_service import EmailService
 from joj.utils import email_messages
+from joj.utils.utils import is_none_or_empty
 
 log = logging.getLogger(__name__)
 
@@ -170,16 +171,16 @@ class UserService(DatabaseService):
                 .order_by(User.email)\
                 .all()
 
-    def update(self, first_name, last_name, email, access_level, user_id, storage_quota, workbench_username):
+    def update(self, user_id, first_name, last_name, email, workbench_username, access_level=None, storage_quota=None):
         """ Updates the user specified by the ID passed in
 
+            :param user_id: ID of the user to update
             :param first_name: New friendly name for the user
             :param last_name: User's surname
             :param email: New email address
-            :param access_level: New access level
-            :param user_id: ID of the user to update
-            :param storage_quota: the new storage quota for the user
             :param workbench_username: the username in the workbench
+            :param access_level: New access level default not updated
+            :param storage_quota: the new storage quota for the user default not updated
         """
         with self.transaction_scope() as session:
 
@@ -189,9 +190,15 @@ class UserService(DatabaseService):
             user.last_name = last_name
             user.name = " ".join([first_name, last_name])
             user.email = email
-            user.access_level = access_level
-            user.storage_quota_in_gb = storage_quota
-            user.workbench_username = workbench_username
+            if is_none_or_empty(workbench_username):
+                user.workbench_username = None
+            else:
+                user.workbench_username = workbench_username
+
+            if access_level is not None:
+                user.access_level = access_level
+            if storage_quota is not None:
+                user.storage_quota_in_gb = storage_quota
 
             session.add(user)
 

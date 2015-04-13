@@ -449,8 +449,8 @@ class TestController(TestCase):
 
     def assert_input_has_correct_label_and_value(self, element_id, label, response, value):
         assert_that(response.normal_body, contains_string(label))
-        workbench_input = re.search('<input id="{}"[^>]*>'.format(element_id), response.normal_body)
-        assert_that(workbench_input, not_none, "workbench username input")
+        workbench_input = re.search('<input[^>]* id="{}"[^>]*>'.format(element_id), response.normal_body)
+        assert_that(workbench_input, not_none(), "input file exists with id of {}".format(element_id))
         if value is None or value is "":
             assert_that(workbench_input.group(0), any_of(
                 contains_string('value=""'.format(value)),
