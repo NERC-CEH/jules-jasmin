@@ -29,6 +29,9 @@
                     <li>
                         <a id="nav-about" href="${h.url(controller='home', action='about')}">About</a>
                     </li>
+                    <li>
+                        <a id="nav-profile" href="${h.url(controller='account', action='profile')}">Profile</a>
+                    </li>
                     <py:if test="c.admin_user">
                         <li class="dropdown">
                             <a id="nav-admin" data-toggle="dropdown" class="dropdown-toggle">
