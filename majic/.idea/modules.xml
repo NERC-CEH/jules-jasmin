@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../groupworkspace_sync/.idea/groupworkspace_sync.iml" filepath="$PROJECT_DIR$/../groupworkspace_sync/.idea/groupworkspace_sync.iml" />
       <module fileurl="file://$PROJECT_DIR$/../job_runner/.idea/job_runner.iml" filepath="$PROJECT_DIR$/../job_runner/.idea/job_runner.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/majic.iml" filepath="$PROJECT_DIR$/.idea/majic.iml" />
       <module fileurl="file://$PROJECT_DIR$/../majic_web_service/.idea/majic_web_service.iml" filepath="$PROJECT_DIR$/../majic_web_service/.idea/majic_web_service.iml" />
