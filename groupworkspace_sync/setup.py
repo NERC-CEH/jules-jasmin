@@ -43,7 +43,7 @@ setup(
     long_description=read('README'),
     classifiers=[
     ],
-    install_requires=[],
+    install_requires=['requests',],
     tests_require=[
         "PyHamcrest",
         "Mock"

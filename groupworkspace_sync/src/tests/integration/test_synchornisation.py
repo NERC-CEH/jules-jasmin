@@ -17,19 +17,29 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+import unittest
 
-# Majic web service section name
-CONFIG_WS_SECTION = "Majic Webservice"
-CONFIG_URL = "url"
+from hamcrest import *
+from mock import Mock
 
-CONFIG_MAJIC_WS_CERT_PATH = 'majic_web_service_certificate_path'
-CONFIG_MAJIC_WS_USER_CERT_PATH = 'majic_web_service_user_certificate_path'
-CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
+from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
+from tests.test_mother import ConfigMother
+from sync import Sync
 
-# Constants for the names of the dictionary values in the json
-JSON_MODEL_RUNS = 'model_runs'
-JSON_MODEL_RUN_ID = 'model_run_id'
 
-JSON_USER_NAME = 'user_name'
-JSON_IS_PUBLISHED = 'is_published'
-JSON_LAST_STATUS_CHANGE = 'last_status_changed'
+class TestMajicWebservicesClient(unittest.TestCase):
+
+    def test_GIVEN_majic_client_throws_an_exception_WHEN_synch_THEN_error_code_returned(self):
+        error_message = "error_message"
+        config = ConfigMother.incorrect_webservice_configured()
+
+        client = Mock(MajicWebserviceClient)
+        client.get_properties_list = Mock(side_effect=WebserviceClientError(error_message))
+        sync = Sync(config, client)
+
+        result = sync.synchronise()
+
+        assert_that(result, is_not(0), "error code")
+
+if __name__ == '__main__':
+    unittest.main()

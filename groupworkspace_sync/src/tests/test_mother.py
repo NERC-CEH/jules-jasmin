@@ -17,8 +17,10 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import ConfigParser
+import os
 
 from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION
+from sync.utils.config_wrapper import ConfigAccessor
 
 
 class ConfigMother(object):
@@ -27,10 +29,31 @@ class ConfigMother(object):
     """
 
     @staticmethod
-    def incorrect_webservice_configured():
-
+    def raw_test_configuration():
+        """
+        Read the test configuration
+        :return: the test configuration
+        """
         config = ConfigParser.SafeConfigParser()
-        config.add_section(CONFIG_WS_SECTION)
+        dir = os.path.dirname(os.path.realpath(__file__))
+        test_config_file = os.path.join(dir, os.pardir, os.pardir, "test.ini")
+        config.read(test_config_file)
+        return config
+
+    @staticmethod
+    def incorrect_webservice_configured():
+        """
+        :return: the test.ini configuration but with an incorrect web service address in as a ConfigAccessor
+        """
+        config = ConfigMother.raw_test_configuration()
         config.set(CONFIG_WS_SECTION, CONFIG_URL, "https://rubbish")
 
-        return config
+        return ConfigAccessor(config)
+
+    @staticmethod
+    def test_configuration():
+        """
+        load the test configuration file
+        :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
+        """
+        return ConfigAccessor(ConfigMother.raw_test_configuration())

@@ -21,13 +21,13 @@ import unittest
 from hamcrest import *
 
 from src.sync import Sync
-from tests.mother import ConfigMother
+from tests.test_mother import ConfigMother
 
 
 class MyTestCase(unittest.TestCase):
 
     def test_GIVEN_majic_is_down_WHEN_sync_THEN_error_message_returned(self):
-        config = ConfigMother.incorrect_webservice_configured
+        config = ConfigMother.incorrect_webservice_configured()
         sync = Sync(config)
 
         result = sync.synchronise()

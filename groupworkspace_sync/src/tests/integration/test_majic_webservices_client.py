@@ -22,7 +22,7 @@ import unittest
 from hamcrest import *
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
-from tests.mother import ConfigMother
+from tests.test_mother import ConfigMother
 
 
 class TestMajicWebservicesClient(unittest.TestCase):
@@ -33,8 +33,15 @@ class TestMajicWebservicesClient(unittest.TestCase):
 
         assert_that(
             calling(client.get_properties_list),
-            raises(WebserviceClientError, "Can not contact Majic Web Service"))
+            raises(WebserviceClientError, "There is a connection error when contacting the Majic Web Service"))
 
+    def test_GIVEN_majic_is_up_WHEN_get_file_properties_THEN_data_returned(self):
+        config = ConfigMother.test_configuration()
+        client = MajicWebserviceClient(config)
+
+        result = client.get_properties_list()
+
+        assert_that(result, is_not(None))
 
 
 if __name__ == '__main__':
