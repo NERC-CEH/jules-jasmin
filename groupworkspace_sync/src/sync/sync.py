@@ -19,6 +19,7 @@
 import ConfigParser
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient
+from sync.utils.config_wrapper import ConfigAccessor
 
 
 class Sync(object):
@@ -52,5 +53,5 @@ if __name__ == '__main__':
 
     config = ConfigParser.SafeConfigParser()
     config.read('production.ini')
-    sync = Sync(config)
+    sync = Sync(ConfigAccessor(config))
     exit(sync.synchronise())
