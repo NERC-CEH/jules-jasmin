@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License along
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-from hamcrest import assert_that, is_, is_not
+from hamcrest import *
 from joj.services.dataset import DatasetService
 from joj.tests import TestController
 from joj.model import session_scope
@@ -81,3 +81,14 @@ class TestDatasetService(TestController):
         driving_datasets = self.dataset_service.get_driving_datasets(user)
 
         assert_that(len(driving_datasets), is_(n_dd + 1), "Driving dataset count")
+
+    def test_GIVEN_driving_dataset_with_max_less_than_min_THEN_when_view_THEN_max_is_set_at_twice_min(self):
+        # If the range is incorrect then THREDDS refuses to show the data so make sure this never happens
+        user = self.login()
+        self.clean_database()
+        with session_scope() as session:
+            dataset_id = self.create_dataset(session, data_range_from=10, data_range_to=5)
+
+        dataset = self.dataset_service.get_dataset_by_id(dataset_id, user.id)
+
+        assert_that(dataset.data_range_from, less_than(dataset.data_range_to), "Driving dataset data ranges must be in correct order")
