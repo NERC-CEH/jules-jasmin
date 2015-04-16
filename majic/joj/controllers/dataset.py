@@ -17,6 +17,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import logging
+import urllib2
 
 from pylons import response, config
 from pylons.controllers.util import Response, abort
@@ -99,7 +100,12 @@ class DatasetController(BaseController):
         redirect_url = "%s?%s" % (ds.wms_url.split('?')[0], request.query_string)
 
         log.debug("Redirecting to %s" % redirect_url)
-        return wmc_util.create_request_and_open_url(redirect_url, external=False).read()
+        try:
+            return wmc_util.create_request_and_open_url(redirect_url, external=False).read()
+        except urllib2.HTTPError, e:
+            log.exception("exception occurred while access {}".format(redirect_url))
+            log.exception("Page read {}".format(e.fp.read()))
+            raise e
 
     def base(self):
         """
