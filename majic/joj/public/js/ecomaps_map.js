@@ -379,6 +379,7 @@ var EcomapsMap = (function() {
             }).fail(function() {
                 setLoadingState(false);
                 hidePanelLoading();
+                datasetLink.removeClass("active");
             });
         }
         // All done
