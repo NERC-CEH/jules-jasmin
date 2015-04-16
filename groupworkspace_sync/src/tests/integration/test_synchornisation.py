@@ -23,13 +23,14 @@ from hamcrest import *
 from mock import Mock
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
+from sync.utils.constants import JSON_MODEL_RUNS
 from tests.test_mother import ConfigMother
-from sync import Sync
+from sync.sync import Sync
 
 
 class TestMajicWebservicesClient(unittest.TestCase):
 
-    def test_GIVEN_majic_client_throws_an_exception_WHEN_synch_THEN_error_code_returned(self):
+    def test_GIVEN_majic_client_throws_a_known_exception_WHEN_synch_THEN_error_code_returned(self):
         error_message = "error_message"
         config = ConfigMother.incorrect_webservice_configured()
 
@@ -40,6 +41,30 @@ class TestMajicWebservicesClient(unittest.TestCase):
         result = sync.synchronise()
 
         assert_that(result, is_not(0), "error code")
+
+    def test_GIVEN_majic_client_throws_an_unknown_exception_WHEN_synch_THEN_error_code_returned(self):
+        error_message = "error_message"
+        config = ConfigMother.incorrect_webservice_configured()
+
+        client = Mock(MajicWebserviceClient)
+        client.get_properties_list = Mock(side_effect=Exception(error_message))
+        sync = Sync(config, client)
+
+        result = sync.synchronise()
+
+        assert_that(result, is_not(0), "error code")
+
+#    def test_GIVEN_majic_client_return_empty_list_and_there_are_no_files_WHEN_sync_THEN_nothing_happens_zero_returned(self):
+#        config = ConfigMother.incorrect_webservice_configured()
+
+#        client = Mock(MajicWebserviceClient)
+#        client.get_properties_list = Mock(return_value={JSON_MODEL_RUNS: []})
+#        file_update_decider = Mock(FileUpdator)
+#        sync = Sync(config, client)
+
+#        result = sync.synchronise()
+
+#        assert_that(result, is_(0), "error code")
 
 if __name__ == '__main__':
     unittest.main()

@@ -20,7 +20,7 @@ import ConfigParser
 
 from hamcrest import *
 import unittest
-from sync.utils.config_wrapper import ConfigAccessor
+from sync.utils.config_accessor import ConfigAccessor
 
 
 class TestConfigAccessor(unittest.TestCase):

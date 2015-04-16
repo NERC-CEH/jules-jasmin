@@ -22,7 +22,7 @@ from requests.packages.urllib3 import Timeout
 from requests.exceptions import RequestException
 from src.sync.common_exceptions import UserPrintableError
 from src.sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
-    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS
+    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL
 
 log = logging.getLogger(__name__)
 
@@ -60,10 +60,11 @@ class MajicWebserviceClient(object):
     def get_properties_list(self):
         """
         Get the files and their properties from the web service
+        Returns a dictionary with the model_runs element which is a list of dictionaries for the runs
         :return: the files and their properties
         """
         properties = self._get_securely(self._config.get(CONFIG_URL))
-        return properties[JSON_MODEL_RUNS]
+        return properties
 
     def _get_securely(self, url):
         """

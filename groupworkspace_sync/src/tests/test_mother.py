@@ -20,7 +20,7 @@ import ConfigParser
 import os
 
 from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION
-from sync.utils.config_wrapper import ConfigAccessor
+from sync.utils.config_accessor import ConfigAccessor
 
 
 class ConfigMother(object):

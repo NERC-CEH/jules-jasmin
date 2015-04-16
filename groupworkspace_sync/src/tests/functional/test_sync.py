@@ -20,7 +20,7 @@ import unittest
 
 from hamcrest import *
 
-from src.sync import Sync
+from sync.sync import Sync
 from tests.test_mother import ConfigMother
 
 

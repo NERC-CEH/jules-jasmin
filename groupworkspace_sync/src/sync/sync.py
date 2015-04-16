@@ -17,9 +17,12 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import ConfigParser
+import logging
 
-from src.sync.clients.majic_web_service_client import MajicWebserviceClient
-from sync.utils.config_wrapper import ConfigAccessor
+from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
+from utils.config_accessor import ConfigAccessor
+
+log = logging.getLogger(__name__)
 
 
 class Sync(object):
@@ -47,7 +50,16 @@ class Sync(object):
         Synchronise the files returned by the web service with those on the disc
         :return: error code to exit with
         """
-        pass
+        try:
+            self._majic_webservice_client.get_properties_list()
+            return 0
+        except WebserviceClientError as ex:
+            log.error(str(ex))
+            return 1
+        except Exception:
+            log.exception("Unknown error in synchronisation")
+            log.error("An unknown error occurred so files are not synced")
+            return 2
 
 if __name__ == '__main__':
 
