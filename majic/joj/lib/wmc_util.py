@@ -121,7 +121,8 @@ def GetWebMapCapabilities(endpoint):
         filehandle = openURL(req)
         return filehandle.read()
     except urllib2.HTTPError, e:            
-        log.exception("exception occurred")
+        log.exception("exception occurred while access {}".format(urlstring))
+        log.exception("Page read {}".format(e.fp.read()))
         if e.code == 401:
             log.info ('401 unauthorized error in Majic')
             return abort(401) #triggers ndg security framework

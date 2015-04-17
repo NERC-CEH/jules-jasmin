@@ -74,11 +74,16 @@ class DatasetService(DatabaseService):
         """
 
         with self.readonly_scope() as session:
-            return session.query(Dataset) \
+            dataset = session.query(Dataset) \
                 .options(joinedload(Dataset.dataset_type)) \
                 .filter(Dataset.id == dataset_id,
                         or_(Dataset.viewable_by_user_id == user_id,
                             Dataset.viewable_by_user_id == None)).one()
+        if dataset.data_range_to < dataset.data_range_from:
+            tmp = dataset.data_range_from
+            dataset.data_range_from = dataset.data_range_to
+            dataset.data_range_to = tmp
+        return dataset
 
     def get_all_datasets(self):
         """

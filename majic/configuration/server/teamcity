@@ -2,6 +2,10 @@
 # /etc/init.d/teamcity
 #
 # script for centos service to start team city and its build agent
+# chkconfig: 5 70 30
+# processname: teamcity
+# config: /var/TeamCity/bin/config
+# Source function library.
 
 # Carry out specific functions when asked to by the system
 case "$1" in

@@ -207,7 +207,9 @@ class TestController(TestCase):
             self,
             session,
             jules_params=DrivingDatasetJulesParams(dataperiod=3600, var_interps=8 * ["i"]),
-            is_restricted_to_admins=False):
+            is_restricted_to_admins=False,
+            data_range_from = 10,
+            data_range_to = 5):
         """
         Create a driving dataset
         :param session: session to use
@@ -325,6 +327,22 @@ class TestController(TestCase):
                                                constants.JULES_PARAM_SOIL_PROPS_FILE, val)
             session.add(driving2)
             session.commit()
+
+    def create_dataset(self, session, data_range_from=40, data_range_to=1000):
+        """
+        Create a standard dataset
+        :param session: session to sue to create the dataset
+        :param data_range_from: data range from
+        :param data_range_to: data range to
+        :return:
+        """
+
+        ds = Dataset()
+        ds.data_range_from = data_range_from
+        ds.data_range_to = data_range_to
+        session.add(ds)
+        session.flush()
+        return ds.id
 
     def assert_model_run_status_and_return(self, model_run_id, status):
         """

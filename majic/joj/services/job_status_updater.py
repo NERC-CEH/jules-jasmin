@@ -357,7 +357,7 @@ class JobStatusUpdaterService(DatabaseService):
             dataset.viewable_by_user_id = model_run.user.id
             dataset.wms_url = "{url}?{query}".format(
                 url=self._dap_client_factory.get_full_url_for_file(filename, service='wms', config=self._config),
-                query="?service=WMS&version=1.3.0&request=GetCapabilities")
+                query="service=WMS&version=1.3.0&request=GetCapabilities")
             dataset.netcdf_url = netcdf_url
             dataset.data_range_from = data_range_from
             dataset.data_range_to = data_range_to
