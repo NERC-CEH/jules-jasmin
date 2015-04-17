@@ -19,7 +19,7 @@
 import ConfigParser
 import os
 
-from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION
+from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION
 from sync.utils.config_accessor import ConfigAccessor
 
 
@@ -57,3 +57,14 @@ class ConfigMother(object):
         :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
         """
         return ConfigAccessor(ConfigMother.raw_test_configuration())
+
+    @staticmethod
+    def set_data_path_config(data_path):
+        """
+        load the test configuration file but override the data path
+        :param data_path: data path to set
+        :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
+        """
+        config = ConfigMother.raw_test_configuration()
+        config.set(CONFIG_DATA_SECTION, CONFIG_DATA_PATH, data_path)
+        return ConfigAccessor(config)

@@ -68,7 +68,7 @@ class JobService(object):
         :param model_run_id: the model run id
         :return: the run directory
         """
-        #ensure that the model id is a number so it can not possible contain path elements
+        #  ensure that the model id is a number so it can not possible contain path elements
         model_run_id_dir = str(model_run_id)
         assert(model_run_id_dir.isdigit())
         run_directory = os.path.join(config['run_dir'], 'run%s' % model_run_id_dir)
@@ -84,10 +84,10 @@ class JobService(object):
         if not os.path.exists(file_path):
             return None
         f = open(file_path, 'r')
-        id = f.read()
-        if id.isdigit():
+        bsub_id = f.read()
+        if bsub_id.isdigit():
             log.error("bsub id file for model run is empty. At {}".format(file_path))
-            return int(id)
+            return int(bsub_id)
         else:
             return None
 
@@ -147,7 +147,7 @@ class JobService(object):
         :param run_directory: run directory to create
         :return: nothing
         """
-        #create run directory
+        # create run directory
         if not os.path.exists(run_directory):
             os.mkdir(run_directory)
 
@@ -161,14 +161,14 @@ class JobService(object):
 
         run_directory = self.get_run_dir(model_run_json[JSON_MODEL_RUN_ID])
 
-        #create output dir
+        # create output dir
         self._create_run_dir(run_directory)
         try:
             os.mkdir(os.path.join(run_directory, OUTPUT_DIR))
         except OSError:
             raise ServiceException("Output directory already exists for model run")
 
-        #create softlinks to data
+        # create softlinks to data
         src = os.path.join(config['jules_run_data_dir'])
         os.symlink(src, os.path.join(run_directory, os.path.basename(src)))
         if model_run_json[JSON_LAND_COVER]:
@@ -204,7 +204,7 @@ class JobService(object):
             else:
                 script = os.path.join(script_directory, self._valid_code_version[code_version])
             output = subprocess.check_output([script], stderr=subprocess.STDOUT, cwd=run_directory)
-            #Job <337912> is submitted to default queue <lotus>
+            # Job <337912> is submitted to default queue <lotus>
             match = re.search('Job <(\d*)>', output)
             if match is None:
                 log.error('Problem submitting job, unexpected output. "%s"' % output)

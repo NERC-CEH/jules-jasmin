@@ -26,6 +26,9 @@ CONFIG_MAJIC_WS_CERT_PATH = 'majic_web_service_certificate_path'
 CONFIG_MAJIC_WS_USER_CERT_PATH = 'majic_web_service_user_certificate_path'
 CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
 
+CONFIG_DATA_SECTION = "Data"
+CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised
+
 # Constants for the names of the dictionary values in the json
 JSON_MODEL_RUNS = 'model_runs'
 JSON_MODEL_RUN_ID = 'model_run_id'
