@@ -35,4 +35,5 @@ JSON_MODEL_RUN_ID = 'model_run_id'
 
 JSON_USER_NAME = 'user_name'
 JSON_IS_PUBLISHED = 'is_published'
+JSON_IS_PUBLIC = 'is_public'
 JSON_LAST_STATUS_CHANGE = 'last_status_changed'
