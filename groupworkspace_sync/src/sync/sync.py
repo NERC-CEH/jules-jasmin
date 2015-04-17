@@ -51,7 +51,7 @@ class Sync(object):
         :return: error code to exit with
         """
         try:
-            self._majic_webservice_client.get_properties_list()
+            self._majic_webservice_client.get_properties_list_with_filtered_users()
             return 0
         except WebserviceClientError as ex:
             log.error(str(ex))

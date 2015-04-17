@@ -16,13 +16,16 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+import getpass
 
 import unittest
 
 from hamcrest import *
+from mock import Mock
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
-from tests.test_mother import ConfigMother
+from tests.test_mother import ConfigMother, RunModelPropertiesMother
+from utils.constants import JSON_MODEL_RUNS
 
 
 class TestMajicWebservicesClient(unittest.TestCase):
@@ -42,6 +45,40 @@ class TestMajicWebservicesClient(unittest.TestCase):
         result = client.get_properties_list()
 
         assert_that(result, is_not(None))
+
+    def test_GIVEN_blank_user_in_list_WHEN_get_filtered_THEN_blank_is_replaced_by_default_user(self):
+        nobody_username = "nobody"
+        config = ConfigMother.test_configuration_with_values(nobody_username=nobody_username)
+        client = MajicWebserviceClient(config)
+        client.get_properties_list = Mock(return_value={
+            JSON_MODEL_RUNS: RunModelPropertiesMother.create_model_run_properties([1], owner="")})
+
+        results = client.get_properties_list_with_filtered_users()
+
+        assert_that(results, is_(RunModelPropertiesMother.create_model_run_properties([1], owner=nobody_username)))
+
+    def test_GIVEN_non_existant_user_in_list_WHEN_get_filtered_THEN_user_is_replaced_by_default_user(self):
+        nobody_username = "nobody"
+        config = ConfigMother.test_configuration_with_values(nobody_username=nobody_username)
+        client = MajicWebserviceClient(config)
+        client.get_properties_list = Mock(return_value={
+            JSON_MODEL_RUNS: RunModelPropertiesMother.create_model_run_properties([1], owner="non_existant_user")})
+
+        results = client.get_properties_list_with_filtered_users()
+
+        assert_that(results, is_(RunModelPropertiesMother.create_model_run_properties([1], owner=nobody_username)))
+
+    def test_GIVEN_user_in_list_WHEN_get_filtered_THEN_user_kept(self):
+        expected_user = getpass.getuser()
+        nobody_username = "nobody"
+        config = ConfigMother.test_configuration_with_values(nobody_username=nobody_username)
+        client = MajicWebserviceClient(config)
+        client.get_properties_list = Mock(return_value={
+            JSON_MODEL_RUNS: RunModelPropertiesMother.create_model_run_properties([1], owner=expected_user)})
+
+        results = client.get_properties_list_with_filtered_users()
+
+        assert_that(results, is_(RunModelPropertiesMother.create_model_run_properties([1], owner=expected_user)))
 
 
 if __name__ == '__main__':

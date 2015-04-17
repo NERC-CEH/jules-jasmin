@@ -19,7 +19,8 @@
 import ConfigParser
 import os
 
-from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION
+from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION, \
+    CONFIG_DATA_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC
 from sync.utils.config_accessor import ConfigAccessor
 
 
@@ -59,12 +60,38 @@ class ConfigMother(object):
         return ConfigAccessor(ConfigMother.raw_test_configuration())
 
     @staticmethod
-    def set_data_path_config(data_path):
+    def test_configuration_with_values(data_path=None, nobody_username=None):
         """
         load the test configuration file but override the data path
-        :param data_path: data path to set
+        :param data_path: data path to set, defualt use standard
+        :param nobody_username: name for the nobodyuser, default use standard
         :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
         """
         config = ConfigMother.raw_test_configuration()
-        config.set(CONFIG_DATA_SECTION, CONFIG_DATA_PATH, data_path)
+        if data_path is not None:
+            config.set(CONFIG_DATA_SECTION, CONFIG_DATA_PATH, data_path)
+        if nobody_username is not None:
+            config.set(CONFIG_DATA_SECTION, CONFIG_DATA_NOBODY_USERNAME, nobody_username)
         return ConfigAccessor(config)
+
+
+class RunModelPropertiesMother(object):
+    """
+    Create file
+    """
+
+    @staticmethod
+    def create_model_run_properties(run_ids, owner="model_owner", published=False, public=False):
+        """
+        Create a list of run model properties
+        :param run_ids: list fo ids to use
+        :param owner: the owner for them
+        :param published: whether they are published
+        :param public: true if public
+        :return: list of dictionaries as if it came from the web service
+        """
+        return [{JSON_MODEL_RUN_ID: run_id,
+                 JSON_USER_NAME: owner,
+                 JSON_IS_PUBLISHED: published,
+                 JSON_IS_PUBLIC: public} for run_id in run_ids]
+

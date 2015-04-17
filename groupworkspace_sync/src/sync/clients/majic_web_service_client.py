@@ -17,12 +17,14 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import logging
+import pwd
 import requests
 from requests.packages.urllib3 import Timeout
 from requests.exceptions import RequestException
 from src.sync.common_exceptions import UserPrintableError
 from src.sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
-    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL
+    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS, CONFIG_DATA_NOBODY_USERNAME, JSON_USER_NAME, \
+    CONFIG_DATA_SECTION
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +67,26 @@ class MajicWebserviceClient(object):
         """
         properties = self._get_securely(self._config.get(CONFIG_URL))
         return properties
+
+    def get_properties_list_with_filtered_users(self):
+        """
+        Get the files and their properties from the web service and then filters the users to ensure that
+        the users exist on the current system
+        Returns a dictionary with the model_runs element which is a list of dictionaries for the runs
+        :return: the files and their properties
+        """
+        model_run_properties = self.get_properties_list()[JSON_MODEL_RUNS]
+        for model_run_property in model_run_properties:
+            username = model_run_property[JSON_USER_NAME]
+            nobody_username = self._config.get(CONFIG_DATA_NOBODY_USERNAME, section=CONFIG_DATA_SECTION)
+            if username is None or len(username.strip()) == 0:
+                model_run_property[JSON_USER_NAME] = nobody_username
+            else:
+                try:
+                    pwd.getpwnam(username)
+                except KeyError:
+                    model_run_property[JSON_USER_NAME] = nobody_username
+        return model_run_properties
 
     def _get_securely(self, url):
         """

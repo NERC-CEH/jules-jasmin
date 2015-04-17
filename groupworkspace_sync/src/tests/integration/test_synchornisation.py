@@ -23,7 +23,6 @@ from hamcrest import *
 from mock import Mock
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
-from sync.utils.constants import JSON_MODEL_RUNS
 from tests.test_mother import ConfigMother
 from sync.sync import Sync
 

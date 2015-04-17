@@ -28,6 +28,7 @@ CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
 
 CONFIG_DATA_SECTION = "Data"
 CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised
+CONFIG_DATA_NOBODY_USERNAME = "nobody_username"  # user who owns data for users not in the workbench
 
 # Constants for the names of the dictionary values in the json
 JSON_MODEL_RUNS = 'model_runs'

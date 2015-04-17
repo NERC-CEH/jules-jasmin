@@ -24,7 +24,7 @@ import os
 from sync.file_system_comparer import FileSystemComparer, FileProperties
 from sync.utils.config_accessor import ConfigAccessor
 from sync.utils.constants import JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_IS_PUBLISHED, JSON_USER_NAME, JSON_IS_PUBLIC
-from tests.test_mother import ConfigMother
+from tests.test_mother import ConfigMother, RunModelPropertiesMother
 
 
 def assert_arrays_the_same(directory_list, expected_directory_list, message):
@@ -57,7 +57,7 @@ class TestFileSystemComparer(unittest.TestCase):
 
     def setUp(self):
         self.expected_path = "path"
-        self.config = ConfigMother.set_data_path_config(self.expected_path)
+        self.config = ConfigMother.test_configuration_with_values(self.expected_path)
         self.mock_file_stats = {}
         self.model_owner = "model_owner"
 
@@ -76,7 +76,7 @@ class TestFileSystemComparer(unittest.TestCase):
         runid = 12
         expected_new_dir = "{}/run{}".format(self.expected_path, runid)
         filelist = self.create_filelist_and_mock_file_stats([])
-        model_properties = self.create_model_run_properties([runid])
+        model_properties = RunModelPropertiesMother.create_model_run_properties([runid])
 
         file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.get_file_properties_mock)
 
@@ -87,27 +87,18 @@ class TestFileSystemComparer(unittest.TestCase):
         runids = [100, 12]
         expected_new_dirs = ["{}/run{}".format(self.expected_path, runid) for runid in runids]
         filelist = self.create_filelist_and_mock_file_stats([])
-        model_properties = self.create_model_run_properties(runids)
+        model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
 
         file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.get_file_properties_mock)
 
         assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dirs)
-
-    def create_model_run_properties(self, runids, owner=None, published=False, public=False):
-        owner_to_use = owner
-        if owner is None:
-            owner_to_use = self.model_owner
-        return [{JSON_MODEL_RUN_ID: runid,
-                 JSON_USER_NAME: owner_to_use,
-                 JSON_IS_PUBLISHED: published,
-                 JSON_IS_PUBLIC: public} for runid in runids]
 
     def test_GIVEN_entries_in_file_list_same_as_model_list_WHEN_compare_THEN_no_extra_entires(self):
 
         runids = [100, 12]
         expected_new_dirs = []
         filelist = self.create_filelist_and_mock_file_stats(runids)
-        model_properties = self.create_model_run_properties(runids)
+        model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
 
         file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.get_file_properties_mock)
 
@@ -136,7 +127,7 @@ class TestFileSystemComparer(unittest.TestCase):
 
         runids = [23]
         expected_owner = "different_username"
-        model_properties = self.create_model_run_properties(runids, owner=expected_owner)
+        model_properties = RunModelPropertiesMother.create_model_run_properties(runids, owner=expected_owner)
         filelist = self.create_filelist_and_mock_file_stats(runids)
         expected_changed_dirs = [FileProperties("{}/{}".format(self.expected_path, file), expected_owner, False, False) for file in filelist]
 
@@ -147,7 +138,7 @@ class TestFileSystemComparer(unittest.TestCase):
     def test_GIVEN_existing_file_is_not_published_and_model_is_WHEN_compare_THEN_directory_is_set_for_change(self):
 
         runids = [23]
-        model_properties = self.create_model_run_properties(runids, published=True)
+        model_properties = RunModelPropertiesMother.create_model_run_properties(runids, published=True)
         filelist = self.create_filelist_and_mock_file_stats(runids)
         for mock_file_stat in self.mock_file_stats.values():
             mock_file_stat.is_published = False
@@ -157,10 +148,10 @@ class TestFileSystemComparer(unittest.TestCase):
 
         assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
 
-    def test_GIVEN_existing_file_is_not_publc_and_model_is_WHEN_compare_THEN_directory_is_set_for_change(self):
+    def test_GIVEN_existing_file_is_not_public_and_model_is_WHEN_compare_THEN_directory_is_set_for_change(self):
 
         runids = [23]
-        model_properties = self.create_model_run_properties(runids, public=True)
+        model_properties = RunModelPropertiesMother.create_model_run_properties(runids, public=True)
         filelist = self.create_filelist_and_mock_file_stats(runids)
         for mock_file_stat in self.mock_file_stats.values():
             mock_file_stat.is_published = False
@@ -169,7 +160,6 @@ class TestFileSystemComparer(unittest.TestCase):
         file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.get_file_properties_mock)
 
         assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
-
 
 if __name__ == '__main__':
     unittest.main()
