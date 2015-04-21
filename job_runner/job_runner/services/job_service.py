@@ -208,17 +208,17 @@ class JobService(object):
             match = re.search('Job <(\d*)>', output)
             if match is None:
                 log.error('Problem submitting job, unexpected output. "%s"' % output)
-                raise ServiceException('Problem submitting job, unexpected output.')
+                raise ServiceException('Unexpected output.')
             return match.group(1)
 
         except subprocess.CalledProcessError, ex:
             log.exception('Problem submitting job, unknown error. "%s"' % ex.output)
-            raise ServiceException('Problem submitting job, unknown error.')
+            raise ServiceException('Unknown error.')
         except ServiceException as ex:
             raise ex
         except Exception:
             log.exception('Problem submitting job, unknown exception.')
-            raise ServiceException('Problem submitting job.')
+            raise ServiceException('Unknown exception.')
 
     def _create_namelist_file(self, namelist_file, run_directory):
         """

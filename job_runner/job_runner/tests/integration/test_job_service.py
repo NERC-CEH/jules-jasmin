@@ -97,7 +97,7 @@ class TestJobService(TestController):
 
             local_job_service.submit(self.model_run)
         except ServiceException as ex:
-            assert_that(ex.message, is_("Problem submitting job, unexpected output."), "error message does not contain details")
+            assert_that(ex.message, is_("Unexpected output."), "error message does not contain details")
             return
         self.fail("Should have thrown an exception")
 
@@ -109,7 +109,7 @@ class TestJobService(TestController):
 
             local_job_service.submit(self.model_run)
         except ServiceException as ex:
-            assert_that(ex.message, is_("Problem submitting job."), "error message does not contain details")
+            assert_that(ex.message, is_("Unknown exception."), "error message does not contain details")
             return
         self.fail("Should have thrown an exception")
 
@@ -121,7 +121,7 @@ class TestJobService(TestController):
 
             local_job_service.submit(self.model_run)
         except ServiceException as ex:
-            assert_that(ex.message, is_("Problem submitting job, unknown error."), "error message does not contain details")
+            assert_that(ex.message, is_("Unknown error."), "error message does not contain details")
             return
         self.fail("Should have thrown an exception")
 

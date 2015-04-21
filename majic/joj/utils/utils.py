@@ -18,6 +18,7 @@
 """
 from dateutil.relativedelta import relativedelta
 import datetime as dt
+import re
 
 from joj.utils import constants
 
@@ -218,3 +219,22 @@ def is_none_or_empty(a_string):
     :return: true is a string is None or ""
     """
     return a_string is None or a_string == ""
+
+
+def extract_error_message_from_response(message):
+    """
+    :param message: The error message returned by the job service
+    :return: A refined message that can be displayed to the user.
+    """
+    # Find the content in between the relevant html tags.
+    value = re.search(("<br />(.*)</body>"), message)
+    if value is not None:
+        # Take the first result.
+        result = value.group(1)
+        # Remove the html tags.
+        p = re.compile(r'<.*?>')
+        result_without_html_tags = p.sub('', result)
+        # Return the message, removing any leading/trailing whitespace.
+        return result_without_html_tags.strip()
+    else:
+        return "Unknown error."
