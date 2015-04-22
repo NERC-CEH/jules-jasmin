@@ -35,22 +35,32 @@ def assert_arrays_the_same(directory_list, expected_directory_list, message):
         assert_that(directory_list, contains_inanyorder(*expected_directory_list), message)
 
 
-def assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=None, expected_changed_dirs=[], expected_deleted_dirs=[]):
-    assert_arrays_the_same(file_system_comparer.new_directories, expected_new_dirs, "new directories")
-    assert_arrays_the_same(file_system_comparer.deleted_directories, expected_deleted_dirs, "deleted directories")
-    if expected_changed_dirs is None:
-        assert_that(file_system_comparer.changed_directories, has_length(0), "changed directories")
+def assert_that_file_propeties_are(file_properties, expected_file_properties, message):
+    if expected_file_properties is None:
+        assert_that(file_properties, has_length(0), message)
     else:
-        assert_that(file_system_comparer.changed_directories, has_length(len(expected_changed_dirs)), "changed directories")
-        for directory in file_system_comparer.changed_directories:
+        assert_that(file_properties, has_length(len(expected_file_properties)), message)
+        for directory in file_properties:
             found = False
-            for expected_dir in expected_changed_dirs:
+            for expected_dir in expected_file_properties:
                 if expected_dir.file_path == directory.file_path:
-                    assert_that(directory.owner, is_(expected_dir.owner), "model_owner for {}".format(directory.file_path))
-                    assert_that(directory.is_published, is_(expected_dir.is_published), "is published for {}".format(directory.file_path))
-                    assert_that(directory.is_public, is_(expected_dir.is_public), "is_public for {}".format(directory.file_path))
+                    assert_that(directory.owner, is_(expected_dir.owner),
+                                "model_owner for {}".format(directory.file_path))
+                    assert_that(directory.is_published, is_(expected_dir.is_published),
+                                "is published for {}".format(directory.file_path))
+                    assert_that(directory.is_public, is_(expected_dir.is_public),
+                                "is_public for {}".format(directory.file_path))
                     found = True
-            assert_that(found, is_(True), "Can not find {} in expected list {}".format(directory, expected_changed_dirs))
+            assert_that(found, is_(True),
+                        "Can not find {} in expected list {}".format(directory, expected_file_properties))
+
+
+def assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=None, expected_changed_dirs=[], expected_deleted_dirs=[]):
+    assert_that_file_propeties_are(file_system_comparer.new_directories, expected_new_dirs, "new directories")
+    assert_arrays_the_same(file_system_comparer.deleted_directories, expected_deleted_dirs, "deleted directories")
+
+    assert_that_file_propeties_are(file_system_comparer.changed_directories, expected_changed_dirs,
+                                   "changed directories")
 
 
 class TestFileSystemComparer(unittest.TestCase):
@@ -74,18 +84,22 @@ class TestFileSystemComparer(unittest.TestCase):
     def test_GIVEN_one_extra_entry_on_model_list_WHEN_compare_THEN_extra_entry_is_in_new_dirs_list(self):
 
         runid = 12
-        expected_new_dir = "{}/run{}".format(self.expected_path, runid)
+        expected_new_dir = [FileProperties("{}/run{}".format(self.expected_path, runid), self.model_owner, False, False)]
         filelist = self.create_filelist_and_mock_file_stats([])
         model_properties = RunModelPropertiesMother.create_model_run_properties([runid])
 
         file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.get_file_properties_mock)
 
-        assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=[expected_new_dir, ])
+        assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dir)
 
     def test_GIVEN_two_extra_models_WHEN_compare_THEN_models_appear_on_new_dirs_list(self):
 
         runids = [100, 12]
-        expected_new_dirs = ["{}/run{}".format(self.expected_path, runid) for runid in runids]
+        expected_new_dirs = [FileProperties("{}/run{}".format(
+            self.expected_path, runid),
+            self.model_owner,
+            False,
+            False) for runid in runids]
         filelist = self.create_filelist_and_mock_file_stats([])
         model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
 

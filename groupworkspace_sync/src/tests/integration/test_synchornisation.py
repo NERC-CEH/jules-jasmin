@@ -34,7 +34,7 @@ class TestMajicWebservicesClient(unittest.TestCase):
         config = ConfigMother.incorrect_webservice_configured()
 
         client = Mock(MajicWebserviceClient)
-        client.get_properties_list = Mock(side_effect=WebserviceClientError(error_message))
+        client.get_properties_list_with_filtered_users = Mock(side_effect=WebserviceClientError(error_message))
         sync = Sync(config, client)
 
         result = sync.synchronise()
@@ -46,24 +46,24 @@ class TestMajicWebservicesClient(unittest.TestCase):
         config = ConfigMother.incorrect_webservice_configured()
 
         client = Mock(MajicWebserviceClient)
-        client.get_properties_list = Mock(side_effect=Exception(error_message))
+        client.get_properties_list_with_filtered_users = Mock(side_effect=Exception(error_message))
         sync = Sync(config, client)
 
         result = sync.synchronise()
 
         assert_that(result, is_not(0), "error code")
 
-#    def test_GIVEN_majic_client_return_empty_list_and_there_are_no_files_WHEN_sync_THEN_nothing_happens_zero_returned(self):
-#        config = ConfigMother.incorrect_webservice_configured()
-
-#        client = Mock(MajicWebserviceClient)
-#        client.get_properties_list = Mock(return_value={JSON_MODEL_RUNS: []})
-#        file_update_decider = Mock(FileUpdator)
-#        sync = Sync(config, client)
-
-#        result = sync.synchronise()
-
-#        assert_that(result, is_(0), "error code")
+    # def test_GIVEN_majic_client_return_empty_list_and_there_are_no_files_WHEN_sync_THEN_nothing_happens_zero_returned(self):
+    #     config = ConfigMother.incorrect_webservice_configured()
+    #
+    #     client = Mock(MajicWebserviceClient)
+    #     client.get_properties_list_with_filtered_users = Mock(return_value=[])
+    #     file_update_decider = Mock(FileUpdator)
+    #     sync = Sync(config, client)
+    #
+    #     result = sync.synchronise()
+    #
+    #     assert_that(result, is_(0), "error code")
 
 if __name__ == '__main__':
     unittest.main()

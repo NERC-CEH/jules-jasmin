@@ -135,7 +135,7 @@ class FileSystemComparer(object):
                 model_property.get(JSON_IS_PUBLIC, False))
 
         for model_run_id in model_run_ids.difference(existing_run_ids):
-            self.new_directories.append(self._create_model_dir(model_run_id))
+            self.new_directories.append(file_properties_for_model_runs[model_run_id])
 
         for model_run_id in existing_run_ids.difference(model_run_ids):
             self.deleted_directories.append(self._create_model_dir(model_run_id))

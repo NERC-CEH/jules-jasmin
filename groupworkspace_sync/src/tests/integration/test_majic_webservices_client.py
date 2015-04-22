@@ -42,7 +42,13 @@ class TestMajicWebservicesClient(unittest.TestCase):
         config = ConfigMother.test_configuration()
         client = MajicWebserviceClient(config)
 
-        result = client.get_properties_list()
+        try:
+            result = client.get_properties_list()
+        except WebserviceClientError as ex:
+            if ex.message.startswith("There is a connection error when contacting the Majic Web Service"):
+                raise self.skipTest("Connection error talking with Majic Web service")
+            else:
+                raise ex
 
         assert_that(result, is_not(None))
 
