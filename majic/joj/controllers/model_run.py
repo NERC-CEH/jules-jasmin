@@ -561,6 +561,14 @@ class ModelRunController(BaseController):
 
             self._model_run_service.set_output_variables_for_model_being_created(output_variable_groups,
                                                                                  self.current_user)
+
+            # Put a limit on the number of output profiles (tick-boxes) that can be submitted.
+            if len(output_variable_groups) > constants.JULES_PARAM_OUTPUT_NPROFILES_MAX:
+                helpers.error_flash("Cannot submit with more than " + str(constants.JULES_PARAM_OUTPUT_NPROFILES_MAX) +
+                                    " output profiles. Please select fewer than " +
+                                    str(constants.JULES_PARAM_OUTPUT_NPROFILES_MAX) + " tick-boxes on this page.")
+                redirect(url(controller='model_run', action='output'))
+
             # Get the action to perform
             self._model_run_controller_helper.check_user_quota(self.current_user)
             try:
