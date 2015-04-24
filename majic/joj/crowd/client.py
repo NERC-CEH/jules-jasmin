@@ -285,7 +285,7 @@ class CrowdClient(object):
             # Fancy verbs (like DELETE) can be dealt with here
             request.get_method = lambda: method
 
-        #if not self.opener_installed:
+        # if not self.opener_installed:
             # If we haven't connected to Crowd yet,
             # make a dummy request in order to save our
             # application credentials
@@ -295,14 +295,14 @@ class CrowdClient(object):
         #        log.error("CROWD CONNECTION ISSUE: %s" % h_ex)
         #        raise CrowdCommunicationExcpetion()
 
-            #urllib2.install_opener(self.opener)
-            #self.opener_installed = True
+            # urllib2.install_opener(self.opener)
+            # self.opener_installed = True
 
         try:
             if self.use_crowd:
                 # We're finally ready to make the request...
 
-                f = self.external_opener.open(request)
+                f = self.external_opener.open(request, timeout=5)
 
                 # 204 is officially "No Content", so we won't have
                 # any JSON to load! This is expected for 'DELETE'
@@ -356,4 +356,4 @@ class CrowdClient(object):
             raise ex
         except Exception as ex:
             log.exception("Failure to get crowd response")
-            raise ex
+            raise CrowdCommunicationExcpetion()
