@@ -20,7 +20,8 @@ import ConfigParser
 import os
 
 from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION, \
-    CONFIG_DATA_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC
+    CONFIG_DATA_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC, \
+    CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, CONFIG_MAJIC_WS_TIMEOUT
 from sync.utils.config_accessor import ConfigAccessor
 
 
@@ -60,11 +61,13 @@ class ConfigMother(object):
         return ConfigAccessor(ConfigMother.raw_test_configuration())
 
     @staticmethod
-    def test_configuration_with_values(data_path=None, nobody_username=None):
+    def test_configuration_with_values(data_path=None, nobody_username=None, apache_timeout=None, majic_ws_timeout=None):
         """
         load the test configuration file but override the data path
         :param data_path: data path to set, defualt use standard
         :param nobody_username: name for the nobodyuser, default use standard
+        :param apache_timeout: timeout for contacting apache
+        :param majic_ws_timeout: timeout for contacting majic web service
         :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
         """
         config = ConfigMother.raw_test_configuration()
@@ -72,6 +75,10 @@ class ConfigMother(object):
             config.set(CONFIG_DATA_SECTION, CONFIG_DATA_PATH, data_path)
         if nobody_username is not None:
             config.set(CONFIG_DATA_SECTION, CONFIG_DATA_NOBODY_USERNAME, nobody_username)
+        if apache_timeout is not None:
+            config.set(CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, apache_timeout)
+        if majic_ws_timeout is not None:
+            config.set(CONFIG_WS_SECTION , CONFIG_MAJIC_WS_TIMEOUT, majic_ws_timeout)
         return ConfigAccessor(config)
 
 

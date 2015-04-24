@@ -52,6 +52,15 @@ class TestMajicWebservicesClient(unittest.TestCase):
 
         assert_that(result, is_not(None))
 
+    def test_GIVEN_majic_timesout_WHEN_get_file_properties_THEN_exception_thrown(self):
+        config = ConfigMother.test_configuration_with_values(majic_ws_timeout="0.002")
+        client = MajicWebserviceClient(config)
+
+        assert_that(
+            calling(client.get_properties_list),
+            raises(WebserviceClientError, "Timeout when contacting the Majic Web Service"))
+
+
     def test_GIVEN_blank_user_in_list_WHEN_get_filtered_THEN_blank_is_replaced_by_default_user(self):
         nobody_username = "nobody"
         config = ConfigMother.test_configuration_with_values(nobody_username=nobody_username)

@@ -19,12 +19,11 @@
 import logging
 import pwd
 import requests
-from requests.packages.urllib3 import Timeout
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, Timeout
 from src.sync.common_exceptions import UserPrintableError
 from src.sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
     CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS, CONFIG_DATA_NOBODY_USERNAME, JSON_USER_NAME, \
-    CONFIG_DATA_SECTION
+    CONFIG_DATA_SECTION, CONFIG_MAJIC_WS_TIMEOUT
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +95,7 @@ class MajicWebserviceClient(object):
         :raises WebserviceClientError: if there are connection problems
         """
 
+        timeout_as_string = self._config.get(CONFIG_MAJIC_WS_TIMEOUT)
         verify = self._config.get(CONFIG_MAJIC_WS_CERT_PATH, default=True)
 
         cert = None
@@ -103,12 +103,11 @@ class MajicWebserviceClient(object):
         if cert_path is not None:
             key_path = self._config.get(CONFIG_MAJIC_WS_USER_KEY_PATH)
             cert = (cert_path, key_path)
-
         try:
-            return requests.get(url=url, verify=verify, cert=cert).json()
+            return requests.get(url=url, verify=verify, cert=cert, timeout=float(timeout_as_string)).json()
         except Timeout:
             log.exception("Timeout during post to Majic Web Service, url {}".format(url))
-            raise WebserviceClientError("Can not contact {} (trying {})".format(url))
+            raise WebserviceClientError("Timeout when contacting the Majic Web Service (trying {})".format(url))
         except RequestException:
             log.exception("Connection error on post to Majic Web Service to url {}".format(url))
             raise WebserviceClientError("There is a connection error when contacting the Majic Web Service (trying {})"

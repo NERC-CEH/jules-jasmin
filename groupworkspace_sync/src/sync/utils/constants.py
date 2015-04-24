@@ -16,11 +16,13 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-
+# chunk size in bytes to download a file in
+DOWNLOAD_CHUNK_SIZE_IN_BYTES = 1000000
 
 # Majic web service section name
 CONFIG_WS_SECTION = "Majic Webservice"
 CONFIG_URL = "url"
+CONFIG_MAJIC_WS_TIMEOUT = "timeout"
 
 CONFIG_MAJIC_WS_CERT_PATH = 'majic_web_service_certificate_path'
 CONFIG_MAJIC_WS_USER_CERT_PATH = 'majic_web_service_user_certificate_path'
@@ -29,6 +31,12 @@ CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
 CONFIG_DATA_SECTION = "Data"
 CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised
 CONFIG_DATA_NOBODY_USERNAME = "nobody_username"  # user who owns data for users not in the workbench
+
+CONFIG_APACHE_SECTION = "Apache"
+CONFIG_APACHE_DATA_PATH = "data_path"  # web address of the data runs are stored in apache
+CONFIG_APACHE_PASSWORD = "password"
+CONFIG_APACHE_USERNAME = "username"
+CONFIG_APACHE_TIMEOUT = "timeout"
 
 # Constants for the names of the dictionary values in the json
 JSON_MODEL_RUNS = 'model_runs'
