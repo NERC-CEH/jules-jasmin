@@ -25,7 +25,7 @@ import getpass
 from src.sync.clients.apache_client import ApacheClient, ApacheClientError
 from src.sync.clients.file_system_client import FileSystemClient, FileSystemClientError
 from src.sync.directory_synchroniser import DirectorySynchroniser
-from src.sync.file_system_comparer import FileProperties
+from sync.file_properties import FileProperties
 from src.tests.test_mother import ConfigMother
 
 

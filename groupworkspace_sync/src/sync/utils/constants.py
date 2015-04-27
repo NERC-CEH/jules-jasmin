@@ -45,6 +45,8 @@ CONFIG_APACHE_TIMEOUT = "timeout"
 CONFIG_FILES_SECTION = "Files"
 CONFIG_ROOT_PATH = "root_path"  # root path where all files are synchronised to
 CONFIG_NOBODY_USERNAME = "nobody_username"  # user who owns data for users not in the workbench
+CONFIG_DELETE_SCRIPT_PATH = "delete_dir_script"  # path to delete script
+CONFIG_UPDATE_PERMISSIONS_SCRIPT_PATH = "update_permissions_script"  # path to update permissions script
 
 # Constants for the names of the dictionary values in the json
 JSON_MODEL_RUNS = 'model_runs'

@@ -18,6 +18,7 @@
 """
 import ConfigParser
 import logging
+import os
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
 from utils.config_accessor import ConfigAccessor
@@ -63,7 +64,7 @@ class Synchroniser(object):
 
 if __name__ == '__main__':
 
-    config = ConfigParser.SafeConfigParser()
+    config = ConfigParser.SafeConfigParser({'here': os.curdir})
     config.read('production.ini')
     sync = Synchroniser(ConfigAccessor(config))
     exit(sync.synchronise())

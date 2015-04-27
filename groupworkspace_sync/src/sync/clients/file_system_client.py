@@ -16,9 +16,18 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+import logging
 import os
-from sync.common_exceptions import UserPrintableError
-from sync.utils.constants import CONFIG_ROOT_PATH
+import pwd
+from stat import S_IRGRP, S_IROTH
+import subprocess
+
+from src.sync.common_exceptions import UserPrintableError
+from sync.file_properties import FileProperties
+from src.sync.utils.constants import CONFIG_ROOT_PATH, CONFIG_FILES_SECTION, CONFIG_DELETE_SCRIPT_PATH, \
+    CONFIG_UPDATE_PERMISSIONS_SCRIPT_PATH
+
+log = logging.getLogger(__name__)
 
 
 class FileSystemClientError(UserPrintableError):
@@ -43,6 +52,10 @@ class FileSystemClient(object):
 
     def __init__(self, config):
         self._config = config
+        self._config.set_section(CONFIG_FILES_SECTION)
+        self._filesystem_root_for_app = os.path.realpath(self._config.get(CONFIG_ROOT_PATH))
+        self._del_dir_script = self._config.get(CONFIG_DELETE_SCRIPT_PATH)
+        self._update_permissions_script = self._config.get(CONFIG_UPDATE_PERMISSIONS_SCRIPT_PATH)
 
     def _create_full_path(self, relative_path):
         """
@@ -50,7 +63,11 @@ class FileSystemClient(object):
         :param relative_path: the relative path
         :return: full path
         """
-        return os.path.join(self._config.get(CONFIG_ROOT_PATH), relative_path.file_path)
+        real_full_path = os.path.realpath(os.path.join(self._filesystem_root_for_app, relative_path))
+        if not real_full_path.startswith(self._filesystem_root_for_app):
+            raise AssertionError("Code is trying to access a directory outside root with path '{}'"
+                                 .format(relative_path))
+        return real_full_path
 
     def create_dir(self, relative_directory):
         """
@@ -58,17 +75,17 @@ class FileSystemClient(object):
         :param relative_directory: the relative directory to create
         :return: nothing
         """
-        self._create_full_path(relative_directory)
-        raise NotImplementedError()
-
-    def set_permissions(self, file_property):
-        """
-        Set the permissions for the file property object
-        :param file_property: the file property object
-        :return: nothing
-        """
-        self._create_full_path(file_property)
-        raise NotImplementedError()
+        full_path = self._create_full_path(relative_directory)
+        try:
+            os.makedirs(full_path)
+        except OSError as ex:
+            if ex.errno != 17:
+                # directory exists
+                log.exception("Error creating directory '{}'.".format(full_path))
+                raise FileSystemClientError("Error creating directory.")
+        except Exception:
+            log.exception("Error creating directory '{}'.".format(full_path))
+            raise FileSystemClientError("Error creating directory.")
 
     def create_file(self, relative_file_path):
         """
@@ -77,31 +94,86 @@ class FileSystemClient(object):
         :param relative_file_path: the relative file path
         :return: file handle object, or None if the file already exists
         """
-        self._create_full_path(relative_file_path)
-        raise NotImplementedError()
+        full_path = self._create_full_path(relative_file_path)
+        try:
+            if os.path.exists(full_path):
+                return None
+            return open(full_path, 'w')
+        except Exception:
+            log.exception("Error creating file '{}'.".format(full_path))
+            raise FileSystemClientError("Error creating file.")
 
-    def close_file(self, file_handle):
+    def close_file(self, file_object):
         """
-        Close the file_handle
-        :param file_handle: the file_handle handle to close
+        Close the file_object
+        :param file_object: the file_object handle to close
         :return: nothing
         """
-        file_handle.close()
+        try:
+            file_object.close()
+        except Exception:
+            log.exception("Error closing file object '{}'".format(file_object))
+            raise FileSystemClientError("Error closing file.")
 
-    def close_and_delete_file(self, file):
+    def close_and_delete_file(self, file_object):
         """
-        Delete the file previously opened
-        :param file: the open file object
+        Delete the file_object previously opened
+        :param file_object: the open file_object object
         :return:nothing
         """
-        raise NotImplementedError()
-        self.close_file(file)
-        os.remove(file.name)
+        try:
+            self.close_file(file_object)
+            os.remove(file_object.name)
+        except Exception:
+            log.exception("Error closing and deleting file object '{}'".format(file_object))
+            raise FileSystemClientError("Error closing and deleting file.")
 
-    def delete_directory(self, path):
+    def _run_script_using_sudo(self, action, script_and_var):
+        try:
+            script_and_var.insert(0, "sudo")
+            subprocess.check_output(script_and_var, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as ex:
+            log.exception("Error when {}".format(action))
+            raise FileSystemClientError("Error when {}. Error: {}".format(action, ex.output))
+        except Exception as ex:
+            log.exception("Unknown problem when {}".format(action))
+            raise ex
+
+    def delete_directory(self, relative_path):
         """
         Delete a directory and its contents
-        :param path: the file of the file relative to the filesystem root
+        :param relative_path: the file of the file relative to the filesystem root
         :return: count of deleted directories
         """
-        raise NotImplementedError()
+        script_and_var = [self._del_dir_script, relative_path]
+        action = "deleting directory '{}'".format(relative_path)
+        self._run_script_using_sudo(action, script_and_var)
+
+    def set_permissions(self, file_property):
+        """
+        Set the permissions for the file property object
+        :param file_property: the file property object
+        :return: nothing
+        """
+        script_and_var = [
+            self._update_permissions_script,
+            file_property.file_path,
+            file_property.owner,
+            str(file_property.is_published),
+            str(file_property.is_public)]
+        action = "setting permissions on directory '{}'".format(file_property.file_path)
+        self._run_script_using_sudo(action, script_and_var)
+
+    def get_file_properties(self, relative_path):
+        """
+        Create a file properties object from a file path
+        :param relative_path: the relative file to read
+        :returns: file properties
+        :raises IOError: if the file does not exist
+        """
+        full_path = self._create_full_path(relative_path)
+        stat = os.stat(full_path)
+        owner = pwd.getpwuid(stat.st_uid).pw_name
+        published = bool(stat.st_mode & S_IRGRP)
+        public = bool(stat.st_mode & S_IROTH)
+        return FileProperties(relative_path, owner, published, public)

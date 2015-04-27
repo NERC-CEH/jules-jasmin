@@ -16,79 +16,17 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
-import pwd
-from stat import S_IRGRP, S_IROTH
+import logging
+
 import re
 import os
+
 from src.sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
-    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH, MODEL_RUN_DIR_PREFIX, \
-    MODEL_RUN_OUTPUT_DIR
+    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX, MODEL_RUN_OUTPUT_DIR
+from src.sync.clients.file_system_client import FileSystemClient
+from sync.file_properties import FileProperties
 
-
-class FileProperties(object):
-    """
-    Important properties of a file needing to be synchronised
-    """
-
-    def __init__(self, file_path, owner, is_published, is_public):
-        """
-        constructor
-        :param file_path: path to the file relative to the root
-        :param owner: userid of the user who owns the file
-        :param is_published: True if the file is published, false otherwise (i.e. readable by majic users)
-        :param is_public: True if the file is public, false otherwise (i.e. readable by everyone)
-        """
-        self.file_path = file_path
-        self.owner = owner
-        self.is_published = is_published
-        self.is_public = is_public
-
-    def __repr__(self):
-        return "{} (model_owner:{}, published?:{}, public?:{})"\
-            .format(self.file_path, self.owner, self.is_published, self.is_public)
-
-    def __cmp__(self, other):
-        """
-        Compare two File properties
-        Order is filepath, model_owner, is_publoshed, is_publis
-        :param other: other File Property to compare
-        :return: negative integer if self < other, zero if self == other, a positive integer if self > other
-        """
-        if self.file_path != other.file_path:
-            if self.file_path < other.file_path:
-                return -1
-            else:
-                return 1
-
-        if self.owner != other.owner:
-            if self.owner < other.owner:
-                return -1
-            else:
-                return 1
-
-        result = self.is_published.__cmp__(other.is_published)
-        if result == 0:
-            result = self.is_public.__cmp__(other.is_public)
-        return result
-
-    @staticmethod
-    def from_path(path, base_directory=None):
-        """
-        Create a file properties object from a file path
-        :param path: the file to read
-        :param base_directory: the relative path from which the path should be started,
-            None for from current directory
-        :returns: file properties
-        :raises IOError: if the file does not exist
-        """
-        full_path = path
-        if base_directory is not None:
-            full_path = os.path.join(base_directory, path)
-        stat = os.stat(full_path)
-        owner = pwd.getpwuid(stat.st_uid).pw_name
-        published = bool(stat.st_mode & S_IRGRP)
-        public = bool(stat.st_mode & S_IROTH)
-        return FileProperties(path, owner, published, public)
+log = logging.getLogger(__name__)
 
 
 class FileSystemComparer(object):
@@ -101,23 +39,24 @@ class FileSystemComparer(object):
             config,
             existing_directories,
             model_properties,
-            get_file_properties_from_path=FileProperties.from_path):
+            file_system_client=None):
         """
         Constructor
         :param config: configuration for file system comparer
         :param existing_directories: list of directories in current directory
         :param model_properties: model properties expected to appear
-        :param get_file_properties_from_path: a method to generate the file properties from a file,
-            defaults to FileProperties.from path
+        :param file_system_client: the file system client
         :return: nothing but set internal properties for new, changed and deleted files
         """
         self._config = config
         self._config.set_section(CONFIG_DATA_SECTION)
-        self._get_file_properties_from_path = get_file_properties_from_path
+        if file_system_client is not None:
+            self._file_system_client = file_system_client
+        else:
+            self._file_system_client = FileSystemClient(self._config)
         self.new_directories = []
         self.deleted_directories = []
         self.changed_directories = []
-        base_file_dir = self._config.get(CONFIG_ROOT_PATH, CONFIG_FILES_SECTION)
 
         existing_run_ids = set()
         for existing_directory in existing_directories:
@@ -145,10 +84,7 @@ class FileSystemComparer(object):
         existing_run_ids.intersection_update(model_run_ids)
         for model_run_id in existing_run_ids:
             file_properties_to_set = file_properties_for_model_runs[model_run_id]
-            get_file_properties_from_path = self._get_file_properties_from_path
-            current_file_properties = get_file_properties_from_path(
-                file_properties_to_set.file_path,
-                base_file_dir)
+            current_file_properties = self._file_system_client.get_file_properties(file_properties_to_set.file_path)
             if current_file_properties != file_properties_for_model_runs[model_run_id]:
                 self.changed_directories.append(file_properties_to_set)
 
