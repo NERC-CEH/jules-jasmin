@@ -29,14 +29,18 @@ CONFIG_MAJIC_WS_USER_CERT_PATH = 'majic_web_service_user_certificate_path'
 CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
 
 CONFIG_DATA_SECTION = "Data"
-CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised
-CONFIG_DATA_NOBODY_USERNAME = "nobody_username"  # user who owns data for users not in the workbench
+CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised within the root
+CONFIG_EXTENSIONS_TO_COPY = "extensions_to_copy"  # space separated extensions that can be copied
 
 CONFIG_APACHE_SECTION = "Apache"
-CONFIG_APACHE_DATA_PATH = "data_path"  # web address of the data runs are stored in apache
+CONFIG_APACHE_ROOT_PATH = "root_path"  # web address of the data runs are stored in apache
 CONFIG_APACHE_PASSWORD = "password"
 CONFIG_APACHE_USERNAME = "username"
 CONFIG_APACHE_TIMEOUT = "timeout"
+
+CONFIG_FILES_SECTION = "Files"
+CONFIG_ROOT_PATH = "root_path"  # root path where all files are synchronised to
+CONFIG_NOBODY_USERNAME = "nobody_username"  # user who owns data for users not in the workbench
 
 # Constants for the names of the dictionary values in the json
 JSON_MODEL_RUNS = 'model_runs'

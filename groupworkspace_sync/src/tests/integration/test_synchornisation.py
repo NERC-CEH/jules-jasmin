@@ -24,7 +24,7 @@ from mock import Mock
 
 from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
 from tests.test_mother import ConfigMother
-from sync.sync import Sync
+from sync.synchroniser import Synchroniser
 
 
 class TestMajicWebservicesClient(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestMajicWebservicesClient(unittest.TestCase):
 
         client = Mock(MajicWebserviceClient)
         client.get_properties_list_with_filtered_users = Mock(side_effect=WebserviceClientError(error_message))
-        sync = Sync(config, client)
+        sync = Synchroniser(config, client)
 
         result = sync.synchronise()
 
@@ -47,7 +47,7 @@ class TestMajicWebservicesClient(unittest.TestCase):
 
         client = Mock(MajicWebserviceClient)
         client.get_properties_list_with_filtered_users = Mock(side_effect=Exception(error_message))
-        sync = Sync(config, client)
+        sync = Synchroniser(config, client)
 
         result = sync.synchronise()
 

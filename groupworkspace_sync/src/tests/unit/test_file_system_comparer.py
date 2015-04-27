@@ -71,7 +71,7 @@ class TestFileSystemComparer(unittest.TestCase):
         self.mock_file_stats = {}
         self.model_owner = "model_owner"
 
-    def get_file_properties_mock(self, file_path):
+    def get_file_properties_mock(self, file_path, base_directory=None):
             return self.mock_file_stats[file_path]
 
     def create_filelist_and_mock_file_stats(self, runids):

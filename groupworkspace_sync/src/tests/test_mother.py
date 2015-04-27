@@ -20,8 +20,9 @@ import ConfigParser
 import os
 
 from src.sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION, \
-    CONFIG_DATA_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC, \
-    CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, CONFIG_MAJIC_WS_TIMEOUT
+    CONFIG_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC, \
+    CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, CONFIG_MAJIC_WS_TIMEOUT, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH, \
+    CONFIG_APACHE_ROOT_PATH
 from sync.utils.config_accessor import ConfigAccessor
 
 
@@ -61,7 +62,13 @@ class ConfigMother(object):
         return ConfigAccessor(ConfigMother.raw_test_configuration())
 
     @staticmethod
-    def test_configuration_with_values(data_path=None, nobody_username=None, apache_timeout=None, majic_ws_timeout=None):
+    def test_configuration_with_values(
+            data_path=None,
+            nobody_username=None,
+            apache_timeout=None,
+            majic_ws_timeout=None,
+            file_root_path=None,
+            apache_root_path=None):
         """
         load the test configuration file but override the data path
         :param data_path: data path to set, defualt use standard
@@ -74,11 +81,15 @@ class ConfigMother(object):
         if data_path is not None:
             config.set(CONFIG_DATA_SECTION, CONFIG_DATA_PATH, data_path)
         if nobody_username is not None:
-            config.set(CONFIG_DATA_SECTION, CONFIG_DATA_NOBODY_USERNAME, nobody_username)
+            config.set(CONFIG_FILES_SECTION, CONFIG_NOBODY_USERNAME, nobody_username)
         if apache_timeout is not None:
             config.set(CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, apache_timeout)
         if majic_ws_timeout is not None:
-            config.set(CONFIG_WS_SECTION , CONFIG_MAJIC_WS_TIMEOUT, majic_ws_timeout)
+            config.set(CONFIG_WS_SECTION, CONFIG_MAJIC_WS_TIMEOUT, majic_ws_timeout)
+        if file_root_path is not None:
+            config.set(CONFIG_FILES_SECTION, CONFIG_ROOT_PATH, file_root_path)
+        if apache_root_path is not None:
+            config.set(CONFIG_APACHE_SECTION, CONFIG_APACHE_ROOT_PATH, apache_root_path)
         return ConfigAccessor(config)
 
 

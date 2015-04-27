@@ -21,7 +21,7 @@ import unittest
 from hamcrest import *
 from mock import Mock
 from sync.clients.apache_client import ApacheClient, ApacheClientError
-from sync.utils.constants import CONFIG_APACHE_DATA_PATH, CONFIG_APACHE_SECTION
+from sync.utils.constants import CONFIG_APACHE_SECTION, CONFIG_DATA_SECTION, CONFIG_DATA_PATH
 from tests.test_mother import ConfigMother
 
 
@@ -31,7 +31,7 @@ class TestApacheClient(unittest.TestCase):
         config = ConfigMother.test_configuration()
         client = ApacheClient(config)
 
-        result = client.get_contents(config.get(CONFIG_APACHE_DATA_PATH, CONFIG_APACHE_SECTION))
+        result = client.get_contents(config.get(CONFIG_DATA_PATH, CONFIG_DATA_SECTION))
 
         assert_that(result, has_length(greater_than(0)))
         assert_that(result, is_not(has_item('Parent Directory')))
@@ -47,19 +47,18 @@ class TestApacheClient(unittest.TestCase):
         assert_that(filehandle.write.called, is_(True), "Check that something is written to the file handle")
 
     def test_GIVEN_server_not_available_WHEN_download_THEN_exception(self):
-        config = ConfigMother.test_configuration()
+        config = ConfigMother.test_configuration_with_values(apache_root_path="http://rubbish.rubbish")
         client = ApacheClient(config)
         filehandle = Mock()
-        url = "http://rubbish.rubbish"
 
-        assert_that(calling(client.download_file).with_args(url, filehandle),
+        assert_that(calling(client.download_file).with_args("", filehandle),
                     raises(ApacheClientError, "There is a connection error when "))
 
     def test_GIVEN_server_hit_timeout_WHEN_download_THEN_exception(self):
         config = ConfigMother.test_configuration_with_values(apache_timeout="0.00001")
         client = ApacheClient(config)
         filehandle = Mock()
-        url = "http://localhost/public/jules_bd/data/WATCH_2D/driving/LWdown_WFD/LWdown_WFD_190101.nc"
+        url = "data/WATCH_2D/driving/LWdown_WFD/LWdown_WFD_190101.nc"
 
         assert_that(calling(client.download_file).with_args(url, filehandle),
                     raises(ApacheClientError, "Timeout when contacting "))

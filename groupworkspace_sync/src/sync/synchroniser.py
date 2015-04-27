@@ -25,7 +25,7 @@ from utils.config_accessor import ConfigAccessor
 log = logging.getLogger(__name__)
 
 
-class Sync(object):
+class Synchroniser(object):
     """
     Provides services to synchronisation file
     """
@@ -37,7 +37,7 @@ class Sync(object):
         :param majic_webservice_client: the majic web service to use
         :return: nothing
         """
-        super(Sync, self).__init__()
+        super(Synchroniser, self).__init__()
         self._config = configuration
 
         if majic_webservice_client is None:
@@ -65,5 +65,5 @@ if __name__ == '__main__':
 
     config = ConfigParser.SafeConfigParser()
     config.read('production.ini')
-    sync = Sync(ConfigAccessor(config))
+    sync = Synchroniser(ConfigAccessor(config))
     exit(sync.synchronise())

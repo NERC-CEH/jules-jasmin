@@ -24,7 +24,7 @@ from requests.auth import HTTPBasicAuth
 from requests.exceptions import RequestException, Timeout
 from sync.common_exceptions import UserPrintableError
 from sync.utils.constants import CONFIG_APACHE_SECTION, CONFIG_APACHE_USERNAME, CONFIG_APACHE_PASSWORD, \
-    DOWNLOAD_CHUNK_SIZE_IN_BYTES, CONFIG_APACHE_TIMEOUT
+    DOWNLOAD_CHUNK_SIZE_IN_BYTES, CONFIG_APACHE_TIMEOUT, CONFIG_APACHE_ROOT_PATH
 
 log = logging.getLogger(__name__)
 
@@ -90,12 +90,13 @@ class ApacheClient(object):
         """
         return tag.name == 'a' and tag.parent.name == "td" and tag.text != 'Parent Directory'
 
-    def get_contents(self, url):
+    def get_contents(self, directory):
         """
-        Return a list of contents at the url, exluding the parent directory
-        :param url: the url to open
-        :return: list of file and directories in at that location
+        Return a list of contents at the url, excluding the parent directory
+        :param directory: the directory to open
+        :return: list of file and directories in that directory
         """
+        url = "{}/{}".format(self._config.get(CONFIG_APACHE_ROOT_PATH), directory)
         file_list_response = self._request_to_apache(url)
         file_list_page = BeautifulSoup(file_list_response.text)
 
@@ -107,13 +108,14 @@ class ApacheClient(object):
 
         return content_list
 
-    def download_file(self, url, file_handle):
+    def download_file(self, relative_file_path, file_handle):
         """
         Download and save a file
-        :param url: url for the file to save
+        :param relative_file_path: relative url for the file download
         :param file_handle: the file handle to write the file to
         :return: nothing
         """
+        url = "{}/{}".format(self._config.get(CONFIG_APACHE_ROOT_PATH), relative_file_path)
         request = self._request_to_apache(url)
         for chunk in request.iter_content(DOWNLOAD_CHUNK_SIZE_IN_BYTES):
             file_handle.write(chunk)

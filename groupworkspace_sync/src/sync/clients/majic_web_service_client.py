@@ -22,8 +22,8 @@ import requests
 from requests.exceptions import RequestException, Timeout
 from src.sync.common_exceptions import UserPrintableError
 from src.sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
-    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS, CONFIG_DATA_NOBODY_USERNAME, JSON_USER_NAME, \
-    CONFIG_DATA_SECTION, CONFIG_MAJIC_WS_TIMEOUT
+    CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS, CONFIG_NOBODY_USERNAME, JSON_USER_NAME, \
+    CONFIG_MAJIC_WS_TIMEOUT, CONFIG_FILES_SECTION
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class MajicWebserviceClient(object):
         model_run_properties = self.get_properties_list()[JSON_MODEL_RUNS]
         for model_run_property in model_run_properties:
             username = model_run_property[JSON_USER_NAME]
-            nobody_username = self._config.get(CONFIG_DATA_NOBODY_USERNAME, section=CONFIG_DATA_SECTION)
+            nobody_username = self._config.get(CONFIG_NOBODY_USERNAME, section=CONFIG_FILES_SECTION)
             if username is None or len(username.strip()) == 0:
                 model_run_property[JSON_USER_NAME] = nobody_username
             else:

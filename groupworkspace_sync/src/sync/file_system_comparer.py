@@ -21,7 +21,7 @@ from stat import S_IRGRP, S_IROTH
 import re
 import os
 from src.sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
-    JSON_IS_PUBLIC, JSON_IS_PUBLISHED
+    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH
 
 
 class FileProperties(object):
@@ -116,6 +116,7 @@ class FileSystemComparer(object):
         self.new_directories = []
         self.deleted_directories = []
         self.changed_directories = []
+        base_file_dir = self._config.get(CONFIG_ROOT_PATH, CONFIG_FILES_SECTION)
 
         existing_run_ids = set()
         for existing_directory in existing_directories:
@@ -143,7 +144,10 @@ class FileSystemComparer(object):
         existing_run_ids.intersection_update(model_run_ids)
         for model_run_id in existing_run_ids:
             file_properties_to_set = file_properties_for_model_runs[model_run_id]
-            current_file_properties = self._get_file_properties_from_path(file_properties_to_set.file_path)
+            get_file_properties_from_path = self._get_file_properties_from_path
+            current_file_properties = get_file_properties_from_path(
+                file_properties_to_set.file_path,
+                base_file_dir)
             if current_file_properties != file_properties_for_model_runs[model_run_id]:
                 self.changed_directories.append(file_properties_to_set)
 
