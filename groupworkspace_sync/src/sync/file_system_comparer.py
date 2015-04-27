@@ -21,7 +21,8 @@ from stat import S_IRGRP, S_IROTH
 import re
 import os
 from src.sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
-    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH
+    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH, MODEL_RUN_DIR_PREFIX, \
+    MODEL_RUN_OUTPUT_DIR
 
 
 class FileProperties(object):
@@ -162,5 +163,5 @@ class FileSystemComparer(object):
         assert(model_run_id_dir.isdigit())
 
         data_path = self._config.get(CONFIG_DATA_PATH)
-        dir_name = "run{}".format(model_run_id)
-        return os.path.join(data_path, dir_name)
+        dir_name = "{}{}".format(MODEL_RUN_DIR_PREFIX, model_run_id)
+        return os.path.join(data_path, dir_name, MODEL_RUN_OUTPUT_DIR)

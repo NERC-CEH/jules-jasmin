@@ -19,6 +19,10 @@
 # chunk size in bytes to download a file in
 DOWNLOAD_CHUNK_SIZE_IN_BYTES = 1000000
 
+#  directory name of output folder parts
+MODEL_RUN_DIR_PREFIX = "run"
+MODEL_RUN_OUTPUT_DIR = "output"
+
 # Majic web service section name
 CONFIG_WS_SECTION = "Majic Webservice"
 CONFIG_URL = "url"
