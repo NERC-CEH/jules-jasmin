@@ -17,7 +17,23 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import os
+from sync.common_exceptions import UserPrintableError
 from sync.utils.constants import CONFIG_ROOT_PATH
+
+
+class FileSystemClientError(UserPrintableError):
+    """
+    Error thrown when there is an identifiable error in the file system client. Must include a
+    message which is printable for a user
+    """
+
+    def __init__(self, message):
+        """
+        Constructor
+        :param message: message for the user
+        :returns: nothing
+        """
+        super(FileSystemClientError, self).__init__(message)
 
 
 class FileSystemClient(object):
@@ -38,7 +54,7 @@ class FileSystemClient(object):
 
     def create_dir(self, relative_directory):
         """
-        Create a directory tree in the file path root with relative path
+        Create a directory tree in the file path root with relative path. If directory already exists don't do anything
         :param relative_directory: the relative directory to create
         :return: nothing
         """
@@ -54,12 +70,12 @@ class FileSystemClient(object):
         self._create_full_path(file_property)
         raise NotImplementedError()
 
-    def open_file(self, relative_file_path):
+    def create_file(self, relative_file_path):
         """
-        Open a file handle for writing to
+        Creates a file and returns the open file object
         Caller is expected to close the file
         :param relative_file_path: the relative file path
-        :return: file handle object
+        :return: file handle object, or None if the file already exists
         """
         self._create_full_path(relative_file_path)
         raise NotImplementedError()
@@ -71,3 +87,13 @@ class FileSystemClient(object):
         :return: nothing
         """
         file_handle.close()
+
+    def close_and_delete_file(self, file):
+        """
+        Delete the file previously opened
+        :param file: the open file object
+        :return:nothing
+        """
+        raise NotImplementedError()
+        self.close_file(file)
+        os.remove(file.name)

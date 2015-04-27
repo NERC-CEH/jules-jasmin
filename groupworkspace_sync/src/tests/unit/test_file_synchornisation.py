@@ -22,11 +22,11 @@ from hamcrest import *
 import unittest
 import os
 import getpass
-from sync.clients.apache_client import ApacheClient
-from sync.clients.file_system_client import FileSystemClient
-from sync.directory_synchroniser import DirectorySynchroniser
-from sync.file_system_comparer import FileProperties
-from tests.test_mother import ConfigMother
+from src.sync.clients.apache_client import ApacheClient, ApacheClientError
+from src.sync.clients.file_system_client import FileSystemClient, FileSystemClientError
+from src.sync.directory_synchroniser import DirectorySynchroniser
+from src.sync.file_system_comparer import FileProperties
+from src.tests.test_mother import ConfigMother
 
 
 class TestFileSynchronisation(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestFileSynchronisation(unittest.TestCase):
 
         self.mock_file_handle = Mock()
         self.mock_file_system_client = Mock(FileSystemClient)
-        self.mock_file_system_client.open_file = Mock(return_value=self.mock_file_handle)
+        self.mock_file_system_client.create_file = Mock(return_value=self.mock_file_handle)
 
         config = ConfigMother.test_configuration_with_values()
         self.files_synchronisation = DirectorySynchroniser(config, self.mock_apache_client, self.mock_file_system_client)
@@ -62,8 +62,8 @@ class TestFileSynchronisation(unittest.TestCase):
         assert_that(copied_count, is_(1), "copied_count")
 
     def assert_file_downloaded(self, expected_file_name):
-        assert_that(self.mock_file_system_client.open_file.called, is_(True), "File was opened")
-        self.mock_file_system_client.open_file.assert_called_with(expected_file_name)
+        assert_that(self.mock_file_system_client.create_file.called, is_(True), "File was opened")
+        self.mock_file_system_client.create_file.assert_called_with(expected_file_name)
         assert_that(self.mock_apache_client.download_file.called, is_(True), "Download called")
         self.mock_apache_client.download_file.assert_called_with(expected_file_name, self.mock_file_handle)
 
@@ -88,8 +88,8 @@ class TestFileSynchronisation(unittest.TestCase):
 
         copied_count = self.files_synchronisation.copy_new(self.new_directories)
 
-        assert_that(self.mock_file_system_client.open_file.called, is_(True), "File was opened")
-        call_list = self.mock_file_system_client.open_file.call_args_list
+        assert_that(self.mock_file_system_client.create_file.called, is_(True), "File was opened")
+        call_list = self.mock_file_system_client.create_file.call_args_list
         assert_that(call_list[0][0][0], is_(expected_file_names[0]))
         assert_that(call_list[1][0][0], is_(expected_file_names[1]))
         assert_that(self.mock_apache_client.download_file.called, is_(True), "Permissions called")
@@ -131,3 +131,69 @@ class TestFileSynchronisation(unittest.TestCase):
         self.assert_file_downloaded(expected_file_path)
         assert_that(copied_count, is_(3), "copied_count")
 
+    def test_GIVEN_apache_client_throws_error_WHEN_copy_new_THEN_next_directory_look_at(self):
+
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: []})
+        new_directories = [FileProperties(model_run_path, "owner", False, False),
+                           FileProperties(model_run_path, "owner", False, False)]
+        self.mock_apache_client.get_contents = Mock(side_effect=ApacheClientError("Error"))
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_file_system_client.create_dir.called, is_(True), "Directory was created")
+        self.mock_file_system_client.create_dir.assert_called_with(model_run_path)
+        assert_that(self.mock_file_system_client.set_permissions.called, is_(True), "Permissions called")
+        self.mock_file_system_client.set_permissions.assert_called_with(new_directories[0])
+        assert_that(copied_count, is_(2), "copied_count")
+
+    def test_GIVEN_create_directory_throws_error_WHEN_copy_new_THEN_next_directory_look_at(self):
+
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: []})
+        new_directories = [FileProperties(model_run_path, "owner", False, False),
+                           FileProperties(model_run_path, "owner", False, False)]
+        self.mock_file_system_client.create_dir = Mock(side_effect=FileSystemClientError("Error"))
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_file_system_client.create_dir.call_count, is_(2), "Directory was created count")
+        assert_that(copied_count, is_(0), "copied_count")
+
+    def test_GIVEN_create_file_throws_error_WHEN_copy_new_THEN_next_file_look_at(self):
+
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: ["file1.ncml", "file2.nc"]})
+        new_directories = [FileProperties(model_run_path, "owner", False, False)]
+        self.mock_file_system_client.create_file = Mock(side_effect=FileSystemClientError("Error"))
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_file_system_client.create_file.call_count, is_(2), "File opened")
+        assert_that(copied_count, is_(1), "copied_count")
+
+    def test_GIVEN_file_exists_already_WHEN_copy_new_THEN_file_is_not_copied(self):
+
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: ["file1.ncml", "file2.nc"]})
+        new_directories = [FileProperties(model_run_path, "owner", False, False)]
+        self.mock_file_system_client.create_file = Mock(return_value=None)
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_file_system_client.create_file.call_count, is_(2), "File opened")
+        assert_that(self.mock_apache_client.download_file.call_count, is_(0), "File downloaded")
+        assert_that(copied_count, is_(1), "copied_count")
+
+    def test_GIVEN_download_file_throws_error_WHEN_copy_new_THEN_next_file_look_at(self):
+
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: ["file1.ncml", "file2.nc"]})
+        new_directories = [FileProperties(model_run_path, "owner", False, False)]
+        self.mock_apache_client.download_file = Mock(side_effect=ApacheClientError("Error"))
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_apache_client.download_file.call_count, is_(2), "File download start")
+        assert_that(self.mock_file_system_client.close_and_delete_file.call_count, is_(2), "File is deleted when download fails")
+        assert_that(copied_count, is_(1), "copied_count")

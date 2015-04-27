@@ -16,10 +16,13 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+import logging
 import os
-from src.sync.clients.apache_client import ApacheClient
-from src.sync.clients.file_system_client import FileSystemClient
+from src.sync.clients.apache_client import ApacheClient, ApacheClientError
+from src.sync.clients.file_system_client import FileSystemClient, FileSystemClientError
 from sync.utils.constants import CONFIG_FILES_SECTION, CONFIG_DATA_SECTION, CONFIG_EXTENSIONS_TO_COPY
+
+log = logging.getLogger(__name__)
 
 
 class DirectorySynchroniser(object):
@@ -52,28 +55,66 @@ class DirectorySynchroniser(object):
 
         self.extensions_to_copy = self._config.get(CONFIG_EXTENSIONS_TO_COPY, CONFIG_DATA_SECTION).split()
 
+    def _copy_directory_content_item(self, directory_content, relative_directory_path):
+        """
+        Copy an item in a directory
+        :param directory_content: the name of content to copy
+        :param relative_directory_path: the relative path of the directory
+        :return: count of copied items
+        """
+        if directory_content.endswith('/'):
+            sub_dir = os.path.join(relative_directory_path, directory_content[:-1])
+            return self._copy_directory(sub_dir)
+
+        path, ext = os.path.splitext(directory_content)
+        if ext not in self.extensions_to_copy:
+            return 0
+
+        relative_file_path = os.path.join(relative_directory_path, directory_content)
+        new_file = self._file_system_client.create_file(relative_file_path)
+        if new_file is None:
+            # file already exists
+            return 0
+
+        try:
+            self._apache_client.download_file(relative_file_path, new_file)
+            self._file_system_client.close_file(new_file)
+            return 1
+        except Exception as ex:
+            self._file_system_client.close_and_delete_file(new_file)
+            raise ex
+
     def _copy_directory(self, new_directory_path):
         """
         Copy a directory and all its sub directories
         :param new_directory_path:
         :return: number of files and directories copied
         """
-        self._file_system_client.create_dir(new_directory_path)
-        copied_count = 1
+        copied_count = 0
+        try:
+            self._file_system_client.create_dir(new_directory_path)
+            copied_count += 1
 
-        directory_contents = self._apache_client.get_contents(new_directory_path)
-        for directory_content in directory_contents:
-            if directory_content.endswith('/'):
-                sub_dir = os.path.join(new_directory_path, directory_content[:-1])
-                copied_count += self._copy_directory(sub_dir)
+            directory_contents = self._apache_client.get_contents(new_directory_path)
+            for directory_content in directory_contents:
+                try:
+                    copied_count += self._copy_directory_content_item(directory_content, new_directory_path)
+                except FileSystemClientError as ex:
+                    # log the error and skip content
+                    log.error("Error opening the file {} in directory {}. {}"
+                              .format(directory_content, new_directory_path, ex.message))
+                except ApacheClientError as ex:
+                    # log the error and skip directory
+                    log.error("Error downloading file from apache for file {} in directory {}. {}"
+                              .format(directory_content, new_directory_path, ex.message))
 
-            path, ext = os.path.splitext(directory_content)
-            if ext in self.extensions_to_copy:
-                relative_file_path = os.path.join(new_directory_path, directory_content)
-                new_file = self._file_system_client.open_file(relative_file_path)
-                self._apache_client.download_file(relative_file_path, new_file)
-                self._file_system_client.close_file(new_file)
-                copied_count += 1
+        except ApacheClientError as ex:
+            # log the error and skip directory
+            log.error("Error contacting apache for directory contents of {}. {}".format(new_directory_path, ex.message))
+        except FileSystemClientError as ex:
+            # log the error and skip directory
+            log.error("Error creating a directory {}. {}".format(new_directory_path, ex.message))
+
         return copied_count
 
     def copy_new(self, new_directories):
