@@ -97,3 +97,11 @@ class FileSystemClient(object):
         raise NotImplementedError()
         self.close_file(file)
         os.remove(file.name)
+
+    def delete_directory(self, path):
+        """
+        Delete a directory and its contents
+        :param path: the file of the file relative to the filesystem root
+        :return: count of deleted directories
+        """
+        raise NotImplementedError()

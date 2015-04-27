@@ -158,6 +158,7 @@ class TestFileSynchronisation(unittest.TestCase):
         copied_count = self.files_synchronisation.copy_new(new_directories)
 
         assert_that(self.mock_file_system_client.create_dir.call_count, is_(2), "Directory was created count")
+        assert_that(self.mock_file_system_client.set_permissions.call_count, is_(0), "Set permissions is not called")
         assert_that(copied_count, is_(0), "copied_count")
 
     def test_GIVEN_create_file_throws_error_WHEN_copy_new_THEN_next_file_look_at(self):
@@ -197,3 +198,60 @@ class TestFileSynchronisation(unittest.TestCase):
         assert_that(self.mock_apache_client.download_file.call_count, is_(2), "File download start")
         assert_that(self.mock_file_system_client.close_and_delete_file.call_count, is_(2), "File is deleted when download fails")
         assert_that(copied_count, is_(1), "copied_count")
+
+    def test_GIVEN_folder_WHEN_update_permissions_THEN_permissions_updated(self):
+        model_run_path = "data/run1"
+        self.setup_mocks({})
+        changed_directories = [FileProperties(model_run_path, "owner", False, False),
+                               FileProperties(model_run_path, "owner", False, False)]
+
+        updated_count = self.files_synchronisation.update_permissions(changed_directories)
+
+        assert_that(self.mock_file_system_client.set_permissions.call_count, is_(2), "Permissions set on directories count")
+        assert_that(updated_count, is_(2), "updated count")
+
+    def test_GIVEN_folder_WHEN_update_permissions_THEN_permissions_updated(self):
+        model_run_path = "data/run1"
+        self.setup_mocks({})
+        changed_directories = [FileProperties(model_run_path, "owner", False, False),
+                               FileProperties(model_run_path, "owner", False, False)]
+
+        updated_count = self.files_synchronisation.update_permissions(changed_directories)
+
+        assert_that(self.mock_file_system_client.set_permissions.call_count, is_(2), "Permissions set on directories count")
+        assert_that(updated_count, is_(2), "updated count")
+
+    def test_GIVEN_update_permissions_throws_WHEN_update_permissions_THEN_next_directory_looked_at(self):
+        model_run_path = "data/run1"
+        self.setup_mocks({})
+        self.mock_file_system_client.set_permissions = Mock(side_effect=FileSystemClientError("Error"))
+        changed_directories = [FileProperties(model_run_path, "owner", False, False),
+                               FileProperties(model_run_path, "owner", False, False)]
+
+        updated_count = self.files_synchronisation.update_permissions(changed_directories)
+
+        assert_that(self.mock_file_system_client.set_permissions.call_count, is_(2), "Permissions set on directories count")
+        assert_that(updated_count, is_(0), "updated count")
+
+    def test_GIVEN_folders_WHEN_delete_THEN_folders_deleted(self):
+        model_run_path = "data/run1"
+        self.setup_mocks({})
+        deleted_directories = [FileProperties(model_run_path, "owner", False, False),
+                               FileProperties(model_run_path, "owner", False, False)]
+
+        deleted_count = self.files_synchronisation.delete(deleted_directories)
+
+        assert_that(self.mock_file_system_client.delete_directory.call_count, is_(2), "Delete call count")
+        assert_that(deleted_count, is_(2), "deleted count")
+
+    def test_GIVEN_exception_thrown_on_delete_WHEN_delete_THEN_next_folder_deleted(self):
+        model_run_path = "data/run1"
+        self.setup_mocks({})
+        self.mock_file_system_client.delete_directory = Mock(side_effect=FileSystemClientError("Error"))
+        deleted_directories = [FileProperties(model_run_path, "owner", False, False),
+                               FileProperties(model_run_path, "owner", False, False)]
+
+        deleted_count = self.files_synchronisation.delete(deleted_directories)
+
+        assert_that(self.mock_file_system_client.delete_directory.call_count, is_(2), "Delete call count")
+        assert_that(deleted_count, is_(0), "deleted count")

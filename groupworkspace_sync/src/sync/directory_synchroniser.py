@@ -126,6 +126,41 @@ class DirectorySynchroniser(object):
         copied_count = 0
         for new_directory in new_directories:
             new_directory_path = new_directory.file_path
-            copied_count += self._copy_directory(new_directory_path)
-            self._file_system_client.set_permissions(new_directory)
+            current_count = self._copy_directory(new_directory_path)
+            if current_count > 0:
+                self._file_system_client.set_permissions(new_directory)
+            copied_count += current_count
+
         return copied_count
+
+    def update_permissions(self, changed_directories):
+        """
+        Update the permissions of changed directories
+        :param changed_directories: the directories that have changed
+        :return: count of directories changed
+        """
+        update_count = 0
+        for changed_directory in changed_directories:
+            try:
+                self._file_system_client.set_permissions(changed_directory)
+                update_count += 1
+            except FileSystemClientError as ex:
+                # log the error and skip directory
+                log.error("Error when setting permissions on directory {}. {}".format(changed_directory, ex.message))
+        return update_count
+
+    def delete(self, deleted_directories):
+        """
+        Delete directories which are no longer present
+        :param deleted_directories: the directories to delete
+        :return: count of deleted directories
+        """
+        delete_count = 0
+        for deleted_directory in deleted_directories:
+            try:
+                self._file_system_client.delete_directory(deleted_directory)
+                delete_count += 1
+            except FileSystemClientError as ex:
+                # log the error and skip directory
+                log.error("Error when setting permissions on directory {}. {}".format(deleted_directory, ex.message))
+        return delete_count
