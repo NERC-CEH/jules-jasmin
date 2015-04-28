@@ -132,7 +132,8 @@ class AccountController(BaseController):
                         message = 'Login failed: check your username and/or password.'
                 except ClientException:
                     message = 'Login failed: The authentication server is not responding correctly. ' \
-                              'Please try again later or report your error to {}.'.format(config['email.admin_address'])
+                              'Please try again later. If the problem persists please report it to {}.'\
+                        .format(config['email.admin_address'])
         else:
             # Forcefully forget any existing credentials.
             _, headers = who_api.login({})
