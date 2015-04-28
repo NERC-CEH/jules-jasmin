@@ -70,8 +70,8 @@ class CrowdRepozePlugin(object):
         except KeyError:
             return None
         except ClientException as ex:
-            log.error("Error authenticating %s with Crowd: %s" % (identity['login'], ex))
-            return None
+            log.exception("Error authenticating {} with Crowd".format(identity['login']))
+            raise ex
 
     def add_metadata(self, environ, identity):
         """Placeholder to add metadata to the user object

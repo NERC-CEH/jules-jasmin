@@ -23,6 +23,7 @@ from pylons import request, tmpl_context as c, url, config
 from pylons.controllers.util import redirect
 from pylons.decorators import validate
 from webob.exc import HTTPFound
+from joj.crowd.client import ClientException
 
 from joj.lib.base import BaseController, render
 from repoze.who.api import get_api
@@ -88,46 +89,50 @@ class AccountController(BaseController):
                 c.form_errors = error.error_dict or {}
             else:
                 c.form_result['login'] = c.form_result['login'].strip()
-                authenticated, headers = who_api.login(c.form_result)
+                try:
+                    authenticated, headers = who_api.login(c.form_result)
 
-                if authenticated:
+                    if authenticated:
 
-                    # Who is this user?
-                    # If we've got enough info, we should see if they are in
-                    # the database already
+                        # Who is this user?
+                        # If we've got enough info, we should see if they are in
+                        # the database already
 
-                    if request.environ['user.username']:
+                        if request.environ['user.username']:
 
-                        user_name = request.environ['user.username']
+                            user_name = request.environ['user.username']
 
-                        log.debug("Looking for %s in Majic DB" % user_name)
+                            log.debug("Looking for %s in Majic DB" % user_name)
 
-                        try:
+                            try:
 
-                            u = self._user_service.get_user_by_username(request.environ['user.username'])
+                                u = self._user_service.get_user_by_username(request.environ['user.username'])
 
-                            if not u:
+                                if not u:
 
-                                log.debug("Couldn't find %s in Majic DB, creating user" % user_name)
+                                    log.debug("Couldn't find %s in Majic DB, creating user" % user_name)
 
-                                self._user_service.create(user_name,
-                                                          request.environ['user.first-name'],
-                                                          request.environ['user.last-name'],
-                                                          request.environ['user.email'],
-                                                          None)
+                                    self._user_service.create(user_name,
+                                                              request.environ['user.first-name'],
+                                                              request.environ['user.last-name'],
+                                                              request.environ['user.email'],
+                                                              None)
 
-                            return HTTPFound(location=came_from, headers=headers)
+                                return HTTPFound(location=came_from, headers=headers)
 
-                        except ServiceException as sx:
+                            except ServiceException as sx:
 
-                            # Something has gone wrong at a fundamental level, so we can't realistically continue
-                            message = 'The Majic database is unavailable, please try again later or alert ' \
-                                      'the Majic administrator: %s' % config['email.admin_address']
-                            log.exception("Majic database unavailable: %s" % sx)
+                                # Something has gone wrong at a fundamental level, so we can't realistically continue
+                                message = 'The Majic database is unavailable, please try again later or alert ' \
+                                          'the Majic administrator: %s' % config['email.admin_address']
+                                log.exception("Majic database unavailable: %s" % sx)
 
-                else:
-                    # Authentication not successful
-                    message = 'Login failed: check your username and/or password.'
+                    else:
+                        # Authentication not successful
+                        message = 'Login failed: check your username and/or password.'
+                except ClientException:
+                    message = 'Login failed: The authentication server is not responding correctly. ' \
+                              'Please try again later or report your error to {}.'.format(config['email.admin_address'])
         else:
             # Forcefully forget any existing credentials.
             _, headers = who_api.login({})
