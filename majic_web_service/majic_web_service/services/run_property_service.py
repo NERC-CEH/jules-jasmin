@@ -21,7 +21,8 @@ from sqlalchemy import asc, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from majic_web_service.model import readonly_scope, ModelRun, User, ModelRunStatus
-from majic_web_service.utils.constants import MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED
+from majic_web_service.utils.constants import MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED, \
+    MODEL_RUN_STATUS_PUBLIC
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,8 @@ class RunPropertyService(object):
                     .options(joinedload('user')) \
                     .options(joinedload('status')) \
                     .filter(or_(ModelRunStatus.name == MODEL_RUN_STATUS_COMPLETED,
-                                ModelRunStatus.name == MODEL_RUN_STATUS_PUBLISHED)) \
+                                ModelRunStatus.name == MODEL_RUN_STATUS_PUBLISHED,
+                                ModelRunStatus.name == MODEL_RUN_STATUS_PUBLIC)) \
                     .all()
             except NoResultFound:
                 return []

@@ -45,7 +45,14 @@ class ModelRunStatus(Base):
         Is the ModelRunStatus published?
         :return: True if published, false otherwise
         """
-        return self.name == constants.MODEL_RUN_STATUS_PUBLISHED
+        return self.name == constants.MODEL_RUN_STATUS_PUBLISHED or self.name == constants.MODEL_RUN_STATUS_PUBLIC
+
+    def is_public(self):
+        """
+        Is the ModelRunStatus public?
+        :return: True if public, false otherwise
+        """
+        return self.name == constants.MODEL_RUN_STATUS_PUBLIC
 
     def __repr__(self):
         """String representation"""

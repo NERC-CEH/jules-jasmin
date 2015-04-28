@@ -49,15 +49,18 @@ class TestModelRunCatalogue(TestController):
         assert_that(response.normal_body, contains_string(str(percent_used)))
         assert_that(response.normal_body, contains_string("bar-success"))
 
-    def test_GIVEN_when_some_runs_published_WHEN_navigate_to_run_catalogue_THEN_user_storage_allocation_does_not_include_published(self):
+    def test_GIVEN_when_some_runs_published_and_public_WHEN_navigate_to_run_catalogue_THEN_user_storage_allocation_does_not_include_published_or_public(self):
 
         user = self.login()
         model1_storage = 10101
-        model2_storage = 6400
+        model2_storage = 4300
+        model3_storage = 2100
+
         total = 9.9  # 10101/1024
         percent_used = 10  # 9.9 / 100 (storage for user) rounded
         self.create_run_model(model1_storage, "test", user)
         self.create_run_model(model2_storage, "test2", user, constants.MODEL_RUN_STATUS_PUBLISHED)
+        self.create_run_model(model3_storage, "test3", user, constants.MODEL_RUN_STATUS_PUBLIC)
 
         response = self.app.get(
             url(controller='model_run', action=''))

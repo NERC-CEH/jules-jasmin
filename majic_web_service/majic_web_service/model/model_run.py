@@ -22,7 +22,7 @@ from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, ForeignK
 from majic_web_service.model.meta import Base
 from majic_web_service.utils import constants
 from majic_web_service.utils.constants import JSON_MODEL_RUN_ID, JSON_LAST_STATUS_CHANGE, JSON_IS_PUBLISHED, \
-    JSON_USER_NAME
+    JSON_USER_NAME, JSON_IS_PUBLIC
 from majic_web_service.utils.general import convert_time_to_standard_string
 
 
@@ -50,6 +50,7 @@ class ModelRun(Base):
             JSON_MODEL_RUN_ID: self.id,
             JSON_USER_NAME: self.user.workbench_username,
             JSON_IS_PUBLISHED: self.status.is_published(),
+            JSON_IS_PUBLIC: self.status.is_public(),
             JSON_LAST_STATUS_CHANGE: convert_time_to_standard_string(self.last_status_change)}
 
     def __repr__(self):

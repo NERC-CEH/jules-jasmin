@@ -43,7 +43,7 @@ class ModelRunControllerHelper(object):
         """
         total = 0
         for user_id, status_name, storage_in_mb in self._model_run_service.get_storage_used(current_user):
-            if status_name != constants.MODEL_RUN_STATUS_PUBLISHED:
+            if status_name != constants.MODEL_RUN_STATUS_PUBLISHED and status_name != constants.MODEL_RUN_STATUS_PUBLIC:
                 total += storage_in_mb
 
         total_in_gb = utils.convert_mb_to_gb_and_round(total)

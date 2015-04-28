@@ -123,6 +123,18 @@ class ModelRunServiceDuplicateTest(TestWithFullModelRun):
         model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
         assert_that(model_run.name, is_(model.name), "model name")
 
+    def test_GIVEN_model_belongs_to_someone_else_and_is_public_WHEN_duplicate_THEN_duplicate_model(self):
+        self.job_runner_client.delete = Mock()
+        # Add a user who doesn't have any model runs
+        other_user = self.login("other_user")
+        model = self.create_run_model(10, "test", other_user, constants.MODEL_RUN_STATUS_PUBLIC)
+        user = self.login()
+
+        self.model_run_service.duplicate_run_model(model.id, user)
+
+        model_run = self.model_run_service.get_model_being_created_with_non_default_parameter_values(user)
+        assert_that(model_run.name, is_(model.name), "model name")
+
     def test_GIVEN_model_WHEN_duplicate_and_name_is_same_as_owner_THEN_model_is_duplicated_name_is_changed(self):
 
         # Add a user who doesn't have any model runs

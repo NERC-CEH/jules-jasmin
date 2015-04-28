@@ -47,13 +47,14 @@ class TestGetRunPropertiesController(TestController):
 
         assert_that(result, has_length(1), "model run count")
         result_dict = result[0].__json__()
-        self.assert_model_run_json_is(result_dict, model_id, last_status_change, username, False)
+        self.assert_model_run_json_is(result_dict, model_id, last_status_change, username, False, False)
 
     def test_GIVEN_database_has_two_rows_one_published_WHEN_request_run_properties_THEN_return_list_with_both_items_in_ordered_by_change_date(self):
         usernames = ["username", "username2"]
         last_status_changes = [datetime(2015, 5, 3, 2, 1), datetime(2014, 6, 4, 3, 2)]
         statuses = [MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED]
         expected_is_published = [False, True]
+        expected_is_public = [False, False]
         model_ids = []
         for username, last_status_change, status in zip(usernames, last_status_changes, statuses):
             model_id = self.add_model_run(username, last_status_change, status)
@@ -62,16 +63,17 @@ class TestGetRunPropertiesController(TestController):
         result = self.property_service.list()
 
         assert_that(result, has_length(2), "model run count")
-        self.assert_model_run_json_is(result[0].__json__(), model_ids[1], last_status_changes[1], usernames[1], expected_is_published[1])
-        self.assert_model_run_json_is(result[1].__json__(), model_ids[0], last_status_changes[0], usernames[0], expected_is_published[0])
+        self.assert_model_run_json_is(result[0].__json__(), model_ids[1], last_status_changes[1], usernames[1], expected_is_published[1], expected_is_public[1])
+        self.assert_model_run_json_is(result[1].__json__(), model_ids[0], last_status_changes[0], usernames[0], expected_is_published[0], expected_is_public[0])
 
 
-    def test_GIVEN_database_has_two_rows_with_different_statuses_WHEN_request_run_properties_THEN_return_list_with_only_completed_and_published_rows(self):
+    def test_GIVEN_database_has_multiple_rows_with_different_statuses_WHEN_request_run_properties_THEN_return_list_with_only_completed_and_published_and_public_rows(self):
         username = "username"
         last_status_change = datetime(2015, 5, 3, 2, 1)
         statuses = [
             MODEL_RUN_STATUS_COMPLETED,
             MODEL_RUN_STATUS_PUBLISHED,
+            MODEL_RUN_STATUS_PUBLIC,
             MODEL_RUN_STATUS_CREATED,
             MODEL_RUN_STATUS_FAILED,
             MODEL_RUN_STATUS_PENDING,
@@ -80,7 +82,8 @@ class TestGetRunPropertiesController(TestController):
             MODEL_RUN_STATUS_SUBMITTED,
             MODEL_RUN_STATUS_UNKNOWN,
             None]
-        expected_is_published = [False, True]
+        expected_is_published = [False, True, True]
+        expected_is_public = [False, False, True]
         model_ids = []
         for status in statuses:
             model_id = self.add_model_run(username, last_status_change, status)
@@ -88,7 +91,8 @@ class TestGetRunPropertiesController(TestController):
 
         result = self.property_service.list()
 
-        assert_that(result, has_length(2), "model run count")
-        self.assert_model_run_json_is(result[0].__json__(), model_ids[0], last_status_change, username, expected_is_published[0])
-        self.assert_model_run_json_is(result[1].__json__(), model_ids[1], last_status_change, username, expected_is_published[1])
+        assert_that(result, has_length(3), "model run count")
+        self.assert_model_run_json_is(result[0].__json__(), model_ids[0], last_status_change, username, expected_is_published[0], expected_is_public[0])
+        self.assert_model_run_json_is(result[1].__json__(), model_ids[1], last_status_change, username, expected_is_published[1], expected_is_public[1])
+        self.assert_model_run_json_is(result[2].__json__(), model_ids[2], last_status_change, username, expected_is_published[2], expected_is_public[2])
 

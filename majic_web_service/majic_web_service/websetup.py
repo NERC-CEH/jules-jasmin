@@ -35,9 +35,10 @@ def setup_app(command, conf, vars):
             stat_running = ModelRunStatus(constants.MODEL_RUN_STATUS_RUNNING)
             stat_completed = ModelRunStatus(constants.MODEL_RUN_STATUS_COMPLETED)
             stat_published = ModelRunStatus(constants.MODEL_RUN_STATUS_PUBLISHED)
+            stat_public = ModelRunStatus(constants.MODEL_RUN_STATUS_PUBLIC)
             stat_failed = ModelRunStatus(constants.MODEL_RUN_STATUS_FAILED)
             stat_submit_failed = ModelRunStatus(constants.MODEL_RUN_STATUS_SUBMIT_FAILED)
             stat_unknown = ModelRunStatus(constants.MODEL_RUN_STATUS_UNKNOWN)
 
             map(session.add, [stat_created, stat_submitted, stat_pending, stat_running, stat_completed, stat_published,
-                              stat_failed, stat_submit_failed, stat_unknown])
+                              stat_public, stat_failed, stat_submit_failed, stat_unknown])
