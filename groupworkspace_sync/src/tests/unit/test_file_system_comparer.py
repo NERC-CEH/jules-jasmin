@@ -82,6 +82,7 @@ class TestFileSystemComparer(unittest.TestCase):
 
     def create_filelist_and_mock_file_stats(self, runids):
         filelist = ["run{}/output".format(runid) for runid in runids]
+        self.mock_file_system_client.list_dirs = Mock(return_value=["run{}".format(runid) for runid in runids])
         for file in filelist:
             file_path = os.path.join(self.expected_path, file)
             self.mock_file_stats[file_path] = FileProperties(file_path, self.model_owner, False, False)
@@ -93,8 +94,9 @@ class TestFileSystemComparer(unittest.TestCase):
         expected_new_dir = [FileProperties("{}/run{}/output".format(self.expected_path, runid), self.model_owner, False, False)]
         filelist = self.create_filelist_and_mock_file_stats([])
         model_properties = RunModelPropertiesMother.create_model_run_properties([runid])
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
 
         assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dir)
 
@@ -108,8 +110,9 @@ class TestFileSystemComparer(unittest.TestCase):
             False) for runid in runids]
         filelist = self.create_filelist_and_mock_file_stats([])
         model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
 
         assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dirs)
 
@@ -119,10 +122,10 @@ class TestFileSystemComparer(unittest.TestCase):
         expected_new_dirs = []
         filelist = self.create_filelist_and_mock_file_stats(runids)
         model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
-
-        assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dirs)
+        file_system_comparer.perform_analysis(model_properties)
 
     def test_GIVEN_one_extra_entry_on_file_list_WHEN_compare_THEN_extra_entry_on_del_list(self):
 
@@ -130,17 +133,19 @@ class TestFileSystemComparer(unittest.TestCase):
         filelist = self.create_filelist_and_mock_file_stats(runids)
         expected_deleted_dirs = ["{}/run{}/output".format(self.expected_path, runid) for runid in runids]
         model_properties = []
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
-
+        file_system_comparer.perform_analysis(model_properties)
         assert_that_file_system_comparer(file_system_comparer, expected_deleted_dirs=expected_deleted_dirs)
 
     def test_GIVEN_non_run_directory_WHEN_compare_THEN_no_directories_deleted(self):
 
         filelist = ["blah"]
+        self.mock_file_system_client.list_dirs = Mock(return_value=filelist)
         model_properties = []
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
         assert_that_file_system_comparer(file_system_comparer)
 
     def test_GIVEN_existing_file_owned_by_someone_else_WHEN_compare_THEN_directory_is_set_for_change(self):
@@ -150,8 +155,9 @@ class TestFileSystemComparer(unittest.TestCase):
         model_properties = RunModelPropertiesMother.create_model_run_properties(runids, owner=expected_owner)
         filelist = self.create_filelist_and_mock_file_stats(runids)
         expected_changed_dirs = [FileProperties("{}/{}".format(self.expected_path, file), expected_owner, False, False) for file in filelist]
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
 
         assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
 
@@ -163,8 +169,9 @@ class TestFileSystemComparer(unittest.TestCase):
         for mock_file_stat in self.mock_file_stats.values():
             mock_file_stat.is_published = False
         expected_changed_dirs = [FileProperties("{}/{}".format(self.expected_path, file), self.model_owner, True, False) for file in filelist]
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
 
         assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
 
@@ -176,8 +183,9 @@ class TestFileSystemComparer(unittest.TestCase):
         for mock_file_stat in self.mock_file_stats.values():
             mock_file_stat.is_published = False
         expected_changed_dirs = [FileProperties("{}/{}".format(self.expected_path, file), self.model_owner, False, True) for file in filelist]
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
-        file_system_comparer = FileSystemComparer(self.config, filelist, model_properties, self.mock_file_system_client)
+        file_system_comparer.perform_analysis(model_properties)
 
         assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
 

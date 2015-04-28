@@ -27,6 +27,7 @@ from src.sync.clients.file_system_client import FileSystemClient, FileSystemClie
 from src.sync.directory_synchroniser import DirectorySynchroniser
 from sync.file_properties import FileProperties
 from src.tests.test_mother import ConfigMother
+from sync.file_system_comparer import FileSystemComparer
 
 
 class TestFileSynchronisation(unittest.TestCase):
@@ -255,3 +256,23 @@ class TestFileSynchronisation(unittest.TestCase):
 
         assert_that(self.mock_file_system_client.delete_directory.call_count, is_(2), "Delete call count")
         assert_that(deleted_count, is_(0), "deleted count")
+
+    def test_GIVEN_one_change_new_and_delete_WHEN_sync_all_THEN_all_files_synched(self):
+        model_run_path_to_copy = "data/run1"
+        model_run_path_to_delete = "data/run2"
+        model_run_path_to_update = "data/run3"
+        self.setup_mocks({model_run_path_to_copy: []})
+        file_sync = Mock(FileSystemComparer)
+        file_sync.deleted_directories = [model_run_path_to_delete]
+        file_sync.new_directories = [FileProperties(model_run_path_to_copy, "owner", False, False)]
+        file_sync.changed_directories = [FileProperties(model_run_path_to_update, "owner", False, False)]
+
+        new_count, updated_count, deleted_count = self.files_synchronisation.synchronise_all(file_sync)
+
+        self.mock_file_system_client.create_dir.assert_called_with(model_run_path_to_copy)
+        self.mock_file_system_client.set_permissions.assert_called_with(file_sync.changed_directories[0])
+        self.mock_file_system_client.delete_directory.assert_called_with(model_run_path_to_delete)
+
+        assert_that(new_count, is_(1), "updated count")
+        assert_that(updated_count, is_(1), "updated count")
+        assert_that(deleted_count, is_(1), "deleted count")

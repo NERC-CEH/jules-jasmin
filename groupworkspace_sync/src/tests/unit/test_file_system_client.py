@@ -26,15 +26,19 @@ from sync.file_properties import FileProperties
 from tests.test_mother import ConfigMother
 import shutil
 
+
 class TestFileSystemClient(unittest.TestCase):
 
     def setUp(self):
-        self.root_dir = "/tmp/majic_test" # same as in delete_dir_test.sh
+        self.root_dir = "/tmp/majic_test"  # same as in delete_dir_test.sh
         try:
             os.mkdir(self.root_dir)
         except OSError as ex:
-            if ex.errno !=17:
+            if ex.errno != 17:
                 raise ex
+            else:
+                self.tearDown()
+                os.mkdir(self.root_dir)
         self.filename = os.path.join(self.root_dir, "test_file")
         f = open(self.filename, 'w')
         f.write("testing")
@@ -185,12 +189,11 @@ class TestFileSystemClient(unittest.TestCase):
         assert_that(calling(self.file_system_client.delete_directory).with_args(file_path),
                     raises(FileSystemClientError))
 
-
     def create_file_and_sub_dir(self):
-        file_path = "run1"
+        self.model_run_path = "run1"
         subdir = "blah"
-        self.file_system_client.create_dir(file_path)
-        sub_dir_path = os.path.join(file_path, subdir)
+        self.file_system_client.create_dir(self.model_run_path)
+        sub_dir_path = os.path.join(self.model_run_path, subdir)
         self.file_system_client.create_dir(sub_dir_path)
         file_path = os.path.join(sub_dir_path, "file")
         f = self.file_system_client.create_file(file_path)
@@ -231,3 +234,9 @@ class TestFileSystemClient(unittest.TestCase):
 
         assert_that(self.file_system_client.get_file_properties(file_path), is_(file_property), "File properties")
 
+    def test_GIVEN_dir_WHEN_list_THEN_directories_returned(self):
+        file_path = self.create_file_and_sub_dir()
+
+        dirs = self.file_system_client.list_dirs("")
+
+        assert_that(dirs, contains(self.model_run_path), "Directories")

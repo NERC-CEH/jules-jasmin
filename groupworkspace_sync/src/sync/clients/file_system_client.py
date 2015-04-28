@@ -177,3 +177,16 @@ class FileSystemClient(object):
         published = bool(stat.st_mode & S_IRGRP)
         public = bool(stat.st_mode & S_IROTH)
         return FileProperties(relative_path, owner, published, public)
+
+    def list_dirs(self, relative_path):
+        """
+        List the directories in a directory
+        :param relative_path: the relative path to list
+        :return: a list of directories
+        """
+        full_path = self._create_full_path(relative_path)
+        try:
+            return [name for name in os.listdir(full_path) if os.path.isdir(os.path.join(full_path, name))]
+        except Exception:
+            log.exception("Error listing directories in directory '{}'".format(relative_path))
+            raise FileSystemClientError("Error listing directories in directory '{}'".format(relative_path))

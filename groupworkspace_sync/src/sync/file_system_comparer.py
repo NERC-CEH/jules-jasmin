@@ -31,34 +31,47 @@ log = logging.getLogger(__name__)
 
 class FileSystemComparer(object):
     """
-    Compare the list of directories on the file system with a list of model and detect changes
+    Compare the list of directories from the data path on the file system with a list of model and detects changes
+
+    On perform_analysis the following are populated:
+        new_directories - with FileProperties for models that needs to be copied
+        deleted_directories  - with directory names which need deleting
+        changed_directories - with FileProperties of directories which need their permissions updating
     """
 
     def __init__(
             self,
             config,
-            existing_directories,
-            model_properties,
             file_system_client=None):
         """
         Constructor
         :param config: configuration for file system comparer
-        :param existing_directories: list of directories in current directory
-        :param model_properties: model properties expected to appear
         :param file_system_client: the file system client
-        :return: nothing but set internal properties for new, changed and deleted files
+        :return:
         """
         self._config = config
         self._config.set_section(CONFIG_DATA_SECTION)
+        self.data_path = self._config.get(CONFIG_DATA_PATH)
         if file_system_client is not None:
             self._file_system_client = file_system_client
         else:
             self._file_system_client = FileSystemClient(self._config)
+        self.new_directories = None
+        self.deleted_directories = None
+        self.changed_directories = None
+
+    def perform_analysis(self, model_properties):
+        """
+        Perform the analysis of the file system compared to the model properties
+        :param model_properties: model properties expected to appear
+        :return: nothing but set internal properties for new, changed and deleted files
+        """
         self.new_directories = []
         self.deleted_directories = []
         self.changed_directories = []
 
         existing_run_ids = set()
+        existing_directories = self._file_system_client.list_dirs(self.data_path)
         for existing_directory in existing_directories:
             match = re.match('run(\d+)', existing_directory)
             if match:
@@ -98,6 +111,5 @@ class FileSystemComparer(object):
         model_run_id_dir = str(model_run_id)
         assert(model_run_id_dir.isdigit())
 
-        data_path = self._config.get(CONFIG_DATA_PATH)
         dir_name = "{}{}".format(MODEL_RUN_DIR_PREFIX, model_run_id)
-        return os.path.join(data_path, dir_name, MODEL_RUN_OUTPUT_DIR)
+        return os.path.join(self.data_path, dir_name, MODEL_RUN_OUTPUT_DIR)

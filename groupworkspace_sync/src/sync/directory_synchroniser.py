@@ -164,3 +164,14 @@ class DirectorySynchroniser(object):
                 # log the error and skip directory
                 log.error("Error when setting permissions on directory {}. {}".format(deleted_directory, ex.message))
         return delete_count
+
+    def synchronise_all(self, directory_types):
+        """
+        Synchronise the directory dtructure based on directory type
+        :param directory_types: a object holding new, changed and deleted directories
+        :return: count of new, updated and deleted file and directories
+        """
+        return (
+            self.copy_new(directory_types.new_directories),
+            self.update_permissions(directory_types.changed_directories),
+            self.delete(directory_types.deleted_directories))

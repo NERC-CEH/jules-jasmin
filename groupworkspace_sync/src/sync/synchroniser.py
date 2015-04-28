@@ -18,9 +18,14 @@
 """
 import ConfigParser
 import logging
+from logging.config import fileConfig
 import os
+import sys
 
-from src.sync.clients.majic_web_service_client import MajicWebserviceClient, WebserviceClientError
+from src.sync.clients.majic_web_service_client import MajicWebserviceClient
+from sync.common_exceptions import UserPrintableError
+from sync.directory_synchroniser import DirectorySynchroniser
+from sync.file_system_comparer import FileSystemComparer
 from utils.config_accessor import ConfigAccessor
 
 log = logging.getLogger(__name__)
@@ -31,7 +36,11 @@ class Synchroniser(object):
     Provides services to synchronisation file
     """
 
-    def __init__(self, configuration, majic_webservice_client=None):
+    def __init__(self,
+                 configuration,
+                 majic_webservice_client=None,
+                 file_system_comparer=None,
+                 directory_synchroniser=None):
         """
         Constructor
         :param configuration: the configuration to use for the synchronisation
@@ -46,15 +55,32 @@ class Synchroniser(object):
         else:
             self._majic_webservice_client = majic_webservice_client
 
+        if file_system_comparer is None:
+            self._file_system_comparer = FileSystemComparer(self._config)
+        else:
+            self._file_system_comparer = file_system_comparer
+
+        if directory_synchroniser is None:
+            self._directory_synchroniser = DirectorySynchroniser(self._config)
+        else:
+            self._directory_synchroniser = directory_synchroniser
+
     def synchronise(self):
         """
         Synchronise the files returned by the web service with those on the disc
         :return: error code to exit with
         """
         try:
-            self._majic_webservice_client.get_properties_list_with_filtered_users()
+            model_propeties = self._majic_webservice_client.get_properties_list_with_filtered_users()
+            self._file_system_comparer.perform_analysis(model_propeties)
+            new_count, updated_count, deleted_count = \
+                self._directory_synchroniser.synchronise_all(self._file_system_comparer)
+            log.info("Finished Synchronisation:")
+            log.info("  {}: Count of copied files and directories: ".format(new_count))
+            log.info("  {}: Count of directory permissions updated".format(updated_count))
+            log.info("  {}: Count of deleted directories".format(deleted_count))
             return 0
-        except WebserviceClientError as ex:
+        except UserPrintableError as ex:
             log.error(str(ex))
             return 1
         except Exception:
@@ -63,8 +89,17 @@ class Synchroniser(object):
             return 2
 
 if __name__ == '__main__':
-
-    config = ConfigParser.SafeConfigParser({'here': os.curdir})
-    config.read('production.ini')
+    config_file = 'production.ini'
+    here = os.curdir
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+        here = os.path.realpath(os.path.dirname(config_file))
+    if not os.path.exists(config_file):
+        print("Configuration file doesn't exist ('{}')".format(config_file))
+        exit(-1)
+    config = ConfigParser.SafeConfigParser({'here': here})
+    config.read(config_file)
+    fileConfig(config_file)
+    log.info("Starting")
     sync = Synchroniser(ConfigAccessor(config))
     exit(sync.synchronise())
