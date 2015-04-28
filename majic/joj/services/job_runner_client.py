@@ -19,7 +19,6 @@
 import logging
 import json
 from dateutil.relativedelta import relativedelta
-import datetime as dt
 import requests
 import sys
 from joj.utils import constants
