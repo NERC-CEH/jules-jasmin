@@ -122,6 +122,7 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='index'))
 
         self._model_run_service.publish_model(self.current_user, id)
+        helpers.success_flash("Model run has been published")
         redirect_back_to_came_from_for_model_run(id, request.params)
 
     def make_public(self, id):
@@ -134,6 +135,7 @@ class ModelRunController(BaseController):
             helpers.error_flash("Making a model run public must be a post")
             redirect(url(controller='model_run', action='index'))
 
+        helpers.success_flash("Model run has been made public")
         self._model_run_service.make_public_model(self.current_user, id)
         redirect_back_to_came_from_for_model_run(id, request.params)
 
