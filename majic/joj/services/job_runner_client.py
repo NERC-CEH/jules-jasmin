@@ -61,7 +61,8 @@ class JobRunnerClient(object):
             return constants.MODEL_RUN_STATUS_SUBMITTED, "Model run submitted."
         elif response.status_code == requests.codes.bad_request:
             log.exception("Failed to submit job %s" % response.text)
-            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % response.text
+            return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, "Could not submit model. Error: %s" % \
+                   utils.extract_error_message_from_response(response.text)
         else:
             log.exception("Failed to submit job %s" % response.text)
             return constants.MODEL_RUN_STATUS_SUBMIT_FAILED, \
