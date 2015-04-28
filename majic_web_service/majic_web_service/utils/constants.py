@@ -35,6 +35,7 @@ MODEL_RUN_STATUS_PENDING = 'Pending'
 MODEL_RUN_STATUS_RUNNING = 'Running'
 MODEL_RUN_STATUS_COMPLETED = 'Completed'
 MODEL_RUN_STATUS_PUBLISHED = 'Published'
+MODEL_RUN_STATUS_PUBLIC = 'Public'
 MODEL_RUN_STATUS_FAILED = 'Failed'
 MODEL_RUN_STATUS_SUBMIT_FAILED = 'Submission Failed'  # user submitted a model but it can not be submitted
 MODEL_RUN_STATUS_UNKNOWN = 'Unknown'  # Job is in the bjobs list but the status is not understood
@@ -47,4 +48,5 @@ JSON_MODEL_RUN_ID = 'model_run_id'
 
 JSON_USER_NAME = 'user_name'
 JSON_IS_PUBLISHED = 'is_published'
+JSON_IS_PUBLIC = 'is_public'
 JSON_LAST_STATUS_CHANGE = 'last_status_changed'

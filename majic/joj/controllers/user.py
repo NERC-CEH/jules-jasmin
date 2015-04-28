@@ -75,7 +75,7 @@ class UserController(BaseController):
             c.storage_total_used_in_gb = 0
             for user_id, status, storage_mb in self._model_run_service.get_storage_used():
                 c.storage_total_used_in_gb += int(storage_mb)
-                if status == constants.MODEL_RUN_STATUS_PUBLISHED:
+                if status == constants.MODEL_RUN_STATUS_PUBLISHED or status == constants.MODEL_RUN_STATUS_PUBLIC:
                     user_map[user_id].published_storage_in_mb += int(storage_mb)
                 else:
                     user_map[user_id].storage_in_mb += int(storage_mb)

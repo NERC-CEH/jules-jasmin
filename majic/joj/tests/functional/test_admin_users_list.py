@@ -64,7 +64,7 @@ class TestAdminUsersList(TestController):
         )
         assert_that(response.normal_body, contains_string(str(round(storage/1024.0, 1))))
 
-    def test_GIVEN_multiple_runs_some_published_WHEN_list_THEN_returns_current_storages_corectly_added_up(self):
+    def test_GIVEN_multiple_runs_some_published_some_public_WHEN_list_THEN_returns_current_storages_corectly_added_up(self):
             user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
 
             failed_storage1 = 90000
@@ -76,14 +76,16 @@ class TestAdminUsersList(TestController):
             self.create_run_model(pub_storage1, "test3", user, constants.MODEL_RUN_STATUS_PUBLISHED)
             pub_storage2 = 100000
             self.create_run_model(pub_storage2, "test4", user, constants.MODEL_RUN_STATUS_PUBLISHED)
+            pub_storage3 = 110000
+            self.create_run_model(pub_storage3, "test5", user, constants.MODEL_RUN_STATUS_PUBLIC)
 
             response = self.app.get(
                 url=url(controller='user', action=''),
                 expect_errors=True
             )
             assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(failed_storage1 + failed_storage2))))
-            assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(pub_storage1 + pub_storage2))))
-            assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round((pub_storage1 + pub_storage2 + failed_storage1 + failed_storage2)))))
+            assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round(pub_storage1 + pub_storage2 + pub_storage3))))
+            assert_that(response.normal_body, contains_string(str(utils.convert_mb_to_gb_and_round((pub_storage1 + pub_storage2 + pub_storage3 + failed_storage1 + failed_storage2)))))
 
     def test_GIVEN_null_storage_WHEN_list_THEN_returns_current_storages_corectly_added_up(self):
             user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)

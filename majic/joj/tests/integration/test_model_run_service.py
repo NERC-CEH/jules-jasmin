@@ -100,6 +100,28 @@ class ModelRunServiceTest(TestWithFullModelRun):
         model_runs = self.model_run_service.get_models_for_user(user1)
         assert_that(len(model_runs), is_(2))
 
+    def test_GIVEN_user_has_public_model_run_WHEN_get_model_runs_for_user_THEN_public_model_is_returned(self):
+        # Add one user and give them a public and unpublished model run
+        with session_scope(Session) as session:
+            # First add user
+            user1 = User()
+            user1.name = 'user1'
+            session.add(user1)
+            session.commit()
+            # Give a model
+            model_run1 = ModelRun()
+            model_run1.name = "MR1"
+            model_run1.user_id = user1.id
+            model_run1.status = self._status(constants.MODEL_RUN_STATUS_CREATED)
+            model_run2 = ModelRun()
+            model_run2.name = "MR2"
+            model_run2.status = self._status(constants.MODEL_RUN_STATUS_PUBLIC)
+            model_run2.user_id = user1.id
+            session.add_all([model_run1, model_run2])
+        # Get the users model runs
+        model_runs = self.model_run_service.get_models_for_user(user1)
+        assert_that(len(model_runs), is_(2))
+
     def test_GIVEN_user_has_published_model_run_WHEN_get_published_model_runs_THEN_only_published_model_run_returned(self):
         # Add one user and give them a published and unpublished model run
         with session_scope(Session) as session:
@@ -122,7 +144,30 @@ class ModelRunServiceTest(TestWithFullModelRun):
         assert_that(len(model_runs), is_(1))
         assert_that(model_runs[0].name, is_("MR2"))
 
-    def test_GIVEN_no_published_runs_WHEN_get_published_model_runs_THEN_empty_list(self):
+    def test_GIVEN_user_has_public_model_run_WHEN_get_published_model_runs_THEN_only_public_model_run_returned(self):
+        # Add one user and give them a published and unpublished model run
+        with session_scope(Session) as session:
+            # First add user
+            user1 = User()
+            user1.name = 'user1'
+            session.add(user1)
+            session.commit()
+            # Give them each a model
+            model_run1 = ModelRun()
+            model_run1.name = "MR1"
+            model_run1.user_id = user1.id
+            model_run2 = ModelRun()
+            model_run2.name = "MR2"
+            model_run2.status = self._status(constants.MODEL_RUN_STATUS_PUBLIC)
+            model_run2.user_id = user1.id
+            session.add_all([model_run1, model_run2])
+        # Get the published model runs
+        model_runs = self.model_run_service.get_published_models()
+        assert_that(len(model_runs), is_(1))
+        assert_that(model_runs[0].name, is_("MR2"))
+
+
+    def test_GIVEN_no_published_or_public_runs_WHEN_get_published_model_runs_THEN_empty_list(self):
         model_runs = self.model_run_service.get_published_models()
         assert_that(model_runs, is_([]))
 
@@ -168,14 +213,15 @@ class ModelRunServiceTest(TestWithFullModelRun):
             model_run2 = ModelRun()
             model_run2.name = "MR2"
             model_run2.date_created = datetime(2014, 6, 9, 12, 30, 24)
-            model_run2.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            model_run2.status = self._status(constants.MODEL_RUN_STATUS_PUBLIC)
             session.add(model_run2)
             session.commit()
             model_run3 = ModelRun()
             model_run3.name = "MR3"
-            model_run3.date_created = datetime(2014, 6, 9, 11, 39, 30)
             model_run3.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
-            session.add_all([model_run1, model_run2, model_run3])
+            model_run3.date_created = datetime(2014, 6, 9, 11, 39, 30)
+            session.add(model_run3)
+            session.commit()
         model_runs = self.model_run_service.get_published_models()
         assert_that(model_runs[0].name, is_("MR2"))
         assert_that(model_runs[1].name, is_("MR3"))
@@ -213,18 +259,17 @@ class ModelRunServiceTest(TestWithFullModelRun):
             model_run = ModelRun()
             model_run.name = "MR1"
             model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_PUBLIC)
             session.add(model_run)
         # Get the users model runs
         model_run_returned = self.model_run_service.get_model_by_id(user, model_run.id)
         assert_that(model_run_returned.name, is_("MR1"))
 
-    def test_GIVEN_model_run_has_parametersWHEN_get_model_run_by_id_THEN_model_run_has_parameter_values_loaded(self):
+    def test_GIVEN_model_run_has_parameters_WHEN_get_model_run_by_id_THEN_model_run_has_parameter_values_loaded(self):
         # Add a user and give them a model
+        user = self.login()
+        model_run = self.create_run_model(0, "MR1", user)
         with session_scope(Session) as session:
-            # First add user
-            user = User()
-            user.name = 'user1'
-
             # Add parameter value
             parameter_value = ParameterValue()
             parameter_value.parameter_id = 1
@@ -235,9 +280,7 @@ class ModelRunServiceTest(TestWithFullModelRun):
             parameter.parameter_values = [parameter_value]
 
             # Give them a model
-            model_run = ModelRun()
-            model_run.name = "MR1"
-            model_run.user = user
+            model_run = session.query(ModelRun).filter(ModelRun.id == model_run.id).one()
             model_run.parameter_values = [parameter_value]
             session.add(model_run)
         with session_scope(Session) as session:
@@ -248,7 +291,6 @@ class ModelRunServiceTest(TestWithFullModelRun):
         pv = model_run_returned.parameter_values[0]
         assert_that(pv.value, is_('123'))
         assert_that(pv.parameter.name, is_("Param"))
-        assert pv.parameter.namelist
 
     def test_GIVEN_model_run_id_belongs_to_another_user_WHEN_get_model_run_by_id_THEN_NoResultFound_exception(self):
         # Add two users and give one a model
@@ -336,6 +378,72 @@ class ModelRunServiceTest(TestWithFullModelRun):
         with session_scope(Session) as session:
             updated_model_run = session.query(ModelRun).join(ModelRunStatus).filter(ModelRun.id == model_run.id).one()
             assert_that(updated_model_run.status.name, is_(constants.MODEL_RUN_STATUS_PUBLISHED))
+
+    def test_GIVEN_complete_model_WHEN_make_public_model_THEN_ServiceException_raised(self):
+        # Add a user and give them a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_COMPLETED)
+            session.add(model_run)
+        # Get the users model runs
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.make_public_model(user, model_run.id)
+
+    def test_GIVEN_model_belongs_to_another_user_WHEN_make_public_model_THEN_ServiceException_raised(self):
+        # Add two users and give one a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            user2 = User()
+            user2.name = 'user2'
+            session.add_all([user, user2])
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            session.add(model_run)
+        # Get the users model runs
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.make_public_model(user2, model_run.id)
+
+    def test_GIVEN_nonexistent_model_id_WHEN_make_public_model_THEN_ServiceException_raised(self):
+        # Add a user
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+        with self.assertRaises(ServiceException, msg="Should have raised a ServiceException"):
+            self.model_run_service.make_public_model(user, -100)
+
+    def test_GIVEN_user_has_published_model_WHEN_make_public_model_THEN_model_public(self):
+        # Add a user and give them a model
+        with session_scope(Session) as session:
+            user = User()
+            user.name = 'user1'
+            session.add(user)
+            session.commit()
+            # Give them a model
+            model_run = ModelRun()
+            model_run.name = "MR1"
+            model_run.user_id = user.id
+            model_run.status = self._status(constants.MODEL_RUN_STATUS_PUBLISHED)
+            session.add(model_run)
+
+        # Get the users model runs
+        self.model_run_service.make_public_model(user, model_run.id)
+
+        with session_scope(Session) as session:
+            updated_model_run = session.query(ModelRun).join(ModelRunStatus).filter(ModelRun.id == model_run.id).one()
+            assert_that(updated_model_run.status.name, is_(constants.MODEL_RUN_STATUS_PUBLIC))
 
     def test_GIVEN_default_science_configurations_THEN_all_configurations_returned(self):
 

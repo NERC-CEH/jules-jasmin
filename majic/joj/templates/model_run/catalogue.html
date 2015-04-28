@@ -71,9 +71,14 @@
             <div class="span1">
                 <br/>
                 <!--If the run status does not allow publishing we just display an inert icon -->
-                <i py:if="not model_run.status.allow_publish() and not model_run.status.is_published()" class="fa fa-share-square-o fa-2x ico-disabled"></i>
+                <i py:if="not model_run.status.allow_publish() and not model_run.status.is_published() and not model_run.status.is_public()"
+                   class="fa fa-share-square-o fa-2x ico-disabled"></i>
+                <!--If the run status is public we display an inert purple icon -->
+                <i py:if="model_run.status.is_public()" class="fa fa-cloud-upload fa-2x purple"></i>
                 <!--If the run status is published we display an inert purple icon -->
-                <i py:if="model_run.status.is_published()" class="fa fa-share-square-o fa-2x purple"></i>
+                <i py:if="model_run.status.is_published() and c.showing != 'mine'"
+                   class="fa fa-share-square-o fa-2x purple"></i>
+
                 <!--If the run status allows us to publish the run on the map then we display the publish icon with color / hover-->
                 <form py:if="model_run.status.allow_publish()"
                       action="${h.url(controller='model_run', action='publish', id=model_run.id)}"
@@ -88,6 +93,24 @@
                     </a>
                     <div class="ico-text purple">Publish</div>
                 </form>
+
+                <!--If the run status allows us to make it public we display the publish icon with color / hover-->
+                <form py:if="model_run.status.allow_make_public() and c.showing == 'mine'"
+                      action="${h.url(controller='model_run', action='make_public', id=model_run.id)}"
+                      method="post"
+                      data-confirm="You can not undo making a model run public. It will be viewable by anyone on the internet and so please check you have the legal right to do this. Are you sure you want to publish it?"
+                      style="margin:0">
+                    <input type="hidden" name="came_from" id="came_from" value="catalogue"/>
+                    <i class="fa fa-share-square-o fa-2x purple"></i>
+                    <a onclick="$(this).parent().submit()"
+                       onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('purple')"
+                       onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('purple')">
+                        <i class="fa  fa-cloud-upload fa-2x ico" ></i>
+                    </a>
+                    <div class="ico-text purple">Make Public</div>
+                    <!--If the run status is published we display an inert purple icon -->
+                </form>
+
             </div>
             <!-- The Duplicate Icon -->
             <div class="span1">
@@ -129,10 +152,10 @@
     <!--THE STATUS AND DATE-->
     <div class="span2 status-span">
         <h3 class="status" style="color:${model_run.status.get_display_color()}">${model_run.status.name}</h3>
-        <span class="date" py:if="not model_run.status.is_published()">
+        <span class="date" py:if="not model_run.status.is_viewable_by_any_majic_user()">
             ${h.display_date(model_run.last_status_change, "%d %b %Y at %X")}
         </span>
-        <span class="date" py:if="model_run.status.is_published()">
+        <span class="date" py:if="model_run.status.is_viewable_by_any_majic_user()">
             by ${model_run.user.name}
         </span>
     </div>

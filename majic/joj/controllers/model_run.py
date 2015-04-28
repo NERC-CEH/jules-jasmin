@@ -86,7 +86,8 @@ class ModelRunController(BaseController):
 
         total_user_storage = 0
         for model in c.model_runs:
-            if model.status.name != constants.MODEL_RUN_STATUS_PUBLISHED:
+            if model.status.name != constants.MODEL_RUN_STATUS_PUBLISHED and \
+               model.status.name != constants.MODEL_RUN_STATUS_PUBLIC:
                 if model.storage_in_mb is not None:
                     total_user_storage += model.storage_in_mb
 
@@ -121,6 +122,21 @@ class ModelRunController(BaseController):
             redirect(url(controller='model_run', action='index'))
 
         self._model_run_service.publish_model(self.current_user, id)
+        helpers.success_flash("Model run has been published")
+        redirect_back_to_came_from_for_model_run(id, request.params)
+
+    def make_public(self, id):
+        """
+        Controller allowing existing model runs to be made public
+        :param id: ID of model run to make public
+        :return: redirect to the page you came from
+        """
+        if not request.method == 'POST':
+            helpers.error_flash("Making a model run public must be a post")
+            redirect(url(controller='model_run', action='index'))
+
+        helpers.success_flash("Model run has been made public")
+        self._model_run_service.make_public_model(self.current_user, id)
         redirect_back_to_came_from_for_model_run(id, request.params)
 
     def delete(self, id):
@@ -163,6 +179,9 @@ class ModelRunController(BaseController):
 
         c.user_has_model_run_being_created = \
             self._model_run_service.get_user_has_model_run_being_created(self.current_user)
+
+        # does the model belong to this user. Not to be used for security but for display purposes
+        c.is_users_model = (c.user.id == model_run.user.id)
 
         return render("model_run/summary.html")
 

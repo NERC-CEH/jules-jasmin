@@ -26,7 +26,8 @@ import json
 from majic_web_service.controllers.run_property import RunPropertyController
 from majic_web_service.services.run_property_service import RunPropertyService, ServiceException
 from majic_web_service.tests import TestController
-from majic_web_service.utils.constants import JSON_MODEL_RUNS, MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED
+from majic_web_service.utils.constants import JSON_MODEL_RUNS, MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED, \
+    MODEL_RUN_STATUS_PUBLIC
 from majic_web_service.utils.general import convert_time_to_standard_string
 
 
@@ -64,6 +65,7 @@ class TestGetRunProperties(TestController):
             model_id,
             last_status_change,
             username,
+            False,
             False)
 
     def test_GIVEN_database_has_different_workbench_username_from_username_WHEN_request_run_properties_THEN_workbench_username_returned(self):
@@ -86,6 +88,7 @@ class TestGetRunProperties(TestController):
             model_id,
             last_status_change,
             workbench_username,
+            False,
             False)
 
     def test_GIVEN_workbench_username_is_none_WHEN_request_run_properties_THEN_workbench_username_none_returned(self):
@@ -108,13 +111,15 @@ class TestGetRunProperties(TestController):
             model_id,
             last_status_change,
             workbench_username,
+            False,
             False)
 
     def test_GIVEN_database_has_more_than_one_row_WHEN_request_run_properties_THEN_return_list_with_all_items_in(self):
-        usernames = ["username", "username2"]
-        last_status_changes = [datetime(2015, 5, 3, 2, 1), datetime(2014, 6, 4, 3, 2)]
-        statuses = [MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED]
-        expected_is_published = [False, True]
+        usernames = ["username", "username2", "username3"]
+        last_status_changes = [datetime(2015, 5, 3, 2, 1), datetime(2014, 6, 4, 3, 2), datetime(2013, 6, 4, 3, 20)]
+        statuses = [MODEL_RUN_STATUS_COMPLETED, MODEL_RUN_STATUS_PUBLISHED, MODEL_RUN_STATUS_PUBLIC]
+        expected_is_published = [False, True, True]
+        expected_is_public = [False, False, True]
         model_ids = []
 
         for username, last_status_change, status in zip(usernames, last_status_changes, statuses):
@@ -128,16 +133,25 @@ class TestGetRunProperties(TestController):
 
         assert_that(response.status_code, is_(200))
         response = response.json_body
-        assert_that(response[JSON_MODEL_RUNS], has_length(2), "model run count")
+        assert_that(response[JSON_MODEL_RUNS], has_length(3), "model run count")
         self.assert_model_run_json_is(
             response[JSON_MODEL_RUNS][0],
+            model_ids[2],
+            last_status_changes[2],
+            usernames[2],
+            expected_is_published[2],
+            expected_is_public[2])
+        self.assert_model_run_json_is(
+            response[JSON_MODEL_RUNS][1],
             model_ids[1],
             last_status_changes[1],
             usernames[1],
-            expected_is_published[1])
+            expected_is_published[1],
+            expected_is_public[1])
         self.assert_model_run_json_is(
-            response[JSON_MODEL_RUNS][1],
+            response[JSON_MODEL_RUNS][2],
             model_ids[0],
             last_status_changes[0],
             usernames[0],
-            expected_is_published[0])
+            expected_is_published[0],
+            expected_is_public[0])

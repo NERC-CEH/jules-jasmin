@@ -24,7 +24,7 @@ from webtest import TestApp
 from majic_web_service.config.environment import load_environment
 from majic_web_service.model import session_scope, ModelRun, User, ModelRunStatus
 from majic_web_service.utils.constants import JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, \
-    JSON_LAST_STATUS_CHANGE
+    JSON_LAST_STATUS_CHANGE, JSON_IS_PUBLIC
 from majic_web_service.utils.general import convert_time_to_standard_string
 
 __all__ = ['environ', 'url', 'TestController']
@@ -111,7 +111,7 @@ class TestController(TestCase):
             session.flush()
             return model_run.id
 
-    def assert_model_run_json_is(self, model_run_json_dict, model_id, last_status_change, username, is_published):
+    def assert_model_run_json_is(self, model_run_json_dict, model_id, last_status_change, username, is_published, is_public):
         """
         assert that the model_run_json_dict has the expected answers
         :param model_run_json_dict: dictionary to check
@@ -119,10 +119,12 @@ class TestController(TestCase):
         :param last_status_change: last status change
         :param username: the username who owns the model run
         :param is_published: whether model run is published
+        :param is_public: whether model run is public
         :return: nothing
         :raises AssertionError: if the two don't match
         """
         assert_that(model_run_json_dict[JSON_MODEL_RUN_ID], is_(model_id), "model run id")
         assert_that(model_run_json_dict[JSON_USER_NAME], is_(username), "username")
         assert_that(model_run_json_dict[JSON_IS_PUBLISHED], is_(is_published), "the model is published")
+        assert_that(model_run_json_dict[JSON_IS_PUBLIC], is_(is_public), "the model is public")
         assert_that(model_run_json_dict[JSON_LAST_STATUS_CHANGE], is_(convert_time_to_standard_string(last_status_change)), "last changed")

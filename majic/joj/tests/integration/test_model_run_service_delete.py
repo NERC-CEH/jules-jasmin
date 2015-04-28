@@ -24,7 +24,7 @@ from hamcrest import *
 from joj.model import User, session_scope, Session, ModelRun, ModelRunStatus, Parameter, ParameterValue, Dataset, \
     LandCoverAction
 from joj.services.general import ServiceException
-from joj.services.model_run_service import ModelRunService
+from joj.services.model_run_service import ModelRunService, ModelPublished
 from pylons import config
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -98,6 +98,27 @@ class ModelRunServiceDeleteTest(TestWithFullModelRun):
 
         with self.assertRaises(NoResultFound):
             self.model_run_service.get_model_by_id(user, model.id)
+
+    def test_GIVEN_model_belongs_to_someone_else_and_is_public_and_user_is_an_admin_WHEN_delete_THEN_delete_model(self):
+        self.job_runner_client.delete = Mock()
+        # Add a user who doesn't have any model runs
+        other_user = self.login("other_user")
+        model = self.create_run_model(10, "test", other_user, constants.MODEL_RUN_STATUS_PUBLIC)
+        user = self.login(access_level=constants.USER_ACCESS_LEVEL_ADMIN)
+
+        self.model_run_service.delete_run_model(model.id, user)
+
+        with self.assertRaises(NoResultFound):
+            self.model_run_service.get_model_by_id(user, model.id)
+
+    def test_GIVEN_model_and_is_public_and_user_is_not_an_admin_WHEN_delete_THEN_raise(self):
+        self.job_runner_client.delete = Mock()
+        # Add a user who doesn't have any model runs
+        user = self.login("user")
+        model = self.create_run_model(10, "test", user, constants.MODEL_RUN_STATUS_PUBLIC)
+
+        assert_that(calling(self.model_run_service.delete_run_model).with_args(model.id, user),
+                    raises(ModelPublished))
 
     def test_GIVEN_full_model_WHEN_delete_THEN_model_is_deleted(self):
 

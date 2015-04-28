@@ -40,6 +40,20 @@ class ModelRunStatus(Base):
     id = Column(SmallInteger, primary_key=True)
     name = Column(String(constants.DB_STRING_SIZE))
 
+    def is_viewable_by_any_majic_user(self):
+        """
+        Is this model run viewable by anyone with a majic account
+        :return: True if it is, false otherwise
+        """
+        return self.is_published() or self.is_public()
+
+    def is_public(self):
+        """
+        Is the ModelRunStatus public?
+        :return: True if public, false otherwise
+        """
+        return self.name == constants.MODEL_RUN_STATUS_PUBLIC
+
     def is_published(self):
         """
         Is the ModelRunStatus published?
@@ -54,12 +68,21 @@ class ModelRunStatus(Base):
         """
         return self.name == constants.MODEL_RUN_STATUS_COMPLETED
 
+    def allow_make_public(self):
+        """
+        Does the ModelRunStatus allow the ModelRun to be made public?
+        :return: True if a ModelRun can be made public, false otherwise
+        """
+        return self.is_published()
+
     def allow_visualise(self):
         """
         Does the ModelRunStatus allow the ModelRun to be visualised on the map?
         :return: True if the ModelRun can be visualised, false otherwise
         """
-        return self.name == constants.MODEL_RUN_STATUS_COMPLETED or self.name == constants.MODEL_RUN_STATUS_PUBLISHED
+        return self.name == constants.MODEL_RUN_STATUS_COMPLETED or \
+            self.name == constants.MODEL_RUN_STATUS_PUBLISHED or \
+            self.name == constants.MODEL_RUN_STATUS_PUBLIC
 
     def allow_delete(self, user_is_admin):
         """
@@ -68,7 +91,7 @@ class ModelRunStatus(Base):
         :return:True if run can be deleted, false otherwise
         """
 
-        if self.name == constants.MODEL_RUN_STATUS_PUBLISHED:
+        if self.name == constants.MODEL_RUN_STATUS_PUBLISHED or self.name == constants.MODEL_RUN_STATUS_PUBLIC:
             return user_is_admin
 
         return not (
@@ -84,6 +107,7 @@ class ModelRunStatus(Base):
         return {
             constants.MODEL_RUN_STATUS_COMPLETED: '#38761d',
             constants.MODEL_RUN_STATUS_PUBLISHED: '#711780',
+            constants.MODEL_RUN_STATUS_PUBLIC: '#711780',
             constants.MODEL_RUN_STATUS_SUBMITTED: '#f6b26b',
             constants.MODEL_RUN_STATUS_RUNNING: '#f6b26b',
             constants.MODEL_RUN_STATUS_PENDING: '#f6b26b',

@@ -94,7 +94,9 @@ class ModelRunService(DatabaseService):
                 return session\
                     .query(ModelRun)\
                     .join(ModelRun.status) \
-                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED) \
+                    .filter(or_(
+                            ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED,
+                            ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLIC))\
                     .order_by(desc(ModelRun.date_created))\
                     .options(joinedload('user'))\
                     .options(joinedload(ModelRun.datasets)) \
@@ -122,7 +124,8 @@ class ModelRunService(DatabaseService):
                          .contains_eager(Parameter.namelist))\
                 .one()
             # Is user allowed to access this run?
-            if model_run.user_id == user.id or model_run.status.is_published():
+            if model_run.user_id == user.id or \
+                    model_run.status.is_viewable_by_any_majic_user():
                 return model_run
             raise NoResultFound
 
@@ -151,6 +154,27 @@ class ModelRunService(DatabaseService):
                 .all()
             for dataset in datasets:
                 dataset.viewable_by_user_id = None
+
+    def make_public_model(self, user, id):
+        """
+        Make a model run public
+        :param user: User to verify ownership of model run
+        :param id: ID of the model run to publish
+        :return: void
+        :raise ServiceException: if model doesn't exist, is not published or is not owned by user
+        """
+        with self.transaction_scope() as session:
+            try:
+                model_run = session.query(ModelRun) \
+                    .join(ModelRunStatus) \
+                    .join(User) \
+                    .filter(ModelRun.user == user) \
+                    .filter(ModelRun.id == id) \
+                    .filter(ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED).one()
+            except NoResultFound:
+                raise ServiceException("Error making model run public. Either the requested model run doesn't exist, "
+                                       "is not yet published or you are not authorised to access it")
+            model_run.change_status(session, constants.MODEL_RUN_STATUS_PUBLIC)
 
     def get_code_versions(self):
         """
@@ -646,7 +670,10 @@ class ModelRunService(DatabaseService):
                 .outerjoin(ParameterValue)\
                 .outerjoin(LandCoverAction) \
                 .filter(ModelRun.id == model_id) \
-                .filter(or_(ModelRun.user_id == user.id, ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED)) \
+                .filter(or_(
+                    ModelRun.user_id == user.id,
+                    ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLISHED,
+                    ModelRunStatus.name == constants.MODEL_RUN_STATUS_PUBLIC,)) \
                 .options(contains_eager(ModelRun.parameter_values)) \
                 .options(contains_eager(ModelRun.land_cover_actions)) \
                 .one()
@@ -723,7 +750,8 @@ class ModelRunService(DatabaseService):
         if not user.is_admin():
             if user.id != model_run.user_id:
                 raise NoResultFound()
-            if model_run.status.name == constants.MODEL_RUN_STATUS_PUBLISHED:
+            if model_run.status.name == constants.MODEL_RUN_STATUS_PUBLISHED or \
+               model_run.status.name == constants.MODEL_RUN_STATUS_PUBLIC:
                 raise ModelPublished()
 
         model_run_name = model_run.name

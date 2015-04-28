@@ -93,3 +93,18 @@ class TestModelRunCatalogue(TestController):
 
         assert_that(count, is_(1), 'Count(Model)')
 
+    def test_GIVEN_model_that_does_belongs_non_admin_user_and_is_public_WHEN_delete_THEN_model_published_exception(self):
+
+        user = self.login('')
+        model = self.create_run_model(0, "test", user, constants.MODEL_RUN_STATUS_PUBLIC)
+
+        response = self.app.post(
+            url(controller='model_run', action='delete', id=str(model.id)),
+            params={})
+
+        assert_that(response.status_code, is_(302), "Response is redirect")
+        assert_that(urlparse(response.response.location).path, is_(url(controller='model_run', action='index')), "url")
+        with session_scope(Session) as session:
+            count = session.query(ModelRun).filter(ModelRun.id == model.id).count()
+
+        assert_that(count, is_(1), 'Count(Model)')
