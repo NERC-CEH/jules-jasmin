@@ -22,12 +22,12 @@ from hamcrest import *
 import unittest
 from mock import Mock
 import os
+from getpass import getuser
 from sync.file_system_comparer import FileSystemComparer
 from sync.clients.file_system_client import FileSystemClient
 from sync.file_properties import FileProperties
-from sync.utils.config_accessor import ConfigAccessor
-from sync.utils.constants import JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_IS_PUBLISHED, JSON_USER_NAME, JSON_IS_PUBLIC
 from tests.test_mother import ConfigMother, RunModelPropertiesMother
+
 
 
 def assert_arrays_the_same(directory_list, expected_directory_list, message):
@@ -58,12 +58,20 @@ def assert_that_file_propeties_are(file_properties, expected_file_properties, me
                         "Can not find {} in expected list {}".format(directory, expected_file_properties))
 
 
-def assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=None, expected_changed_dirs=[], expected_deleted_dirs=[]):
+def assert_that_file_system_comparer(
+        file_system_comparer,
+        expected_new_dirs=None,
+        expected_changed_dirs=None,
+        expected_deleted_dirs=None,
+        existing_non_deleted_directories=None):
+
     assert_that_file_propeties_are(file_system_comparer.new_directories, expected_new_dirs, "new directories")
     assert_arrays_the_same(file_system_comparer.deleted_directories, expected_deleted_dirs, "deleted directories")
 
     assert_that_file_propeties_are(file_system_comparer.changed_directories, expected_changed_dirs,
                                    "changed directories")
+    assert_that_file_propeties_are(file_system_comparer.existing_non_deleted_directories, existing_non_deleted_directories,
+                                   "UNchanged directories")
 
 
 class TestFileSystemComparer(unittest.TestCase):
@@ -120,12 +128,19 @@ class TestFileSystemComparer(unittest.TestCase):
 
         runids = [100, 12]
         expected_new_dirs = []
+        expected_existing_non_deleted_directories = [FileProperties("{}/run{}".format(
+            self.expected_path, runid),
+            self.model_owner,
+            False,
+            False) for runid in runids]
         filelist = self.create_filelist_and_mock_file_stats(runids)
         model_properties = RunModelPropertiesMother.create_model_run_properties(runids)
         file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
-        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 
         file_system_comparer.perform_analysis(model_properties)
+
+        assert_that_file_system_comparer(file_system_comparer, expected_new_dirs=expected_new_dirs,
+                                    existing_non_deleted_directories=expected_existing_non_deleted_directories)
 
     def test_GIVEN_one_extra_entry_on_file_list_WHEN_compare_THEN_extra_entry_on_del_list(self):
 
@@ -159,7 +174,8 @@ class TestFileSystemComparer(unittest.TestCase):
 
         file_system_comparer.perform_analysis(model_properties)
 
-        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
+        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs,
+                                         existing_non_deleted_directories=expected_changed_dirs)
 
     def test_GIVEN_existing_file_is_not_published_and_model_is_WHEN_compare_THEN_directory_is_set_for_change(self):
 
@@ -173,7 +189,8 @@ class TestFileSystemComparer(unittest.TestCase):
 
         file_system_comparer.perform_analysis(model_properties)
 
-        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
+        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs,
+                                         existing_non_deleted_directories=expected_changed_dirs)
 
     def test_GIVEN_existing_file_is_not_public_and_model_is_WHEN_compare_THEN_directory_is_set_for_change(self):
 
@@ -187,7 +204,23 @@ class TestFileSystemComparer(unittest.TestCase):
 
         file_system_comparer.perform_analysis(model_properties)
 
-        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs)
+        assert_that_file_system_comparer(file_system_comparer, expected_changed_dirs=expected_changed_dirs,
+                                         existing_non_deleted_directories=expected_changed_dirs)
+
+    def test_GIVEN_extra_directory_WHEN_add_extra_directories_to_sync_THEN_extra_directory_added(self):
+        added_dir = "data"
+        self.config = ConfigMother.test_configuration_with_values(extra_directories_to_sync=added_dir)
+        expected_added_dir = [FileProperties("data", getuser(), True, True)]
+        file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
+        file_system_comparer.new_directories = []
+        file_system_comparer.deleted_directories = []
+        file_system_comparer.existing_non_deleted_directories = []
+        file_system_comparer.changed_directories = []
+
+        file_system_comparer.add_extra_directories_to_sync()
+
+        assert_that_file_system_comparer(file_system_comparer, existing_non_deleted_directories=expected_added_dir)
+
 
 if __name__ == '__main__':
     unittest.main()

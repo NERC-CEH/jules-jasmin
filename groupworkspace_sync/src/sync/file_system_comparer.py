@@ -16,13 +16,14 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+from getpass import getuser
 import logging
 
 import re
 import os
 
 from sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
-    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX
+    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX, CONFIG_EXTRA_DIRS_TO_SYNC
 from sync.clients.file_system_client import FileSystemClient
 from sync.file_properties import FileProperties
 
@@ -37,6 +38,7 @@ class FileSystemComparer(object):
         new_directories - with FileProperties for models that needs to be copied
         deleted_directories  - with directory names which need deleting
         changed_directories - with FileProperties of directories which need their permissions updating
+        existing_non_deleted_directories - directories which are neither new of deleted
     """
 
     def __init__(
@@ -58,6 +60,7 @@ class FileSystemComparer(object):
         self.new_directories = None
         self.deleted_directories = None
         self.changed_directories = None
+        self.existing_non_deleted_directories = None
 
     def perform_analysis(self, model_properties):
         """
@@ -67,6 +70,7 @@ class FileSystemComparer(object):
         """
         self.new_directories = []
         self.deleted_directories = []
+        self.existing_non_deleted_directories = []
         self.changed_directories = []
 
         existing_run_ids = set()
@@ -96,6 +100,7 @@ class FileSystemComparer(object):
         existing_run_ids.intersection_update(model_run_ids)
         for model_run_id in existing_run_ids:
             file_properties_to_set = file_properties_for_model_runs[model_run_id]
+            self.existing_non_deleted_directories.append(file_properties_to_set)
             current_file_properties = self._file_system_client.get_file_properties(file_properties_to_set.file_path)
             if current_file_properties != file_properties_for_model_runs[model_run_id]:
                 self.changed_directories.append(file_properties_to_set)
@@ -112,3 +117,13 @@ class FileSystemComparer(object):
 
         dir_name = "{}{}".format(MODEL_RUN_DIR_PREFIX, model_run_id)
         return os.path.join(self.data_path, dir_name)
+
+    def add_extra_directories_to_sync(self):
+        """
+        Add extra directories to synchronise as public data
+        :return: nothing
+        """
+        owner = getuser()
+        for dir_name in self._config.get(CONFIG_EXTRA_DIRS_TO_SYNC, CONFIG_DATA_SECTION).split():
+            dir_properties = FileProperties(dir_name, owner, True, True)
+            self.existing_non_deleted_directories.append(dir_properties)

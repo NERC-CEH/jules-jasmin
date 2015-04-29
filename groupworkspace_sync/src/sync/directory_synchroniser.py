@@ -99,8 +99,8 @@ class DirectorySynchroniser(object):
         """
         copied_count = 0
         try:
-            self._file_system_client.create_dir(new_directory_path)
-            copied_count += 1
+            if self._file_system_client.create_dir(new_directory_path):
+                copied_count += 1
 
             directory_contents = self._apache_client.get_contents(new_directory_path)
             for directory_content in directory_contents:
@@ -181,7 +181,9 @@ class DirectorySynchroniser(object):
         :param directory_types: a object holding new, changed and deleted directories
         :return: count of new, updated and deleted file and directories
         """
+        new_count = self.copy_new(directory_types.new_directories) + \
+            self.copy_new(directory_types.existing_non_deleted_directories)
         return (
-            self.copy_new(directory_types.new_directories),
+            new_count,
             self.update_permissions(directory_types.changed_directories),
             self.delete(directory_types.deleted_directories))

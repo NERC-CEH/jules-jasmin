@@ -51,7 +51,11 @@ class TestFileSystemClient(unittest.TestCase):
             shutil.rmtree(self.root_dir)
         except OSError as e:
             if e.errno != 2:  # file doesn't exist
-                raise e
+                config = ConfigMother.test_configuration_with_values(file_root_path=self.root_dir)
+                file_system_client = FileSystemClient(config)
+                file_system_client.delete_directory("run1")
+                shutil.rmtree(self.root_dir)
+
 
     def test_GIVEN_file_WHEN_from_path_THEN_properties_set(self):
         props = self.file_system_client.get_file_properties(self.filename)
@@ -140,6 +144,27 @@ class TestFileSystemClient(unittest.TestCase):
         fileobj = self.file_system_client.create_file(file_path)
 
         assert_that(fileobj, none(), "File object is none")
+
+    def test_GIVEN_file_in_non_writable_directory_WHEN_create_THEN_file_created_after_permissions_changed(self):
+
+        self.create_file_and_sub_dir()
+        file_path = os.path.join(self.model_run_path, "tmp")
+        self.file_system_client.set_permissions(FileProperties(self.model_run_path, "nobody", False, False))
+
+        fileobj = self.file_system_client.create_file(file_path)
+        fileobj.write("hi")
+
+        assert_that(os.path.isfile(os.path.join(self.root_dir, file_path)), "Path is not a file or doesn't exist")
+
+    def test_GIVEN_dir_in_non_writable_directory_WHEN_create_THEN_file_created_after_permissions_changed(self):
+
+        self.create_file_and_sub_dir()
+        file_path = os.path.join(self.model_run_path, "tmp")
+        self.file_system_client.set_permissions(FileProperties(self.model_run_path, "nobody", False, False))
+
+        self.file_system_client.create_dir(file_path)
+
+        assert_that(os.path.isdir(os.path.join(self.root_dir, file_path)), "Path is not a file or doesn't exist")
 
     def test_GIVEN_any_error_thrown_WHEN_create_THEN_FileSystemClientError(self):
         file_path = "doesntexists/file.txt"

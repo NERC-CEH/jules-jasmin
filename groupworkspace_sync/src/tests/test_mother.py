@@ -22,7 +22,7 @@ import os
 from sync.utils.constants import CONFIG_URL, CONFIG_WS_SECTION, CONFIG_DATA_PATH, CONFIG_DATA_SECTION, \
     CONFIG_NOBODY_USERNAME, JSON_MODEL_RUN_ID, JSON_USER_NAME, JSON_IS_PUBLISHED, JSON_IS_PUBLIC, \
     CONFIG_APACHE_SECTION, CONFIG_APACHE_TIMEOUT, CONFIG_MAJIC_WS_TIMEOUT, CONFIG_FILES_SECTION, CONFIG_ROOT_PATH, \
-    CONFIG_APACHE_ROOT_PATH, CONFIG_CONTENT_TO_IGNORE_REGEX
+    CONFIG_APACHE_ROOT_PATH, CONFIG_CONTENT_TO_IGNORE_REGEX, CONFIG_EXTRA_DIRS_TO_SYNC
 from sync.utils.config_accessor import ConfigAccessor
 
 
@@ -69,7 +69,8 @@ class ConfigMother(object):
             majic_ws_timeout=None,
             file_root_path=None,
             apache_root_path=None,
-            reg_ex_to_ignore=None):
+            reg_ex_to_ignore=None,
+            extra_directories_to_sync=None):
         """
         load the test configuration file but override the data path
         :param data_path: data path to set, defualt use standard
@@ -79,6 +80,7 @@ class ConfigMother(object):
         :param file_root_path: root of files
         :param apache_root_path: root of apache server
         :param reg_ex_to_ignore: list of contents to ignore when copying files
+        :param extra_directories_to_sync: extra dirs to sync
         :return: a safe config parser with the test.ini file loaded into it as a ConfigAccessor
         """
         config = ConfigMother.raw_test_configuration()
@@ -96,6 +98,8 @@ class ConfigMother(object):
             config.set(CONFIG_APACHE_SECTION, CONFIG_APACHE_ROOT_PATH, apache_root_path)
         if reg_ex_to_ignore is not None:
             config.set(CONFIG_DATA_SECTION, CONFIG_CONTENT_TO_IGNORE_REGEX, reg_ex_to_ignore)
+        if extra_directories_to_sync is not None:
+            config.set(CONFIG_DATA_SECTION, CONFIG_EXTRA_DIRS_TO_SYNC, extra_directories_to_sync)
         return ConfigAccessor(config)
 
 

@@ -35,6 +35,7 @@ CONFIG_DATA_SECTION = "Data"
 CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised within the root
 CONFIG_EXTENSIONS_TO_COPY = "extensions_to_copy"  # space separated extensions that can be copied
 CONFIG_CONTENT_TO_IGNORE_REGEX = "content_to_ignore_regex"  # space separated regex of content which should be ignored
+CONFIG_EXTRA_DIRS_TO_SYNC = "extra_directories_to_sync"  # space separated list of extra directories to sync
 
 CONFIG_APACHE_SECTION = "Apache"
 CONFIG_APACHE_ROOT_PATH = "root_path"  # web address of the data runs are stored in apache

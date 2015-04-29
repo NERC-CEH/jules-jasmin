@@ -74,6 +74,7 @@ class Synchroniser(object):
             log.info("Starting to sync")
             model_propeties = self._majic_webservice_client.get_properties_list_with_filtered_users()
             self._file_system_comparer.perform_analysis(model_propeties)
+            self._file_system_comparer.add_extra_directories_to_sync()
             new_count, updated_count, deleted_count = \
                 self._directory_synchroniser.synchronise_all(self._file_system_comparer)
             log.info("Finished Synchronisation:")

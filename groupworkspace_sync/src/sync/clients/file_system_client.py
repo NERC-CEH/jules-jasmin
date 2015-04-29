@@ -21,6 +21,7 @@ import os
 import pwd
 from stat import S_IRGRP, S_IROTH
 import subprocess
+from getpass import getuser
 
 from sync.common_exceptions import UserPrintableError
 from sync.file_properties import FileProperties
@@ -72,24 +73,47 @@ class FileSystemClient(object):
     def create_dir(self, relative_directory):
         """
         Create a directory tree in the file path root with relative path. If directory already exists don't do anything
+        If the directory can not be created because of permissions set permissions
         :param relative_directory: the relative directory to create
-        :return: nothing
+        :return: True if directory was created, false if the directory already existed
         """
         full_path = self._create_full_path(relative_directory)
         try:
-            os.makedirs(full_path)
-        except OSError as ex:
-            if ex.errno != 17:
-                # directory exists
-                log.exception("Error creating directory '{}'.".format(full_path))
-                raise FileSystemClientError("Error creating directory.")
+            try:
+                os.makedirs(full_path)
+                return True
+            except OSError as ex:
+                if ex.errno == 13:  # permission denied
+                    self._set_permissions_on_dir_for_writing(relative_directory)
+                    os.makedirs(full_path)
+                    return True
+                if ex.errno == 17:  # directory exists
+                    return False
+                raise ex
         except Exception:
             log.exception("Error creating directory '{}'.".format(full_path))
             raise FileSystemClientError("Error creating directory.")
 
+    def _set_permissions_on_dir_for_writing(self, relative_file_path):
+        """
+        Set the permissions on the directory that contains the item to allow it to be created
+        :param relative_file_path: relative path to file being created
+        :return: nothing
+        """
+        relative_dir_path = os.path.dirname(relative_file_path)
+        script_and_var = [
+            self._update_permissions_script,
+            relative_dir_path,
+            getuser(),
+            "set_for_writing",
+            "False"]
+        action = "setting permissions on directory '{}'".format(relative_dir_path)
+        self._run_script_using_sudo(action, script_and_var)
+
     def create_file(self, relative_file_path):
         """
         Creates a file and returns the open file object
+        If the file is created ina directory which can not be written to permissions are changed to allow creation
         Caller is expected to close the file
         :param relative_file_path: the relative file path
         :return: file handle object, or None if the file already exists
@@ -98,7 +122,13 @@ class FileSystemClient(object):
         try:
             if os.path.exists(full_path):
                 return None
-            return open(full_path, 'w')
+            try:
+                return open(full_path, 'w')
+            except IOError as ex:
+                if ex.errno == 13:
+                    self._set_permissions_on_dir_for_writing(relative_file_path)
+                    return open(full_path, 'w')
+                raise ex
         except Exception:
             log.exception("Error creating file '{}'.".format(full_path))
             raise FileSystemClientError("Error creating file.")
@@ -129,6 +159,12 @@ class FileSystemClient(object):
             raise FileSystemClientError("Error closing and deleting file.")
 
     def _run_script_using_sudo(self, action, script_and_var):
+        """
+        Run a script using sudo
+        :param action: description of action
+        :param script_and_var: list of script and parameters
+        :return: nothing
+        """
         try:
             script_and_var.insert(0, "sudo")
             subprocess.check_output(script_and_var, stderr=subprocess.STDOUT)

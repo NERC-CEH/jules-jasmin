@@ -38,6 +38,7 @@ class TestDirectorySynchronisation(unittest.TestCase):
         self.mock_file_handle = Mock()
         self.mock_file_system_client = Mock(FileSystemClient)
         self.mock_file_system_client.create_file = Mock(return_value=self.mock_file_handle)
+        self.mock_file_system_client.create_dir = Mock(return_value=True)
 
         config = ConfigMother.test_configuration_with_values(reg_ex_to_ignore=reg_ex_to_ignore)
         self.files_synchronisation = DirectorySynchroniser(config, self.mock_apache_client, self.mock_file_system_client)
@@ -258,19 +259,26 @@ class TestDirectorySynchronisation(unittest.TestCase):
         model_run_path_to_copy = "data/run1"
         model_run_path_to_delete = "data/run2"
         model_run_path_to_update = "data/run3"
-        self.setup_mocks({model_run_path_to_copy: []})
+        model_run_path_to_resync = "data/run4"
+        filename = "blah.nc"
+        self.setup_mocks({model_run_path_to_copy: [],
+                          model_run_path_to_resync: [filename]})
         file_sync = Mock(FileSystemComparer)
         file_sync.deleted_directories = [model_run_path_to_delete]
         file_sync.new_directories = [FileProperties(model_run_path_to_copy, "owner", False, False)]
         file_sync.changed_directories = [FileProperties(model_run_path_to_update, "owner", False, False)]
+        file_sync.existing_non_deleted_directories = [FileProperties(model_run_path_to_resync, "owner", False, False)]
+        self.mock_file_system_client.create_file = Mock(return_value=self.mock_file_handle)
 
         new_count, updated_count, deleted_count = self.files_synchronisation.synchronise_all(file_sync)
 
-        self.mock_file_system_client.create_dir.assert_called_with(model_run_path_to_copy)
+        assert_that(self.mock_file_system_client.create_dir.call_args_list[0][0][0], is_(model_run_path_to_copy))
+        assert_that(self.mock_file_system_client.create_dir.call_args_list[1][0][0], is_(model_run_path_to_resync))
+        self.mock_file_system_client.create_file.assert_called_with(model_run_path_to_resync + '/' + filename)
         self.mock_file_system_client.set_permissions.assert_called_with(file_sync.changed_directories[0])
         self.mock_file_system_client.delete_directory.assert_called_with(model_run_path_to_delete)
 
-        assert_that(new_count, is_(1), "updated count")
+        assert_that(new_count, is_(3), "updated count (plus one for erant existing update)")
         assert_that(updated_count, is_(1), "updated count")
         assert_that(deleted_count, is_(1), "deleted count")
 
@@ -306,3 +314,17 @@ class TestDirectorySynchronisation(unittest.TestCase):
         assert_that(self.mock_file_system_client.create_dir.call_count, is_(2), "Copy parent and sub")
         assert_that(self.mock_file_system_client.create_file.call_count, is_(0), "create file (not called because ignored)")
         assert_that(copied_count, is_(2), "copied_count")
+
+    def test_GIVEN_new_file_in_directory_WHEN_copy_new_THEN_directory_not_created_permissions_set_as_writable_and_then_set_back(self):
+        # the directory must become writable to the process so that the process can update the directory if needed
+        model_run_path = "data/run1"
+        self.setup_mocks({model_run_path: []})
+        new_directories = [FileProperties(model_run_path, "owner", False, False)]
+
+        copied_count = self.files_synchronisation.copy_new(new_directories)
+
+        assert_that(self.mock_file_system_client.create_dir.called, is_(True), "Directory was created")
+        self.mock_file_system_client.create_dir.assert_called_with(model_run_path)
+        assert_that(self.mock_file_system_client.set_permissions.called, is_(True), "Permissions called")
+        self.mock_file_system_client.set_permissions.assert_called_with(new_directories[0])
+        assert_that(copied_count, is_(1), "copied_count")
