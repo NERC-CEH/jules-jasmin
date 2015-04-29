@@ -18,9 +18,9 @@
 """
 import logging
 import os
-from src.sync.clients.apache_client import ApacheClient, ApacheClientError
-from src.sync.clients.file_system_client import FileSystemClient, FileSystemClientError
-from sync.utils.constants import CONFIG_FILES_SECTION, CONFIG_DATA_SECTION, CONFIG_EXTENSIONS_TO_COPY
+from sync.clients.apache_client import ApacheClient, ApacheClientError
+from sync.clients.file_system_client import FileSystemClient, FileSystemClientError
+from sync.utils.constants import CONFIG_DATA_SECTION, CONFIG_EXTENSIONS_TO_COPY
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +42,6 @@ class DirectorySynchroniser(object):
         :return: nothing
         """
         self._config = config
-        self._config.set_section(CONFIG_FILES_SECTION)
         if apache_client is None:
             self._apache_client = ApacheClient(self._config)
         else:
@@ -125,6 +124,7 @@ class DirectorySynchroniser(object):
         """
         copied_count = 0
         for new_directory in new_directories:
+            log.info("Copying New Directory: {}".format(new_directory.file_path))
             new_directory_path = new_directory.file_path
             current_count = self._copy_directory(new_directory_path)
             if current_count > 0:
@@ -141,6 +141,7 @@ class DirectorySynchroniser(object):
         """
         update_count = 0
         for changed_directory in changed_directories:
+            log.info("Updating Permissions on directory: {}".format(changed_directory.file_path))
             try:
                 self._file_system_client.set_permissions(changed_directory)
                 update_count += 1
@@ -157,6 +158,7 @@ class DirectorySynchroniser(object):
         """
         delete_count = 0
         for deleted_directory in deleted_directories:
+            log.info("Deleting directory: {}".format(deleted_directory))
             try:
                 self._file_system_client.delete_directory(deleted_directory)
                 delete_count += 1

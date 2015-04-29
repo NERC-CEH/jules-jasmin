@@ -21,9 +21,9 @@ import logging
 import re
 import os
 
-from src.sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
+from sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
     JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX, MODEL_RUN_OUTPUT_DIR
-from src.sync.clients.file_system_client import FileSystemClient
+from sync.clients.file_system_client import FileSystemClient
 from sync.file_properties import FileProperties
 
 log = logging.getLogger(__name__)
@@ -50,8 +50,7 @@ class FileSystemComparer(object):
         :return:
         """
         self._config = config
-        self._config.set_section(CONFIG_DATA_SECTION)
-        self.data_path = self._config.get(CONFIG_DATA_PATH)
+        self.data_path = self._config.get(CONFIG_DATA_PATH, CONFIG_DATA_SECTION)
         if file_system_client is not None:
             self._file_system_client = file_system_client
         else:

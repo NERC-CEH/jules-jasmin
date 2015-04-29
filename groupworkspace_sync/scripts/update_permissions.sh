@@ -24,14 +24,14 @@ fi
 chown -R ${OWNER}:majic ${ROOT_DIR}/${DIR_TO_DEL} || exit -2
 if [ "$IS_PUBLISHED" == "True" -a "$IS_PUBLIC" = "True" ]
 then
- chmod -R go+r ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
+ chmod -R go+r,a-w ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
 elif [ "$IS_PUBLISHED" == "False" -a "$IS_PUBLIC" = "True" ]
 then
- chmod -R g-r,o+r ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
+ chmod -R g-r,o+r,a-w ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
 elif [ "$IS_PUBLISHED" == "True" -a "$IS_PUBLIC" = "False" ]
 then
- chmod -R g+r,o-r ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
+ chmod -R g+r,o-r,a-w ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
 elif [ "$IS_PUBLISHED" == "False" -a "$IS_PUBLIC" = "False" ]
 then
- chmod -R go-r ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
+ chmod -R go-r,a-w ${ROOT_DIR}/${DIR_TO_DEL} || exit -1
 fi

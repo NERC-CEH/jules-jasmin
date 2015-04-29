@@ -56,7 +56,6 @@ class ApacheClient(object):
         :return: nothing
         """
         self._config = config
-        self._config.set_section(CONFIG_APACHE_SECTION)
 
     def _request_to_apache(self, url):
         """
@@ -65,6 +64,7 @@ class ApacheClient(object):
         :return: request
         :raises ApacheClientError: when there is a problem connecting to the url
         """
+        self._config.set_section(CONFIG_APACHE_SECTION)
         try:
             auth = HTTPBasicAuth(username=self._config.get(CONFIG_APACHE_USERNAME),
                                  password=self._config.get(CONFIG_APACHE_PASSWORD))
@@ -90,13 +90,22 @@ class ApacheClient(object):
         """
         return tag.name == 'a' and tag.parent.name == "td" and tag.text != 'Parent Directory'
 
+    def _create_full_url(self, relative_url):
+        """
+        Create the full url for the relative url
+        :param relative_url:
+        :return: full url with server prefix
+        """
+        url = "{}/{}".format(self._config.get(CONFIG_APACHE_ROOT_PATH, CONFIG_APACHE_SECTION), relative_url)
+        return url
+
     def get_contents(self, directory):
         """
         Return a list of contents at the url, excluding the parent directory
         :param directory: the directory to open
         :return: list of file and directories in that directory
         """
-        url = "{}/{}".format(self._config.get(CONFIG_APACHE_ROOT_PATH), directory)
+        url = self._create_full_url(directory)
         file_list_response = self._request_to_apache(url)
         file_list_page = BeautifulSoup(file_list_response.text)
 
@@ -115,7 +124,7 @@ class ApacheClient(object):
         :param file_handle: the file handle to write the file to
         :return: nothing
         """
-        url = "{}/{}".format(self._config.get(CONFIG_APACHE_ROOT_PATH), relative_file_path)
+        url = self._create_full_url(relative_file_path)
         request = self._request_to_apache(url)
         for chunk in request.iter_content(DOWNLOAD_CHUNK_SIZE_IN_BYTES):
             file_handle.write(chunk)

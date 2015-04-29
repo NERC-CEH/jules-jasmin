@@ -22,9 +22,9 @@ import pwd
 from stat import S_IRGRP, S_IROTH
 import subprocess
 
-from src.sync.common_exceptions import UserPrintableError
+from sync.common_exceptions import UserPrintableError
 from sync.file_properties import FileProperties
-from src.sync.utils.constants import CONFIG_ROOT_PATH, CONFIG_FILES_SECTION, CONFIG_DELETE_SCRIPT_PATH, \
+from sync.utils.constants import CONFIG_ROOT_PATH, CONFIG_FILES_SECTION, CONFIG_DELETE_SCRIPT_PATH, \
     CONFIG_UPDATE_PERMISSIONS_SCRIPT_PATH
 
 log = logging.getLogger(__name__)

@@ -22,13 +22,13 @@ from logging.config import fileConfig
 import os
 import sys
 
-from src.sync.clients.majic_web_service_client import MajicWebserviceClient
+from sync.clients.majic_web_service_client import MajicWebserviceClient
 from sync.common_exceptions import UserPrintableError
 from sync.directory_synchroniser import DirectorySynchroniser
 from sync.file_system_comparer import FileSystemComparer
-from utils.config_accessor import ConfigAccessor
+from sync.utils.config_accessor import ConfigAccessor
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("sync")
 
 
 class Synchroniser(object):
@@ -71,6 +71,7 @@ class Synchroniser(object):
         :return: error code to exit with
         """
         try:
+            log.info("Starting to sync")
             model_propeties = self._majic_webservice_client.get_properties_list_with_filtered_users()
             self._file_system_comparer.perform_analysis(model_propeties)
             new_count, updated_count, deleted_count = \
@@ -100,6 +101,6 @@ if __name__ == '__main__':
     config = ConfigParser.SafeConfigParser({'here': here})
     config.read(config_file)
     fileConfig(config_file)
-    log.info("Starting")
+
     sync = Synchroniser(ConfigAccessor(config))
     exit(sync.synchronise())

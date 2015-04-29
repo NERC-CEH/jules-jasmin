@@ -20,8 +20,8 @@ import logging
 import pwd
 import requests
 from requests.exceptions import RequestException, Timeout
-from src.sync.common_exceptions import UserPrintableError
-from src.sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
+from sync.common_exceptions import UserPrintableError
+from sync.utils.constants import CONFIG_WS_SECTION, CONFIG_MAJIC_WS_CERT_PATH, CONFIG_MAJIC_WS_USER_KEY_PATH, \
     CONFIG_MAJIC_WS_USER_CERT_PATH, CONFIG_URL, JSON_MODEL_RUNS, CONFIG_NOBODY_USERNAME, JSON_USER_NAME, \
     CONFIG_MAJIC_WS_TIMEOUT, CONFIG_FILES_SECTION
 
@@ -56,7 +56,6 @@ class MajicWebserviceClient(object):
         """
         super(MajicWebserviceClient, self).__init__()
         self._config = config
-        self._config.set_section(CONFIG_WS_SECTION)
 
     def get_properties_list(self):
         """
@@ -64,7 +63,7 @@ class MajicWebserviceClient(object):
         Returns a dictionary with the model_runs element which is a list of dictionaries for the runs
         :return: the files and their properties
         """
-        properties = self._get_securely(self._config.get(CONFIG_URL))
+        properties = self._get_securely(self._config.get(CONFIG_URL, section=CONFIG_WS_SECTION))
         return properties
 
     def get_properties_list_with_filtered_users(self):
@@ -95,6 +94,7 @@ class MajicWebserviceClient(object):
         :raises WebserviceClientError: if there are connection problems
         """
 
+        self._config.set_section(CONFIG_WS_SECTION)
         timeout_as_string = self._config.get(CONFIG_MAJIC_WS_TIMEOUT)
         verify = self._config.get(CONFIG_MAJIC_WS_CERT_PATH, default=True)
 

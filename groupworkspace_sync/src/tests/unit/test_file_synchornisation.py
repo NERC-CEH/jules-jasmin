@@ -22,11 +22,11 @@ from hamcrest import *
 import unittest
 import os
 import getpass
-from src.sync.clients.apache_client import ApacheClient, ApacheClientError
-from src.sync.clients.file_system_client import FileSystemClient, FileSystemClientError
-from src.sync.directory_synchroniser import DirectorySynchroniser
+from sync.clients.apache_client import ApacheClient, ApacheClientError
+from sync.clients.file_system_client import FileSystemClient, FileSystemClientError
+from sync.directory_synchroniser import DirectorySynchroniser
 from sync.file_properties import FileProperties
-from src.tests.test_mother import ConfigMother
+from tests.test_mother import ConfigMother
 from sync.file_system_comparer import FileSystemComparer
 
 

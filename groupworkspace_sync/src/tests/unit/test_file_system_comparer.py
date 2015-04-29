@@ -22,11 +22,11 @@ from hamcrest import *
 import unittest
 from mock import Mock
 import os
-from src.sync.file_system_comparer import FileSystemComparer
+from sync.file_system_comparer import FileSystemComparer
 from sync.clients.file_system_client import FileSystemClient
 from sync.file_properties import FileProperties
-from src.sync.utils.config_accessor import ConfigAccessor
-from src.sync.utils.constants import JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_IS_PUBLISHED, JSON_USER_NAME, JSON_IS_PUBLIC
+from sync.utils.config_accessor import ConfigAccessor
+from sync.utils.constants import JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_IS_PUBLISHED, JSON_USER_NAME, JSON_IS_PUBLIC
 from tests.test_mother import ConfigMother, RunModelPropertiesMother
 
 
