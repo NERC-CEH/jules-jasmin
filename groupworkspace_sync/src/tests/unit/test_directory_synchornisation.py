@@ -17,11 +17,8 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 from mock import Mock
-from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 from hamcrest import *
 import unittest
-import os
-import getpass
 from sync.clients.apache_client import ApacheClient, ApacheClientError
 from sync.clients.file_system_client import FileSystemClient, FileSystemClientError
 from sync.directory_synchroniser import DirectorySynchroniser
@@ -30,9 +27,9 @@ from tests.test_mother import ConfigMother
 from sync.file_system_comparer import FileSystemComparer
 
 
-class TestFileSynchronisation(unittest.TestCase):
+class TestDirectorySynchronisation(unittest.TestCase):
 
-    def setup_mocks(self, directory_contents_on_apache):
+    def setup_mocks(self, directory_contents_on_apache, reg_ex_to_ignore=""):
         self.contents = directory_contents_on_apache
 
         self.mock_apache_client = Mock(ApacheClient)
@@ -42,7 +39,7 @@ class TestFileSynchronisation(unittest.TestCase):
         self.mock_file_system_client = Mock(FileSystemClient)
         self.mock_file_system_client.create_file = Mock(return_value=self.mock_file_handle)
 
-        config = ConfigMother.test_configuration_with_values()
+        config = ConfigMother.test_configuration_with_values(reg_ex_to_ignore=reg_ex_to_ignore)
         self.files_synchronisation = DirectorySynchroniser(config, self.mock_apache_client, self.mock_file_system_client)
 
     def _find_contents(self, directory):
@@ -276,3 +273,36 @@ class TestFileSynchronisation(unittest.TestCase):
         assert_that(new_count, is_(1), "updated count")
         assert_that(updated_count, is_(1), "updated count")
         assert_that(deleted_count, is_(1), "deleted count")
+
+    def test_GIVEN_directory_matches_reg_ex_to_ignore_WHEN_copy_new_THEN_directory_not_created(self):
+        reg_ex_to_ignore = "run(\d)+/data/"
+        model_run_dir = "data/run13"
+        self.new_directories = [FileProperties(model_run_dir, "owner", False, False)]
+        expected_dir = "data"
+        expected_dir_name = "{}/{}".format(model_run_dir, expected_dir)
+        self.setup_mocks({model_run_dir: [expected_dir + '/'],
+                          expected_dir_name: []},
+                         reg_ex_to_ignore)
+
+        copied_count = self.files_synchronisation.copy_new(self.new_directories)
+
+        assert_that(self.mock_file_system_client.create_dir.call_count, is_(1), "Just parent created count")
+        self.mock_file_system_client.create_dir.assert_called_with(model_run_dir)
+        assert_that(copied_count, is_(1), "copied_count")
+
+    def test_GIVEN_file_matches_reg_ex_to_ignore_WHEN_copy_new_THEN_directory_not_created(self):
+        reg_ex_to_ignore = "run(\d)+/data/ output/.*\.dump\..*.nc"
+        model_run_dir = "data/run13"
+        self.new_directories = [FileProperties(model_run_dir, "owner", False, False)]
+        expected_dir = "output"
+        expected_dir_name = "{}/{}".format(model_run_dir, expected_dir)
+        filename = "majic.dump.spin1.196701.nc"
+        self.setup_mocks({model_run_dir: [expected_dir + '/'],
+                          expected_dir_name: [filename]},
+                         reg_ex_to_ignore)
+
+        copied_count = self.files_synchronisation.copy_new(self.new_directories)
+
+        assert_that(self.mock_file_system_client.create_dir.call_count, is_(2), "Copy parent and sub")
+        assert_that(self.mock_file_system_client.create_file.call_count, is_(0), "create file (not called because ignored)")
+        assert_that(copied_count, is_(2), "copied_count")

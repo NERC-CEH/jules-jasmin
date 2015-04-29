@@ -81,7 +81,7 @@ class TestFileSystemComparer(unittest.TestCase):
             return self.mock_file_stats[file_path]
 
     def create_filelist_and_mock_file_stats(self, runids):
-        filelist = ["run{}/output".format(runid) for runid in runids]
+        filelist = ["run{}".format(runid) for runid in runids]
         self.mock_file_system_client.list_dirs = Mock(return_value=["run{}".format(runid) for runid in runids])
         for file in filelist:
             file_path = os.path.join(self.expected_path, file)
@@ -91,7 +91,7 @@ class TestFileSystemComparer(unittest.TestCase):
     def test_GIVEN_one_extra_entry_on_model_list_WHEN_compare_THEN_extra_entry_is_in_new_dirs_list(self):
 
         runid = 12
-        expected_new_dir = [FileProperties("{}/run{}/output".format(self.expected_path, runid), self.model_owner, False, False)]
+        expected_new_dir = [FileProperties("{}/run{}".format(self.expected_path, runid), self.model_owner, False, False)]
         filelist = self.create_filelist_and_mock_file_stats([])
         model_properties = RunModelPropertiesMother.create_model_run_properties([runid])
         file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
@@ -103,7 +103,7 @@ class TestFileSystemComparer(unittest.TestCase):
     def test_GIVEN_two_extra_models_WHEN_compare_THEN_models_appear_on_new_dirs_list(self):
 
         runids = [100, 12]
-        expected_new_dirs = [FileProperties("{}/run{}/output".format(
+        expected_new_dirs = [FileProperties("{}/run{}".format(
             self.expected_path, runid),
             self.model_owner,
             False,
@@ -131,7 +131,7 @@ class TestFileSystemComparer(unittest.TestCase):
 
         runids = [1, 10]
         filelist = self.create_filelist_and_mock_file_stats(runids)
-        expected_deleted_dirs = ["{}/run{}/output".format(self.expected_path, runid) for runid in runids]
+        expected_deleted_dirs = ["{}/run{}".format(self.expected_path, runid) for runid in runids]
         model_properties = []
         file_system_comparer = FileSystemComparer(self.config, self.mock_file_system_client)
 

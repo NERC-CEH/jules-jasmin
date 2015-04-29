@@ -17,10 +17,11 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 import logging
+import re
 import os
 from sync.clients.apache_client import ApacheClient, ApacheClientError
 from sync.clients.file_system_client import FileSystemClient, FileSystemClientError
-from sync.utils.constants import CONFIG_DATA_SECTION, CONFIG_EXTENSIONS_TO_COPY
+from sync.utils.constants import CONFIG_DATA_SECTION, CONFIG_EXTENSIONS_TO_COPY, CONFIG_CONTENT_TO_IGNORE_REGEX
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,8 @@ class DirectorySynchroniser(object):
             self._file_system_client = file_system_client
 
         self.extensions_to_copy = self._config.get(CONFIG_EXTENSIONS_TO_COPY, CONFIG_DATA_SECTION).split()
+        regexes = self._config.get(CONFIG_CONTENT_TO_IGNORE_REGEX, CONFIG_DATA_SECTION).split()
+        self._regexes = [re.compile(expression) for expression in regexes]
 
     def _copy_directory_content_item(self, directory_content, relative_directory_path):
         """
@@ -61,15 +64,20 @@ class DirectorySynchroniser(object):
         :param relative_directory_path: the relative path of the directory
         :return: count of copied items
         """
-        if directory_content.endswith('/'):
-            sub_dir = os.path.join(relative_directory_path, directory_content[:-1])
-            return self._copy_directory(sub_dir)
+        relative_file_path = os.path.join(relative_directory_path, directory_content)
 
-        path, ext = os.path.splitext(directory_content)
+        # check that content doesn't match some ignored content
+        for regex in self._regexes:
+            if regex.search(relative_file_path):
+                return 0
+
+        if relative_file_path.endswith('/'):
+            return self._copy_directory(relative_file_path[:-1])
+
+        path, ext = os.path.splitext(relative_file_path)
         if ext not in self.extensions_to_copy:
             return 0
 
-        relative_file_path = os.path.join(relative_directory_path, directory_content)
         new_file = self._file_system_client.create_file(relative_file_path)
         if new_file is None:
             # file already exists

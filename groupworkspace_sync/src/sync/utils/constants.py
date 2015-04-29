@@ -21,7 +21,6 @@ DOWNLOAD_CHUNK_SIZE_IN_BYTES = 1000000
 
 #  directory name of output folder parts
 MODEL_RUN_DIR_PREFIX = "run"
-MODEL_RUN_OUTPUT_DIR = "output"
 
 # Majic web service section name
 CONFIG_WS_SECTION = "Majic Webservice"
@@ -35,6 +34,7 @@ CONFIG_MAJIC_WS_USER_KEY_PATH = 'majic_web_service_user_key_path'
 CONFIG_DATA_SECTION = "Data"
 CONFIG_DATA_PATH = "data_path"  # path to which the data to synchronised within the root
 CONFIG_EXTENSIONS_TO_COPY = "extensions_to_copy"  # space separated extensions that can be copied
+CONFIG_CONTENT_TO_IGNORE_REGEX = "content_to_ignore_regex"  # space separated regex of content which should be ignored
 
 CONFIG_APACHE_SECTION = "Apache"
 CONFIG_APACHE_ROOT_PATH = "root_path"  # web address of the data runs are stored in apache

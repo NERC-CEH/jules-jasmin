@@ -22,7 +22,7 @@ import re
 import os
 
 from sync.utils.constants import CONFIG_DATA_SECTION, JSON_MODEL_RUN_ID, CONFIG_DATA_PATH, JSON_USER_NAME, \
-    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX, MODEL_RUN_OUTPUT_DIR
+    JSON_IS_PUBLIC, JSON_IS_PUBLISHED, MODEL_RUN_DIR_PREFIX
 from sync.clients.file_system_client import FileSystemClient
 from sync.file_properties import FileProperties
 
@@ -111,4 +111,4 @@ class FileSystemComparer(object):
         assert(model_run_id_dir.isdigit())
 
         dir_name = "{}{}".format(MODEL_RUN_DIR_PREFIX, model_run_id)
-        return os.path.join(self.data_path, dir_name, MODEL_RUN_OUTPUT_DIR)
+        return os.path.join(self.data_path, dir_name)
