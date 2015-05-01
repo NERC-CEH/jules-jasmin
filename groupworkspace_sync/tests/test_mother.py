@@ -37,7 +37,7 @@ class ConfigMother(object):
         Read the test configuration
         :return: the test configuration
         """
-        root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir)
+        root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
         config = ConfigParser.SafeConfigParser({'here': root_dir})
         test_config_file = os.path.join(root_dir, "test.ini")
         config.read(test_config_file)
