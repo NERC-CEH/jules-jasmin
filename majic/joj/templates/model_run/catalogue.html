@@ -66,17 +66,16 @@
     </div>
     <!--THE ACTION ICONS-->
     <div class="span3 ico-span">
-        <div class="row">
+        <div class="row-fluid">
             <!--The Publish Icon-->
-            <div class="span1">
+            <div class="span3">
                 <br/>
                 <!--If the run status does not allow publishing we just display an inert icon -->
                 <i py:if="not model_run.status.allow_publish() and not model_run.status.is_published() and not model_run.status.is_public()"
                    class="fa fa-share-square-o fa-2x ico-disabled"></i>
-                <!--If the run status is public we display an inert purple icon -->
-                <i py:if="model_run.status.is_public()" class="fa fa-cloud-upload fa-2x purple"></i>
-                <!--If the run status is published we display an inert purple icon -->
-                <i py:if="model_run.status.is_published() and c.showing != 'mine'"
+
+               <!--If the run status is published we display an inert purple icon but only if on mine tab -->
+                <i py:if="model_run.status.is_viewable_by_any_majic_user() and c.showing == 'mine'"
                    class="fa fa-share-square-o fa-2x purple"></i>
 
                 <!--If the run status allows us to publish the run on the map then we display the publish icon with color / hover-->
@@ -94,14 +93,29 @@
                     <div class="ico-text purple">Publish</div>
                 </form>
 
-                <!--If the run status allows us to make it public we display the publish icon with color / hover-->
+
+            </div>
+            <!--The Public Icon-->
+            <div class="span3">
+                <br/>
+                <!--If the run status can not be made public we display an inert grey icon -->
+                <i py:if="not model_run.status.allow_make_public() and not model_run.status.is_public()"
+                    class="fa fa-cloud-upload fa-2x ico-disabled"></i>
+
+                <!--If the run status is public we display an inert purple icon -->
+                <i py:if="model_run.status.is_public()" class="fa fa-cloud-upload fa-2x purple"></i>
+
+                <!--If the run status is published we display an inert purple icon  if on published tab-->
+                <i py:if="model_run.status.is_published() and c.showing != 'mine'"
+                   class="fa fa-share-square-o fa-2x purple"></i>
+
+                <!--If the run status allows us to make it public we display the public icon with color / hover but only on mine-->
                 <form py:if="model_run.status.allow_make_public() and c.showing == 'mine'"
                       action="${h.url(controller='model_run', action='make_public', id=model_run.id)}"
                       method="post"
-                      data-confirm="You can not undo making a model run public. It will be viewable by anyone on the internet and so please check you have the legal right to do this. Are you sure you want to publish it?"
+                      data-confirm="You can not undo making a model run public. It will be viewable by anyone on the internet and so please check you have the legal right to do this. Are you sure you want to make it public?"
                       style="margin:0">
                     <input type="hidden" name="came_from" id="came_from" value="catalogue"/>
-                    <i class="fa fa-share-square-o fa-2x purple"></i>
                     <a onclick="$(this).parent().submit()"
                        onmouseover="$(this).parent().find('div').css('visibility','visible');$(this).find('i').addClass('purple')"
                        onmouseout="$(this).parent().find('div').css('visibility','hidden');$(this).find('i').removeClass('purple')">
@@ -113,7 +127,7 @@
 
             </div>
             <!-- The Duplicate Icon -->
-            <div class="span1">
+            <div class="span3">
                 <br/>
                 <form action="${h.url(controller='model_run', action='duplicate', id=model_run.id)}"
                         method="post"
@@ -130,7 +144,7 @@
                 </form>
             </div>
             <!-- The delete icon -->
-            <div class="span1">
+            <div class="span3">
                 <br/>
                 <i py:if="not model_run.status.allow_delete(c.user.is_admin())" class="fa fa-times-circle fa-2x ico-disabled"></i>
                 <form py:if="model_run.status.allow_delete(c.user.is_admin())"
