@@ -342,7 +342,7 @@ class PostProcessBNG(object):
         self.output_file_path = None
         self.reference_file_handle = None
 
-    def open(self, input_folder, output_folder, input_filename, ref_filepath='data/CHESS/ancils/chess_lat_lon.nc'):
+    def open(self, input_folder, output_folder, input_filename, ref_filepath='data/CHESS_v1.0/ancils/chess_lat_lon.nc'):
         """
         Open the file needed for the processing
         :param input_folder: the input folder in which the input file exists
