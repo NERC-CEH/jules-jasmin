@@ -39,11 +39,10 @@ setup(
     author="Tessella Ltd.",
     author_email="majic@ceh.ac.uk",
     description="A utility to synchronise majic files onto an NFS server.",
-    packages=['sync', 'tests'],
     long_description=read('README'),
     classifiers=[
     ],
-    install_requires=['requests',],
+    install_requires=['requests', 'BeautifulSoup4'],
     tests_require=[
         "PyHamcrest",
         "Mock"

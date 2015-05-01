@@ -1,0 +1,2 @@
+# Run MAJIC SYNC scheduled jobs every 5 minutes.
+*/5 * * * * majic_sync /var/local/majic_sync/jules-jasmin/groupworkspace_sync/scripts/cron_script.sh 2>&1 >> /dev/null

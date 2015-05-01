@@ -42,3 +42,5 @@ elif [ "$IS_PUBLISHED" == "False" -a "$IS_PUBLIC" = "False" ]
 then
  chmod -R go-rx,a-w ${ROOT_DIR}/${DIR_TO_SET_PERMISSIONS_ON} || exit -1
 fi
+
+find ${ROOT_DIR}/${DIR_TO_SET_PERMISSIONS_ON} -type d -exec chmod g+rx {} \;
