@@ -132,7 +132,7 @@ class DirectorySynchroniser(object):
         """
         copied_count = 0
         for new_directory in new_directories:
-            log.info("Copying New Directory: {}".format(new_directory.file_path))
+            log.debug("Copying New Directory: {}".format(new_directory.file_path))
             new_directory_path = new_directory.file_path
             current_count = self._copy_directory(new_directory_path)
             if current_count > 0:
@@ -149,7 +149,7 @@ class DirectorySynchroniser(object):
         """
         update_count = 0
         for changed_directory in changed_directories:
-            log.info("Updating Permissions on directory: {}".format(changed_directory.file_path))
+            log.debug("Updating Permissions on directory: {}".format(changed_directory.file_path))
             try:
                 self._file_system_client.set_permissions(changed_directory)
                 update_count += 1
@@ -166,7 +166,7 @@ class DirectorySynchroniser(object):
         """
         delete_count = 0
         for deleted_directory in deleted_directories:
-            log.info("Deleting directory: {}".format(deleted_directory))
+            log.debug("Deleting directory: {}".format(deleted_directory))
             try:
                 self._file_system_client.delete_directory(deleted_directory)
                 delete_count += 1

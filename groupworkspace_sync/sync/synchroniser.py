@@ -71,7 +71,7 @@ class Synchroniser(object):
         :return: error code to exit with
         """
         try:
-            log.info("Starting to sync")
+            log.debug("Starting to sync")
             model_propeties = self._majic_webservice_client.get_properties_list_with_filtered_users()
             self._file_system_comparer.perform_analysis(model_propeties)
             self._file_system_comparer.add_extra_directories_to_sync()
