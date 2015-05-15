@@ -18,8 +18,8 @@
 """
 import datetime
 from f90nml import to_f90str
-from numpy import float64
 import re
+from numpy import float64, float32
 
 DATE_TIME_FORMAT = "%Y-%m-%d %X"
 
@@ -34,7 +34,7 @@ def python_to_f90_str(value):
         return '    '.join([python_to_f90_str(v) for v in value])
     elif type(value) == datetime.datetime:
         return to_f90str(value.strftime(DATE_TIME_FORMAT))
-    elif type(value) == float64:
+    elif type(value) == float64 or type(value) == float32:
         return to_f90str(float(value))
     elif type(value) == unicode:
         return to_f90str(str(value))
@@ -73,10 +73,10 @@ def _from_list(f_list):
     :param f_list: Fortran list to convert
     :return: Python list
     """
-    #First try a string list (includes datetimes)
+    # First try a string list (includes datetimes)
     py_list = re.findall("('.*?')", f_list)
     if len(py_list) == 0:
-        #Finally try booleans
+        # Finally try booleans
         py_list = re.findall("((?:\.false\.)|(?:\.true\.)|(?:false)|(?:true)|(?:t)|(?:f))", f_list.lower())
     if len(py_list) == 0:
         # Then try numbers

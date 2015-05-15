@@ -64,10 +64,15 @@ class SoilPropertiesDapClient(BaseDapClient):
                     fill_value = variable.attributes.get('_FillValue', None)
                     if len(variable.shape) == 3:
                         value_as_grid = variable[0, lat_index, lon_index]
-                        value = value_as_grid.flat[0]
+                        try:
+                            value = value_as_grid.flat[0]
+                        except:
+                            # for open dap grid array types
+                            value = value_as_grid.array[:].flat[0]
                     else:
                         value_as_grid = variable[lat_index, lon_index]
                         value = value_as_grid[var_name][0][0]
+
                     if value == missing_value or value == fill_value:
                         return None
                     soil_props[var_name] = value

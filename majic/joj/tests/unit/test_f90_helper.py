@@ -19,6 +19,7 @@
 import datetime
 
 from hamcrest import assert_that, is_
+import numpy
 
 from joj.tests.base import BaseTest
 from joj.utils import f90_helper
@@ -152,4 +153,10 @@ class TestF90HelperToFortran(BaseTest):
         input = ["str1", "str2", "str3"]
         output = f90_helper.python_to_f90_str(input)
         expected_output = "'str1'    'str2'    'str3'"
+        assert_that(output, is_(expected_output))
+
+    def test_GIVEN_float32_WHEN_convert_THEN_float_returned(self):
+        input = numpy.float32(3600.0)
+        output = f90_helper.python_to_f90_str(input)
+        expected_output = '3600.0'
         assert_that(output, is_(expected_output))
