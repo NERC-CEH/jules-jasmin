@@ -199,7 +199,8 @@ class TestDrivingDataEditOrAdd(TestController):
             frac_frac_dim_name='frac_frac_dim_name',
             frac_type_dim_name='frac_type_dim_name',
             soil_props_file='soil_props_file',
-            extra_parameters={1: self.extra_parameter}
+            extra_parameters={1: self.extra_parameter},
+            post_processing_script_id=0
             )
         valid_params = jules_params.create_values_dict({})
         return valid_params

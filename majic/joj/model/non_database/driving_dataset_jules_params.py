@@ -50,7 +50,8 @@ class DrivingDatasetJulesParams(object):
                  soil_props_file=None,
                  extra_parameters=None,
                  driving_dateset=None,
-                 regions=None):
+                 regions=None,
+                 post_processing_script_id=None):
         """
         Initialise
         :param dataperiod: the period of each time step
@@ -64,6 +65,7 @@ class DrivingDatasetJulesParams(object):
         :param x_dim_name: x dimension name
         :param y_dim_name: y dimension name
         :param time_dim_name: time dimension name
+        :param post_processing_script_id: post processing script id
         :return: nothing
         """
         self._names_constant_dict = {
@@ -121,7 +123,8 @@ class DrivingDatasetJulesParams(object):
             'frac_type_dim_name': frac_type_dim_name,
             'land_frac_file': land_frac_file,
             'land_frac_frac_name': land_frac_frac_name,
-            'soil_props_file': soil_props_file})
+            'soil_props_file': soil_props_file,
+            'post_processing_script_id': post_processing_script_id})
 
         self.values['drive_nvars'] = len(self.values['drive_var_vars'])
 
@@ -163,7 +166,7 @@ class DrivingDatasetJulesParams(object):
             val = driving_dataset.get_python_parameter_value(constant)
             self.values[name] = val
 
-        #values which can not be none
+        # values which can not be none
         if self.values['drive_nvars'] is None:
             self.values['drive_nvars'] = 0
 
