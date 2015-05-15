@@ -23,7 +23,7 @@ from pylons import request, tmpl_context as c, url, config
 from pylons.controllers.util import redirect
 from pylons.decorators import validate
 from webob.exc import HTTPFound
-from joj.crowd.client import ClientException
+from joj.crowd.client import ClientException, AuthenticationFailedException
 
 from joj.lib.base import BaseController, render
 from repoze.who.api import get_api
@@ -130,6 +130,8 @@ class AccountController(BaseController):
                     else:
                         # Authentication not successful
                         message = 'Login failed: check your username and/or password.'
+                except AuthenticationFailedException:
+                    message = 'Login failed: check your username and/or password.'
                 except ClientException:
                     message = 'Login failed: The authentication server is not responding correctly. ' \
                               'Please try again later. If the problem persists please report it to {}.'\
@@ -154,7 +156,7 @@ class AccountController(BaseController):
 
         who_api = get_api(request.environ)
         who_api.logout()
-
+        self.current_user = None
         redirect(url(controller='home', action='index'))
 
     @validate(schema=AccountProfileEdit(), form='profile', post_only=False, on_get=False, prefix_error=False,
