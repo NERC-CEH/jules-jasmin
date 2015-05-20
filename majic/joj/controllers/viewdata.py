@@ -280,9 +280,13 @@ class ViewdataController(WmsvizController):
         if dataset.dataset_type.type == constants.DATASET_TYPE_LAND_COVER_FRAC:
             land_cover_values = self.land_cover_service.get_land_cover_values(model_run, return_ice=True)
             names = []
+            final_variables = []
             for variable in variables:
-                idx = int(variable.split()[-1])
-                names.append([lc_val.name for lc_val in land_cover_values if lc_val.index == idx][0])
+                if variable.startswith("Land Cover Fraction"):
+                    final_variables.append(variable)
+                    idx = int(variable.split()[-1])
+                    names.append([lc_val.name for lc_val in land_cover_values if lc_val.index == idx][0])
+            variables = final_variables
         else:
             names = variables
         dimensions = [{'name': u'frac',
