@@ -198,7 +198,7 @@ class AccountRequestService(DatabaseService):
                         account_request.email,
                         random_password)
 
-        #write user to database so they have an id
+        # write user to database so they have an id
         with self.transaction_scope() as session:
             session.add(user)
             link = self._user_service.set_forgot_password_in_session(user)

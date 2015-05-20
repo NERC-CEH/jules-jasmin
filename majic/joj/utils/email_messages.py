@@ -149,3 +149,22 @@ Regards,
 
 Majic Admin Team
 """
+
+FAILED_SUBMIT_SUPPORT_SUBJECT_TEMPLATE = "Majic: Has failed to submit a job"
+FAILED_SUBMIT_SUPPORT_MESSAGE_TEMPLATE = \
+    """
+Hi Support,
+
+Majic has encountered an error when submitting a job:
+
+   ID: {id}
+   Name: {name}
+   Description: {description}
+   Error: {error_message}
+
+This might be because the job runner is down temporarily or something more serious you should consider investigating.
+
+Regards,
+
+Majic
+"""

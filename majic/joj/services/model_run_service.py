@@ -26,6 +26,7 @@ from sqlalchemy.sql.expression import false
 from pylons import config
 from joj.model import ModelRun, CodeVersion, ModelRunStatus, Parameter, ParameterValue, Session, User, Dataset, \
     LandCoverAction
+from joj.services.email_service import EmailService
 from joj.services.general import DatabaseService
 from joj.utils import constants
 from joj.services.job_runner_client import JobRunnerClient
@@ -35,6 +36,7 @@ from joj.model.output_variable import OutputVariable
 from joj.services.land_cover_service import LandCoverService
 from joj.services.parameter_service import ParameterService
 from joj.services.dataset import DatasetService
+from joj.utils.email_messages import FAILED_SUBMIT_SUPPORT_MESSAGE_TEMPLATE, FAILED_SUBMIT_SUPPORT_SUBJECT_TEMPLATE
 
 log = logging.getLogger(__name__)
 
@@ -58,11 +60,13 @@ class ModelRunService(DatabaseService):
     def __init__(self, session=Session,
                  job_runner_client=JobRunnerClient(config),
                  parameter_service=ParameterService(),
-                 dataset_service=DatasetService()):
+                 dataset_service=DatasetService(),
+                 email_service=EmailService(config)):
         super(ModelRunService, self).__init__(session)
         self.parameter_service = parameter_service
         self._job_runner_client = job_runner_client
         self._dataset_service = dataset_service
+        self._email_service = email_service
 
     def get_models_for_user(self, user):
         """
@@ -394,6 +398,17 @@ class ModelRunService(DatabaseService):
                 status = model.change_status(session, status_name)
             else:
                 status = model.change_status(session, status_name, message)
+                msg = FAILED_SUBMIT_SUPPORT_MESSAGE_TEMPLATE.format(
+                    name=model.name,
+                    description=model.description,
+                    id=model.id,
+                    error_message=message
+                )
+                self._email_service.send_email(
+                    config['email.from_address'],
+                    config['email.support_address'],
+                    FAILED_SUBMIT_SUPPORT_SUBJECT_TEMPLATE,
+                    msg)
             return status, message
 
     def get_scientific_configurations(self):
@@ -649,7 +664,7 @@ class ModelRunService(DatabaseService):
                 self._delete_model_run_in_session_no_checks(model_run_being_created.id, session)
 
             except NoResultFound:
-                #no model being created do not have to delete it
+                # no model being created do not have to delete it
                 pass
 
     def duplicate_run_model(self, model_id, user):
