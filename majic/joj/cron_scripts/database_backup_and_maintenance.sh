@@ -23,10 +23,14 @@ chmod 640 $dump_filename
 if [ $EXITCODE -ne 0 ] ; then
   echo "Database backup Failed."
   echo "Database backup Failed. Check the reason why, see file $dump_filename" | mail -s "FAILED: Database backup" majic@ceh.ac.uk
+  echo "Database backup Failed. Check the reason why, see file $dump_filename" | mail -s "FAILED: Database backup" kerg@tessella.com
+  echo "Database backup Failed. Check the reason why, see file $dump_filename" | mail -s "FAILED: Database backup" misc@tessella.com
   exit -1
 else
   echo "Database backup Success."
   echo "Database backup Success. Dump is at $dump_filename" | mail -s "success: database backup" majic@ceh.ac.uk
+  echo "Database backup Success. Dump is at $dump_filename" | mail -s "success: database backup" kerg@tessella.com
+  echo "Database backup Success. Dump is at $dump_filename" | mail -s "success: database backup" misc@tessella.com
 fi
 
 #remove unwanted files
