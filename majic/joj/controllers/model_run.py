@@ -19,7 +19,7 @@
 
 import logging
 from formencode import htmlfill
-from pylons import url, response
+from pylons import url, response, config
 from pylons.decorators import validate, jsonify
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -182,6 +182,9 @@ class ModelRunController(BaseController):
 
         # does the model belong to this user. Not to be used for security but for display purposes
         c.is_users_model = (c.user.id == model_run.user.id)
+
+        # path to workbench
+        c.workbench_path = config["workbench_path_template"].format(model_run_id=model_run.id)
 
         return render("model_run/summary.html")
 

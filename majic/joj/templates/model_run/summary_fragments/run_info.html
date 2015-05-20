@@ -31,12 +31,23 @@
 
     <p py:choose="c.model_run.status.name">
         <b>
-           <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">Public storage used (GB) - </py:when>
-           <py:otherwise>
-                Storage used (GB) -
-           </py:otherwise>
+            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLIC">Public storage used (GB) - </py:when>
+            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">Public storage used (GB) - </py:when>
+            <py:otherwise> Storage used (GB) - </py:otherwise>
         </b>
         ${h.utils.convert_mb_to_gb_and_round(c.model_run.storage_in_mb)}
+    </p>
+
+
+
+
+    <p py:choose="c.model_run.status.name">
+        <b> Path in the Workbench - </b>
+
+            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLIC">${c.workbench_path}</py:when>
+            <py:when test="h.constants.MODEL_RUN_STATUS_PUBLISHED">${c.workbench_path}</py:when>
+            <py:when test="h.constants.MODEL_RUN_STATUS_COMPLETED">${c.workbench_path}</py:when>
+            <py:otherwise>Not in workbench</py:otherwise>
     </p>
 
 </div>
