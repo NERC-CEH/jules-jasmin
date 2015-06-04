@@ -75,13 +75,13 @@ email="$email \n\n $(df -H)"
 # Notify the relevant people that the job has run smoothly, or that there is something wrong.
 if [ error_flag == false ]; then
     for email_address in "${email_list[@]}"
-    do    
-        echo "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" misc@tessella.com
+    do    @
+        echo "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" chirag.mistry@tessella.com
     done
 else
     email_list+=("majic.support@tessella.com");
     for email_address in "${email_list[@]}"
     do
-        echo "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" misc@tessella.com
+        echo "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" chirag.mistry@tessella.com
     done
 fi
