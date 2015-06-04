@@ -12,7 +12,7 @@
 
 ## Constants/ Output Variables ##
 email="Automated test for CEH MAJIC run on $(date)";
-//email_list=("misc@tessella.com" "kerg@tessella.com");
+email_list=("misc@tessella.com" "kerg@tessella.com");
 error_flag= false;
 
 ## Task 1 - CROWD server ##
@@ -68,24 +68,20 @@ if [ $? != 0 ]; then
     error_flag= true;
 fi
 
-# Just test that emailing works
-echo "All automated tests passed." | mail -v -s "Test" chirag.mistry@tessella.com
-
 ## Task 6 - Remaining memory ##
 email="$email \n\n $df -H)" 
 
 ## Email support team ##
 # Notify the relevant people that the job has run smoothly, or that there is something wrong.
-#if [ error_flag == false ]; then
-    #for email_address in "${email_list[@]}"
-    #do    @
-     #   echo email + "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" email_address
-    #done
-#else
-    #email_list+=("majic.support@tessella.com");
-    #for email_address in "${email_list[@]}"
-    #do
-      #  echo email + "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" email_address
-    #done
-#fi
-
+if [ error_flag == false ]; then
+    for email_address in "${email_list[@]}"
+    do    @
+        echo email + "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" email_address
+    done
+else
+    email_list+=("majic.support@tessella.com");
+    for email_address in "${email_list[@]}"
+    do
+        echo email + "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" email_address
+    done
+fi
