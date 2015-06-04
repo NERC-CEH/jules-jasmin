@@ -72,7 +72,7 @@ fi
 
 ## Task 6 - Remaining memory ##
 memory=`df -H`;
-email="$email \n\n Remainging memory: ${memory}"
+email="$email \n\n Remaining memory: ${memory}"
 
 ## Email support team ##
 # Notify the relevant people that the job has run smoothly, or that there is something wrong.
