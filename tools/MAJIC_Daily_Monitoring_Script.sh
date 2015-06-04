@@ -16,7 +16,7 @@ email_list=("misc@tessella.com" "kerg@tessella.com");
 error_flag= false;
 
 ## Task 1 - CROWD server ##
-CROWD_status= curl -sSf https://crowd.ceh.ac.uk:443/crowd/rest/usermanagement/latest/user
+CROWD_status=`curl -s -o /dev/null -w "%{http_code}" https://crowd.ceh.ac.uk:443/crowd/rest/usermanagement/latest/user`;
 
 if [ CROWD_status != 401 ]; then
     email="$email \n The CROWD server is not responding.";
@@ -42,15 +42,17 @@ fi
 ## Task 4 - the job status updater ##
 # See if the log file has been updated in the last 10 minutes
 
-current_directory=$(pwd);
+current_directory=`pwd`;
 cd /var/local/majic/logs/;
+log_file="cron_job.log";
 
-if [ $? -eq 0 ]; then
+if [ ! -d "$log_directory" ]; then
     email="$email \n $The Job Runner log file has not been updated in the last 10 minutes.";
     error_flag= true;
 else
     # Find the time since the log file was last modified (in seconds).
-    time_since_last_modified=$(expr $(date +%s) - $(date +%s -r cron.job));   
+    time_since_last_modified=`expr $(date +%s) - $(date +%s -r "$log_directory""$log_file")`;
+    echo "Time since last modified: $time_since_last_modified"; 
      
     if [ $time_since_last_modified -gt 600 ]; then
        email="$email \n $The Job Runner log file has not been updated in the last 10 minutes.";
@@ -61,27 +63,31 @@ fi
 cd $current_directory
  
 ## Task 5 - Database ##
-# mysqladmin -u root -p status
+mysql_process=`ps aux | grep "/usr/sbin/[m]ysql"`;
 
-if [ $? != 0 ]; then
+if [ "$mysql_process" = "" ]; then
     email="$email \n The local database is not responding.";
     error_flag= true;
 fi
 
 ## Task 6 - Remaining memory ##
-email="$email \n\n $df -H)" 
+memory=`df -H`;
+email="$email \n\n Remainging memory: ${memory}"
 
 ## Email support team ##
 # Notify the relevant people that the job has run smoothly, or that there is something wrong.
-if [ error_flag == false ]; then
+if [ "$error_flag" == false ]; then
+
     for email_address in "${email_list[@]}"
-    do    @
-        echo email + "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" email_address
+    do
+	echo $email;
+        echo $email + "All automated tests passed." | mail -s "Automated Test Passed $(date)" $email_address;
     done
 else
     email_list+=("majic.support@tessella.com");
     for email_address in "${email_list[@]}"
     do
-        echo email + "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" email_address
+	echo $email;
+        echo $email + "All automated tests FAILED" | mail -s "Automated Test FAILED $(date)" $email_address;
     done
 fi
