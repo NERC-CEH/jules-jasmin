@@ -76,12 +76,12 @@ email="$email \n\n $(df -H)"
 if [ error_flag == false ]; then
     for email_address in "${email_list[@]}"
     do    
-        echo email + "All automated tests pass." | mail -s "Automated Test Passed $(date)" misc@tessella.com
+        echo "All automated tests passed." | mail -v -s "Automated Test Passed $(date)" misc@tessella.com
     done
 else
     email_list+=("majic.support@tessella.com");
     for email_address in "${email_list[@]}"
     do
-        echo email + "All automated tests FAILED" | mail -s "Automated Test FAILED $(date)" misc@tessella.com
+        echo "All automated tests FAILED" | mail -v -s "Automated Test FAILED $(date)" misc@tessella.com
     done
 fi
