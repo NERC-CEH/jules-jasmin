@@ -52,7 +52,6 @@ if [ ! -d "$log_directory" ]; then
 else
     # Find the time since the log file was last modified (in seconds).
     time_since_last_modified=`expr $(date +%s) - $(date +%s -r "$log_directory""$log_file")`;
-    echo "Time since last modified: $time_since_last_modified"; 
      
     if [ $time_since_last_modified -gt 600 ]; then
        email="$email \n $The Job Runner log file has not been updated in the last 10 minutes.";
