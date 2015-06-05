@@ -24,17 +24,17 @@ if [ CROWD_status != 401 ]; then
 fi
 
 ## Task 2 - Job Runner ##
-Job_runner_status= curl -sSf https://jules-bd1-dev.ceda.ac.uk:8444/jobs/status;
+Job_runner_status=`sudo -u apache curl -s -o /dev/null -w "%{http_code}" -k -H "Content-Type: application/json" -d '[14]' -E /var/local/ssl/majic.crt --key /var/local/ssl/majic.key https://jules-bd1-dev.ceda.ac.uk:8444/jobs/status`;
 
-if [ Job_runner_status != 401 ]; then
+if [ Job_runner_status != 200 ]; then
     email="$email \n The Job Runner is not responding.";
     error_flag= true;
 fi
 
 ## Task 3 - The THREDDS Server ##
-THREDDS_status= curl -sSf https://jules-bd1-dev.ceda.ac.uk:8080/thredds/index.html;
+THREDDS_status=`sudo -u apache curl -s -o /dev/null -w "%{http_code}" -k -E /var/local/ssl/majic.crt --key /var/local/ssl/majic.key https://jules-bd1-dev.ceda.ac.uk:8080/thredds/index.html`;
 
-if [ THREDDS_status != 401 ]; then
+if [ THREDDS_status != 200 ]; then
     email="$email \n The THREDDS server is not responding.";
     error_flag= true;
 fi
