@@ -18,7 +18,7 @@ error_flag=false;
 ## Task 1 - CROWD server ##
 CROWD_status=`curl -s -o /dev/null -w "%{http_code}" https://crowd.ceh.ac.uk:443/crowd/rest/usermanagement/latest/user`;
 
-if [ $CROWD_status != 401 ]; then
+if [ "$CROWD_status" != 401 ]; then
     email="$email \n The CROWD server is not responding.";
     error_flag=true;
 fi
@@ -26,7 +26,7 @@ fi
 ## Task 2 - Job Runner ##
 Job_runner_status=`curl -s -o /dev/null -w "%{http_code}" -k -H "Content-Type: application/json" -d '[14]' -E /var/local/ssl/majic.crt --key /var/local/ssl/majic.key https://jules-bd1-dev.ceda.ac.uk:8444/jobs/status`;
 
-if [ $Job_runner_status != 200 ]; then
+if [ "$Job_runner_status" != 200 ]; then
     email="$email \n The Job Runner is not responding.";
     error_flag=true;
 fi
@@ -34,7 +34,7 @@ fi
 ## Task 3 - The THREDDS Server ##
 THREDDS_status=`curl -s -o /dev/null -w "%{http_code}" -k -E /var/local/ssl/majic.crt --key /var/local/ssl/majic.key https://jules-bd1-dev.ceda.ac.uk:8080/thredds/index.html`;
 
-if [ $THREDDS_status != 200 ]; then
+if [ "$THREDDS_status" != 200 ]; then
     email="$email \n The THREDDS server is not responding.";
     error_flag=true;
 fi
@@ -53,7 +53,7 @@ else
     time_since_last_modified=`expr $(date +%s) - $(date +%s -r "$log_directory""$log_file")`;
 
     if [ $time_since_last_modified -gt 600 ]; then
-       email="$email \n $The Job Runner log file has not been updated in the last 10 minutes.";
+       email="$email \n The Job Runner log file has not been updated in the last 10 minutes.";
        error_flag=true;
     fi
 fi
