@@ -79,14 +79,12 @@ if [ "$error_flag" == false ]; then
 
     for email_address in "${email_list[@]}"
     do
-	echo $email;
         echo -e $email + "\n\n All automated tests passed." | mail -s "Automated Test Passed $(date)" $email_address;
     done
 else
     email_list+=("majic.support@tessella.com");
     for email_address in "${email_list[@]}"
     do
-	echo $email;
         echo -e $email + "\n\n All automated tests FAILED" | mail -s "Automated Test FAILED $(date)" $email_address;
     done
 fi
