@@ -69,7 +69,7 @@ if [ "$mysql_process" = "" ]; then
 fi
 
 ## Task 6 - Remaining memory ##
-memory=`df -H`;
+memory=`df -Ph | column -t`;
 email="$email \n\n Remaining memory: ${memory}"
 
 ## Email support team ##
