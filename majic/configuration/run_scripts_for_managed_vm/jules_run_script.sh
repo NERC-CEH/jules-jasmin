@@ -1,6 +1,7 @@
 #!/bin/bash
 #BSUB –o %J.o
 #BSUB –e %J.e
+#BSUB -W 3600
 #BSUB –q lotus
 #BSUB -n procs_template
 #BSUB -m lotus2
