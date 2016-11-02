@@ -19,7 +19,6 @@
 import logging
 from netCDF4 import Dataset
 import numpy as np
-from numpy.numarray import ma
 import os
 import shutil
 from job_runner.utils import constants
@@ -128,5 +127,5 @@ class LandCoverEditor(object):
 
     def _create_ice_mask(self, frac_array, ice_index):
         ice_array = frac_array[ice_index - 1]
-        masked_ice_array = ma.masked_greater(ice_array, 0)
+        masked_ice_array = np.ma.masked_greater(ice_array, 0)
         return masked_ice_array.mask
