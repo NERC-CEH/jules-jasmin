@@ -2,7 +2,7 @@
 #BSUB –o %J.o
 #BSUB –e %J.e
 #BSUB -W 5760
-#BSUB –q lotus
+#BSUB –q long-serial
 #BSUB -n procs_template
 #BSUB -m lotus2
 
