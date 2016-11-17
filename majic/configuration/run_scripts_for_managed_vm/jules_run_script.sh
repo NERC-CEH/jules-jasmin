@@ -1,10 +1,8 @@
 #!/bin/bash
 #BSUB –o %J.o
 #BSUB –e %J.e
-#BSUB -W 5760
-#BSUB –q long-serial
+#BSUB –q par-single
 #BSUB -n procs_template
-#BSUB -m lotus2
 
 cd model_run_dir_template
 
