@@ -3,6 +3,7 @@
 #BSUB –e %J.e
 #BSUB –q par-single
 #BSUB -n procs_template
+#BSUB -W 2880
 
 cd model_run_dir_template
 
