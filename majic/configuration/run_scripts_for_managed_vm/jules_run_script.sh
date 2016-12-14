@@ -1,9 +1,9 @@
 #!/bin/bash
 #BSUB –o %J.o
 #BSUB –e %J.e
-#BSUB –q lotus
+#BSUB –q par-single
 #BSUB -n procs_template
-#BSUB -m lotus2
+#BSUB -W 2880
 
 cd model_run_dir_template
 

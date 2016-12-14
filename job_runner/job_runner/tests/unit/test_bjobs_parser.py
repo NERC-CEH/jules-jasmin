@@ -47,7 +47,7 @@ class TestJulesLogFileParser(TestController):
 
     def test_GIVEN_one_running_job_in_list_WHEN_parse_THEN_return_that_job_as_running(self):
         self.lines.append(header)
-        self.lines.append('402753  jholt01 RUN  lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('402753  jholt01 RUN  par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
 
         result = self.parser.parse()
 
@@ -56,7 +56,7 @@ class TestJulesLogFileParser(TestController):
 
     def test_GIVEN_one_pending_job_in_list_WHEN_parse_THEN_return_that_job_as_pending(self):
         self.lines.append(header)
-        self.lines.append('402753  jholt01 PEND lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('402753  jholt01 PEND par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
 
         result = self.parser.parse()
 
@@ -65,7 +65,7 @@ class TestJulesLogFileParser(TestController):
 
     def test_GIVEN_one_unknown_job_in_list_WHEN_parse_THEN_return_that_job_as_pending(self):
         self.lines.append(header)
-        self.lines.append('402753  jholt01 BLAH lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('402753  jholt01 BLAH par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
 
         result = self.parser.parse()
 
@@ -74,10 +74,10 @@ class TestJulesLogFileParser(TestController):
 
     def test_GIVEN_multiple_jobs_in_list_WHEN_parse_THEN_return_that_jobs(self):
         self.lines.append(header)
-        self.lines.append('402753  jholt01 BLAH lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
-        self.lines.append('402754  jholt01 PEND lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
-        self.lines.append('                                jules-bd1-d 16*host042.j *> out.lo Jul  2 12:13')
-        self.lines.append('402755  jholt01 RUN  lotus      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('402753  jholt01 BLAH par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('402754  jholt01 PEND par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
+        self.lines.append('                                      jules-bd1-d 16*host042.j *> out.lo Jul  2 12:13')
+        self.lines.append('402755  jholt01 RUN  par-single      jules-bd1-d 8*host041.j *> out.log Jul  2 12:13')
 
         result = self.parser.parse()
 

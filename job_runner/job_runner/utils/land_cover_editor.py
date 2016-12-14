@@ -127,5 +127,5 @@ class LandCoverEditor(object):
 
     def _create_ice_mask(self, frac_array, ice_index):
         ice_array = frac_array[ice_index - 1]
-        masked_ice_array = np.ma.masked_greater(ice_array,0)
+        masked_ice_array = np.ma.masked_greater(ice_array, 0)
         return masked_ice_array.mask
