@@ -64,7 +64,14 @@ class VariableSplitter(object):
                 datatype = self._get_datatype_string(variable)
                 copied_variable = ds_out.createVariable(var_name, datatype, variable.dimensions)
                 self._copy_attrs(variable, copied_variable)
-                copied_variable[:] = variable[:]
+                if variable.ndim == 0:
+                    copied_variable = variable
+                elif variable.ndim == 1:
+                    copied_variable[:] = variable[:]
+                elif variable.ndim == 2:
+                    copied_variable[:,:] = variable[:,:]
+                else:
+                    raise Exception("The variable %s in the land_cover_fractional_file contains an unexpected number of dimensions" % var_name)
 
         # Copy across the attributes
         self._copy_attrs(ds_in, ds_out)
